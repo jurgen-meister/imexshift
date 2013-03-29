@@ -12,14 +12,14 @@ class InvItemsController extends AppController {
  *
  * @var string
  */
-	public $layout = 'bootstrap';
+	public $layout = 'default';
 
 /**
  * Helpers
  *
  * @var array
  */
-	public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
+	//public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
 /**
  * Components
  *
@@ -56,6 +56,22 @@ class InvItemsController extends AppController {
  * @return void
  */
 	public function add() {
+		//Section where the controls of the page are loaded		
+		$invBrands = $this->InvItem->InvBrand->find('list', array('order' => 'InvBrand.name'));
+		if(count($invBrands) == 0)
+		{
+			$invBrands[""] = '--- Vacio ---';
+		}
+		
+		$invCategories = $this->InvItem->InvCategory->find('list', array('order' => 'InvCategory.name'));
+		if(count($invCategories) == 0)
+		{
+			$invCategories[""] = '--- Vacio ---';
+		}		
+		$this->set(compact('invBrands', 'invCategories'));	
+		
+		
+		//Section where information is saved into the database
 		if ($this->request->is('post')) {
 			$this->InvItem->create();
 			if ($this->InvItem->save($this->request->data)) {
@@ -79,8 +95,8 @@ class InvItemsController extends AppController {
 				);
 			}
 		}
-		$invBrands = $this->InvItem->InvBrand->find('list');
-		$this->set(compact('invBrands'));
+		
+		
 	}
 
 /**

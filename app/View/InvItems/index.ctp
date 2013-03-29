@@ -15,13 +15,7 @@
 				<th><?php echo $this->BootstrapPaginator->sort('name');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('description');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('factory_code');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('picture');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('lc_state');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('lc_transaction');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('creator');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('date_created');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('modifier');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('date_modified');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('picture');?></th>				
 				<th class="actions"><?php echo __('Actions');?></th>
 			</tr>
 		<?php foreach ($invItems as $invItem): ?>
@@ -35,13 +29,7 @@
 				<td><?php echo h($invItem['InvItem']['name']); ?>&nbsp;</td>
 				<td><?php echo h($invItem['InvItem']['description']); ?>&nbsp;</td>
 				<td><?php echo h($invItem['InvItem']['factory_code']); ?>&nbsp;</td>
-				<td><?php echo h($invItem['InvItem']['picture']); ?>&nbsp;</td>
-				<td><?php echo h($invItem['InvItem']['lc_state']); ?>&nbsp;</td>
-				<td><?php echo h($invItem['InvItem']['lc_transaction']); ?>&nbsp;</td>
-				<td><?php echo h($invItem['InvItem']['creator']); ?>&nbsp;</td>
-				<td><?php echo h($invItem['InvItem']['date_created']); ?>&nbsp;</td>
-				<td><?php echo h($invItem['InvItem']['modifier']); ?>&nbsp;</td>
-				<td><?php echo h($invItem['InvItem']['date_modified']); ?>&nbsp;</td>
+				<td><?php echo h($invItem['InvItem']['picture']); ?>&nbsp;</td>				
 				<td class="actions">
 					<?php echo $this->Html->link(__('View'), array('action' => 'view', $invItem['InvItem']['id'])); ?>
 					<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $invItem['InvItem']['id'])); ?>
@@ -53,7 +41,7 @@
 
 		<?php echo $this->BootstrapPaginator->pagination(); ?>
 	</div>
-	<div class="span3">
+<!--	<div class="span3">
 		<div class="well" style="padding: 8px 0; margin-top:8px;">
 		<ul class="nav nav-list">
 			<li class="nav-header"><?php echo __('Actions'); ?></li>
@@ -68,5 +56,5 @@
 			<li><?php echo $this->Html->link(__('New %s', __('Inv Items Supplier')), array('controller' => 'inv_items_suppliers', 'action' => 'add')); ?> </li>
 		</ul>
 		</div>
-	</div>
+	</div>-->
 </div>

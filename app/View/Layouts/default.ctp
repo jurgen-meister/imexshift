@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<title>
-		<?php echo __('CakePHP: the rapid development php framework:'); ?>
+		<?php echo __('Imexport Internacional S.A.'); ?>
 		<?php echo $title_for_layout; ?>
 	</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -48,7 +48,7 @@
 					<span class="icon-bar"></span>
 					<span class="icon-bar"></span>
 				</a>
-				<a class="brand" href="#"><?php echo __('CakePHP'); ?></a>
+				<a class="brand" href="#"><?php echo __('Imexport S.A.'); ?></a>
 				<div class="nav-collapse">
 					<ul class="nav">
 						<li class="active"><a href="#">Home</a></li>
@@ -60,7 +60,7 @@
 		</div>
 	</div>
 
-	<div class="container">
+	<div class="container-fluid">
 		
 			<?php if($logged_in):?>
 			<div style="text-align: right;">
@@ -73,8 +73,10 @@
 		
 		<!--<h1>Bootstrap starter template</h1>-->
 		<?php if($logged_in):?>
+		<div class="row-fluid">
+		
 		<div class="span3">
-			<div class="well" style="padding: 8px 0; margin-top:40px;">
+			<div class="well sidebar-nav" style="padding: 8px 0; margin-top:40px;">
 			<ul class="nav nav-list">
 
 				<?php echo $this->Session->read('Menu');?>
@@ -89,7 +91,7 @@
 		</span>
 		
 		<?php echo $this->fetch('content'); ?>
-
+		</div>
 	</div> <!-- /container -->
 
 	<!-- Le javascript
