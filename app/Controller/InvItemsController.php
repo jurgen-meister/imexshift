@@ -72,8 +72,9 @@ class InvItemsController extends AppController {
 		
 		
 		//Section where information is saved into the database
-		if ($this->request->is('post')) {
+		if ($this->request->is('post')) {			
 			$this->InvItem->create();
+			$this->request->data['InvItem']['code'] = $this->_generateCode();
 			if ($this->InvItem->save($this->request->data)) {
 				$this->Session->setFlash(
 					__('The %s has been saved', __('inv item')),
@@ -98,8 +99,25 @@ class InvItemsController extends AppController {
 		
 		
 	}
+	
+	private function _generateCode(){
+		$number = $this->InvItem->find('first', array(
+			'fields' => array('MAX(InvItem.code) as code')		
+		));	
+		if($number[0]['code'] == null)
+		{
+			$number[0]['code'] = 1;
+		}
+		else 
+		{
+			$number[0]['code'] ++;
+		}
+		
+		return $number[0]['code'];
+		
+	}
 
-/**
+	/**
  * edit method
  *
  * @param string $id

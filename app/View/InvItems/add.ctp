@@ -32,7 +32,7 @@
 								),					
 								'label' => 'Marca:',
 								'required' => 'required',					
-								'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;'
+								'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
 								)
 							);
 							echo $this->BootstrapForm->input('inv_category_id', array(
@@ -48,12 +48,12 @@
 								),
 								'label' => 'Categoría:',
 								'required' => 'required',
-								'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+								'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
 							);				
 							echo $this->BootstrapForm->input('name', array(
 								'label' => 'Nombre:',
 								'required' => 'required',
-								'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+								'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
 							);
 							echo $this->BootstrapForm->input('description', array(
 								//'class=' => 'input-xxlarge',
@@ -61,20 +61,17 @@
 								'rows' => 5,
 								'label' => 'Descripccion:',
 								'required' => 'required',
-								'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')				
+								'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')				
 							);
 							echo $this->BootstrapForm->input('min_quantity', array(
 								'label' => 'Cantidad Mínima:',
-								'default'=>0,
-								'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')				
+								'default'=>0,)				
 							);
-							echo $this->BootstrapForm->input('factory_code', array(
-								'required' => 'required',
-								'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+							echo $this->BootstrapForm->input('factory_code', array(								
+								)
 							);
 							echo $this->BootstrapForm->input('picture', array(
-								'required' => 'required',
-								'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+								)
 							);				
 							?>
 						</div>
