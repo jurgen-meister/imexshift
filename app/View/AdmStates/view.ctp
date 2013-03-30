@@ -27,9 +27,9 @@
 				<?php echo h($admState['AdmState']['lc_state']); ?>
 				&nbsp;
 			</dd>
-			<dt><?php echo __('Lc Action'); ?></dt>
+			<dt><?php echo __('Lc Transaction'); ?></dt>
 			<dd>
-				<?php echo h($admState['AdmState']['lc_action']); ?>
+				<?php echo h($admState['AdmState']['lc_transaction']); ?>
 				&nbsp;
 			</dd>
 			<dt><?php echo __('Creator'); ?></dt>
@@ -37,9 +37,9 @@
 				<?php echo h($admState['AdmState']['creator']); ?>
 				&nbsp;
 			</dd>
-			<dt><?php echo __('Created'); ?></dt>
+			<dt><?php echo __('Date Created'); ?></dt>
 			<dd>
-				<?php echo h($admState['AdmState']['created']); ?>
+				<?php echo h($admState['AdmState']['date_created']); ?>
 				&nbsp;
 			</dd>
 			<dt><?php echo __('Modifier'); ?></dt>
@@ -47,9 +47,9 @@
 				<?php echo h($admState['AdmState']['modifier']); ?>
 				&nbsp;
 			</dd>
-			<dt><?php echo __('Modified'); ?></dt>
+			<dt><?php echo __('Date Modified'); ?></dt>
 			<dd>
-				<?php echo h($admState['AdmState']['modified']); ?>
+				<?php echo h($admState['AdmState']['date_modified']); ?>
 				&nbsp;
 			</dd>
 		</dl>
@@ -82,11 +82,11 @@
 				<th><?php echo __('Adm Action Id'); ?></th>
 				<th><?php echo __('Adm Final State Id'); ?></th>
 				<th><?php echo __('Lc State'); ?></th>
-				<th><?php echo __('Lc Action'); ?></th>
+				<th><?php echo __('Lc Transaction'); ?></th>
 				<th><?php echo __('Creator'); ?></th>
-				<th><?php echo __('Created'); ?></th>
+				<th><?php echo __('Date Created'); ?></th>
 				<th><?php echo __('Modifier'); ?></th>
-				<th><?php echo __('Modified'); ?></th>
+				<th><?php echo __('Date Modified'); ?></th>
 				<th class="actions"><?php echo __('Actions');?></th>
 			</tr>
 		<?php foreach ($admState['AdmTransition'] as $admTransition): ?>
@@ -96,11 +96,11 @@
 				<td><?php echo $admTransition['adm_action_id'];?></td>
 				<td><?php echo $admTransition['adm_final_state_id'];?></td>
 				<td><?php echo $admTransition['lc_state'];?></td>
-				<td><?php echo $admTransition['lc_action'];?></td>
+				<td><?php echo $admTransition['lc_transaction'];?></td>
 				<td><?php echo $admTransition['creator'];?></td>
-				<td><?php echo $admTransition['created'];?></td>
+				<td><?php echo $admTransition['date_created'];?></td>
 				<td><?php echo $admTransition['modifier'];?></td>
-				<td><?php echo $admTransition['modified'];?></td>
+				<td><?php echo $admTransition['date_modified'];?></td>
 				<td class="actions">
 					<?php echo $this->Html->link(__('View'), array('controller' => 'adm_transitions', 'action' => 'view', $admTransition['id'])); ?>
 					<?php echo $this->Html->link(__('Edit'), array('controller' => 'adm_transitions', 'action' => 'edit', $admTransition['id'])); ?>
