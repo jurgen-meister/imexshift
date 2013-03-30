@@ -61,31 +61,52 @@ class AdmStatesController extends AppController {
  * @return void
  */
 	public function add() {
-		if ($this->request->is('post')) {
-			$this->AdmState->create();
-			if ($this->AdmState->save($this->request->data)) {
-				$this->Session->setFlash(
-					__('The %s has been saved', __('adm state')),
-					'alert',
-					array(
-						'plugin' => 'TwitterBootstrap',
-						'class' => 'alert-success'
-					)
-				);
-				$this->redirect(array('action' => 'index'));
-			} else {
-				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('adm state')),
-					'alert',
-					array(
-						'plugin' => 'TwitterBootstrap',
-						'class' => 'alert-error'
-					)
-				);
+		//Section where the controls of the page are loaded
+		$admModules = $this->AdmState->AdmController->AdmModule->find('list', array('order'=>'AdmModule.id'));
+		if(count($admModules) != 0)
+		{
+			$initialModule = key($admModules);
+			$admControllers = $this->AdmState->AdmController->find('list', array('conditions'=>array('AdmController.adm_module_id'=>$initialModule)));
+			if(count($admControllers) != 0)
+			{
+				
+			}
+			else
+			{
+				$admControllers[""] = "--- Vacio ---";
 			}
 		}
-		$admControllers = $this->AdmState->AdmController->find('list');
-		$this->set(compact('admControllers'));
+		else
+		{
+			$admModules[""] = "--- Vacio ---";
+		}
+		$this->set(compact('admModules', 'admControllers'));
+		//Section where information is saved into the database
+			if ($this->request->is('post')) {
+				$this->AdmState->create();
+				if ($this->AdmState->save($this->request->data)) {
+					$this->Session->setFlash(
+						__('The %s has been saved', __('adm state')),
+						'alert',
+						array(
+							'plugin' => 'TwitterBootstrap',
+							'class' => 'alert-success'
+						)
+					);
+					$this->redirect(array('action' => 'index'));
+				} else {
+					$this->Session->setFlash(
+						__('The %s could not be saved. Please, try again.', __('adm state')),
+						'alert',
+						array(
+							'plugin' => 'TwitterBootstrap',
+							'class' => 'alert-error'
+						)
+					);
+				}
+			}
+			//$admControllers = $this->AdmState->AdmController->find('list');
+			//$this->set(compact('admControllers'));
 	}
 
 /**
@@ -124,8 +145,29 @@ class AdmStatesController extends AppController {
 		} else {
 			$this->request->data = $this->AdmState->read(null, $id);
 		}
-		$admControllers = $this->AdmState->AdmController->find('list');
-		$this->set(compact('admControllers'));
+		//$admControllers = $this->AdmState->AdmController->find('list');
+		//$this->set(compact('admControllers'));
+		
+		//Section where the controls of the page are loaded		
+		$admModules = $this->AdmState->AdmController->AdmModule->find('list', array('order'=>'AdmModule.id'));
+		if(count($admModules) != 0)
+		{
+			$initialModule = key($admModules);
+			$admControllers = $this->AdmState->AdmController->find('list', array('conditions'=>array('AdmController.adm_module_id'=>$initialModule)));
+			if(count($admControllers) != 0)
+			{
+				
+			}
+			else
+			{
+				$admControllers[""] = "--- Vacio ---";
+			}
+		}
+		else
+		{
+			$admModules[""] = "--- Vacio ---";
+		}
+		$this->set(compact('admModules', 'admControllers'));
 	}
 
 /**
@@ -162,5 +204,18 @@ class AdmStatesController extends AppController {
 			)
 		);
 		$this->redirect(array('action' => 'index'));
+	}
+	
+	public function ajax_list_controllers() {
+		if($this->RequestHandler->isAjax())
+		{
+			$initalModule = strtolower($this->request->data['module']);
+			$admControllers = $this->AdmState->AdmController->find('list', array('conditions'=>array('AdmController.adm_module_id'=>$initalModule)));
+			if(count($admControllers) == 0)
+			{
+				$admControllers[""] = "--- Vacio ---";
+			}			
+			$this->set(compact('admControllers'));
+		}	
 	}
 }
