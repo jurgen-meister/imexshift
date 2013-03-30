@@ -5,37 +5,40 @@
 				<legend><?php echo __('Add %s', __('Inv Category')); ?></legend>
 				<?php
 				echo $this->BootstrapForm->input('name', array(
+					'label' => 'Nombre',
 					'required' => 'required',
 					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
 				);
+				//descripcion -> description
 				echo $this->BootstrapForm->input('descripcion', array(
+					'label' => 'Descripcion',
 					'required' => 'required',
 					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
 				);
-				echo $this->BootstrapForm->input('lc_state', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('lc_transaction', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('creator', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('date_created', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('modifier', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('date_modified', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
+//				echo $this->BootstrapForm->input('lc_state', array(
+//					'required' => 'required',
+//					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+//				);
+//				echo $this->BootstrapForm->input('lc_transaction', array(
+//					'required' => 'required',
+//					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+//				);
+//				echo $this->BootstrapForm->input('creator', array(
+//					'required' => 'required',
+//					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+//				);
+//				echo $this->BootstrapForm->input('date_created', array(
+//					'required' => 'required',
+//					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+//				);
+//				echo $this->BootstrapForm->input('modifier', array(
+//					'required' => 'required',
+//					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+//				);
+//				echo $this->BootstrapForm->input('date_modified', array(
+//					'required' => 'required',
+//					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+//				);
 				?>
 				<?php echo $this->BootstrapForm->submit(__('Submit'));?>
 			</fieldset>

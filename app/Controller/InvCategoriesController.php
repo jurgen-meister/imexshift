@@ -12,14 +12,14 @@ class InvCategoriesController extends AppController {
  *
  * @var string
  */
-	public $layout = 'bootstrap';
+	public $layout = 'default';
 
 /**
  * Helpers
  *
  * @var array
  */
-	public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
+	//public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
 /**
  * Components
  *

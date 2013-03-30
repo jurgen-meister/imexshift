@@ -11,12 +11,6 @@
 				<th><?php echo $this->BootstrapPaginator->sort('id');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('name');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('descripcion');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('lc_state');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('lc_transaction');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('creator');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('date_created');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('modifier');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('date_modified');?></th>
 				<th class="actions"><?php echo __('Actions');?></th>
 			</tr>
 		<?php foreach ($invCategories as $invCategory): ?>
@@ -24,12 +18,6 @@
 				<td><?php echo h($invCategory['InvCategory']['id']); ?>&nbsp;</td>
 				<td><?php echo h($invCategory['InvCategory']['name']); ?>&nbsp;</td>
 				<td><?php echo h($invCategory['InvCategory']['descripcion']); ?>&nbsp;</td>
-				<td><?php echo h($invCategory['InvCategory']['lc_state']); ?>&nbsp;</td>
-				<td><?php echo h($invCategory['InvCategory']['lc_transaction']); ?>&nbsp;</td>
-				<td><?php echo h($invCategory['InvCategory']['creator']); ?>&nbsp;</td>
-				<td><?php echo h($invCategory['InvCategory']['date_created']); ?>&nbsp;</td>
-				<td><?php echo h($invCategory['InvCategory']['modifier']); ?>&nbsp;</td>
-				<td><?php echo h($invCategory['InvCategory']['date_modified']); ?>&nbsp;</td>
 				<td class="actions">
 					<?php echo $this->Html->link(__('View'), array('action' => 'view', $invCategory['InvCategory']['id'])); ?>
 					<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $invCategory['InvCategory']['id'])); ?>
@@ -41,7 +29,7 @@
 
 		<?php echo $this->BootstrapPaginator->pagination(); ?>
 	</div>
-	<div class="span3">
+<!--	<div class="span3">
 		<div class="well" style="padding: 8px 0; margin-top:8px;">
 		<ul class="nav nav-list">
 			<li class="nav-header"><?php echo __('Actions'); ?></li>
@@ -50,5 +38,5 @@
 			<li><?php echo $this->Html->link(__('New %s', __('Inv Item')), array('controller' => 'inv_items', 'action' => 'add')); ?> </li>
 		</ul>
 		</div>
-	</div>
+	</div>-->
 </div>
