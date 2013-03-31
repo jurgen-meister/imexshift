@@ -7,56 +7,22 @@
 				<?php echo h($invWarehouse['InvWarehouse']['id']); ?>
 				&nbsp;
 			</dd>
-			<dt><?php echo __('Code'); ?></dt>
-			<dd>
-				<?php echo h($invWarehouse['InvWarehouse']['code']); ?>
-				&nbsp;
-			</dd>
-			<dt><?php echo __('Name'); ?></dt>
+			<dt><?php echo __('Nombre'); ?></dt>
 			<dd>
 				<?php echo h($invWarehouse['InvWarehouse']['name']); ?>
 				&nbsp;
 			</dd>
-			<dt><?php echo __('Location'); ?></dt>
+			<dt><?php echo __('Ciudad y Pais'); ?></dt>
 			<dd>
 				<?php echo h($invWarehouse['InvWarehouse']['location']); ?>
 				&nbsp;
 			</dd>
-			<dt><?php echo __('Address'); ?></dt>
+			<dt><?php echo __('Dirección'); ?></dt>
 			<dd>
 				<?php echo h($invWarehouse['InvWarehouse']['address']); ?>
 				&nbsp;
 			</dd>
-			<dt><?php echo __('Lc State'); ?></dt>
-			<dd>
-				<?php echo h($invWarehouse['InvWarehouse']['lc_state']); ?>
-				&nbsp;
-			</dd>
-			<dt><?php echo __('Lc Transaction'); ?></dt>
-			<dd>
-				<?php echo h($invWarehouse['InvWarehouse']['lc_transaction']); ?>
-				&nbsp;
-			</dd>
-			<dt><?php echo __('Creator'); ?></dt>
-			<dd>
-				<?php echo h($invWarehouse['InvWarehouse']['creator']); ?>
-				&nbsp;
-			</dd>
-			<dt><?php echo __('Date Created'); ?></dt>
-			<dd>
-				<?php echo h($invWarehouse['InvWarehouse']['date_created']); ?>
-				&nbsp;
-			</dd>
-			<dt><?php echo __('Modifier'); ?></dt>
-			<dd>
-				<?php echo h($invWarehouse['InvWarehouse']['modifier']); ?>
-				&nbsp;
-			</dd>
-			<dt><?php echo __('Date Modified'); ?></dt>
-			<dd>
-				<?php echo h($invWarehouse['InvWarehouse']['date_modified']); ?>
-				&nbsp;
-			</dd>
+			
 		</dl>
 	</div>
 	<div class="span3">

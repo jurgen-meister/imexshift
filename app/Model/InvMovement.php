@@ -5,7 +5,7 @@ App::uses('AppModel', 'Model');
  *
  * @property InvItem $InvItem
  * @property InvWarehouse $InvWarehouse
- * @property InvDocumentType $InvDocumentType
+ * @property InvMovementType $InvMovementType
  */
 class InvMovement extends AppModel {
 
@@ -35,27 +35,7 @@ class InvMovement extends AppModel {
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
-		'inv_document_type_id' => array(
-			'notempty' => array(
-				'rule' => array('notempty'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
-			),
-		),
-		'document' => array(
-			'notempty' => array(
-				'rule' => array('notempty'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
-			),
-		),
-		'code' => array(
+		'inv_movement_type_id' => array(
 			'notempty' => array(
 				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
@@ -66,16 +46,6 @@ class InvMovement extends AppModel {
 			),
 		),
 		'date' => array(
-			'datetime' => array(
-				'rule' => array('datetime'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
-			),
-		),
-		'description' => array(
 			'notempty' => array(
 				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
@@ -94,9 +64,77 @@ class InvMovement extends AppModel {
 				//'last' => false, // Stop validation after this rule
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
+			
+			'higherThanStock'=>array(
+				'rule'=>array('higherThanStock'),
+				'message'=>'La Cantidad de Salida es mayor al Stock'
+			)
+			
 		),
 	);
 
+	//My validation's rules
+	
+	
+	function beforeSave($options = array()) {
+		//parent::beforeSave($options);
+		$idItem = $this->data['InvMovement']['inv_item_id'];
+		$idWarehouse = $this->data['InvMovement']['inv_warehouse_id'];
+		$quantity = $this->data['InvMovement']['quantity'];
+		//$status = $this->data['InvMovement']['status'];
+		$availableQuantity = $this->_find_available_quantity($idItem, $idWarehouse);
+		/////
+		if(!isset($this->data['InvMovement']['status'])){
+			if($quantity > $availableQuantity){
+				return false;
+			}
+		}
+		
+		return true;
+	}
+	
+	function _find_available_quantity($idItem, $idWarehouse){
+		$stockIns = $this->find('all', array(
+			'conditions'=>array('InvMovement.inv_item_id'=> $idItem,'InvMovement.inv_warehouse_id'=>$idWarehouse, 'InvMovement.lc_transaction !='=>'LOGIC_DELETE', 'InvMovementType.status' => 'entrada'),
+			//'contain' => array('InvMovement'=>array('InvMovementType')),
+			'fields'=>array('id', 'quantity')
+		));
+		
+		$stockInsCleaned = $this->_clean_nested_arrays($stockIns);
+		
+		$stockOuts = $this->find('all', array(
+			'conditions'=>array('InvMovement.inv_item_id'=> $idItem,'InvMovement.inv_warehouse_id'=>$idWarehouse, 'InvMovement.lc_transaction !='=>'LOGIC_DELETE', 'InvMovementType.status' => 'salida'),
+			//'contain' => array('InvMovement'=>array('InvMovementType')),
+			'fields'=>array('id', 'quantity')
+		));
+		
+		$stockOutsCleaned = $this->_clean_nested_arrays($stockOuts);
+		
+		$add = array_sum($stockInsCleaned);
+		//debug($add);
+		$sub = array_sum($stockOutsCleaned);
+		//debug($sub);
+		$availableQuantity = $add - $sub;
+		return $availableQuantity;
+	}
+	
+	function _clean_nested_arrays($array){
+		$clean = array();
+		foreach ($array as $key => $value) {
+			$clean[$key] = $value['InvMovement']['quantity'];
+		}
+		return $clean;
+	}
+	
+	function higherThanStock($data){
+		if(isset($this->data['InvMovement']['avaliable'])){
+			if($data['quantity'] > $this->data['InvMovement']['avaliable']){
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	//The Associations below have been created with all possible keys, those that are not needed can be removed
 
 /**
@@ -119,9 +157,9 @@ class InvMovement extends AppModel {
 			'fields' => '',
 			'order' => ''
 		),
-		'InvDocumentType' => array(
-			'className' => 'InvDocumentType',
-			'foreignKey' => 'inv_document_type_id',
+		'InvMovementType' => array(
+			'className' => 'InvMovementType',
+			'foreignKey' => 'inv_movement_type_id',
 			'conditions' => '',
 			'fields' => '',
 			'order' => ''

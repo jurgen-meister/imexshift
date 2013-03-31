@@ -9,7 +9,7 @@
 			</dd>
 			<dt><?php echo __('Inv Item'); ?></dt>
 			<dd>
-				<?php echo $this->Html->link($invMovement['InvItem']['code'], array('controller' => 'inv_items', 'action' => 'view', $invMovement['InvItem']['id'])); ?>
+				<?php echo $this->Html->link($invMovement['InvItem']['name'], array('controller' => 'inv_items', 'action' => 'view', $invMovement['InvItem']['id'])); ?>
 				&nbsp;
 			</dd>
 			<dt><?php echo __('Inv Warehouse'); ?></dt>
@@ -17,9 +17,9 @@
 				<?php echo $this->Html->link($invMovement['InvWarehouse']['name'], array('controller' => 'inv_warehouses', 'action' => 'view', $invMovement['InvWarehouse']['id'])); ?>
 				&nbsp;
 			</dd>
-			<dt><?php echo __('Inv Document Type'); ?></dt>
+			<dt><?php echo __('Inv Movement Type'); ?></dt>
 			<dd>
-				<?php echo $this->Html->link($invMovement['InvDocumentType']['name'], array('controller' => 'inv_document_types', 'action' => 'view', $invMovement['InvDocumentType']['id'])); ?>
+				<?php echo $this->Html->link($invMovement['InvMovementType']['name'], array('controller' => 'inv_movement_types', 'action' => 'view', $invMovement['InvMovementType']['id'])); ?>
 				&nbsp;
 			</dd>
 			<dt><?php echo __('Document'); ?></dt>
@@ -89,10 +89,10 @@
 			<li><?php echo $this->Html->link(__('New %s', __('Inv Movement')), array('action' => 'add')); ?> </li>
 			<li><?php echo $this->Html->link(__('List %s', __('Inv Items')), array('controller' => 'inv_items', 'action' => 'index')); ?> </li>
 			<li><?php echo $this->Html->link(__('New %s', __('Inv Item')), array('controller' => 'inv_items', 'action' => 'add')); ?> </li>
-			<li><?php echo $this->Html->link(__('List %s', __('Inv Document Types')), array('controller' => 'inv_document_types', 'action' => 'index')); ?> </li>
-			<li><?php echo $this->Html->link(__('New %s', __('Inv Document Type')), array('controller' => 'inv_document_types', 'action' => 'add')); ?> </li>
 			<li><?php echo $this->Html->link(__('List %s', __('Inv Warehouses')), array('controller' => 'inv_warehouses', 'action' => 'index')); ?> </li>
 			<li><?php echo $this->Html->link(__('New %s', __('Inv Warehouse')), array('controller' => 'inv_warehouses', 'action' => 'add')); ?> </li>
+			<li><?php echo $this->Html->link(__('List %s', __('Inv Movement Types')), array('controller' => 'inv_movement_types', 'action' => 'index')); ?> </li>
+			<li><?php echo $this->Html->link(__('New %s', __('Inv Movement Type')), array('controller' => 'inv_movement_types', 'action' => 'add')); ?> </li>
 		</ul>
 		</div>
 	</div>
