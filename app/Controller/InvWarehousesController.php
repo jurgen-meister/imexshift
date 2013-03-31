@@ -12,20 +12,20 @@ class InvWarehousesController extends AppController {
  *
  * @var string
  */
-	public $layout = 'bootstrap';
+//	public $layout = 'bootstrap';
 
 /**
  * Helpers
  *
  * @var array
  */
-	public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
+//	public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
 /**
  * Components
  *
  * @var array
  */
-	public $components = array('Session');
+//	public $components = array('Session');
 /**
  * index method
  *
@@ -45,7 +45,7 @@ class InvWarehousesController extends AppController {
 	public function view($id = null) {
 		$this->InvWarehouse->id = $id;
 		if (!$this->InvWarehouse->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('inv warehouse')));
+			throw new NotFoundException(__('Almacen no encontrado'));
 		}
 		$this->set('invWarehouse', $this->InvWarehouse->read(null, $id));
 	}
@@ -60,7 +60,7 @@ class InvWarehousesController extends AppController {
 			$this->InvWarehouse->create();
 			if ($this->InvWarehouse->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('inv warehouse')),
+					__('Se guardo correctamente'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -70,7 +70,7 @@ class InvWarehousesController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('inv warehouse')),
+					__('No se pudo guardar, intente de nuevo'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -90,12 +90,13 @@ class InvWarehousesController extends AppController {
 	public function edit($id = null) {
 		$this->InvWarehouse->id = $id;
 		if (!$this->InvWarehouse->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('inv warehouse')));
+			throw new NotFoundException(__('Almacen invalido'));
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
+			$this->request->data['InvWarehouse']['lc_transaction']='MODIFY';
 			if ($this->InvWarehouse->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('inv warehouse')),
+					__('Se guardo correctamente'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -105,7 +106,7 @@ class InvWarehousesController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('inv warehouse')),
+					__('No se pudo guardar, intente de nuevo'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -130,11 +131,11 @@ class InvWarehousesController extends AppController {
 		}
 		$this->InvWarehouse->id = $id;
 		if (!$this->InvWarehouse->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('inv warehouse')));
+			throw new NotFoundException(__('Almacen invalido'));
 		}
 		if ($this->InvWarehouse->delete()) {
 			$this->Session->setFlash(
-				__('The %s deleted', __('inv warehouse')),
+				__('Se elimino el almacen'),
 				'alert',
 				array(
 					'plugin' => 'TwitterBootstrap',
@@ -144,7 +145,7 @@ class InvWarehousesController extends AppController {
 			$this->redirect(array('action' => 'index'));
 		}
 		$this->Session->setFlash(
-			__('The %s was not deleted', __('inv warehouse')),
+			__('No se pudo eliminar el almacen'),
 			'alert',
 			array(
 				'plugin' => 'TwitterBootstrap',

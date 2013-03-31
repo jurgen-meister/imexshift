@@ -2,32 +2,30 @@
 	<div class="span9">
 		<?php echo $this->BootstrapForm->create('InvMovementType', array('class' => 'form-horizontal'));?>
 			<fieldset>
-				<legend><?php echo __('Add %s', __('Inv Movement Type')); ?></legend>
+				<legend><?php echo __('Nuevo Tipo de Movimiento'); ?></legend>
 				<?php
 				echo $this->BootstrapForm->input('name', array(
+					'label'=>'Nombre:',
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
 				);
-				echo $this->BootstrapForm->input('status', array(
+				echo $this->BootstrapForm->input('status_id', array(
+					'label'=>'Status:',
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
 				);
-				echo $this->BootstrapForm->input('document', array(
+				echo $this->BootstrapForm->input('document_id', array(
+					'label'=>'Tiene Documento:',
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
 				);
 				echo $this->BootstrapForm->input('ref_table', array(
+				'label'=>'Tabla BD Ref:',
 				'required' => 'required',
-				'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+				'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
 				);
-				echo $this->BootstrapForm->input('creator', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				
-				
 				?>
-				<?php echo $this->BootstrapForm->submit(__('Submit'));?>
+				<?php echo $this->BootstrapForm->submit(__('Guardar'));?>
 			</fieldset>
 		<?php echo $this->BootstrapForm->end();?>
 	</div>

@@ -95,7 +95,7 @@ class InvMovement extends AppModel {
 	
 	function _find_available_quantity($idItem, $idWarehouse){
 		$stockIns = $this->find('all', array(
-			'conditions'=>array('inv_item_id'=> $idItem,'inv_warehouse_id'=>$idWarehouse, 'InvMovementType.status' => 'entrada'),
+			'conditions'=>array('InvMovement.inv_item_id'=> $idItem,'InvMovement.inv_warehouse_id'=>$idWarehouse, 'InvMovement.lc_transaction !='=>'LOGIC_DELETE', 'InvMovementType.status' => 'entrada'),
 			//'contain' => array('InvMovement'=>array('InvMovementType')),
 			'fields'=>array('id', 'quantity')
 		));
@@ -103,7 +103,7 @@ class InvMovement extends AppModel {
 		$stockInsCleaned = $this->_clean_nested_arrays($stockIns);
 		
 		$stockOuts = $this->find('all', array(
-			'conditions'=>array('inv_item_id'=> $idItem,'inv_warehouse_id'=>$idWarehouse, 'InvMovementType.status' => 'salida'),
+			'conditions'=>array('InvMovement.inv_item_id'=> $idItem,'InvMovement.inv_warehouse_id'=>$idWarehouse, 'InvMovement.lc_transaction !='=>'LOGIC_DELETE', 'InvMovementType.status' => 'salida'),
 			//'contain' => array('InvMovement'=>array('InvMovementType')),
 			'fields'=>array('id', 'quantity')
 		));

@@ -49,6 +49,7 @@
 				echo '<div id="boxItemAvaliable">';
 				echo $this->BootstrapForm->input('inv_item_id', array(
 					'id'=>'items',
+					'label'=>'Item:',
 					'required' => 'required',
 					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
 				);

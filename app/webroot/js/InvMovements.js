@@ -13,6 +13,13 @@ $(document).ready(function(){
 		$('#items').change(function(){return false;});
 	}
 	*/
+   /*
+   	if(arr[3].substr(0, 3) == 'add'){
+		 $('#warehouses option:nth-child(1)').attr("selected", "selected");
+		 $('#movement_types option:nth-child(1)').attr("selected", "selected");
+		 $('#items option:nth-child(1)').attr("selected", "selected");
+	}
+	*/
 	/////////numeric validation//////
 	$("#quantity").keydown(function(event) {
 						// Allow only backspace and delete

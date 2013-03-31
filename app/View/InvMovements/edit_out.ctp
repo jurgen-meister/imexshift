@@ -9,18 +9,21 @@
 				echo $this->BootstrapForm->input('date');
 				echo $this->BootstrapForm->input('inv_warehouse_id', array(
 					'disabled'=>'disabled',
+					'label'=>'Almacen:',
 					'id'=>'warehouses',
 					'required' => 'required',
 					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
 				);
 				echo $this->BootstrapForm->input('inv_movement_type_id', array(
 					'disabled'=>'disabled',
+					'label'=>'Tipo Movimiento:',
 					'id'=>'movement_types',
 					'required' => 'required',
 					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
 				);
 				echo $this->BootstrapForm->input('inv_item_id', array(
 					'disabled'=>'disabled',
+					'label'=>'Item:',
 					'id'=>'items',
 					'required' => 'required',
 					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
@@ -40,19 +43,20 @@
 				echo $this->BootstrapForm->input('quantity', array(
 					'style'=>'width:60px',
 					'maxlength'=>'7',
-					
+					'label'=>'Cantidad Salida:',
 					'required' => 'required',
 					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
 				);
 				
 				echo $this->BootstrapForm->input('description', array(
+					'label'=>'Descripción:',
 					'style'=>'width:400px',
 					'label' => 'Descripción:',
 				));
 				
 				echo $this->BootstrapForm->hidden('id');
 				?>
-				<?php echo $this->BootstrapForm->submit(__('Submit'));?>
+				<?php echo $this->BootstrapForm->submit(__('Guardar'));?>
 			</fieldset>
 		<?php echo $this->BootstrapForm->end();?>
 	</div>

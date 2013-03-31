@@ -1,23 +1,23 @@
 <div class="row-fluid">
 	<div class="span9">
-		<h2><?php echo __('List %s', __('Inv Movements'));?></h2>
+		<h2><?php echo __('Movimientos de Almacen');?></h2>
 
 		<p>
-			<?php echo $this->BootstrapPaginator->counter(array('format' => __('Page {:page} of {:pages}, showing {:current} records out of {:count} total, starting on record {:start}, ending on {:end}')));?>
+			<?php echo $this->BootstrapPaginator->counter(array('format' => __('Pagina {:page} de {:pages}, mostrando {:current} registros de {:count} total, comenzando en  {:start}, terminando en {:end}')));?>
 		</p>
 
 		<table class="table">
 			<tr>
-				<th><?php echo $this->BootstrapPaginator->sort('code');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('code', 'Codigo');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('inv_movement_type_id', 'Movimiento');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('Status');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('inv_warehouse_id', 'Almacen');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('inv_item_id', 'Item');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('quantity', 'Cantidad');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('document');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('document', 'Documento');?></th>
 
-				<th class="actions"><?php echo __('Actions');?></th>
+				<th class="actions"><?php echo __('Acciones');?></th>
 			</tr>
 		<?php foreach ($invMovements as $invMovement): ?>
 			<tr>
@@ -38,9 +38,16 @@
 				<td><?php echo h($invMovement['InvMovement']['quantity']); ?>&nbsp;</td>
 				<td><?php echo h($invMovement['InvMovement']['document']); ?>&nbsp;</td>
 				<td class="actions">
-					<?php echo $this->Html->link(__('View'), array('action' => 'view', $invMovement['InvMovement']['id'])); ?>
-					<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $invMovement['InvMovement']['id'])); ?>
-					<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $invMovement['InvMovement']['id']), null, __('Are you sure you want to delete # %s?', $invMovement['InvMovement']['id'])); ?>
+					<?php echo $this->Html->link(__('Ver'), array('action' => 'view', $invMovement['InvMovement']['id'])); ?>
+					
+					<?php 
+					if($invMovement['InvMovementType']['status'] == 'entrada'){
+						echo $this->Html->link(__('Editar'), array('action' => 'edit_in', $invMovement['InvMovement']['id'])); 
+					}else{
+						echo $this->Html->link(__('Editar'), array('action' => 'edit_out', $invMovement['InvMovement']['id'])); 
+					}
+					?>
+					<?php echo $this->Form->postLink(__('Eliminar'), array('action' => 'delete', $invMovement['InvMovement']['id']), null, __('Are you sure you want to delete # %s?', $invMovement['InvMovement']['id'])); ?>
 				</td>
 			</tr>
 		<?php endforeach; ?>

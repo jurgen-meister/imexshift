@@ -1,62 +1,38 @@
 <div class="row-fluid">
 	<div class="span9">
-		<h2><?php  echo __('Inv Movement Type');?></h2>
+		<h2><?php echo __('Tipos de Movimiento');?></h2>
 		<dl>
-			<dt><?php echo __('Id'); ?></dt>
+			<dt><?php echo __('Id:'); ?></dt>
 			<dd>
 				<?php echo h($invMovementType['InvMovementType']['id']); ?>
 				&nbsp;
 			</dd>
-			<dt><?php echo __('Name'); ?></dt>
+			<dt><?php echo __('Nombre:'); ?></dt>
 			<dd>
 				<?php echo h($invMovementType['InvMovementType']['name']); ?>
 				&nbsp;
 			</dd>
-			<dt><?php echo __('Status'); ?></dt>
+			<dt><?php echo __('Status:'); ?></dt>
 			<dd>
 				<?php echo h($invMovementType['InvMovementType']['status']); ?>
 				&nbsp;
 			</dd>
-			<dt><?php echo __('Document'); ?></dt>
+			<dt><?php echo __('Documento:'); ?></dt>
 			<dd>
-				<?php echo h($invMovementType['InvMovementType']['document']); ?>
-				&nbsp;
+				<?php
+				if($invMovementType['InvMovementType']['document'] == 1){
+					echo "Si";
+				}else{
+					echo "No";
+				}
+				?>
 			</dd>
-			<dt><?php echo __('Ref Table'); ?></dt>
+			<dt><?php echo __('Tabla BD Ref:'); ?></dt>
 			<dd>
 				<?php echo h($invMovementType['InvMovementType']['ref_table']); ?>
 				&nbsp;
 			</dd>
-			<dt><?php echo __('Lc State'); ?></dt>
-			<dd>
-				<?php echo h($invMovementType['InvMovementType']['lc_state']); ?>
-				&nbsp;
-			</dd>
-			<dt><?php echo __('Lc Transaction'); ?></dt>
-			<dd>
-				<?php echo h($invMovementType['InvMovementType']['lc_transaction']); ?>
-				&nbsp;
-			</dd>
-			<dt><?php echo __('Creator'); ?></dt>
-			<dd>
-				<?php echo h($invMovementType['InvMovementType']['creator']); ?>
-				&nbsp;
-			</dd>
-			<dt><?php echo __('Date Created'); ?></dt>
-			<dd>
-				<?php echo h($invMovementType['InvMovementType']['date_created']); ?>
-				&nbsp;
-			</dd>
-			<dt><?php echo __('Modifier'); ?></dt>
-			<dd>
-				<?php echo h($invMovementType['InvMovementType']['modifier']); ?>
-				&nbsp;
-			</dd>
-			<dt><?php echo __('Date Modified'); ?></dt>
-			<dd>
-				<?php echo h($invMovementType['InvMovementType']['date_modified']); ?>
-				&nbsp;
-			</dd>
+			
 		</dl>
 	</div>
 	<div class="span3">

@@ -2,42 +2,31 @@
 	<div class="span9">
 		<?php echo $this->BootstrapForm->create('InvMovementType', array('class' => 'form-horizontal'));?>
 			<fieldset>
-				<legend><?php echo __('Edit %s', __('Inv Movement Type')); ?></legend>
+				<legend><?php echo __('Editar Tipo de Movimiento'); ?></legend>
 				<?php
 				echo $this->BootstrapForm->input('name', array(
+					'label'=>'Nombre:',
 					'required' => 'required',
 					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
 				);
 				echo $this->BootstrapForm->input('status', array(
+					'label'=>'Status:',
 					'required' => 'required',
 					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
 				);
 				echo $this->BootstrapForm->input('document', array(
+					'label'=>'Tiene Documento:',
 					'required' => 'required',
 					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
 				);
-				echo $this->BootstrapForm->input('ref_table');
-				echo $this->BootstrapForm->input('lc_state', array(
+				echo $this->BootstrapForm->input('ref_table', array(
+					'label'=>'Tabla BD Ref:',
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
 				);
-				echo $this->BootstrapForm->input('lc_transaction', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('creator', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('date_created', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('modifier');
-				echo $this->BootstrapForm->input('date_modified');
 				echo $this->BootstrapForm->hidden('id');
 				?>
-				<?php echo $this->BootstrapForm->submit(__('Submit'));?>
+				<?php echo $this->BootstrapForm->submit(__('Guardar'));?>
 			</fieldset>
 		<?php echo $this->BootstrapForm->end();?>
 	</div>

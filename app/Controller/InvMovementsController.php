@@ -36,7 +36,7 @@ class InvMovementsController extends AppController {
 	$this->paginate = array(
     // 'conditions' => $conditions,
      'order' => array('InvMovement.code DESC'),
-	 //'conditions'=>array(),
+	 'conditions'=>array('InvMovement.lc_transaction !='=>'LOGIC_DELETE'),
      'limit' => 20
 	);
 		
@@ -233,7 +233,7 @@ class InvMovementsController extends AppController {
 			if ($this->InvMovement->save($this->request->data)) {
 				
 				$this->Session->setFlash(
-					__('MOVIMIENTO GUARDADO'),
+					__('Guardado con exito'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -243,7 +243,7 @@ class InvMovementsController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('inv movement')),
+					__('No se pudo guardar, intentelo de nuevo'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -340,14 +340,14 @@ class InvMovementsController extends AppController {
 		));
 		*/
 		$stockIns = $this->InvMovement->find('all', array(
-			'conditions'=>array('inv_item_id'=> $idItem,'inv_warehouse_id'=>$idWarehouse, 'InvMovementType.status' => 'entrada'),
+			'conditions'=>array('InvMovement.inv_item_id'=> $idItem,'InvMovement.inv_warehouse_id'=>$idWarehouse, 'InvMovement.lc_transaction !='=>'LOGIC_DELETE', 'InvMovementType.status' => 'entrada'),
 			'fields'=>array('id', 'quantity')
 		));
 		
 		$stockInsCleaned = $this->_clean_nested_arrays($stockIns);
 		
 		$stockOuts = $this->InvMovement->find('all', array(
-			'conditions'=>array('inv_item_id'=> $idItem,'inv_warehouse_id'=>$idWarehouse, 'InvMovementType.status' => 'salida'),
+			'conditions'=>array('InvMovement.inv_item_id'=> $idItem,'InvMovement.inv_warehouse_id'=>$idWarehouse, 'InvMovement.lc_transaction !='=>'LOGIC_DELETE', 'InvMovementType.status' => 'salida'),
 			//'contain' => array('InvMovement'=>array('InvMovementType')),
 			'fields'=>array('id', 'quantity')
 		));
@@ -410,12 +410,12 @@ class InvMovementsController extends AppController {
 	public function edit_in($id = null) {
 		$this->InvMovement->id = $id;
 		if (!$this->InvMovement->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('inv movement')));
+			throw new NotFoundException(__('Movimiento invalido'));
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
 			if ($this->InvMovement->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('inv movement')),
+					__('Se guardo con exito'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -425,7 +425,7 @@ class InvMovementsController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('inv movement')),
+					__('No se pudo guardar, intentelo de nuevo'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -449,12 +449,12 @@ class InvMovementsController extends AppController {
 	public function edit_out($id = null) {
 		$this->InvMovement->id = $id;
 		if (!$this->InvMovement->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('inv movement')));
+			throw new NotFoundException(__('Movimiento invalido'));
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
 			if ($this->InvMovement->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('inv movement')),
+					__('Se guardo con exito'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -464,7 +464,7 @@ class InvMovementsController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('inv movement')),
+					__('No se pudo guardar, intentelo de nuevo'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -500,7 +500,7 @@ class InvMovementsController extends AppController {
 		////////////////////////Si no existe no borra////////////////////////////////////
 		$this->InvMovement->id = $id; // agrega id 
 		if (!$this->InvMovement->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('inv movement')));
+			throw new NotFoundException(__('Movimiento invalido'));
 		}
 		///////////////////////// si borra, corta///////////////////
 		/*
@@ -532,7 +532,7 @@ class InvMovementsController extends AppController {
 		
 		if($update){
 			$this->Session->setFlash(
-				__('The %s deleted', __('inv movement')),
+				__('Se elimino correctamente'),
 				'alert',
 				array(
 					'plugin' => 'TwitterBootstrap',
@@ -546,7 +546,7 @@ class InvMovementsController extends AppController {
 		//$this->InvMovement->set($id);
 		/////////////////////////// Si no borra////////////////////////
 		$this->Session->setFlash(
-			__('The %s was not deleted', __('inv movement')),
+			__('No se pudo eliminar'),
 			'alert',
 			array(
 				'plugin' => 'TwitterBootstrap',

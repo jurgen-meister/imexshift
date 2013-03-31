@@ -32,8 +32,15 @@ class InvMovementTypesController extends AppController {
  * @return void
  */
 	public function index() {
+		
+	$this->paginate = array(
+     //'order' => array('InvMovementType.id DESC'),
+	 //'conditions'=>array('InvMovement.lc_transaction !='=>'LOGIC_DELETE'),
+     'limit' => 10
+	);
+		
 		$this->InvMovementType->recursive = 0;
-		$this->set('invMovementTypes', $this->paginate());
+		$this->set('invMovementTypes', $this->paginate('InvMovementType'));
 	}
 
 /**
@@ -45,7 +52,7 @@ class InvMovementTypesController extends AppController {
 	public function view($id = null) {
 		$this->InvMovementType->id = $id;
 		if (!$this->InvMovementType->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('inv movement type')));
+			throw new NotFoundException(__('Tipo de movimiento invalido'));
 		}
 		$this->set('invMovementType', $this->InvMovementType->read(null, $id));
 	}
@@ -60,7 +67,7 @@ class InvMovementTypesController extends AppController {
 			$this->InvMovementType->create();
 			if ($this->InvMovementType->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('inv movement type')),
+					__('Se guardo con exito'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -70,7 +77,7 @@ class InvMovementTypesController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('inv movement type')),
+					__('No se puedo guardar, intentelo de nuevo'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -79,6 +86,11 @@ class InvMovementTypesController extends AppController {
 				);
 			}
 		}
+		
+		$statuses = array("entrada"=>"entrada","salida"=>"salida");
+		$documents = array(1=>"Si",0=>"No");
+		$this->set(compact("statuses", "documents"));
+		
 	}
 
 /**
@@ -90,9 +102,10 @@ class InvMovementTypesController extends AppController {
 	public function edit($id = null) {
 		$this->InvMovementType->id = $id;
 		if (!$this->InvMovementType->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('inv movement type')));
+			throw new NotFoundException(__('Tipo de movimiento invalido'));
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
+			$this->request->data['InvMovementType']['lc_transaction']='MODIFY';
 			if ($this->InvMovementType->save($this->request->data)) {
 				$this->Session->setFlash(
 					__('The %s has been saved', __('inv movement type')),
@@ -105,7 +118,7 @@ class InvMovementTypesController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('inv movement type')),
+					__('No se puedo guardar intentelo de nuevo'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -115,6 +128,9 @@ class InvMovementTypesController extends AppController {
 			}
 		} else {
 			$this->request->data = $this->InvMovementType->read(null, $id);
+			$statuses = array("entrada"=>"entrada","salida"=>"salida");
+			$documents = array(1=>"Si",0=>"No");
+			$this->set(compact("statuses", "documents"));
 		}
 	}
 
@@ -130,11 +146,11 @@ class InvMovementTypesController extends AppController {
 		}
 		$this->InvMovementType->id = $id;
 		if (!$this->InvMovementType->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('inv movement type')));
+			throw new NotFoundException(__('Tipo de movimiento invalido'));
 		}
 		if ($this->InvMovementType->delete()) {
 			$this->Session->setFlash(
-				__('The %s deleted', __('inv movement type')),
+				__('Se elimino correctamente'),
 				'alert',
 				array(
 					'plugin' => 'TwitterBootstrap',
@@ -144,7 +160,7 @@ class InvMovementTypesController extends AppController {
 			$this->redirect(array('action' => 'index'));
 		}
 		$this->Session->setFlash(
-			__('The %s was not deleted', __('inv movement type')),
+			__('El tipo de movimiento no se elimino'),
 			'alert',
 			array(
 				'plugin' => 'TwitterBootstrap',
