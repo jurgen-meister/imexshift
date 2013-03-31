@@ -1,11 +1,11 @@
 <?php
 App::uses('AppModel', 'Model');
 /**
- * InvDocumentType Model
+ * InvMovementType Model
  *
  * @property InvMovement $InvMovement
  */
-class InvDocumentType extends AppModel {
+class InvMovementType extends AppModel {
 
 /**
  * Display field
@@ -21,6 +21,26 @@ class InvDocumentType extends AppModel {
  */
 	public $validate = array(
 		'name' => array(
+			'notempty' => array(
+				'rule' => array('notempty'),
+				//'message' => 'Your custom message here',
+				//'allowEmpty' => false,
+				//'required' => false,
+				//'last' => false, // Stop validation after this rule
+				//'on' => 'create', // Limit validation to 'create' or 'update' operations
+			),
+		),
+		'status' => array(
+			'notempty' => array(
+				'rule' => array('notempty'),
+				//'message' => 'Your custom message here',
+				//'allowEmpty' => false,
+				//'required' => false,
+				//'last' => false, // Stop validation after this rule
+				//'on' => 'create', // Limit validation to 'create' or 'update' operations
+			),
+		),
+		'document' => array(
 			'notempty' => array(
 				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
@@ -52,7 +72,7 @@ class InvDocumentType extends AppModel {
 	public $hasMany = array(
 		'InvMovement' => array(
 			'className' => 'InvMovement',
-			'foreignKey' => 'inv_document_type_id',
+			'foreignKey' => 'inv_movement_type_id',
 			'dependent' => false,
 			'conditions' => '',
 			'fields' => '',

@@ -1,11 +1,11 @@
 <?php
 App::uses('AppController', 'Controller');
 /**
- * InvWarehouses Controller
+ * InvMovementTypes Controller
  *
- * @property InvWarehouse $InvWarehouse
+ * @property InvMovementType $InvMovementType
  */
-class InvWarehousesController extends AppController {
+class InvMovementTypesController extends AppController {
 
 /**
  *  Layout
@@ -32,8 +32,15 @@ class InvWarehousesController extends AppController {
  * @return void
  */
 	public function index() {
-		$this->InvWarehouse->recursive = 0;
-		$this->set('invWarehouses', $this->paginate());
+		
+	$this->paginate = array(
+     //'order' => array('InvMovementType.id DESC'),
+	 //'conditions'=>array('InvMovement.lc_transaction !='=>'LOGIC_DELETE'),
+     'limit' => 10
+	);
+		
+		$this->InvMovementType->recursive = 0;
+		$this->set('invMovementTypes', $this->paginate('InvMovementType'));
 	}
 
 /**
@@ -43,11 +50,11 @@ class InvWarehousesController extends AppController {
  * @return void
  */
 	public function view($id = null) {
-		$this->InvWarehouse->id = $id;
-		if (!$this->InvWarehouse->exists()) {
-			throw new NotFoundException(__('Almacen no encontrado'));
+		$this->InvMovementType->id = $id;
+		if (!$this->InvMovementType->exists()) {
+			throw new NotFoundException(__('Tipo de movimiento invalido'));
 		}
-		$this->set('invWarehouse', $this->InvWarehouse->read(null, $id));
+		$this->set('invMovementType', $this->InvMovementType->read(null, $id));
 	}
 
 /**
@@ -57,10 +64,10 @@ class InvWarehousesController extends AppController {
  */
 	public function add() {
 		if ($this->request->is('post')) {
-			$this->InvWarehouse->create();
-			if ($this->InvWarehouse->save($this->request->data)) {
+			$this->InvMovementType->create();
+			if ($this->InvMovementType->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('Se guardo correctamente'),
+					__('Se guardo con exito'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -70,7 +77,7 @@ class InvWarehousesController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('No se pudo guardar, intente de nuevo'),
+					__('No se puedo guardar, intentelo de nuevo'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -79,6 +86,11 @@ class InvWarehousesController extends AppController {
 				);
 			}
 		}
+		
+		$statuses = array("entrada"=>"entrada","salida"=>"salida");
+		$documents = array(1=>"Si",0=>"No");
+		$this->set(compact("statuses", "documents"));
+		
 	}
 
 /**
@@ -88,15 +100,15 @@ class InvWarehousesController extends AppController {
  * @return void
  */
 	public function edit($id = null) {
-		$this->InvWarehouse->id = $id;
-		if (!$this->InvWarehouse->exists()) {
-			throw new NotFoundException(__('Almacen invalido'));
+		$this->InvMovementType->id = $id;
+		if (!$this->InvMovementType->exists()) {
+			throw new NotFoundException(__('Tipo de movimiento invalido'));
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
-			$this->request->data['InvWarehouse']['lc_transaction']='MODIFY';
-			if ($this->InvWarehouse->save($this->request->data)) {
+			$this->request->data['InvMovementType']['lc_transaction']='MODIFY';
+			if ($this->InvMovementType->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('Se guardo correctamente'),
+					__('The %s has been saved', __('inv movement type')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -106,7 +118,7 @@ class InvWarehousesController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('No se pudo guardar, intente de nuevo'),
+					__('No se puedo guardar intentelo de nuevo'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -115,7 +127,10 @@ class InvWarehousesController extends AppController {
 				);
 			}
 		} else {
-			$this->request->data = $this->InvWarehouse->read(null, $id);
+			$this->request->data = $this->InvMovementType->read(null, $id);
+			$statuses = array("entrada"=>"entrada","salida"=>"salida");
+			$documents = array(1=>"Si",0=>"No");
+			$this->set(compact("statuses", "documents"));
 		}
 	}
 
@@ -129,13 +144,13 @@ class InvWarehousesController extends AppController {
 		if (!$this->request->is('post')) {
 			throw new MethodNotAllowedException();
 		}
-		$this->InvWarehouse->id = $id;
-		if (!$this->InvWarehouse->exists()) {
-			throw new NotFoundException(__('Almacen invalido'));
+		$this->InvMovementType->id = $id;
+		if (!$this->InvMovementType->exists()) {
+			throw new NotFoundException(__('Tipo de movimiento invalido'));
 		}
-		if ($this->InvWarehouse->delete()) {
+		if ($this->InvMovementType->delete()) {
 			$this->Session->setFlash(
-				__('Se elimino el almacen'),
+				__('Se elimino correctamente'),
 				'alert',
 				array(
 					'plugin' => 'TwitterBootstrap',
@@ -145,7 +160,7 @@ class InvWarehousesController extends AppController {
 			$this->redirect(array('action' => 'index'));
 		}
 		$this->Session->setFlash(
-			__('No se pudo eliminar el almacen'),
+			__('El tipo de movimiento no se elimino'),
 			'alert',
 			array(
 				'plugin' => 'TwitterBootstrap',
