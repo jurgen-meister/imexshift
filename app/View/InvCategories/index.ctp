@@ -1,42 +1,30 @@
 <div class="row-fluid">
 	<div class="span9">
-		<h2><?php echo __('List %s', __('Inv Categories'));?></h2>
+		<h2><?php echo __('Categorias');?></h2>
 
 		<p>
 			<?php echo $this->BootstrapPaginator->counter(array('format' => __('Page {:page} of {:pages}, showing {:current} records out of {:count} total, starting on record {:start}, ending on {:end}')));?>
 		</p>
-
+		<?php $cont=1;?>
 		<table class="table">
 			<tr>
-				<th><?php echo $this->BootstrapPaginator->sort('id');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('name');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('descripcion');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('lc_state');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('lc_transaction');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('creator');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('date_created');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('modifier');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('date_modified');?></th>
-				<th class="actions"><?php echo __('Actions');?></th>
+				<th><?php echo h('#');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('name', 'Nombre');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('descripcion', 'Descripcion');?></th>
+				<th class="actions"><?php echo __('Acciones');?></th>
 			</tr>
 		<?php foreach ($invCategories as $invCategory): ?>
 			<tr>
-				<td><?php echo h($invCategory['InvCategory']['id']); ?>&nbsp;</td>
+				<td><?php echo h($cont); ?>&nbsp;</td>
 				<td><?php echo h($invCategory['InvCategory']['name']); ?>&nbsp;</td>
 				<td><?php echo h($invCategory['InvCategory']['descripcion']); ?>&nbsp;</td>
-				<td><?php echo h($invCategory['InvCategory']['lc_state']); ?>&nbsp;</td>
-				<td><?php echo h($invCategory['InvCategory']['lc_transaction']); ?>&nbsp;</td>
-				<td><?php echo h($invCategory['InvCategory']['creator']); ?>&nbsp;</td>
-				<td><?php echo h($invCategory['InvCategory']['date_created']); ?>&nbsp;</td>
-				<td><?php echo h($invCategory['InvCategory']['modifier']); ?>&nbsp;</td>
-				<td><?php echo h($invCategory['InvCategory']['date_modified']); ?>&nbsp;</td>
 				<td class="actions">
-					<?php echo $this->Html->link(__('View'), array('action' => 'view', $invCategory['InvCategory']['id'])); ?>
-					<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $invCategory['InvCategory']['id'])); ?>
-					<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $invCategory['InvCategory']['id']), null, __('Are you sure you want to delete # %s?', $invCategory['InvCategory']['id'])); ?>
+					<?php echo $this->Html->link(__('Ver'), array('action' => 'view', $invCategory['InvCategory']['id'])); ?>
+					<?php echo $this->Html->link(__('Editar'), array('action' => 'edit', $invCategory['InvCategory']['id'])); ?>
+					<?php echo $this->Form->postLink(__('Eliminar'), array('action' => 'delete', $invCategory['InvCategory']['id']), null, __('Esta seguro de eliminar?', $invCategory['InvCategory']['id'])); ?>
 				</td>
 			</tr>
-		<?php endforeach; ?>
+		<?php $cont++; endforeach; ?>
 		</table>
 
 		<?php echo $this->BootstrapPaginator->pagination(); ?>
@@ -45,9 +33,9 @@
 		<div class="well" style="padding: 8px 0; margin-top:8px;">
 		<ul class="nav nav-list">
 			<li class="nav-header"><?php echo __('Actions'); ?></li>
-			<li><?php echo $this->Html->link(__('New %s', __('Inv Category')), array('action' => 'add')); ?></li>
-			<li><?php echo $this->Html->link(__('List %s', __('Inv Items')), array('controller' => 'inv_items', 'action' => 'index')); ?> </li>
-			<li><?php echo $this->Html->link(__('New %s', __('Inv Item')), array('controller' => 'inv_items', 'action' => 'add')); ?> </li>
+			<li><?php echo $this->Html->link(__('Nueva Categoria'), array('action' => 'add')); ?></li>
+			<li><?php echo $this->Html->link(__('Lista de Items'), array('controller' => 'inv_items', 'action' => 'index')); ?> </li>
+			<li><?php echo $this->Html->link(__('Nuevo Item'), array('controller' => 'inv_items', 'action' => 'add')); ?> </li>
 		</ul>
 		</div>
 	</div>

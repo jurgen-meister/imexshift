@@ -12,20 +12,20 @@ class InvBrandsController extends AppController {
  *
  * @var string
  */
-	public $layout = 'bootstrap';
+//	public $layout = 'bootstrap';
 
 /**
  * Helpers
  *
  * @var array
  */
-	public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
+//	public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
 /**
  * Components
  *
  * @var array
  */
-	public $components = array('Session');
+//	public $components = array('Session');
 /**
  * index method
  *
@@ -45,7 +45,7 @@ class InvBrandsController extends AppController {
 	public function view($id = null) {
 		$this->InvBrand->id = $id;
 		if (!$this->InvBrand->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('inv brand')));
+			throw new NotFoundException(__('Marca no encontrada'));
 		}
 		$this->set('invBrand', $this->InvBrand->read(null, $id));
 	}
@@ -60,7 +60,7 @@ class InvBrandsController extends AppController {
 			$this->InvBrand->create();
 			if ($this->InvBrand->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('inv brand')),
+					__('Se guardo correctamente'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -70,7 +70,7 @@ class InvBrandsController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('inv brand')),
+					__('No se pudo guardar, intente de nuevo'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -90,12 +90,13 @@ class InvBrandsController extends AppController {
 	public function edit($id = null) {
 		$this->InvBrand->id = $id;
 		if (!$this->InvBrand->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('inv brand')));
+			throw new NotFoundException(__('Marca invalida'));
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
+			$this->request->data['InvBrand']['lc_transaction']='MODIFY';
 			if ($this->InvBrand->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('inv brand')),
+					__('Se guardo correctamente'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -105,7 +106,7 @@ class InvBrandsController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('inv brand')),
+					__('No se pudo guardar, intente de nuevo'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -130,11 +131,11 @@ class InvBrandsController extends AppController {
 		}
 		$this->InvBrand->id = $id;
 		if (!$this->InvBrand->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('inv brand')));
+			throw new NotFoundException(__('Marca invalida'));
 		}
 		if ($this->InvBrand->delete()) {
 			$this->Session->setFlash(
-				__('The %s deleted', __('inv brand')),
+				__('Se elimino la marca'),
 				'alert',
 				array(
 					'plugin' => 'TwitterBootstrap',
@@ -144,7 +145,7 @@ class InvBrandsController extends AppController {
 			$this->redirect(array('action' => 'index'));
 		}
 		$this->Session->setFlash(
-			__('The %s was not deleted', __('inv brand')),
+			__('No se pudo eliminar la marca'),
 			'alert',
 			array(
 				'plugin' => 'TwitterBootstrap',

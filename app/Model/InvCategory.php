@@ -30,7 +30,7 @@ class InvCategory extends AppModel {
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
-		'descripcion' => array(
+		'descripcion' => array(	// change descripcion -> description
 			'notempty' => array(
 				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
