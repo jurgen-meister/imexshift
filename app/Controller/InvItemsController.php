@@ -25,7 +25,10 @@ class InvItemsController extends AppController {
  *
  * @var array
  */
-	public $components = array('Session');
+	//public $components = array('Session');
+	public  function isAuthorized($user){
+		return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
+	}
 /**
  * index method
  *
@@ -49,6 +52,14 @@ class InvItemsController extends AppController {
 		}
 		$this->set('invItem', $this->InvItem->read(null, $id));
 	}
+	
+//	private function _view_Prices($id = null) {
+//		$this->InvItem->InvPrice->id = $id;
+//		if (!$this->InvItem->InvPrice->exists()) {
+//			throw new NotFoundException(__('Invalid %s', __('inv price')));
+//		}
+//		$this->set('invPrice', $this->InvItem->InvPrice->read(null, $id));
+//	}
 
 /**
  * add method
@@ -74,7 +85,7 @@ class InvItemsController extends AppController {
 		//Section where information is saved into the database
 		if ($this->request->is('post')) {			
 			$this->InvItem->create();
-			$this->request->data['InvItem']['code'] = $this->_generateCode();
+			$this->request->data['InvItem']['code'] = $this->_generate_code();
 			if ($this->InvItem->save($this->request->data)) {
 				$this->Session->setFlash(
 					__('The %s has been saved', __('inv item')),
@@ -99,24 +110,21 @@ class InvItemsController extends AppController {
 		
 		
 	}
-	
-	private function _generateCode(){
-		$number = $this->InvItem->find('first', array(
-			'fields' => array('MAX(InvItem.code) as code')		
-		));	
-		if($number[0]['code'] == null)
+	private function _generate_code(){
+		
+		$number = $this->InvItem->find('count');		
+		if($number == null)
 		{
-			$number[0]['code'] = 1;
+			$number = 1;
 		}
 		else 
 		{
-			$number[0]['code'] ++;
-		}
+			$number++;
+		}	
 		
-		return $number[0]['code'];
-		
+		$code = 'ITEM-'.$number;
+		return $code;
 	}
-
 	/**
  * edit method
  *
@@ -124,11 +132,26 @@ class InvItemsController extends AppController {
  * @return void
  */
 	public function edit($id = null) {
+		//Section where the controls of the page are loaded		
+		$invBrands = $this->InvItem->InvBrand->find('list', array('order' => 'InvBrand.name'));
+		if(count($invBrands) == 0)
+		{
+			$invBrands[""] = '--- Vacio ---';
+		}
+		
+		$invCategories = $this->InvItem->InvCategory->find('list', array('order' => 'InvCategory.name'));
+		if(count($invCategories) == 0)
+		{
+			$invCategories[""] = '--- Vacio ---';
+		}		
+		$this->set(compact('invBrands', 'invCategories'));	
 		$this->InvItem->id = $id;
 		if (!$this->InvItem->exists()) {
 			throw new NotFoundException(__('Invalid %s', __('inv item')));
 		}
+		//$this->_view_Prices(1);
 		if ($this->request->is('post') || $this->request->is('put')) {
+			$this->request->data['InvItem']['lc_transaction']='MODIFY';
 			if ($this->InvItem->save($this->request->data)) {
 				$this->Session->setFlash(
 					__('The %s has been saved', __('inv item')),
@@ -151,9 +174,7 @@ class InvItemsController extends AppController {
 			}
 		} else {
 			$this->request->data = $this->InvItem->read(null, $id);
-		}
-		$invBrands = $this->InvItem->InvBrand->find('list');
-		$this->set(compact('invBrands'));
+		}	
 	}
 
 /**

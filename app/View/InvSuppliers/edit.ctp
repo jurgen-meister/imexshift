@@ -2,53 +2,39 @@
 	<div class="span9">
 		<?php echo $this->BootstrapForm->create('InvSupplier', array('class' => 'form-horizontal'));?>
 			<fieldset>
-				<legend><?php echo __('Edit %s', __('Inv Supplier')); ?></legend>
+				<legend><?php echo __('Modifcar %s', __('Proveedor')); ?></legend>
 				<?php
 				echo $this->BootstrapForm->input('code', array(
+					'label' => 'Código:',
+					'disabled' => true,
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+					'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
 				);
 				echo $this->BootstrapForm->input('name', array(
+					'label' => 'Nombre:',
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+					'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
 				);
 				echo $this->BootstrapForm->input('location', array(
+					'label' => 'Locacion:',
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+					'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
 				);
 				echo $this->BootstrapForm->input('adress', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+					'label' => 'Dirección:',
+					)
 				);
 				echo $this->BootstrapForm->input('phone', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('lc_state', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('lc_transaction', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('creator', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('date_created', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('modifier');
-				echo $this->BootstrapForm->input('date_modified');
+					'label' => 'Teléfono:',					
+					)
+				);				
 				echo $this->BootstrapForm->hidden('id');
 				?>
 				<?php echo $this->BootstrapForm->submit(__('Submit'));?>
 			</fieldset>
 		<?php echo $this->BootstrapForm->end();?>
 	</div>
-	<div class="span3">
+<!--	<div class="span3">
 		<div class="well" style="padding: 8px 0; margin-top:8px;">
 		<ul class="nav nav-list">
 			<li class="nav-header"><?php echo __('Actions'); ?></li>
@@ -60,5 +46,5 @@
 			<li><?php echo $this->Html->link(__('New %s', __('Inv Items Supplier')), array('controller' => 'inv_items_suppliers', 'action' => 'add')); ?></li>
 		</ul>
 		</div>
-	</div>
+	</div>-->
 </div>

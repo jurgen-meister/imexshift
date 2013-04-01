@@ -1,6 +1,6 @@
 <div class="row-fluid">
 	<div class="span9">
-		<h2><?php echo __('List %s', __('Inv Items'));?></h2>
+		<h2><?php echo __('%s', __('Items'));?></h2>
 
 		<p>
 			<?php echo $this->BootstrapPaginator->counter(array('format' => __('Page {:page} of {:pages}, showing {:current} records out of {:count} total, starting on record {:start}, ending on {:end}')));?>
@@ -9,12 +9,12 @@
 		<table class="table">
 			<tr>
 				<th><?php echo $this->BootstrapPaginator->sort('id');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('inv_brand_id');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('inv_category_id');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('code');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('name');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('description');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('factory_code');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('Marca');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('Categoría');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('Código');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('Nombre');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('Descipcion');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('Código de Fábrica');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('picture');?></th>				
 				<th class="actions"><?php echo __('Actions');?></th>
 			</tr>
@@ -22,9 +22,11 @@
 			<tr>
 				<td><?php echo h($invItem['InvItem']['id']); ?>&nbsp;</td>
 				<td>
-					<?php echo $this->Html->link($invItem['InvBrand']['name'], array('controller' => 'inv_brands', 'action' => 'view', $invItem['InvBrand']['id'])); ?>
+					<?php echo $this->Html->link($invItem['InvBrand']['name'], array('controller' => 'inv_brands', 'action' => 'view', $invItem['InvBrand']['id'])); ?>					
 				</td>
-				<td><?php echo h($invItem['InvItem']['inv_category_id']); ?>&nbsp;</td>
+				<td>
+					<?php echo $this->Html->link($invItem['InvCategory']['name'], array('controller' => 'inv_categories', 'action' => 'view', $invItem['InvCategory']['id'])); ?>
+				</td>
 				<td><?php echo h($invItem['InvItem']['code']); ?>&nbsp;</td>
 				<td><?php echo h($invItem['InvItem']['name']); ?>&nbsp;</td>
 				<td><?php echo h($invItem['InvItem']['description']); ?>&nbsp;</td>
