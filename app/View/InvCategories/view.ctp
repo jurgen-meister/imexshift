@@ -7,7 +7,7 @@
 				<?php echo h($invCategory['InvCategory']['id']); ?>
 				&nbsp;
 			</dd>
-			<dt><?php echo __('Name'); ?></dt>
+			<dt><?php echo __('Nombre'); ?></dt>
 			<dd>
 				<?php echo h($invCategory['InvCategory']['name']); ?>
 				&nbsp;
@@ -17,48 +17,19 @@
 				<?php echo h($invCategory['InvCategory']['descripcion']); ?>
 				&nbsp;
 			</dd>
-			<dt><?php echo __('Lc State'); ?></dt>
-			<dd>
-				<?php echo h($invCategory['InvCategory']['lc_state']); ?>
-				&nbsp;
-			</dd>
-			<dt><?php echo __('Lc Transaction'); ?></dt>
-			<dd>
-				<?php echo h($invCategory['InvCategory']['lc_transaction']); ?>
-				&nbsp;
-			</dd>
-			<dt><?php echo __('Creator'); ?></dt>
-			<dd>
-				<?php echo h($invCategory['InvCategory']['creator']); ?>
-				&nbsp;
-			</dd>
-			<dt><?php echo __('Date Created'); ?></dt>
-			<dd>
-				<?php echo h($invCategory['InvCategory']['date_created']); ?>
-				&nbsp;
-			</dd>
-			<dt><?php echo __('Modifier'); ?></dt>
-			<dd>
-				<?php echo h($invCategory['InvCategory']['modifier']); ?>
-				&nbsp;
-			</dd>
-			<dt><?php echo __('Date Modified'); ?></dt>
-			<dd>
-				<?php echo h($invCategory['InvCategory']['date_modified']); ?>
-				&nbsp;
-			</dd>
+			
 		</dl>
 	</div>
 	<div class="span3">
 		<div class="well" style="padding: 8px 0; margin-top:8px;">
 		<ul class="nav nav-list">
 			<li class="nav-header"><?php echo __('Actions'); ?></li>
-			<li><?php echo $this->Html->link(__('Edit %s', __('Inv Category')), array('action' => 'edit', $invCategory['InvCategory']['id'])); ?> </li>
-			<li><?php echo $this->Form->postLink(__('Delete %s', __('Inv Category')), array('action' => 'delete', $invCategory['InvCategory']['id']), null, __('Are you sure you want to delete # %s?', $invCategory['InvCategory']['id'])); ?> </li>
-			<li><?php echo $this->Html->link(__('List %s', __('Inv Categories')), array('action' => 'index')); ?> </li>
-			<li><?php echo $this->Html->link(__('New %s', __('Inv Category')), array('action' => 'add')); ?> </li>
-			<li><?php echo $this->Html->link(__('List %s', __('Inv Items')), array('controller' => 'inv_items', 'action' => 'index')); ?> </li>
-			<li><?php echo $this->Html->link(__('New %s', __('Inv Item')), array('controller' => 'inv_items', 'action' => 'add')); ?> </li>
+			<li><?php echo $this->Html->link(__('Editar'), array('action' => 'edit', $invCategory['InvCategory']['id'])); ?> </li>
+			<li><?php echo $this->Form->postLink(__('Eliminar'), array('action' => 'delete', $invCategory['InvCategory']['id']), null, __('Esta seguro de eliminar?', $invCategory['InvCategory']['id'])); ?> </li>
+			<li><?php echo $this->Html->link(__('Lista de Categorias'), array('action' => 'index')); ?> </li>
+			<li><?php echo $this->Html->link(__('Nueva Categoria'), array('action' => 'add')); ?> </li>
+			<li><?php echo $this->Html->link(__('Lista de Items'), array('controller' => 'inv_items', 'action' => 'index')); ?> </li>
+			<li><?php echo $this->Html->link(__('Nuevo Item'), array('controller' => 'inv_items', 'action' => 'add')); ?> </li>
 		</ul>
 		</div>
 	</div>

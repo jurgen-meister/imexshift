@@ -12,7 +12,7 @@ class InvCategoriesController extends AppController {
  *
  * @var string
  */
-	public $layout = 'default';
+//	public $layout = 'default';
 
 /**
  * Helpers
@@ -25,7 +25,7 @@ class InvCategoriesController extends AppController {
  *
  * @var array
  */
-	public $components = array('Session');
+//	public $components = array('Session');
 /**
  * index method
  *
@@ -45,7 +45,7 @@ class InvCategoriesController extends AppController {
 	public function view($id = null) {
 		$this->InvCategory->id = $id;
 		if (!$this->InvCategory->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('inv category')));
+			throw new NotFoundException(__('Categoria no encontrada'));
 		}
 		$this->set('invCategory', $this->InvCategory->read(null, $id));
 	}
@@ -60,7 +60,7 @@ class InvCategoriesController extends AppController {
 			$this->InvCategory->create();
 			if ($this->InvCategory->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('inv category')),
+					__('Se guardo correctamente'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -70,7 +70,7 @@ class InvCategoriesController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('inv category')),
+					__('No se pudo guardar, intente de nuevo'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -90,12 +90,13 @@ class InvCategoriesController extends AppController {
 	public function edit($id = null) {
 		$this->InvCategory->id = $id;
 		if (!$this->InvCategory->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('inv category')));
+			throw new NotFoundException(__('Categoria invalida'));
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
+			$this->request->data['InvCategory']['lc_transaction']='MODIFY';
 			if ($this->InvCategory->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('inv category')),
+					__('Se guardo correctamente'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -105,7 +106,7 @@ class InvCategoriesController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('inv category')),
+					__('No se pudo guardar, intente de nuevo'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -130,11 +131,11 @@ class InvCategoriesController extends AppController {
 		}
 		$this->InvCategory->id = $id;
 		if (!$this->InvCategory->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('inv category')));
+			throw new NotFoundException(__('Categoria invalida'));
 		}
 		if ($this->InvCategory->delete()) {
 			$this->Session->setFlash(
-				__('The %s deleted', __('inv category')),
+				__('Se elimino la categoria'),
 				'alert',
 				array(
 					'plugin' => 'TwitterBootstrap',
@@ -144,7 +145,7 @@ class InvCategoriesController extends AppController {
 			$this->redirect(array('action' => 'index'));
 		}
 		$this->Session->setFlash(
-			__('The %s was not deleted', __('inv category')),
+			__('No se pudo eliminar la categoria'),
 			'alert',
 			array(
 				'plugin' => 'TwitterBootstrap',
