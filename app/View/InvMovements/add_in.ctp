@@ -77,6 +77,7 @@
 				
 				echo $this->BootstrapForm->input('description', array(
 					//'required' => 'required',
+					'rows' => 5,
 					'style'=>'width:400px',
 					'label' => 'Descripción:',
 					'id'=>'description'

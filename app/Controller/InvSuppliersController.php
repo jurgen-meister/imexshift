@@ -12,20 +12,23 @@ class InvSuppliersController extends AppController {
  *
  * @var string
  */
-	public $layout = 'bootstrap';
+	public $layout = 'default';
 
 /**
  * Helpers
  *
  * @var array
  */
-	public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
+	//public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
 /**
  * Components
  *
  * @var array
  */
-	public $components = array('Session');
+	//public $components = array('Session');
+	public  function isAuthorized($user){
+		return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
+	}
 /**
  * index method
  *
@@ -93,6 +96,7 @@ class InvSuppliersController extends AppController {
 			throw new NotFoundException(__('Invalid %s', __('inv supplier')));
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
+			$this->request->data['InvSupplier']['lc_transaction'] = 'MODIFY';
 			if ($this->InvSupplier->save($this->request->data)) {
 				$this->Session->setFlash(
 					__('The %s has been saved', __('inv supplier')),
