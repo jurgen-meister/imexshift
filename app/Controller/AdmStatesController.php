@@ -81,32 +81,31 @@ class AdmStatesController extends AppController {
 			$admModules[""] = "--- Vacio ---";
 		}
 		$this->set(compact('admModules', 'admControllers'));
+		
 		//Section where information is saved into the database
-			if ($this->request->is('post')) {
-				$this->AdmState->create();
-				if ($this->AdmState->save($this->request->data)) {
-					$this->Session->setFlash(
-						__('The %s has been saved', __('adm state')),
-						'alert',
-						array(
-							'plugin' => 'TwitterBootstrap',
-							'class' => 'alert-success'
-						)
-					);
-					$this->redirect(array('action' => 'index'));
-				} else {
-					$this->Session->setFlash(
-						__('The %s could not be saved. Please, try again.', __('adm state')),
-						'alert',
-						array(
-							'plugin' => 'TwitterBootstrap',
-							'class' => 'alert-error'
-						)
-					);
-				}
+		if ($this->request->is('post')) {
+			$this->AdmState->create();
+			if ($this->AdmState->save($this->request->data)) {
+				$this->Session->setFlash(
+					__('The %s has been saved', __('adm state')),
+					'alert',
+					array(
+						'plugin' => 'TwitterBootstrap',
+						'class' => 'alert-success'
+					)
+				);
+				$this->redirect(array('action' => 'index'));
+			} else {
+				$this->Session->setFlash(
+					__('The %s could not be saved. Please, try again.', __('adm state')),
+					'alert',
+					array(
+						'plugin' => 'TwitterBootstrap',
+						'class' => 'alert-error'
+					)
+				);
 			}
-			//$admControllers = $this->AdmState->AdmController->find('list');
-			//$this->set(compact('admControllers'));
+		}
 	}
 
 /**
@@ -121,7 +120,7 @@ class AdmStatesController extends AppController {
 			throw new NotFoundException(__('Invalid %s', __('adm state')));
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
-                    $this->request->data['AdmState']['lc_action']='MODIFY';
+            $this->request->data['AdmState']['lc_transaction']='MODIFY';
 			if ($this->AdmState->save($this->request->data)) {
 				$this->Session->setFlash(
 					__('The %s has been saved', __('adm state')),
