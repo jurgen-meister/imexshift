@@ -1,4 +1,4 @@
-<?php echo $this->Html->script('AdmTransactions', FALSE); ?>
+<?php echo $this->Html->script('AdmStates', FALSE); ?>
 <div class="row-fluid">
 	<div class="span9">
 		<?php echo $this->BootstrapForm->create('AdmState', array('class' => 'form-horizontal'));?>
