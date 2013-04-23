@@ -22,8 +22,60 @@ $(document).ready(function(){
 						 }
 	});
 	
-	$('#mydate').glDatePicker(
+	var rowsNumber = 0;
+	
+	$('#addItem').click(function(e){
+	//jQuery.noConflict();
+		//$('#modalAddItem').modal('show');
+		var itemsToExclude = '';
+		rowsNumber = 0;
+		$('#tablaItems tbody tr').each(function(){
+			itemsToExclude = itemsToExclude +',' +$(this).find("#item_hidden").val();    
+			rowsNumber++;
+		//	alert(itemsToExclude);
+		})
+		//alert(itemsToExclude);
+		
+		$('#modalAddItem').modal({
+			show: 'true',
+			backdrop:'static'
+		});
+		$('#stock').val(itemsToExclude.substr(1));
+		//alert(rowsNumber);
+		//$('#modalAddItem').on('shown', function(){
+			//alert('cargo el modal');
+		//})
+	//	alert('haz algo');
+	});
+	
+	$('#saveItem').click(function(e){
+		//alert('todo es despute');
+		var number = rowsNumber + 1;
+		//This doesn't work if the tbody is empty
+		//$('#tablaItems tr:last').after('<tr><td>'+number+'</td><td>Computer<input type="text" value="when" id="item_hidden"></td><td>20</td><td>10</td><td>Editar Eliminar</td></tr>');
+		
+		//This work perfectly but there always have to be a tbody, becareful with other tbodys
+		$('#tablaItems > tbody:last').append('<tr><td>'+number+'</td><td>Computer<input type="text" value="when" id="item_hidden"></td><td>20</td><td>10</td><td>Editar Eliminar</td></tr>');
+		/*
+		var nombre = '';
+		$('#tablaItems tbody tr').each(function(){
+			//var nombre = $(this).find("td:first").html();    
+			nombre = nombre +',' +$(this).find("#item_hidden").val();    
+			//alert(nombre);
+		})
+		alert(nombre);
+		*/
+	   //alert(rowsNumber);
+	   //alert('Cantidad de Item adicionado'+ rowsNumber);
+	   $('#modalAddItem').modal('hide');
+		return false;
+	});
+	
+	
+	
+	$('#date').glDatePicker(
 	{
+		
 		cssName: 'flatwhite',		
 		onClick: function(target, cell, date, data) {
 			var correctMonth = date.getMonth() + 1;
@@ -34,6 +86,7 @@ $(document).ready(function(){
 			if(data != null) {
 				alert(data.message + '\n' + date);
 			}
+		
 		}
 		
 	});

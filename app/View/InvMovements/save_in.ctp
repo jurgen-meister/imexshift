@@ -1,4 +1,4 @@
-<?php echo $this->Html->script('jquery-1.8.3', FALSE); ?>
+<?php //echo $this->Html->script('jquery-1.8.3', FALSE); ?>
 <?php echo $this->Html->script('InvMovements', FALSE); ?>
 <?php echo $this->Html->script('glDatePicker', FALSE); ?>
 <?php echo $this->Html->css('glDatePicker.flatwhite'); ?>
@@ -11,7 +11,7 @@
 				echo $this->BootstrapForm->input('date_in', array(
 					'required' => 'required',
 					'label' => 'Fecha:',
-					'id'=>'mydate',
+					'id'=>'date',
 					'maxlength'=>'0',
 					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
 				);
@@ -39,14 +39,16 @@
 				//echo $this->Html->link(('(+) Nuevo'), array('action' => 'save_in')); 
 				?>
 				<!-- Button to trigger modal -->
-				<a href="#myModal" role="button" class="btn" data-toggle="modal">Adicionar</a>
- 
+				<!--<a href="#myModal" role="button" class="btn" data-toggle="modal">Adicionar</a>-->
+				<button type="button" id="addItem">Adicionar</button>
 				<!-- Modal -->
-				<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-backdrop="static">
+				<div id="modalAddItem" class="modal hide fade">
+				  
 				  <div class="modal-header">
 					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
 					<h3 id="myModalLabel">Adicionar Items</h3>
 				  </div>
+				  
 				  <div class="modal-body">
 					<!--<p>One fine body…</p>-->
 					<?php
@@ -57,7 +59,7 @@
 					
 					echo $this->BootstrapForm->input('stock', array(				
 					'label' => 'Stock:',
-					'id'=>'Stock'
+					'id'=>'stock'
 					));
 					
 					echo $this->BootstrapForm->input('quantity', array(				
@@ -66,14 +68,16 @@
 					));
 					?>
 				  </div>
+				  
 				  <div class="modal-footer">
-					<button class="btn btn-primary">Aceptar</button>
+					<button class="btn btn-primary" id="saveItem">Aceptar</button>
 					<button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
 				  </div>
+					
 				</div>
 
 				
-				<table class="table table-bordered table-condensed table-striped">
+				<table class="table table-bordered table-condensed table-striped" id="tablaItems">
 					<thead>
 						<tr>
 							<th>#</th>
@@ -84,18 +88,12 @@
 						</tr>
 					</thead>
 					<tbody>
-						<tr>
-							<td>1</td>
-							<td>Laptop</td>
-							<td>10</td>
-							<td>2</td>
-							<td>Editar Eliminar</td>
-						</tr>
+						
 					</tbody>
 				</table>
 				<div class="form-actions">
 				<?php 
-					echo $this->BootstrapForm->submit('Guardar',array('class'=>'btn btn-primary','div'=>false, 'style'=>'margin-right:10px;'));
+					echo $this->BootstrapForm->submit('Guardar',array('class'=>'btn btn-primary','div'=>false, 'style'=>'margin-right:10px;'));					
 					echo $this->Html->link('Cancelar', array('action'=>'index_in'), array('class'=>'btn') );
 				?>
 				</div>

@@ -96,8 +96,9 @@
 
 	<!-- Le javascript
     ================================================== -->
-	<!-- Placed at the end of the document so the pages load faster -->
-	<script src="/admin/js/jquery.js"></script>
+	<!-- Placed at the end of the document so the pages load faster --> 
+	<!--<script src="/admin/js/jquery.js"></script>--> <!-- Last version 1.9. not very compatible with many scripts-->
+	<script src="/imexport/js/jquery-1.8.3.js"></script>
 	<?php echo $this->Html->script('bootstrap.min'); ?>
 	<?php echo $this->fetch('script'); ?>
 
