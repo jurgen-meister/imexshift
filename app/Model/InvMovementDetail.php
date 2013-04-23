@@ -1,19 +1,13 @@
 <?php
 App::uses('AppModel', 'Model');
 /**
- * InvMovement Model
+ * InvMovementDetail Model
  *
- * @property InvMovementType $InvMovementType
- * @property InvMovementDetail $InvMovementDetail
+ * @property InvItem $InvItem
+ * @property InvWarehouse $InvWarehouse
+ * @property InvMovement $InvMovement
  */
-class InvMovement extends AppModel {
-
-/**
- * Display field
- *
- * @var string
- */
-	public $displayField = 'code';
+class InvMovementDetail extends AppModel {
 
 /**
  * Validation rules
@@ -21,7 +15,7 @@ class InvMovement extends AppModel {
  * @var array
  */
 	public $validate = array(
-		'code' => array(
+		'inv_item_id' => array(
 			'notempty' => array(
 				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
@@ -31,7 +25,7 @@ class InvMovement extends AppModel {
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
-		'date' => array(
+		'inv_warehouse_id' => array(
 			'notempty' => array(
 				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
@@ -41,7 +35,17 @@ class InvMovement extends AppModel {
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
-		'inv_movement_type_id' => array(
+		'inv_movement_id' => array(
+			'notempty' => array(
+				'rule' => array('notempty'),
+				//'message' => 'Your custom message here',
+				//'allowEmpty' => false,
+				//'required' => false,
+				//'last' => false, // Stop validation after this rule
+				//'on' => 'create', // Limit validation to 'create' or 'update' operations
+			),
+		),
+		'quantity' => array(
 			'notempty' => array(
 				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
@@ -61,41 +65,19 @@ class InvMovement extends AppModel {
  * @var array
  */
 	public $belongsTo = array(
-		'InvMovementType' => array(
-			'className' => 'InvMovementType',
-			'foreignKey' => 'inv_movement_type_id',
+		'InvItem' => array(
+			'className' => 'InvItem',
+			'foreignKey' => 'inv_item_id',
 			'conditions' => '',
 			'fields' => '',
 			'order' => ''
 		),
-		'InvWarehouse' => array(
-			'className' => 'InvWarehouse',
-			'foreignKey' => 'inv_warehouse_id',
+		'InvMovement' => array(
+			'className' => 'InvMovement',
+			'foreignKey' => 'inv_movement_id',
 			'conditions' => '',
 			'fields' => '',
 			'order' => ''
 		)
 	);
-
-/**
- * hasMany associations
- *
- * @var array
- */
-	public $hasMany = array(
-		'InvMovementDetail' => array(
-			'className' => 'InvMovementDetail',
-			'foreignKey' => 'inv_movement_id',
-			'dependent' => false,
-			'conditions' => '',
-			'fields' => '',
-			'order' => '',
-			'limit' => '',
-			'offset' => '',
-			'exclusive' => '',
-			'finderQuery' => '',
-			'counterQuery' => ''
-		)
-	);
-
 }

@@ -5,7 +5,21 @@ $(document).ready(function(){
 	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');
 	
 	////////////paths validations///////////////
-
+	/*
+	if(arr[3].substr(0, 4) == 'edit'){
+		alert('editar salida o entrada');
+		$('#warehouses').keypress(function(){return false;});
+		$('#movement_types').change(function(){return false;});
+		$('#items').change(function(){return false;});
+	}
+	*/
+   /*
+   	if(arr[3].substr(0, 3) == 'add'){
+		 $('#warehouses option:nth-child(1)').attr("selected", "selected");
+		 $('#movement_types option:nth-child(1)').attr("selected", "selected");
+		 $('#items option:nth-child(1)').attr("selected", "selected");
+	}
+	*/
 	/////////numeric validation//////
 	$("#quantity").keydown(function(event) {
 						// Allow only backspace and delete
@@ -22,26 +36,7 @@ $(document).ready(function(){
 						 }
 	});
 	
-	$('#mydate').glDatePicker(
-	{
-		cssName: 'flatwhite',		
-		onClick: function(target, cell, date, data) {
-			var correctMonth = date.getMonth() + 1;
-			target.val(date.getDate() + ' / ' +
-						correctMonth + ' / ' +
-						date.getFullYear());
-
-			if(data != null) {
-				alert(data.message + '\n' + date);
-			}
-		}
-		
-	});
 	
-	
-	
-	
-	/*
 	//Events
     $('#movement_types').change(function(){
         
@@ -106,10 +101,43 @@ $(document).ready(function(){
 		$('#description').val('');
 	}
 	
-	*/
+	
 	
 	//call datepicker
 	//$('#mydate').glDatePicker();
+	
+	$('#mydate').glDatePicker(
+	{
+		//showAlways: false,
+		cssName: 'flatwhite',
+		//cssName: 'darkneon',
+		//selectedDate: new Date(2013, 0, 5),
+		/*
+		specialDates: [
+			{
+				date: new Date(2013, 0, 8),
+				data: { message: 'Meeting every day 8 of the month' },
+				repeatMonth: true
+			},
+			{
+				date: new Date(0, 0, 1),
+				data: { message: 'Happy New Year!' },
+				repeatYear: true
+			},
+		],*/
+		
+		onClick: function(target, cell, date, data) {
+			var correctMonth = date.getMonth() + 1;
+			target.val(date.getDate() + ' / ' +
+						correctMonth + ' / ' +
+						date.getFullYear());
+
+			if(data != null) {
+				alert(data.message + '\n' + date);
+			}
+		}
+		
+	});
 	
 	
 });

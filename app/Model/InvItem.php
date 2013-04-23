@@ -119,8 +119,8 @@ class InvItem extends AppModel {
 			'finderQuery' => '',
 			'counterQuery' => ''
 		),
-		'InvMovement' => array(
-			'className' => 'InvMovement',
+		'InvMovementDetail' => array(
+			'className' => 'InvMovementDetail',
 			'foreignKey' => 'inv_item_id',
 			'dependent' => false,
 			'conditions' => '',
