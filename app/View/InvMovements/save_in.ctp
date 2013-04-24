@@ -13,18 +13,19 @@
 					'label' => 'Fecha:',
 					'id'=>'date',
 					'maxlength'=>'0',
-					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
+					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;')
 				);
 				echo $this->BootstrapForm->input('inv_warehouse_id', array(
 					'required' => 'required',
 					'label' => 'Almacen:',
 					'id'=>'warehouses',
-					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
+					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;')
 				);
 				echo $this->BootstrapForm->input('inv_movement_type_id', array(
 					'label' => 'Tipo Movimiento:',
+					'id'=>'movementTypes',
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
+					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;')
 				);
 				echo $this->BootstrapForm->input('description', array(
 					'rows' => 2,
@@ -45,26 +46,34 @@
 				<div id="modalAddItem" class="modal hide fade">
 				  
 				  <div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-					<h3 id="myModalLabel">Adicionar Items</h3>
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+					<h3 id="myModalLabel">Adicionar Item</h3>
 				  </div>
 				  
 				  <div class="modal-body">
 					<!--<p>One fine body…</p>-->
 					<?php
-					echo $this->BootstrapForm->input('item_id', array(				
-					'label' => 'Item:',
-					'id'=>'Item'
-					));
-					
-					echo $this->BootstrapForm->input('stock', array(				
-					'label' => 'Stock:',
-					'id'=>'stock'
-					));
+					echo '<div id="boxIntiateModal">';
+						/*
+						echo $this->BootstrapForm->input('item_id', array(				
+						'label' => 'Item:',
+						'id'=>'Item',
+						'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+						));
+
+						echo $this->BootstrapForm->input('stock', array(				
+						'label' => 'Stock:',
+						'id'=>'stock'
+						));
+						*/
+					echo '</div>';
 					
 					echo $this->BootstrapForm->input('quantity', array(				
 					'label' => 'Cantidad:',
-					'id'=>'quantity'
+					'id'=>'quantity',
+					'style'=>'width:100px',
+					'maxlength'=>'10',
+					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 					));
 					?>
 				  </div>
@@ -99,5 +108,6 @@
 				</div>
 			</fieldset>
 		<?php echo $this->BootstrapForm->end();?>
+		<div id="processing"></div>
 	</div>
 </div>

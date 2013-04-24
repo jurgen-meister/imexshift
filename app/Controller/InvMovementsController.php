@@ -80,10 +80,83 @@ class InvMovementsController extends AppController {
 
 	public function save_in(){
 		$invWarehouses = $this->InvMovement->InvWarehouse->find('list');
-		$invMovementTypes = $this->InvMovement->InvMovementType->find('list');
+		$invMovementTypes = $this->InvMovement->InvMovementType->find('list', array(
+			'conditions'=>array('InvMovementType.status'=>'entrada', 'InvMovementType.document'=>0)//0 'cause don't have system document
+		));
 		$this->set(compact('invMovementTypes', 'invWarehouses'));
 	}
 	
+	public function ajax_initiate_modal_add_item_in(){
+		if($this->RequestHandler->isAjax()){
+						
+			$itemsAlreadySaved = $this->request->data['itemsAlreadySaved'];
+			$warehouse = $this->request->data['warehouse'];
+			$items = $this->InvMovement->InvMovementDetail->InvItem->find('list', array(
+				'conditions'=>array(
+					'NOT'=>array('InvItem.id'=>$itemsAlreadySaved)
+				),
+				'recursive'=>-1
+			));
+			$firstItemListed = key($items);
+			$stock = $this->_find_stock($firstItemListed, $warehouse);
+			$this->set(compact('items', 'stock'));
+		}
+	}
+	
+	private function _find_stock($idItem, $idWarehouse){		
+		$movementsIn = $this->_get_quantity_movements($idItem, $idWarehouse, 'entrada');
+		$movementsOut = $this->_get_quantity_movements($idItem, $idWarehouse, 'salida');
+		$add = array_sum($movementsIn);
+		$sub = array_sum($movementsOut);
+		$stock = $add - $sub;
+		return $stock;
+	}
+	
+	private function _get_quantity_movements($idItem, $idWarehouse, $status){
+		//******************************************************************************//
+		//unbind for perfomance InvItem 'cause it isn't needed
+		$this->InvMovement->InvMovementDetail->unbindModel(array(
+			'belongsTo' => array('InvItem')
+		));
+		//Add association for InvMovementType
+		$this->InvMovement->InvMovementDetail->bindModel(array(
+			'hasOne'=>array(
+				'InvMovementType'=>array(
+					'foreignKey'=>false,
+					'conditions'=> array('InvMovement.inv_movement_type_id = InvMovementType.id')
+				)
+				
+			)
+		));
+		//******************************************************************************//
+		//Movements
+		$movements = $this->InvMovement->InvMovementDetail->find('all', array(
+			'fields'=>array('InvMovementDetail.inv_movement_id', 'InvMovementDetail.quantity'),
+			'conditions'=>array('InvMovement.inv_warehouse_id'=>$idWarehouse, 'InvMovementDetail.inv_item_id'=>$idItem, 'InvMovementType.status'=>$status)
+		));
+		//Give format to nested array movements
+		$movementsCleaned = $this->_clean_nested_arrays($movements);
+		return $movementsCleaned;
+	}
+	
+	private function _clean_nested_arrays($array){
+		$clean = array();
+		foreach ($array as $key => $value) {
+			$clean[$key] = $value['InvMovementDetail']['quantity'];
+		}
+		return $clean;
+	}
+
+	
+	public function ajax_update_stock(){
+		if($this->RequestHandler->isAjax()){
+			$item = $this->request->data['item'];
+			$warehouse = $this->request->data['warehouse'];
+			$stock = $this->_find_stock($item, $warehouse);
+			$this->set(compact('stock'));
+		}
+	}
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	public function ajax_create_temporal_movement_in(){
 		if($this->RequestHandler->isAjax()){
 			$idItem = $this->request->data['item'];

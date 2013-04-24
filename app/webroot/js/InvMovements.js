@@ -6,73 +6,8 @@ $(document).ready(function(){
 	
 	////////////paths validations///////////////
 
-	/////////numeric validation//////
-	$("#quantity").keydown(function(event) {
-						// Allow only backspace and delete
-						if (event.keyCode == 8 || event.keyCode == 9 ) {
-							// let it happen, don't do anything
-						}
-						else {
-							// Ensure that it is a number and stop the keypress
-							if ( (event.keyCode < 96 || event.keyCode > 105) ) { //habilita keypad
-								if ( (event.keyCode < 48 || event.keyCode > 57) ) {
-									event.preventDefault(); 
-								}
-							}   
-						 }
-	});
 	
-	var rowsNumber = 0;
-	
-	$('#addItem').click(function(e){
-	//jQuery.noConflict();
-		//$('#modalAddItem').modal('show');
-		var itemsToExclude = '';
-		rowsNumber = 0;
-		$('#tablaItems tbody tr').each(function(){
-			itemsToExclude = itemsToExclude +',' +$(this).find("#item_hidden").val();    
-			rowsNumber++;
-		//	alert(itemsToExclude);
-		})
-		//alert(itemsToExclude);
-		
-		$('#modalAddItem').modal({
-			show: 'true',
-			backdrop:'static'
-		});
-		$('#stock').val(itemsToExclude.substr(1));
-		//alert(rowsNumber);
-		//$('#modalAddItem').on('shown', function(){
-			//alert('cargo el modal');
-		//})
-	//	alert('haz algo');
-	});
-	
-	$('#saveItem').click(function(e){
-		//alert('todo es despute');
-		var number = rowsNumber + 1;
-		//This doesn't work if the tbody is empty
-		//$('#tablaItems tr:last').after('<tr><td>'+number+'</td><td>Computer<input type="text" value="when" id="item_hidden"></td><td>20</td><td>10</td><td>Editar Eliminar</td></tr>');
-		
-		//This work perfectly but there always have to be a tbody, becareful with other tbodys
-		$('#tablaItems > tbody:last').append('<tr><td>'+number+'</td><td>Computer<input type="text" value="when" id="item_hidden"></td><td>20</td><td>10</td><td>Editar Eliminar</td></tr>');
-		/*
-		var nombre = '';
-		$('#tablaItems tbody tr').each(function(){
-			//var nombre = $(this).find("td:first").html();    
-			nombre = nombre +',' +$(this).find("#item_hidden").val();    
-			//alert(nombre);
-		})
-		alert(nombre);
-		*/
-	   //alert(rowsNumber);
-	   //alert('Cantidad de Item adicionado'+ rowsNumber);
-	   $('#modalAddItem').modal('hide');
-		return false;
-	});
-	
-	
-	
+	//Calendar script
 	$('#date').glDatePicker(
 	{
 		
@@ -92,6 +27,105 @@ $(document).ready(function(){
 	});
 	
 	
+	//////****************Core = add, validate, save, edit, delete, etc******************///////////
+	//Validate only numbers
+	$("#quantity").keydown(function(event) {
+						// Allow only backspace and delete
+						if (event.keyCode == 8 || event.keyCode == 9 ) {
+							// let it happen, don't do anything
+						}
+						else {
+							// Ensure that it is a number and stop the keypress
+							if ( (event.keyCode < 96 || event.keyCode > 105) ) { //habilita keypad
+								if ( (event.keyCode < 48 || event.keyCode > 57) ) {
+									event.preventDefault(); 
+								}
+							}   
+						 }
+	});
+	
+
+	///**************EVENTS***************
+	var rowsNumber = 0; //static variable for rows items
+	
+	//Call modal
+	$('#addItem').click(function(){
+		//var itemsAlreadySaved = '';  //string version
+		var itemsAlreadySaved = []; //array version
+		rowsNumber = 0;
+		$('#tablaItems tbody tr').each(function(){
+			//itemsAlreadySaved = itemsAlreadySaved +',' +$(this).find("#item_hidden").val();    //string version
+			itemsAlreadySaved.push($(this).find("#item_hidden").val());	   
+			rowsNumber++;
+		})
+		
+		if(rowsNumber == 0){  //For fix undefined index
+			itemsAlreadySaved = [0] //if there isn't any row, the array must have at least one field 0 otherwise it sends null
+		}
+		
+		ajax_initiate_modal_add_item_in(itemsAlreadySaved);
+
+	});
+	
+	//Merge item into the table
+	$('#saveItem').click(function(){
+		var number = rowsNumber + 1;
+		//This work perfectly but there always have to be a tbody, becareful with other tbodys
+		var quantity = $('#quantity').val();
+		var item = $('#items').val();
+		$('#tablaItems > tbody:last').append('<tr><td>'+number+'</td><td>Computer<input type="text" value="'+item+'" id="item_hidden"></td><td>20</td><td>10<input type="text" value="'+quantity+'" id="quantity_hidden"></td><td>Editar Eliminar</td></tr>');
+
+	   $('#modalAddItem').modal('hide');
+		return false;
+	});
+	
+		
+	///**************AJAX AND OTHER FUNCTIONS***************
+	
+	
+	function ajax_initiate_modal_add_item_in(itemsAlreadySaved){
+		 $.ajax({
+            type:"POST",
+            url:moduleController + "ajax_initiate_modal_add_item_in",			
+            data:{itemsAlreadySaved: itemsAlreadySaved, warehouse: $('#warehouses').val()},
+            beforeSend: showProcessing,
+            success: function(data){
+				$('#processing').text("");
+				$('#boxIntiateModal').html(data);
+				$('#quantity').val('');
+				$('#modalAddItem').modal({
+					show: 'true',
+					backdrop:'static'
+				});
+				$('#items').bind("change",function(){ //must be binded 'cause dropbox is loaded by a previous ajax'
+					ajax_update_stock();
+				});
+				$('#stock').keypress(function(){
+					return false;
+				});
+			}
+        });
+	}
+	
+	function ajax_update_stock(){
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_update_stock",			
+            data:{warehouse: $('#warehouses').val(), item: $('#items').val()},
+            beforeSend: showProcessing,
+            success: function(data){
+				$('#processing').text("");
+				$('#boxStock').html(data);
+				$('#stock').bind("keypress",function(){ //must be binded 'cause input is re-loaded by a previous ajax'
+					return false;
+				});
+			}
+        });
+	}
+	
+	function showProcessing(){
+        $("#processing").text("Procesando...");
+    }
 	
 	
 	/*
