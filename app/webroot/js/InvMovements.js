@@ -68,18 +68,46 @@ $(document).ready(function(){
 	});
 	
 	//Merge item into the table
+	
+	
+	
 	$('#saveItem').click(function(){
+		
+		
+		
 		var number = rowsNumber + 1;
-		//This work perfectly but there always have to be a tbody, becareful with other tbodys
 		var quantity = $('#quantity').val();
-		var item = $('#items').val();
-		$('#tablaItems > tbody:last').append('<tr><td>'+number+'</td><td>Computer<input type="text" value="'+item+'" id="item_hidden"></td><td>20</td><td>10<input type="text" value="'+quantity+'" id="quantity_hidden"></td><td>Editar Eliminar</td></tr>');
-
-	   $('#modalAddItem').modal('hide');
-		return false;
+		var itemId = $('#items').val();
+		var itemName = $('#items option:selected').text();
+		var stock = $('#stock').val();
+		var error = validateSaveItem(itemName, quantity, ''); 
+		if(error == ''){
+			$('#tablaItems > tbody:last').append('<tr>\n\
+												<td>'+number+'</td>\n\
+												<td>'+itemName+'<input type="hidden" value="'+itemId+'" id="item_hidden" ></td>\n\
+												<td>'+stock+'<input type="hidden" value="'+stock+'" id="stock_hidden" ></td>\n\
+												<td>'+quantity+'<input type="hidden" value="'+quantity+'" id="quantity_hidden" ></td>\n\
+												<td>\n\
+													<a class="btn" href="#" id="editItem" title="Editar"><i class="icon-pencil"></i></a>\n\
+													<a class="btn" href="#" id="deleteItem" title="Eliminar"><i class="icon-trash"></i></a>\n\
+												</td>\n\
+											 </tr>');
+			$('#modalAddItem').modal('hide');
+		}else{
+			//alert('no puede haber campos vacios');
+			$('#itemSaveError').html(error);
+		}
+		
+		
 	});
 	
-		
+	function validateSaveItem(item, quantity, documentQuantity){
+		var error = '';
+		if(quantity == ''){	error+='- El campo "Cantidad" no puede estar vacio <br>'; }
+		if(item == ''){	error+='- El campo "Item" no puede estar vacio <br>'; }
+		return error;
+	}
+	
 	///**************AJAX AND OTHER FUNCTIONS***************
 	
 	
@@ -90,7 +118,8 @@ $(document).ready(function(){
             data:{itemsAlreadySaved: itemsAlreadySaved, warehouse: $('#warehouses').val()},
             beforeSend: showProcessing,
             success: function(data){
-				$('#processing').text("");
+				$('#processing').text('');
+				$('#itemSaveError').text('');
 				$('#boxIntiateModal').html(data);
 				$('#quantity').val('');
 				$('#modalAddItem').modal({
