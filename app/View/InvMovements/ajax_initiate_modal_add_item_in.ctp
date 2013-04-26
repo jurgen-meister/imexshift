@@ -3,6 +3,7 @@
 		echo $this->BootstrapForm->input('items', array(				
 		'label' => 'Item:',
 		'id'=>'items',
+		'class'=>'input-xlarge',
 		'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 		));
 		echo '<br>';
@@ -12,7 +13,8 @@
 			'label' => 'Stock:',
 			'id'=>'stock',
 			'value'=>$stock,
-			'style'=>'width:100px; background-color:#EEEEEE',
+			'style'=>'background-color:#EEEEEE',
+			'class'=>'input-small',
 			'maxlength'=>'15'
 			));
 		echo '</div>';		

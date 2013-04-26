@@ -2,10 +2,9 @@ $(document).ready(function(){
 	///Url Paths
 	var path = window.location.pathname;
 	var arr = path.split('/');
-	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');
-	
-	////////////paths validations///////////////
-
+	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
+	///////Var for functionality//////
+	var arrayItemsAlreadySaved = []; 
 	
 	//Calendar script
 	$('#date').glDatePicker(
@@ -46,59 +45,79 @@ $(document).ready(function(){
 	
 
 	///**************EVENTS***************
-	var rowsNumber = 0; //static variable for rows items
+	
 	
 	//Call modal
-	$('#addItem').click(function(){
-		//var itemsAlreadySaved = '';  //string version
-		var itemsAlreadySaved = []; //array version
-		rowsNumber = 0;
-		$('#tablaItems tbody tr').each(function(){
-			//itemsAlreadySaved = itemsAlreadySaved +',' +$(this).find("#item_hidden").val();    //string version
-			itemsAlreadySaved.push($(this).find("#item_hidden").val());	   
-			rowsNumber++;
-		})
-		
-		if(rowsNumber == 0){  //For fix undefined index
-			itemsAlreadySaved = [0] //if there isn't any row, the array must have at least one field 0 otherwise it sends null
-		}
-		
-		ajax_initiate_modal_add_item_in(itemsAlreadySaved);
+	$('#btnAddItem').click(function(){
 
+	   if(arrayItemsAlreadySaved.length == 0){  //For fix undefined index
+			arrayItemsAlreadySaved = [0] //if there isn't any row, the array must have at least one field 0 otherwise it sends null
+		}
+	   
+		ajax_initiate_modal_add_item_in(arrayItemsAlreadySaved);
+		$('#btnSaveAddItem').show();
+		$('#btnSaveEditItem').hide();
 	});
 	
 	//Merge item into the table
-	
-	
-	
-	$('#saveItem').click(function(){
+	$('#btnSaveAddItem').click(function(){
+		//var number = rowsItemsCount + 1;
 		
-		
-		
-		var number = rowsNumber + 1;
 		var quantity = $('#quantity').val();
 		var itemId = $('#items').val();
-		var itemName = $('#items option:selected').text();
+		var itemCodeName = $('#items option:selected').text();
 		var stock = $('#stock').val();
-		var error = validateSaveItem(itemName, quantity, ''); 
+		var error = validateSaveItem(itemCodeName, quantity, ''); 
 		if(error == ''){
 			$('#tablaItems > tbody:last').append('<tr>\n\
-												<td>'+number+'</td>\n\
-												<td>'+itemName+'<input type="hidden" value="'+itemId+'" id="item_hidden" ></td>\n\
-												<td>'+stock+'<input type="hidden" value="'+stock+'" id="stock_hidden" ></td>\n\
-												<td>'+quantity+'<input type="hidden" value="'+quantity+'" id="quantity_hidden" ></td>\n\
+												<td>'+itemCodeName+'<input type="hidden" value="'+itemId+'" id="item_hidden" ></td>\n\
+												<td><span id="stock_hidden'+itemId+'">'+stock+'</span></td>\n\
+												<td><span id="quantity_hidden'+itemId+'">'+quantity+'</span></td>\n\
 												<td>\n\
-													<a class="btn" href="#" id="editItem" title="Editar"><i class="icon-pencil"></i></a>\n\
-													<a class="btn" href="#" id="deleteItem" title="Eliminar"><i class="icon-trash"></i></a>\n\
+													<a class="btn" href="#" id="btnEditItem'+itemId+'" title="Editar"><i class="icon-pencil"></i></a>\n\
+													<a class="btn" href="#" id="btnDeleteItem'+itemId+'" title="Eliminar"><i class="icon-trash"></i></a>\n\
 												</td>\n\
 											 </tr>');
+			
+			$("#btnEditItem"+itemId).bind("click",function(){ //must be binded 'cause loaded live with javascript'
+					var objectTableRowSelected = $(this).closest('tr')
+					editItemsTableRow(objectTableRowSelected);
+			});
+			
+			$("#btnDeleteItem"+itemId).bind("click",function(){ //must be binded 'cause loaded live with javascript'
+					var objectTableRowSelected = $(this).closest('tr')
+					deleteItemsTableRow(objectTableRowSelected);
+			});
+			
+			
+			arrayItemsAlreadySaved.push(itemId);  //push into array of the added item
+			
 			$('#modalAddItem').modal('hide');
+						
 		}else{
 			//alert('no puede haber campos vacios');
 			$('#itemSaveError').html(error);
 		}
 		
 		
+	});
+	
+	
+	$('#btnPrueba').click(function(){
+		alert(arrayItemsAlreadySaved);
+		alert($('items').val());
+	});
+	
+	$('#btnSaveEditItem').click(function(){
+		
+		var itemId = $('#items').val();
+		//var stock = $('#stock').val();//stock is static
+		var quantity = $('#quantity').val();
+		
+		//$('#stock_hidden'+itemId).text(stock); //stock is static
+		$('#quantity_hidden'+itemId).text(quantity);
+		$('#modalAddItem').modal('hide');
+		//alert('aqui se editara sobre la misma fila ->' + itemId);
 	});
 	
 	function validateSaveItem(item, quantity, documentQuantity){
@@ -108,7 +127,38 @@ $(document).ready(function(){
 		return error;
 	}
 	
-	///**************AJAX AND OTHER FUNCTIONS***************
+	
+	function deleteItemsTableRow(objectTableRowSelected){
+		
+		if(confirm('Esta seguro de Eliminar el item?')){	
+
+			var itemIdForDelete = objectTableRowSelected.find('#item_hidden').val();  //
+			arrayItemsAlreadySaved = jQuery.grep(arrayItemsAlreadySaved, function(value){
+				return value != itemIdForDelete;
+			});
+			//alert(arrayItemsAlreadySaved);
+			objectTableRowSelected.remove();
+		}
+	
+	}
+	
+	function editItemsTableRow(objectTableRowSelected){
+		var itemIdForEdit = objectTableRowSelected.find('#item_hidden').val();  //
+		//alert(itemIdForEdit);
+		
+		$('#btnSaveAddItem').hide();
+		$('#btnSaveEditItem').show();
+		
+		//$('#stock').val(objectTableRowSelected.find('#stock_hidden'+itemIdForEdit).text()); //stock is static
+		$('#quantity').val(objectTableRowSelected.find('#quantity_hidden'+itemIdForEdit).text());
+		$('#items').empty();
+
+		//$('#items option:selected').val(itemIdForEdit);
+		//$('#items option:selected').text(objectTableRowSelected.find('td').text());
+		$('#items').append('<option value="'+itemIdForEdit+'">'+objectTableRowSelected.find('td').text()+'</option>');
+		
+		initiateModal();
+	}
 	
 	
 	function ajax_initiate_modal_add_item_in(itemsAlreadySaved){
@@ -121,11 +171,8 @@ $(document).ready(function(){
 				$('#processing').text('');
 				$('#itemSaveError').text('');
 				$('#boxIntiateModal').html(data);
-				$('#quantity').val('');
-				$('#modalAddItem').modal({
-					show: 'true',
-					backdrop:'static'
-				});
+				$('#quantity').val('');  
+				initiateModal()
 				$('#items').bind("change",function(){ //must be binded 'cause dropbox is loaded by a previous ajax'
 					ajax_update_stock();
 				});
@@ -134,6 +181,13 @@ $(document).ready(function(){
 				});
 			}
         });
+	}
+	
+	function initiateModal(){
+		$('#modalAddItem').modal({
+					show: 'true',
+					backdrop:'static'
+		});
 	}
 	
 	function ajax_update_stock(){

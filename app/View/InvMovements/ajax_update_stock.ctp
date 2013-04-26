@@ -3,7 +3,8 @@
 			'label' => 'Stock:',
 			'id'=>'stock',
 			'value'=>$stock,
-			'style'=>'width:60px; background-color:#EEEEEE',
+			'style'=>'background-color:#EEEEEE',
+			'class'=>'input-small',
 			'maxlength'=>'15'
 			));
 ?>

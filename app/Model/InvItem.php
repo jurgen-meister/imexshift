@@ -16,7 +16,8 @@ class InvItem extends AppModel {
  *
  * @var string
  */
-	public $displayField = 'name';
+	public $virtualFields = array("full_name"=>"CONCAT('[ ',code, ' ] ' ,name)");
+	public $displayField = 'full_name';
 
 /**
  * Validation rules

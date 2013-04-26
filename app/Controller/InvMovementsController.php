@@ -95,10 +95,12 @@ class InvMovementsController extends AppController {
 				'conditions'=>array(
 					'NOT'=>array('InvItem.id'=>$itemsAlreadySaved)
 				),
-				'recursive'=>-1
+				'recursive'=>-1,
+				//'fields'=>array('InvItem.id', 'CONCAT(InvItem.code, '-', InvItem.name)')
 			));
 			$firstItemListed = key($items);
 			$stock = $this->_find_stock($firstItemListed, $warehouse);
+			
 			$this->set(compact('items', 'stock'));
 		}
 	}

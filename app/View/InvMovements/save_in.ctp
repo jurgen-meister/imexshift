@@ -13,21 +13,23 @@
 				
 				<!-- showing process and document states-->
 				<div class="row-fluid">
-					<div class="span3" >
+					<div class="span7">
+						<!--Pedido | Orden | Compra | Ingreso-->
+					</div>
+					<div class="span5" >
 						Estado Proceso:
 						
 						<table id="tableDocumentState" class="table table-bordered table-condensed">
 							<tr>
 								<td style="background-color:#BBBBBB; color: white; ">Pedido</td>
 								<td style="background-color:#BBBBBB; color: white">Orden</td>
-								<td style="background-color:green; color: white">Compra</td>
+								<td style="background-color:#BBBBBB; color: white">Compra</td>
+								<td style="background-color:#f99c17; color: white">Entrada</td>
 							</tr>
 						</table>
 						
 					</div>
-					<div class="span9">
-						<!--Pedido | Orden | Compra | Ingreso-->
-					</div>
+					
 				</div>
 				<p></p>
 				<!-- showing process and document states-->
@@ -52,7 +54,7 @@
 					'label' => 'Tipo Movimiento:',
 					'id'=>'movementTypes',
 					'required' => 'required',
-					'helpInline' => '<a class="btn" href="#" id="addMovementType" title="Adicionar Tipo Movimiento"><i class="icon-plus-sign"></i></a><span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;')
+					'helpInline' => '<a class="btn" href="#" id="addMovementType" title="Nuevo Tipo Movimiento"><i class="icon-plus-sign"></i></a><span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;')
 				);
 				echo $this->BootstrapForm->input('description', array(
 					'rows' => 2,
@@ -62,15 +64,22 @@
 				));
 				?>
 							
-				<!-- /////////////////////////////////////// -->
-				<a class="btn" href='#' id="addItem"><i class="icon-plus-sign"></i> Adicionar Item</a>
-				<p></p>
+				<!-- ////////////////////////////////// INICIO - ITEMS /////////////////////////////////////// -->
+				<ul class="nav nav-tabs">
+					<li class="active">
+						<a href="#">Items</a>
+					</li>
+				</ul>
+				
+				
 				<div class="row-fluid">
-					<div id="boxTable" class="span5">
+					<div class="span1"></div>
+					<div id="boxTable" class="span8">
+						<a class="btn" href='#' id="btnAddItem" title="Adicionar Item"><i class="icon-plus-sign"></i></a>
+						<p></p>
 						<table class="table table-bordered table-condensed table-striped" id="tablaItems">
 							<thead>
 								<tr>
-									<th>#</th>
 									<th>Item</th>
 									<th>Stock</th>
 									<th>Cantidad</th>
@@ -82,16 +91,17 @@
 							</tbody>
 						</table>
 					</div>
-				</div>	
-				<!-- ////////////////////////////////////// -->
+				</div>
+				<div class="span3"></div>
+				<!-- ////////////////////////////////// FIN ITEMS /////////////////////////////////////// -->
 
 			<div class="form-actions">
 				<?php 
-					echo $this->BootstrapForm->submit('Guardar',array('class'=>'btn btn-primary','div'=>false,));	
+					echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false,));	
 					echo ' ';
 					echo $this->Html->link('Cancelar', array('action'=>'index_in'), array('class'=>'btn') );
 				?>
-				<a href="#" class="btn btn-success"><i class="icon-ok icon-white"></i> Aprobar Entrada Almacen</a>
+				<a href="#" id="btnPrueba" class="btn btn-success"><i class="icon-ok icon-white"></i> Aprobar Entrada Almacen</a>
 			</div>
 				
 		</fieldset>
@@ -111,13 +121,36 @@
 					<!--<p>One fine body…</p>-->
 					<?php
 					echo '<div id="boxIntiateModal">';
-						//HERE GOES ITEM AND STOCK with Ajax
-					echo '</div>';
+						//////////////////////////////////////
 					
+						echo $this->BootstrapForm->input('items', array(				
+						'label' => 'Item:',
+						'id'=>'items',
+						'class'=>'input-xlarge',
+						'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+						));
+						echo '<br>';
+
+						echo '<div id="boxStock">';
+							echo $this->BootstrapForm->input('stock', array(				
+							'label' => 'Stock:',
+							'id'=>'stock',
+							'value'=>$stock,
+							'style'=>'background-color:#EEEEEE',
+							'class'=>'input-small',
+							'maxlength'=>'15'
+							));
+						echo '</div>';		
+						echo '<br>';
+					
+						//////////////////////////////////////
+					echo '</div>';
+										
 					echo $this->BootstrapForm->input('quantity', array(				
 					'label' => 'Cantidad:',
 					'id'=>'quantity',
-					'style'=>'width:100px',
+					'class'=>'input-small',
+					//'value'=>'6',
 					'maxlength'=>'10',
 					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 					));
@@ -126,8 +159,10 @@
 				  </div>
 				  
 				  <div class="modal-footer">
-					<a href='#' class="btn btn-primary" id="saveItem">Aceptar</a>
+					<a href='#' class="btn btn-primary" id="btnSaveAddItem">Guardar</a>
+					<a href='#' class="btn btn-primary" id="btnSaveEditItem">Guardar</a>
 					<button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+					
 				  </div>
 					
 			</div>
