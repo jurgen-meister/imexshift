@@ -99,15 +99,17 @@ $(document).ready(function(){
 			$('#itemSaveError').html(error);
 		}
 		
-		
 	});
 	
 	
 	$('#btnPrueba').click(function(){
-		alert(arrayItemsAlreadySaved);
-		alert($('items').val());
+		//alert('vector valores guardados -> ' + arrayItemsAlreadySaved);
+		//alert('asuka');
+		//alert($('items').val());
+		getItemsDetailsInfo()
 	});
 	
+
 	$('#btnSaveEditItem').click(function(){
 		
 		var itemId = $('#items').val();
@@ -127,6 +129,42 @@ $(document).ready(function(){
 		return error;
 	}
 	
+	function getItemsDetailsInfo(){
+		
+		var arrayItemsDetails = [];
+		var itemId = '';
+		var itemStock = '';
+		var itemQuantity = '';
+		
+
+		$('#tablaItems tbody tr').each(function(){		
+			itemId = $(this).find('#item_hidden').val();
+			itemStock = $(this).find('#stock_hidden'+itemId).text();
+			itemQuantity = $(this).find('#quantity_hidden'+itemId).text();
+			arrayItemsDetails.push({'InvMovementDetail':{'inv_item_id':itemId, 'stock':itemStock, 'quantity':itemQuantity}});
+
+		});
+		
+		//alert(matriz);
+		//alert(arrayItemsDetails[0]);
+		if(arrayItemsDetails.length == 0){  //For fix undefined index
+			arrayItemsDetails = [0] //if there isn't any row, the array must have at least one field 0 otherwise it sends null
+		}
+		
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_save_movement_in",			
+            data:{arrayItemsDetails: arrayItemsDetails},
+            beforeSend: showProcessing,
+            success: function(data){
+				$('#processing').text('');
+				$('#boxMessage').text(data);
+			}
+        });
+		
+	}
+	
+
 	
 	function deleteItemsTableRow(objectTableRowSelected){
 		
