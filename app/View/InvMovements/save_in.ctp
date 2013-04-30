@@ -103,13 +103,13 @@
 				?>
 				<a href="#" id="btnPrueba" class="btn btn-success"><i class="icon-ok icon-white"></i> Aprobar Entrada Almacen</a>
 			</div>
-				
+				<div id="boxMessage"></div>
 		</fieldset>
 	<?php echo $this->BootstrapForm->end();?>
-		
+	<div id="processing"></div>
+	
 		
 		<!-- ////////////////////////////////// INICIO MODAL ////////////////////////////// -->
-			
 			<div id="modalAddItem" class="modal hide fade ">
 				  
 				  <div class="modal-header">
@@ -166,16 +166,9 @@
 				  </div>
 					
 			</div>
-
 		<!-- ////////////////////////////////// FIN MODAL ////////////////////////////// -->
-		
-		
-				
-	
-				
 
-		
-		<div id="processing"></div>
+
 		<!-- FIN CONTAINER - CLASS SPAN 9 -->
 	</div>
 	<!-- FIN ROW FLUID -->

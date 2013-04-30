@@ -73,7 +73,8 @@ class InvMovementsController extends AppController {
 		//$array = array('uno','dos','tres');
 		
 		//$this->InvMovement->recursive = 0;
-		//debug($this->paginate('InvMovement'));
+		debug($this->paginate('InvMovement'));
+		//print_r($this->paginate('InvMovement'));
 		$this->set('invMovements', $this->paginate('InvMovement'));
 		//$this->set('array', $array);
 	}
@@ -175,6 +176,22 @@ class InvMovementsController extends AppController {
 	
 	public function ajax_save_movement_in(){
 		if($this->RequestHandler->isAjax()){
+			
+			$matriz = $this->request->data['arrayItemsDetails'];
+			//debug($matriz);
+			//print_r($matriz);
+			
+			if($matriz[0] == 0){ //In case is empty
+				echo 'esta vacio';
+				
+			}else{
+				echo $matriz[0]['InvMovementDetail']['quantity'];
+			}
+			
+			//echo count($matriz);
+			//debug($matriz);
+			
+			/*
 			//-1//Enviar via request ajax todos los datos del formulario
 			if($this->Session->check('movement_in')){
 				//$array = array();
@@ -197,6 +214,8 @@ class InvMovementsController extends AppController {
 					
 				}
 			}
+			* 
+			*/
 		}
 	}
 	
