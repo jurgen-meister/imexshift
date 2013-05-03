@@ -94,13 +94,15 @@ class InvMovementsController extends AppController {
 		}
 		*/
 		$invMovementDetails = array();
+		$documentState = '';
 		if($id <> null){
 			$date = date("d/m/Y", strtotime($this->request->data['InvMovement']['date']));//$this->request->data['InvMovement']['date'];
 			//debug($this->_get_movements_details($id));
 			$invMovementDetails = $this->_get_movements_details($id);
+			$documentState =$this->request->data['InvMovement']['lc_state'];
 		}
 		
-		$this->set(compact('invMovementTypes', 'invWarehouses', 'id', 'date', 'invMovementDetails'));
+		$this->set(compact('invMovementTypes', 'invWarehouses', 'id', 'date', 'invMovementDetails', 'documentState'));
 		//echo $id;
 		//debug($this->request->data);
 		

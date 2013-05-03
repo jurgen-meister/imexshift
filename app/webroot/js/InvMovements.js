@@ -30,8 +30,15 @@ $(document).ready(function(){
 	//validates before add item quantity
 	function validateItem(item, quantity, documentQuantity){
 		var error = '';
-		if(quantity == ''){	error+='- El campo "Cantidad" no puede estar vacio <br>'; }
-		if(item == ''){	error+='- El campo "Item" no puede estar vacio <br>'; }
+		if(quantity == ''){
+			error+='- El campo "Cantidad" no puede estar vacio <br>'; 
+		}else{
+			if(parseInt(quantity, 10) == 0){
+				
+				error+='- El campo "Cantidad" no puede ser cero <br>'; 
+			}
+		}
+		if(item == ''){error+='- El campo "Item" no puede estar vacio <br>';}
 		return error;
 	}
 	
@@ -72,7 +79,7 @@ $(document).ready(function(){
 					event.preventDefault(); 
 				}
 			}   
-		 }
+		}
 	}
 	
 	function initiateModalAddItem(){
@@ -92,6 +99,7 @@ $(document).ready(function(){
 		$('#boxValidateItem').html('');//clear error message
 		$('#quantity').val(objectTableRowSelected.find('#quantity_hidden'+itemIdForEdit).text());
 		$('#stock').val(objectTableRowSelected.find('#stock_hidden'+itemIdForEdit).text());
+		$('#stock').keypress(function(){return false;});
 		$('#items').empty();
 		$('#items').append('<option value="'+itemIdForEdit+'">'+objectTableRowSelected.find('td').text()+'</option>');
 		initiateModal();
@@ -130,8 +138,8 @@ $(document).ready(function(){
 												<td><span id="stock_hidden'+itemId+'">'+stock+'</span></td>\n\
 												<td><span id="quantity_hidden'+itemId+'">'+quantity+'</span></td>\n\
 												<td>\n\
-													<a class="btn" href="#" id="btnEditItem'+itemId+'" title="Editar"><i class="icon-pencil"></i></a>\n\
-													<a class="btn" href="#" id="btnDeleteItem'+itemId+'" title="Eliminar"><i class="icon-trash"></i></a>\n\
+													<a class="btn btn-primary" href="#" id="btnEditItem'+itemId+'" title="Editar"><i class="icon-pencil icon-white"></i></a>\n\
+													<a class="btn btn-danger" href="#" id="btnDeleteItem'+itemId+'" title="Eliminar"><i class="icon-trash icon-white"></i></a>\n\
 												</td>\n\
 											 </tr>');
 	}
@@ -142,7 +150,7 @@ $(document).ready(function(){
 		var itemCodeName = $('#items option:selected').text();
 		var error = validateItem(itemCodeName, quantity, ''); 
 		if(error == ''){
-			$('#quantity_hidden'+itemId).text(quantity);
+			$('#quantity_hidden'+itemId).text(parseInt(quantity,10));
 			$('#modalAddItem').modal('hide');
 		}else{
 			$('#boxValidateItem').html(error);
@@ -156,7 +164,7 @@ $(document).ready(function(){
 		var stock = $('#stock').val();
 		var error = validateItem(itemCodeName, quantity, ''); 
 		if(error == ''){
-			createRowItemTable(itemId, itemCodeName, stock, quantity);
+			createRowItemTable(itemId, itemCodeName, stock, parseInt(quantity,10));
 			createEventClickEditItemButton(itemId);
 			createEventClickDeleteItemButton(itemId);
 			arrayItemsAlreadySaved.push(itemId);  //push into array of the added item
@@ -255,11 +263,17 @@ $(document).ready(function(){
 		
 		return false; //avoid page refresh
 	});
-	
-	$('#btnChangeState').click(function(){
-		alert('aqui ira validaciones y cambios estado del documento');
+	////////////////
+	$('#btnApproveState').click(function(){
+		alert('Se aprueba entrada');
 		return false;
 	});
+	$('#btnCancellState').click(function(){
+		alert('Se cancela entrada');
+		return false;
+	});
+	
+	$('#date').keypress(function(){return false;});
 	
 	//************************************************************************//
 	//////////////////////////////////END-CONTROLS EVENTS//////////////////////

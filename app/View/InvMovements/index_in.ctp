@@ -8,7 +8,7 @@
 			
 			//echo $this->Html->link('Nuevo', array('action'=>'save_in'), array('class'=>'btn') );
 			?>
-			<a href="save_in" id="btnChangeState" class="btn btn-primary" title="nueva entrada de almacen"><i class="icon-plus icon-white"></i> Nuevo</a>
+			<a href="save_in" id="btnChangeState" class="btn btn-primary" title="Nueva entrada de almacen"><i class="icon-plus icon-white"></i> Nuevo</a>
 			
 		</p>
 		<p>
@@ -23,10 +23,7 @@
 				<th><?php echo $this->BootstrapPaginator->sort('inv_movement_type_id', 'Movimiento');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('inv_warehouse_id', 'Almacen');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('inv_item_id', 'Estado');?></th>
-
-
-				<th class="actions"><?php echo __('');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('lc_state', 'Estado Documento');?></th>
 			</tr>
 		<?php foreach ($invMovements as $invMovement): ?>
 			<tr>
@@ -44,7 +41,7 @@
 					&nbsp;
 				</td>
 				<td>
-					<?php echo $this->Html->link($invMovement['InvMovementType']['name'], array('controller' => 'inv_movement_types', 'action' => 'view', $invMovement['InvMovementType']['id'])); ?>
+					<?php echo h($invMovement['InvMovementType']['name']); ?>
 				</td>
 				<td>
 					<?php 
@@ -53,19 +50,31 @@
 					&nbsp;
 				</td>
 				<td>
-					<?php echo $this->Html->link($invMovement['InvWarehouse']['name'], array('controller' => 'inv_warehouses', 'action' => 'view', $invMovement['InvWarehouse']['id'])); ?>
+					<?php echo h($invMovement['InvWarehouse']['name']); ?>
 				</td>
-				<td><?php echo h($invMovement['InvMovement']['lc_state']); ?>&nbsp;</td>
-				<td class="actions">
-					<?php //echo $this->Html->link(__('Ver'), array('action' => 'view', $invMovement['InvMovement']['id'])); ?>
-					
-					<!--<a href="save_in" id="btnChangeState" class="btn btn-primary" title="nueva entrada de almacen"><i class="icon-plus icon-white"></i> Nuevo</a>-->
-					
+				<td>
 					<?php 
-						echo $this->Html->link('<i class="icon-pencil"></i>'.__(''), array('action' => 'save_in', $invMovement['InvMovement']['id']), array('class'=>'btn', 'escape'=>false, 'title'=>'Editar')); 
-					?>
-					<?php //echo $this->Form->postLink(__('Eliminar'), array('action' => 'delete', $invMovement['InvMovement']['id']), null, __('Are you sure you want to delete # %s?', $invMovement['InvMovement']['id'])); ?>
+					
+					$documentState = $invMovement['InvMovement']['lc_state'];
+					switch ($documentState){
+								case 'PENDANT':
+									$stateColor = 'btn-warning';
+									$stateName = 'Pendiente';
+									break;
+								case 'APPROVED':
+									$stateColor = 'btn-success';
+									$stateName = 'Aprovado';
+									break;
+								case 'CANCELLED':
+									$stateColor = 'btn-danger';
+									$stateName = 'Cancelado';
+									break;
+							}
+							
+							echo $this->Html->link('<i class="icon-pencil icon-white"></i>'.__(' '.$stateName), array('action' => 'save_in', $invMovement['InvMovement']['id']), array('class'=>'btn '.$stateColor, 'escape'=>false, 'title'=>'Editar')); 
+					?>&nbsp;
 				</td>
+				
 			</tr>
 		<?php endforeach; ?>
 		</table>

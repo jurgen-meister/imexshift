@@ -16,32 +16,45 @@
 					<div class="span7">
 						<!--Pedido | Orden | Compra | Ingreso-->
 					</div>
-					<div class="span5" >
+					<div class="span2" >
 						Estado Proceso:
-						
-						<table id="tableDocumentState" class="table table-bordered table-condensed">
+						<?php
+							switch ($documentState){
+								case '':
+									$stateColor = '#BBBBBB';
+									break;
+								case 'PENDANT':
+									$stateColor = '#F99C17';
+									break;
+								case 'APPROVED':
+									$stateColor = '#54AA54';
+									break;
+								case 'CANCELLED':
+									$stateColor = '#BD362F';
+									break;
+							}
+						?>
+						<table id="tableProcessState" class="table table-bordered table-condensed">
 							<tr>
-								<td style="background-color:#BBBBBB; color: white; ">Pedido</td>
-								<td style="background-color:#BBBBBB; color: white">Orden</td>
-								<td style="background-color:#BBBBBB; color: white">Compra</td>
-								<td style="background-color:#f99c17; color: white">Entrada</td>
+								<td id="rowStatesMovementIn" style="background-color:<?php echo $stateColor; ?>; color: white">Entrada</td>
 							</tr>
 						</table>
 						
 					</div>
-					
+					<!--<div class="span3"></div>-->
 				</div>
 				<p></p>
 				<!-- showing process and document states-->
 				
 				
 				<?php
-				
+
 				echo $this->BootstrapForm->input('movement_hidden', array(
 					'id'=>'movement_hidden',
-					'value'=>$id
+					'value'=>$id,
+					'type'=>'hidden'
 				));
-				
+
 				echo $this->BootstrapForm->input('date_in', array(
 					'required' => 'required',
 					'label' => 'Fecha:',
@@ -56,12 +69,12 @@
 					'id'=>'warehouses',
 					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 				));
-				
+
 				echo $this->BootstrapForm->input('inv_movement_type_id', array(
 					'label' => 'Tipo Movimiento:',
 					'id'=>'movementTypes',
 					'required' => 'required',
-					'helpInline' => '<a class="btn" href="#" id="addMovementType" title="Nuevo Tipo Movimiento"><i class="icon-plus-sign"></i></a><span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;')
+					'helpInline' => '<a class="btn btn-primary" href="#" id="addMovementType" title="Nuevo Tipo Movimiento"><i class="icon-plus icon-white"></i></a><span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;')
 				);
 				echo $this->BootstrapForm->input('description', array(
 					'rows' => 2,
@@ -82,7 +95,9 @@
 				<div class="row-fluid">
 					<div class="span1"></div>
 					<div id="boxTable" class="span8">
-						<a class="btn" href='#' id="btnAddItem" title="Adicionar Item"><i class="icon-plus-sign"></i></a>
+						<?php if($documentState <> 'CANCELLED'){ ?>
+						<a class="btn btn-primary" href='#' id="btnAddItem" title="Adicionar Item"><i class="icon-plus icon-white"></i></a>
+						<?php } ?>
 						<p></p>
 						<table class="table table-bordered table-condensed table-striped" id="tablaItems">
 							<thead>
@@ -90,7 +105,9 @@
 									<th>Item</th>
 									<th>Stock</th>
 									<th>Cantidad</th>
+									<?php if($documentState <> 'CANCELLED'){ ?>
 									<th></th>
+									<?php }?>
 								</tr>
 							</thead>
 							<tbody>
@@ -100,37 +117,15 @@
 										echo '<td>'.$invMovementDetails[$i]['item'].'<input type="hidden" value="'.$invMovementDetails[$i]['itemId'].'" id="item_hidden" ></td>';
 										echo '<td><span id="stock_hidden'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['stock'].'</span></td>';
 										echo '<td><span id="quantity_hidden'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['cantidad'].'</span></td>';
-										echo '<td>
-												<a class="btn" href="#" id="btnEditItem'.$invMovementDetails[$i]['itemId'].'" title="Editar"><i class="icon-pencil"></i></a>
+										if($documentState <> 'CANCELLED'){
+											echo '<td>';
+											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$invMovementDetails[$i]['itemId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
 												
-												<a class="btn" href="#" id="btnDeleteItem'.$invMovementDetails[$i]['itemId'].'" title="Eliminar"><i class="icon-trash"></i></a>
-											  </td>';
-									echo '</tr>';
-									/*
-									//no sirve de esta forma porque este creando el javascript antes de que se llama al jquery, tiene que ir en el script no mas
-									echo '<script type="text/javascript">';
-									echo '
-										$(document).ready(function(){
-											$("#btnEditItem2").click(function(){
-														//var objectTableRowSelected = $(this).closest("tr")
-														//editItemsTableRow(objectTableRowSelected);
-														alert("fdgfdgfd");
-														//return false; 
-											});
-											
-											});
-									';
-									echo '</script>';
-									*/
+												<a class="btn btn-danger" href="#" id="btnDeleteItem'.$invMovementDetails[$i]['itemId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
+											echo '</td>';
+										}
+									echo '</tr>';								
 								}
-								/*
-								echo '<script type="text/javascript">
-									$(window).load(function() {
-									alert("vjjkfjgf");
-									});
-									</script>';
-								 * 
-								 */
 								?>
 							</tbody>
 						</table>
@@ -139,13 +134,41 @@
 				<div class="span3"></div>
 				<!-- ////////////////////////////////// FIN ITEMS /////////////////////////////////////// -->
 
-			<div class="form-actions">
-				<?php 
-					echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));	
-					echo ' ';
-					echo $this->Html->link('Cancelar', array('action'=>'index_in'), array('class'=>'btn') );
-				?>
-				<a href="#" id="btnChangeState" class="btn btn-success"><i class="icon-ok icon-white"></i> Aprobar Entrada Almacen</a>
+			<!--<div class="form-actions">-->
+				<div class="btn-toolbar">
+						<?php 
+							if($documentState <> 'CANCELLED'){
+								echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));	
+								
+							}
+							echo $this->Html->link('Cancelar', array('action'=>'index_in'), array('class'=>'btn') );
+						?>
+
+						<?php 
+							switch ($documentState){
+										case '':
+											$displayApproved = 'none';
+											$displayCancelled = 'none';
+											break;
+										case 'PENDANT':
+											$displayApproved = 'inline';
+											$displayCancelled = 'none';
+											break;
+										case 'APPROVED':
+											$displayApproved = 'none';
+											$displayCancelled = 'inline';
+											break;
+										case 'CANCELLED':
+											$displayApproved = 'none';
+											$displayCancelled = 'none';
+											break;
+									}
+						?>
+
+						<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Entrada Almacen</a>
+						<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Entrada Almacen</a>
+					</div>
+				<!--</div>-->
 			</div>
 				<div id="boxMessage"></div>
 		</fieldset>
@@ -166,7 +189,7 @@
 					<?php
 					echo '<div id="boxIntiateModal">';
 						//////////////////////////////////////
-					
+
 						echo $this->BootstrapForm->input('items_id', array(				
 						'label' => 'Item:',
 						'id'=>'items',
@@ -184,13 +207,13 @@
 							'class'=>'input-small',
 							'maxlength'=>'15'
 							));
-						
+
 						echo '</div>';		
 						echo '<br>';
-					
+
 						//////////////////////////////////////
 					echo '</div>';
-										
+
 					echo $this->BootstrapForm->input('quantity', array(				
 					'label' => 'Cantidad:',
 					'id'=>'quantity',
