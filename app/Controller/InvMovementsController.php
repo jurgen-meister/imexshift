@@ -73,19 +73,40 @@ class InvMovementsController extends AppController {
 		//$array = array('uno','dos','tres');
 		
 		//$this->InvMovement->recursive = 0;
-		debug($this->paginate('InvMovement'));
+		//debug($this->paginate('InvMovement'));
 		//print_r($this->paginate('InvMovement'));
 		$this->set('invMovements', $this->paginate('InvMovement'));
 		//$this->set('array', $array);
 	}
 
-	public function save_in(){
+	public function save_in($id = null){
 		$invWarehouses = $this->InvMovement->InvWarehouse->find('list');
 		$invMovementTypes = $this->InvMovement->InvMovementType->find('list', array(
 			'conditions'=>array('InvMovementType.status'=>'entrada', 'InvMovementType.document'=>0)//0 'cause don't have system document
 		));
-		$this->set(compact('invMovementTypes', 'invWarehouses'));
+		
+		$this->InvMovement->recursive = -1;
+		$this->request->data = $this->InvMovement->read(null, $id);
+		$date='';
+		/*
+		if($this->request->data['InvMovement']['date'] <> ''){
+			$date = date("d/m/Y", strtotime($this->request->data['InvMovement']['date']));//$this->request->data['InvMovement']['date'];
+		}
+		*/
+		$invMovementDetails = array();
+		if($id <> null){
+			$date = date("d/m/Y", strtotime($this->request->data['InvMovement']['date']));//$this->request->data['InvMovement']['date'];
+			//debug($this->_get_movements_details($id));
+			$invMovementDetails = $this->_get_movements_details($id);
+		}
+		
+		$this->set(compact('invMovementTypes', 'invWarehouses', 'id', 'date', 'invMovementDetails'));
+		//echo $id;
+		//debug($this->request->data);
+		
 	}
+	
+	
 	
 	public function ajax_initiate_modal_add_item_in(){
 		if($this->RequestHandler->isAjax()){
@@ -104,6 +125,25 @@ class InvMovementsController extends AppController {
 			
 			$this->set(compact('items', 'stock'));
 		}
+	}
+	
+	private function _get_movements_details($idMovement){
+		$movementDetails = $this->InvMovement->InvMovementDetail->find('all', array(
+			//'recursive'=>-1,
+			'conditions'=>array('InvMovementDetail.inv_movement_id'=>$idMovement),
+			'fields'=>array('InvItem.name', 'InvItem.code', 'InvMovementDetail.quantity', 'InvItem.id', 'InvMovement.inv_warehouse_id')
+			));
+		$formatedMovementDetails = array();
+		foreach ($movementDetails as $key => $value) {
+			$formatedMovementDetails[$key] = array(
+				'itemId'=>$value['InvItem']['id'],
+				'item'=>'[ '. $value['InvItem']['code'].' ] '.$value['InvItem']['name'],
+				'stock'=> $this->_find_stock($value['InvItem']['id'], $value['InvMovement']['inv_warehouse_id']),//llamar funcion
+				'cantidad'=>$value['InvMovementDetail']['quantity']//llamar cantidad
+				);
+		}
+		
+		return $formatedMovementDetails;
 	}
 	
 	private function _find_stock($idItem, $idWarehouse){		
@@ -186,6 +226,7 @@ class InvMovementsController extends AppController {
 				
 			}else{
 				echo $matriz[0]['InvMovementDetail']['quantity'];
+				debug($matriz);
 			}
 			
 			//echo count($matriz);
@@ -297,6 +338,7 @@ class InvMovementsController extends AppController {
 		if (!$this->InvMovement->exists()) {
 			throw new NotFoundException(__('Invalid %s', __('inv movement')));
 		}
+		
 		if ($this->request->is('post') || $this->request->is('put')) {
 			if ($this->InvMovement->save($this->request->data)) {
 				$this->Session->setFlash(

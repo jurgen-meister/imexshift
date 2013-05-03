@@ -1,6 +1,6 @@
 <?php
 						
-		echo $this->BootstrapForm->input('items', array(				
+		echo $this->BootstrapForm->input('items_id', array(				
 		'label' => 'Item:',
 		'id'=>'items',
 		'class'=>'input-xlarge',

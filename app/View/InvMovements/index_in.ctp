@@ -2,9 +2,14 @@
 	<div class="span9">
 		<h2><?php echo __('Entradas de Almacen');?></h2>
 		<p>
-			<?php echo $this->Html->image("add.png");
-			echo $this->Html->link(('(+) Nuevo'), array('action' => 'save_in')); 
+			<?php 
+			//echo $this->Html->image("add.png");
+			//echo $this->Html->link(('(+) Nuevo'), array('action' => 'save_in')); 
+			
+			//echo $this->Html->link('Nuevo', array('action'=>'save_in'), array('class'=>'btn') );
 			?>
+			<a href="save_in" id="btnChangeState" class="btn btn-primary" title="nueva entrada de almacen"><i class="icon-plus icon-white"></i> Nuevo</a>
+			
 		</p>
 		<p>
 			<?php echo $this->BootstrapPaginator->counter(array('format' => __('Pagina {:page} de {:pages}, mostrando {:current} registros de {:count} total, comenzando en  {:start}, terminando en {:end}')));?>
@@ -21,7 +26,7 @@
 				<th><?php echo $this->BootstrapPaginator->sort('inv_item_id', 'Estado');?></th>
 
 
-				<th class="actions"><?php echo __('Acciones');?></th>
+				<th class="actions"><?php echo __('');?></th>
 			</tr>
 		<?php foreach ($invMovements as $invMovement): ?>
 			<tr>
@@ -54,8 +59,10 @@
 				<td class="actions">
 					<?php //echo $this->Html->link(__('Ver'), array('action' => 'view', $invMovement['InvMovement']['id'])); ?>
 					
+					<!--<a href="save_in" id="btnChangeState" class="btn btn-primary" title="nueva entrada de almacen"><i class="icon-plus icon-white"></i> Nuevo</a>-->
+					
 					<?php 
-						echo $this->Html->link(__('Detalle'), array('action' => 'edit_in', $invMovement['InvMovement']['id'])); 
+						echo $this->Html->link('<i class="icon-pencil"></i>'.__(''), array('action' => 'save_in', $invMovement['InvMovement']['id']), array('class'=>'btn', 'escape'=>false, 'title'=>'Editar')); 
 					?>
 					<?php //echo $this->Form->postLink(__('Eliminar'), array('action' => 'delete', $invMovement['InvMovement']['id']), null, __('Are you sure you want to delete # %s?', $invMovement['InvMovement']['id'])); ?>
 				</td>

@@ -36,10 +36,17 @@
 				
 				
 				<?php
+				
+				echo $this->BootstrapForm->input('movement_hidden', array(
+					'id'=>'movement_hidden',
+					'value'=>$id
+				));
+				
 				echo $this->BootstrapForm->input('date_in', array(
 					'required' => 'required',
 					'label' => 'Fecha:',
 					'id'=>'date',
+					'value'=>$date,
 					'maxlength'=>'0',
 					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 				));
@@ -87,7 +94,44 @@
 								</tr>
 							</thead>
 							<tbody>
-
+								<?php
+								for($i=0; $i<count($invMovementDetails); $i++){
+									echo '<tr>';
+										echo '<td>'.$invMovementDetails[$i]['item'].'<input type="hidden" value="'.$invMovementDetails[$i]['itemId'].'" id="item_hidden" ></td>';
+										echo '<td><span id="stock_hidden'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['stock'].'</span></td>';
+										echo '<td><span id="quantity_hidden'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['cantidad'].'</span></td>';
+										echo '<td>
+												<a class="btn" href="#" id="btnEditItem'.$invMovementDetails[$i]['itemId'].'" title="Editar"><i class="icon-pencil"></i></a>
+												
+												<a class="btn" href="#" id="btnDeleteItem'.$invMovementDetails[$i]['itemId'].'" title="Eliminar"><i class="icon-trash"></i></a>
+											  </td>';
+									echo '</tr>';
+									/*
+									//no sirve de esta forma porque este creando el javascript antes de que se llama al jquery, tiene que ir en el script no mas
+									echo '<script type="text/javascript">';
+									echo '
+										$(document).ready(function(){
+											$("#btnEditItem2").click(function(){
+														//var objectTableRowSelected = $(this).closest("tr")
+														//editItemsTableRow(objectTableRowSelected);
+														alert("fdgfdgfd");
+														//return false; 
+											});
+											
+											});
+									';
+									echo '</script>';
+									*/
+								}
+								/*
+								echo '<script type="text/javascript">
+									$(window).load(function() {
+									alert("vjjkfjgf");
+									});
+									</script>';
+								 * 
+								 */
+								?>
 							</tbody>
 						</table>
 					</div>
@@ -97,11 +141,11 @@
 
 			<div class="form-actions">
 				<?php 
-					echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false,));	
+					echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));	
 					echo ' ';
 					echo $this->Html->link('Cancelar', array('action'=>'index_in'), array('class'=>'btn') );
 				?>
-				<a href="#" id="btnPrueba" class="btn btn-success"><i class="icon-ok icon-white"></i> Aprobar Entrada Almacen</a>
+				<a href="#" id="btnChangeState" class="btn btn-success"><i class="icon-ok icon-white"></i> Aprobar Entrada Almacen</a>
 			</div>
 				<div id="boxMessage"></div>
 		</fieldset>
@@ -123,14 +167,14 @@
 					echo '<div id="boxIntiateModal">';
 						//////////////////////////////////////
 					
-						echo $this->BootstrapForm->input('items', array(				
+						echo $this->BootstrapForm->input('items_id', array(				
 						'label' => 'Item:',
 						'id'=>'items',
 						'class'=>'input-xlarge',
 						'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 						));
 						echo '<br>';
-
+						$stock='';
 						echo '<div id="boxStock">';
 							echo $this->BootstrapForm->input('stock', array(				
 							'label' => 'Stock:',
@@ -140,6 +184,7 @@
 							'class'=>'input-small',
 							'maxlength'=>'15'
 							));
+						
 						echo '</div>';		
 						echo '<br>';
 					
@@ -155,7 +200,7 @@
 					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 					));
 					?>
-					  <div id="itemSaveError" class="alert-error"></div> 
+					  <div id="boxValidateItem" class="alert-error"></div> 
 				  </div>
 				  
 				  <div class="modal-footer">
