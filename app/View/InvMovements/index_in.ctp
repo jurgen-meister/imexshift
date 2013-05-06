@@ -1,5 +1,8 @@
-<div class="row-fluid">
-	<div class="span9">
+<!--<div class="row-fluid">--> <!-- No va porque ya esta dentro del row-fluid del container del template principal-->
+
+<!-- ************************************************************************************************************************ -->
+<div class="span9"><!-- INICIO CONTAINER FLUID/ROW FLUID/SPAN9 - Del Template Principal (SPAN3 reservado para menu izquierdo) -->
+<!-- ************************************************************************************************************************ -->
 		<h2><?php echo __('Entradas de Almacen');?></h2>
 		<p>
 			<?php 
@@ -15,7 +18,7 @@
 			<?php echo $this->BootstrapPaginator->counter(array('format' => __('Pagina {:page} de {:pages}, mostrando {:current} registros de {:count} total, comenzando en  {:start}, terminando en {:end}')));?>
 		</p>
 		<?php $cont = 1;?>
-		<table class="table table-striped table-bordered">
+		<table class="table table-striped table-bordered table-hover">
 			<tr>
 				<th><?php echo "#";?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('code', 'Codigo Entrada');?></th>
@@ -63,7 +66,7 @@
 									break;
 								case 'APPROVED':
 									$stateColor = 'btn-success';
-									$stateName = 'Aprovado';
+									$stateName = 'Aprobado';
 									break;
 								case 'CANCELLED':
 									$stateColor = 'btn-danger';
@@ -80,5 +83,7 @@
 		</table>
 
 		<?php echo $this->BootstrapPaginator->pagination(); ?>
-	</div>
-</div>
+<!-- ************************************************************************************************************************ -->
+</div><!-- FIN CONTAINER FLUID/ROW FLUID/SPAN9 - Del Template Principal (SPAN3 reservado para menu izquierdo) -->
+<!-- ************************************************************************************************************************ -->
+<!--</div>--><!-- No va porque ya esta dentro del row-fluid del container del template principal-->

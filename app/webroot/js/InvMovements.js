@@ -259,6 +259,7 @@ $(document).ready(function(){
 			ajax_save_movement_in(arrayItemsDetails);
 		}else{
 			$('#boxMessage').html('<div class="alert-error">'+error+'</div>');
+			//$('#boxValidate').text(error);
 		}
 		
 		return false; //avoid page refresh
@@ -292,12 +293,12 @@ $(document).ready(function(){
 		$.ajax({
             type:"POST",
             url:moduleController + "ajax_save_movement_in",			
-            data:{arrayItemsDetails: arrayItemsDetails},
+            data:{arrayItemsDetails: arrayItemsDetails, movementId:$('#movement_hidden').val()},
             beforeSend: showProcessing(),
             success: function(data){
 				$('#processing').text('');
 				$('#boxMessage').text(data);
-				$('#btnChangeState').hide();
+				//$('#btnChangeState').hide();
 			}
         });
 	}

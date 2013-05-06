@@ -2,16 +2,19 @@
 <?php echo $this->Html->script('InvMovements', FALSE); ?>
 <?php echo $this->Html->script('glDatePicker', FALSE); ?>
 <?php echo $this->Html->css('glDatePicker.flatwhite'); ?>
-<div class="row-fluid">
-	<!-- INICIO ROW FLUID -->
-	<div class="span9">
-		<!-- INICIO CONTAINER - CLASS SPAN 9 -->
-		
+
+<!-- ************************************************************************************************************************ -->
+<div class="span9"><!-- INICIO CONTAINER FLUID/ROW FLUID/SPAN9 - Del Template Principal (SPAN3 reservado para menu izquierdo) -->
+<!-- ************************************************************************************************************************ -->
+
+	<!-- ////////////////////////////////// INICIO - INICIO FORM ///////////////////////////////////// -->
 		<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-horizontal'));?>
-			<fieldset>
-				<legend><?php echo __('Entrada de Almacen'); ?></legend>
+		<fieldset>
+		<legend><?php echo __('Entrada de Almacen'); ?></legend>
+	<!-- ////////////////////////////////// FIN - INICIO FORM /////////////////////////////////////// -->			
 				
-				<!-- showing process and document states-->
+				
+				<!-- ////////////////////////////////// INICIO - TABLA ESTADO PROCESO Y DOCUMENTO /////////////////////////////////////// -->
 				<div class="row-fluid">
 					<div class="span7">
 						<!--Pedido | Orden | Compra | Ingreso-->
@@ -41,12 +44,13 @@
 						</table>
 						
 					</div>
-					<!--<div class="span3"></div>-->
+					<div class="span3"></div>
 				</div>
-				<p></p>
-				<!-- showing process and document states-->
+				<!-- ////////////////////////////////// FIN - TABLA ESTADO PROCESO Y DOCUMENTO /////////////////////////////////////// -->
 				
 				
+				
+				<!-- ////////////////////////////////// INICIO CAMPOS FORMULARIOS MOVIMIENTO /////////////////////////////////////// -->
 				<?php
 
 				echo $this->BootstrapForm->input('movement_hidden', array(
@@ -83,7 +87,10 @@
 					'id'=>'description'
 				));
 				?>
-							
+				<!-- ////////////////////////////////// FIN CAMPOS FORMULARIOS MOVIMIENTO /////////////////////////////////////// -->
+				
+				
+				
 				<!-- ////////////////////////////////// INICIO - ITEMS /////////////////////////////////////// -->
 				<ul class="nav nav-tabs">
 					<li class="active">
@@ -91,14 +98,18 @@
 					</li>
 				</ul>
 				
-				
+
 				<div class="row-fluid">
+					
 					<div class="span1"></div>
+					
 					<div id="boxTable" class="span8">
+						
 						<?php if($documentState <> 'CANCELLED'){ ?>
 						<a class="btn btn-primary" href='#' id="btnAddItem" title="Adicionar Item"><i class="icon-plus icon-white"></i></a>
 						<?php } ?>
 						<p></p>
+						
 						<table class="table table-bordered table-condensed table-striped" id="tablaItems">
 							<thead>
 								<tr>
@@ -130,11 +141,16 @@
 							</tbody>
 						</table>
 					</div>
+					
+					<div class="span3"></div>
+					
 				</div>
-				<div class="span3"></div>
-				<!-- ////////////////////////////////// FIN ITEMS /////////////////////////////////////// -->
+			<!-- ////////////////////////////////// FIN ITEMS /////////////////////////////////////// -->
 
-			<!--<div class="form-actions">-->
+				
+			<!-- ////////////////////////////////// INICIO BOTONES /////////////////////////////////////// -->
+			<div class="form-actions">
+
 				<div class="btn-toolbar">
 						<?php 
 							if($documentState <> 'CANCELLED'){
@@ -167,16 +183,32 @@
 
 						<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Entrada Almacen</a>
 						<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Entrada Almacen</a>
-					</div>
-				<!--</div>-->
+				</div>
+			
 			</div>
-				<div id="boxMessage"></div>
-		</fieldset>
-	<?php echo $this->BootstrapForm->end();?>
-	<div id="processing"></div>
+			<!-- ////////////////////////////////// FIN BOTONES /////////////////////////////////////// -->
 	
-		
-		<!-- ////////////////////////////////// INICIO MODAL ////////////////////////////// -->
+			
+	<!-- ////////////////////////////////// INICIO - FIN FORM ///////////////////////////////////// -->		
+	</fieldset>
+	<?php echo $this->BootstrapForm->end();?>
+	<!-- ////////////////////////////////// FIN - FIN FORM ///////////////////////////////////// -->
+	
+	
+	<!-- ////////////////////////////////// INICIO MENSAJES /////////////////////////////////////// -->
+	<div id="processing"></div>
+	<div id="boxMessage"></div>
+	<!-- ////////////////////////////////// FIN MENSAJES /////////////////////////////////////// -->
+	
+	
+<!-- ************************************************************************************************************************ -->
+</div><!-- FIN CONTAINER FLUID/ROW FLUID/SPAN9 - Del Template Principal (SPAN3 reservado para menu izquierdo) -->
+<!-- ************************************************************************************************************************ -->
+
+
+
+
+<!-- ////////////////////////////////// INICIO MODAL (Esta fuera del span9 pero sigue pertenciendo al template principal CONTAINER FLUID/ROW FLUID) ////////////////////////////// -->
 			<div id="modalAddItem" class="modal hide fade ">
 				  
 				  <div class="modal-header">
@@ -234,10 +266,4 @@
 				  </div>
 					
 			</div>
-		<!-- ////////////////////////////////// FIN MODAL ////////////////////////////// -->
-
-
-		<!-- FIN CONTAINER - CLASS SPAN 9 -->
-	</div>
-	<!-- FIN ROW FLUID -->
-</div>
+<!-- ////////////////////////////////// FIN MODAL (Esta fuera del span9 pero sigue pertenciendo al template principal CONTAINER FLUID/ROW FLUID) ////////////////////////////// -->
