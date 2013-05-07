@@ -17,9 +17,9 @@ $(document).ready(function(){
 		arrayAux = getItemsDetails();
 		if(arrayAux[0] != 0){
 			for(var i=0; i< arrayAux.length; i++){
-				 arrayItemsAlreadySaved[i] = arrayAux[i]['InvMovementDetail']['inv_item_id'];
-				 createEventClickEditItemButton(arrayAux[i]['InvMovementDetail']['inv_item_id']);
-				 createEventClickDeleteItemButton(arrayAux[i]['InvMovementDetail']['inv_item_id']);			 
+				 arrayItemsAlreadySaved[i] = arrayAux[i]['inv_item_id'];
+				 createEventClickEditItemButton(arrayAux[i]['inv_item_id']);
+				 createEventClickDeleteItemButton(arrayAux[i]['inv_item_id']);			 
 			}
 		}
 		/*else{
@@ -31,14 +31,14 @@ $(document).ready(function(){
 	function validateItem(item, quantity, documentQuantity){
 		var error = '';
 		if(quantity == ''){
-			error+='- El campo "Cantidad" no puede estar vacio <br>'; 
+			error+='<li>El campo "Cantidad" no puede estar vacio</li>'; 
 		}else{
 			if(parseInt(quantity, 10) == 0){
 				
-				error+='- El campo "Cantidad" no puede ser cero <br>'; 
+				error+='<li>El campo "Cantidad" no puede ser cero</li>'; 
 			}
 		}
-		if(item == ''){error+='- El campo "Item" no puede estar vacio <br>';}
+		if(item == ''){error+='<li>El campo "Item" no puede estar vacio</li>';}
 		return error;
 	}
 	
@@ -49,14 +49,14 @@ $(document).ready(function(){
 		var movementTypes = $('#movementTypes').text();
 		var movement_hidden = $('#movement_hidden').val();
 
-		if(date == ''){	error+='- El campo "Fecha" no puede estar vacio <br>'; }
-		if(warehouses == ''){	error+='- El campo "Almacen" no puede estar vacio <br>'; }
-		if(movementTypes == ''){	error+='- El campo "Tipo Movimiento" no puede estar vacio <br>'; }
-		if(movement_hidden == ''){	//if it's new
-			if(arrayItemsDetails[0] == 0){
-				error+='- Debe existir al menos 1 "Item" <br>'; 
-			}
+		if(date == ''){	error+='<li> El campo "Fecha" no puede estar vacio </li>'; }
+		if(warehouses == ''){	error+='<li> El campo "Almacen" no puede estar vacio </li>'; }
+		if(movementTypes == ''){	error+='<li> El campo "Tipo Movimiento" no puede estar vacio </li>'; }
+		//if(movement_hidden == ''){	//if it's new
+		if(arrayItemsDetails[0] == 0){
+			error+='<li> Debe existir al menos 1 "Item" </li>'; 
 		}
+		//}
 		return error;
 	}
 	
@@ -79,6 +79,17 @@ $(document).ready(function(){
 					event.preventDefault(); 
 				}
 			}   
+		}
+	}
+	
+	function validateWarehouse(){
+		
+		var arrayItemsDetails = [];
+		arrayItemsDetails = getItemsDetails();
+		
+		if(arrayItemsDetails[0] != 0){
+			ajax_update_multiple_stocks(arrayItemsDetails);
+			alert('Se cambio de "Almacen", se actualizara los "Stocks" de los "Items"');
 		}
 	}
 	
@@ -153,7 +164,7 @@ $(document).ready(function(){
 			$('#quantity_hidden'+itemId).text(parseInt(quantity,10));
 			$('#modalAddItem').modal('hide');
 		}else{
-			$('#boxValidateItem').html(error);
+			$('#boxValidateItem').html('<ul>'+error+'</ul>');
 		}
 	}
 	
@@ -170,7 +181,7 @@ $(document).ready(function(){
 			arrayItemsAlreadySaved.push(itemId);  //push into array of the added item
 			$('#modalAddItem').modal('hide');
 		}else{
-			$('#boxValidateItem').html(error);
+			$('#boxValidateItem').html('<ul>'+error+'</ul>');
 		}
 	}
 	
@@ -185,7 +196,7 @@ $(document).ready(function(){
 			itemId = $(this).find('#item_hidden').val();
 			itemStock = $(this).find('#stock_hidden'+itemId).text();
 			itemQuantity = $(this).find('#quantity_hidden'+itemId).text();
-			arrayItemsDetails.push({'InvMovementDetail':{'inv_item_id':itemId, 'stock':itemStock, 'quantity':itemQuantity}});
+			arrayItemsDetails.push({'inv_item_id':itemId, 'stock':itemStock, 'quantity':itemQuantity});
 
 		});
 		
@@ -200,6 +211,26 @@ $(document).ready(function(){
 	function showProcessing(){
         $("#processing").text("Procesando...");
     }
+	
+	function saveAll(){
+		var arrayItemsDetails = [];
+		arrayItemsDetails = getItemsDetails();
+		
+		var error = validateBeforeSaveAll(arrayItemsDetails);
+		if( error == ''){
+			ajax_save_movement_in(arrayItemsDetails);
+		}else{
+			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
+		}
+	}
+	
+	function updateMultipleStocks(arrayItemsStocks){
+		var auxItemsStocks = [];
+		for(var i=0; i<arrayItemsStocks.length; i++){
+			auxItemsStocks = arrayItemsStocks[i].split('=>');//  item5=>9stock
+			$('#stock_hidden'+auxItemsStocks[0]).text(auxItemsStocks[1]);
+		}
+	}
 	//************************************************************************//
 	//////////////////////////////////END-FUNCTIONS//////////////////////
 	//************************************************************************//
@@ -249,19 +280,7 @@ $(document).ready(function(){
 	
 	//saves all movement
 	$('#btnSaveAll').click(function(){
-		
-		var arrayItemsDetails = [];
-		arrayItemsDetails = getItemsDetails();
-		
-		
-		var error = validateBeforeSaveAll(arrayItemsDetails);
-		if( error == ''){
-			ajax_save_movement_in(arrayItemsDetails);
-		}else{
-			$('#boxMessage').html('<div class="alert-error">'+error+'</div>');
-			//$('#boxValidate').text(error);
-		}
-		
+		saveAll();
 		return false; //avoid page refresh
 	});
 	////////////////
@@ -274,8 +293,12 @@ $(document).ready(function(){
 		return false;
 	});
 	
-	$('#date').keypress(function(){return false;});
+	$('#warehouses').change(function(){
+		validateWarehouse();
+	});
 	
+	$('#date').keypress(function(){return false;});
+	$('#code').keypress(function(){return false;});
 	//************************************************************************//
 	//////////////////////////////////END-CONTROLS EVENTS//////////////////////
 	//************************************************************************//
@@ -293,15 +316,43 @@ $(document).ready(function(){
 		$.ajax({
             type:"POST",
             url:moduleController + "ajax_save_movement_in",			
-            data:{arrayItemsDetails: arrayItemsDetails, movementId:$('#movement_hidden').val()},
+            data:{arrayItemsDetails: arrayItemsDetails 
+				  ,movementId:$('#movement_hidden').val()
+				  ,date:$('#date').val()
+				  ,warehouse:$('#warehouses').val()
+				  ,movementType:$('#movementTypes').val()
+				  ,description:$('#description').val()
+			  },
             beforeSend: showProcessing(),
             success: function(data){
 				$('#processing').text('');
-				$('#boxMessage').text(data);
-				//$('#btnChangeState').hide();
+				
+				var arrayCatch = data.split('|');
+
+				if(arrayCatch[0] == 'insertado'){ 
+					$('#code').val(arrayCatch[2]);
+					$('#columnStateMovementIn').css('background-color','#F99C17');
+					$('#btnApproveState').show();
+					$('#movement_hidden').val(arrayCatch[3]);
+				}
+				
+				//update items stocks
+				var arrayItemsStocks = arrayCatch[1].split(',');
+				updateMultipleStocks(arrayItemsStocks);
+
+				
+					$('#boxMessage').html('<div class="alert alert-success">\n\
+					<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
+				
+			},
+			error:function(data){
+				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				$('#processing').text('');
 			}
         });
 	}
+	
+	
 	
 	//Get items and stock for the fist item when inititates modal
 	function ajax_initiate_modal_add_item_in(itemsAlreadySaved){
@@ -339,6 +390,22 @@ $(document).ready(function(){
 				$('#stock').bind("keypress",function(){ //must be binded 'cause input is re-loaded by a previous ajax'
 					return false;
 				});
+			}
+        });
+	}
+	
+	//Update one stock value
+	function ajax_update_multiple_stocks(arrayItemsDetails){
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_update_multiple_stocks",			
+            data:{warehouse: $('#warehouses').val(), arrayItemsDetails: arrayItemsDetails},
+            beforeSend: showProcessing(),
+            success: function(data){
+				var arrayItemsStocks = data.split(',');
+				updateMultipleStocks(arrayItemsStocks);
+				$('#processing').text('');
+				//$('#boxStock').html(data);
 			}
         });
 	}

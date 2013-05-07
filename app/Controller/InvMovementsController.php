@@ -55,7 +55,7 @@ class InvMovementsController extends AppController {
 		 * 
 		 */
 		//'recursive'=>2,	
-		//'order'=> array('InvMovement.id DESC'),
+		'order'=> array('InvMovement.id'),
 		'limit' => 20,
 		/*
 		'joins' => array(
@@ -149,15 +149,15 @@ class InvMovementsController extends AppController {
 	}
 	
 	private function _find_stock($idItem, $idWarehouse){		
-		$movementsIn = $this->_get_quantity_movements($idItem, $idWarehouse, 'entrada');
-		$movementsOut = $this->_get_quantity_movements($idItem, $idWarehouse, 'salida');
+		$movementsIn = $this->_get_quantity_movements_item($idItem, $idWarehouse, 'entrada');
+		$movementsOut = $this->_get_quantity_movements_item($idItem, $idWarehouse, 'salida');
 		$add = array_sum($movementsIn);
 		$sub = array_sum($movementsOut);
 		$stock = $add - $sub;
 		return $stock;
 	}
 	
-	private function _get_quantity_movements($idItem, $idWarehouse, $status){
+	private function _get_quantity_movements_item($idItem, $idWarehouse, $status){
 		//******************************************************************************//
 		//unbind for perfomance InvItem 'cause it isn't needed
 		$this->InvMovement->InvMovementDetail->unbindModel(array(
@@ -216,52 +216,95 @@ class InvMovementsController extends AppController {
 		
 	}
 	
+	private function _generate_code($keyword){
+		$period = $this->Session->read('Period.year');
+		$movementType = 'entrada';
+		if($keyword == 'SAL'){$movementType = 'salida';}
+		$movements = $this->InvMovement->find('count', array('conditions'=>array('InvMovementType.status'=>$movementType))); // there are duplicates :S, unless there is no movement delete
+		$quantity = $movements + 1; 
+		//$quantity = $this->InvMovement->getLastInsertID(); //hmm..
+		$code = 'MOV-'.$period.'-'.$keyword.'-'.$quantity;
+		return $code;
+	}
+	
+	
 	public function ajax_save_movement_in(){
 		if($this->RequestHandler->isAjax()){
 			
-			$matriz = $this->request->data['arrayItemsDetails'];
-			//debug($matriz);
-			//print_r($matriz);
+			////////////////////////////////////////////INICIO-CAPTURAR AJAX////////////////////////////////////////////////////////
+			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
+			$movementId = $this->request->data['movementId'];
+			$date = $this->request->data['date'];
+			$warehouse = $this->request->data['warehouse'];
+			$movementType = $this->request->data['movementType'];
+			$description = $this->request->data['description'];
+			////////////////////////////////////////////FIN-CAPTURAR AJAX////////////////////////////////////////////////////////
 			
-			if($matriz[0] == 0){ //In case is empty
-				echo 'esta vacio';
-				
-			}else{
-				echo $matriz[0]['InvMovementDetail']['quantity'];
-				debug($matriz);
+			
+			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
+			$arrayMovement = array('date'=>$date, 'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType, 'description'=>$description);
+			$movementCode = '';
+			if($movementId <> ''){//update
+				$arrayMovement['id'] = $movementId;
+			}else{//insert
+				$movementCode = $this->_generate_code('ENT');
+				$arrayMovement['lc_state'] = 'PENDANT';
+				$arrayMovement['lc_transaction'] = 'CREATE';
+				$arrayMovement['code'] = $movementCode;
 			}
 			
-			//echo count($matriz);
-			//debug($matriz);
+			$data = array('InvMovement'=>$arrayMovement, 'InvMovementDetail'=>$arrayItemsDetails);
+			//print_r($data);
+			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
 			
-			/*
-			//-1//Enviar via request ajax todos los datos del formulario
-			if($this->Session->check('movement_in')){
-				//$array = array();
-				$array = $this->Session->read('movement_in');
-				$strError = '';
-				//0// hacer esta validacion solo si es lc_state = cancelled_movement_in
-				if(count($array) > 0){
-					//$this->Session->write('movement_in.'.$idItem.'.quantity', $quantity);
-					foreach ($array as $value) {
-						//1//busco stock de idItem y comparo con anidado
-						//2//si comparacion no es buena lo guardo en una cadena separada por _ para que lea jquery
-						//3//en jquery marca con class="error" la row con problema y mando una alerta
+
+			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////
+			if($movementId <> ''){//update
+				if($this->InvMovement->InvMovementDetail->deleteAll(array('InvMovementDetail.inv_movement_id'=>$movementId))){
+					if($this->InvMovement->saveAssociated($data)){
+						$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
+						echo 'modificado|'.$strItemsStock;
 					}
-				//0//	
-				
-				//4//si la cadena error es vacia entonces se puede guardar, sino mandar cadena -> Coded
-					if($strError == ''){
-						//5//Save => add or edit (ver si hace automatico con el id, porque la otra vez no queria funcionar :S)
-					}
-					
+				}
+			}else{//insert
+				if($this->InvMovement->saveAssociated($data)){
+					$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
+					$movementIdInserted = $this->InvMovement->id;
+						echo 'insertado|'.$strItemsStock.'|'.$movementCode.'|'.$movementIdInserted;
 				}
 			}
-			* 
-			*/
+			////////////////////////////////////////////FIN-SAVE////////////////////////////////////////////////////////
+		
 		}
 	}
 	
+	
+	public function ajax_update_multiple_stocks(){
+		if($this->RequestHandler->isAjax()){
+			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
+			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
+			$warehouse = $this->request->data['warehouse'];
+			////////////////////////////////////////////FIN-CAPTURAR AJAX////////////////////////////////////////////////////////
+			
+			////////////////////////////////////////////INICIO-CADENA ITEMS STOCKS///////////////////////////////////////////////
+			$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
+			echo $strItemsStock;
+		}
+	}
+
+
+	private function _createStringItemsStocksUpdated($arrayItemsDetails, $idWarehouse){
+		////////////////////////////////////////////INICIO-CREAR CADENA ITEMS STOCK ACUTALIZADOS//////////////////////////////
+			$strItemsStock = '';
+			for($i = 0; $i<count($arrayItemsDetails); $i++){
+				$updatedStock = $this->_find_stock($arrayItemsDetails[$i]['inv_item_id'], $idWarehouse);
+				$strItemsStock .= $arrayItemsDetails[$i]['inv_item_id'].'=>'.$updatedStock.',';
+			}
+			////////////////////////////////////////////FIN-CREAR CADENA ITEMS STOCK ACUTALIZADOS/////////////////////////////////
+			return $strItemsStock;
+	}
+
+
 	///////////////////////////////////////// My fuctions - FINISH	 ///////////////////////////////////////////////
 /*
 	public function index_out() {

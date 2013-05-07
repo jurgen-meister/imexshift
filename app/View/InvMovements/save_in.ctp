@@ -39,7 +39,7 @@
 						?>
 						<table id="tableProcessState" class="table table-bordered table-condensed">
 							<tr>
-								<td id="rowStatesMovementIn" style="background-color:<?php echo $stateColor; ?>; color: white">Entrada</td>
+								<td id="columnStateMovementIn" style="background-color:<?php echo $stateColor; ?>; color: white">Entrada</td>
 							</tr>
 						</table>
 						
@@ -52,38 +52,64 @@
 				
 				<!-- ////////////////////////////////// INICIO CAMPOS FORMULARIOS MOVIMIENTO /////////////////////////////////////// -->
 				<?php
-
+				
+				//////////////////////////////////START - block when APPROVED or CANCELLED///////////////////////////////////////////////////
+				$disable = 'disabled';
+				$btnAddMovementType = '';
+				if($documentState == 'PENDANT' OR $documentState == ''){
+					$disable = 'enabled';	
+					$btnAddMovementType = '<a class="btn btn-primary" href="#" id="addMovementType" title="Nuevo Tipo Movimiento"><i class="icon-plus icon-white"></i></a>';
+				}
+				//////////////////////////////////END - block when APPROVED or CANCELLED///////////////////////////////////////////////////
+				
 				echo $this->BootstrapForm->input('movement_hidden', array(
 					'id'=>'movement_hidden',
 					'value'=>$id,
 					'type'=>'hidden'
 				));
-
+				
+				echo $this->BootstrapForm->input('code', array(
+					'id'=>'code',
+					'label'=>'Código:',
+					'style'=>'background-color:#EEEEEE',
+					'disabled'=>$disable,
+					//'data-toggle'=>'tooltip',
+					//'data-placement'=>'top',
+					'title'=>'Código generado por sistema'
+				));
+				
 				echo $this->BootstrapForm->input('date_in', array(
 					'required' => 'required',
 					'label' => 'Fecha:',
 					'id'=>'date',
 					'value'=>$date,
+					'disabled'=>$disable,
 					'maxlength'=>'0',
 					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 				));
+				
+				
+				
 				echo $this->BootstrapForm->input('inv_warehouse_id', array(
 					'required' => 'required',
 					'label' => 'Almacen:',
 					'id'=>'warehouses',
+					'disabled'=>$disable,
 					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 				));
 
 				echo $this->BootstrapForm->input('inv_movement_type_id', array(
 					'label' => 'Tipo Movimiento:',
 					'id'=>'movementTypes',
+					'disabled'=>$disable,
 					'required' => 'required',
-					'helpInline' => '<a class="btn btn-primary" href="#" id="addMovementType" title="Nuevo Tipo Movimiento"><i class="icon-plus icon-white"></i></a><span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;')
+					'helpInline' => $btnAddMovementType.'<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;')
 				);
 				echo $this->BootstrapForm->input('description', array(
 					'rows' => 2,
 					'style'=>'width:400px',
 					'label' => 'Descripción:',
+					'disabled'=>$disable,
 					'id'=>'description'
 				));
 				?>
@@ -105,18 +131,18 @@
 					
 					<div id="boxTable" class="span8">
 						
-						<?php if($documentState <> 'CANCELLED'){ ?>
+						<?php if($documentState == 'PENDANT' OR $documentState == ''){ ?>
 						<a class="btn btn-primary" href='#' id="btnAddItem" title="Adicionar Item"><i class="icon-plus icon-white"></i></a>
 						<?php } ?>
 						<p></p>
 						
-						<table class="table table-bordered table-condensed table-striped" id="tablaItems">
+						<table class="table table-bordered table-condensed table-striped table-hover" id="tablaItems">
 							<thead>
 								<tr>
 									<th>Item</th>
 									<th>Stock</th>
 									<th>Cantidad</th>
-									<?php if($documentState <> 'CANCELLED'){ ?>
+									<?php if($documentState == 'PENDANT' OR $documentState == ''){ ?>
 									<th></th>
 									<?php }?>
 								</tr>
@@ -128,7 +154,7 @@
 										echo '<td>'.$invMovementDetails[$i]['item'].'<input type="hidden" value="'.$invMovementDetails[$i]['itemId'].'" id="item_hidden" ></td>';
 										echo '<td><span id="stock_hidden'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['stock'].'</span></td>';
 										echo '<td><span id="quantity_hidden'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['cantidad'].'</span></td>';
-										if($documentState <> 'CANCELLED'){
+										if($documentState == 'PENDANT' OR $documentState == ''){
 											echo '<td>';
 											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$invMovementDetails[$i]['itemId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
 												
@@ -149,46 +175,49 @@
 
 				
 			<!-- ////////////////////////////////// INICIO BOTONES /////////////////////////////////////// -->
-			<div class="form-actions">
+			<!--<div class="form-actions">--><!-- no sirve se desconfigura los botones en modo tablet -->
+			<div class="row-fluid"> <!-- INICIO - row fluid para alinear los botones -->
+				<div class="span2"></div> <!-- INICIO Y FIN - ESPACIO A LA IZQUIERDA -->
+				<div class="span6">	<!-- INICIO - span 6 -->
+					<div class="btn-toolbar"> <!-- INICIO - toolbar para dejar espacio entre botones -->
+							<?php 
+								if($documentState == 'PENDANT' OR $documentState == ''){
+									echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));	
 
-				<div class="btn-toolbar">
-						<?php 
-							if($documentState <> 'CANCELLED'){
-								echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));	
-								
-							}
-							echo $this->Html->link('Cancelar', array('action'=>'index_in'), array('class'=>'btn') );
-						?>
+								}
+								echo $this->Html->link('Cancelar', array('action'=>'index_in'), array('class'=>'btn') );
+							?>
 
-						<?php 
-							switch ($documentState){
-										case '':
-											$displayApproved = 'none';
-											$displayCancelled = 'none';
-											break;
-										case 'PENDANT':
-											$displayApproved = 'inline';
-											$displayCancelled = 'none';
-											break;
-										case 'APPROVED':
-											$displayApproved = 'none';
-											$displayCancelled = 'inline';
-											break;
-										case 'CANCELLED':
-											$displayApproved = 'none';
-											$displayCancelled = 'none';
-											break;
-									}
-						?>
+							<?php 
+								switch ($documentState){
+											case '':
+												$displayApproved = 'none';
+												$displayCancelled = 'none';
+												break;
+											case 'PENDANT':
+												$displayApproved = 'inline';
+												$displayCancelled = 'none';
+												break;
+											case 'APPROVED':
+												$displayApproved = 'none';
+												$displayCancelled = 'inline';
+												break;
+											case 'CANCELLED':
+												$displayApproved = 'none';
+												$displayCancelled = 'none';
+												break;
+										}
+							?>
 
-						<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Entrada Almacen</a>
-						<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Entrada Almacen</a>
-				</div>
-			
-			</div>
+							<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Entrada Almacen</a>
+							<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Entrada Almacen</a>
+					</div> <!-- FIN - toolbar para dejar espacio entre botones -->
+				</div> <!-- FIN - span 6 -->
+				<div class="span4"></div> <!-- INICIO Y FIN - ESPACIO A LA DERECHA PARA NO DEJAR HUECOS -->
+			</div> <!-- FIN - row fluid para alinear los botones -->
+			<!--</div>--><!-- no sirve se desconfigura los botones en modo tablet class="form-actions" -->
 			<!-- ////////////////////////////////// FIN BOTONES /////////////////////////////////////// -->
-	
-			
+
 	<!-- ////////////////////////////////// INICIO - FIN FORM ///////////////////////////////////// -->		
 	</fieldset>
 	<?php echo $this->BootstrapForm->end();?>
@@ -196,8 +225,8 @@
 	
 	
 	<!-- ////////////////////////////////// INICIO MENSAJES /////////////////////////////////////// -->
-	<div id="processing"></div>
 	<div id="boxMessage"></div>
+	<div id="processing"></div>
 	<!-- ////////////////////////////////// FIN MENSAJES /////////////////////////////////////// -->
 	
 	
