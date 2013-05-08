@@ -56,20 +56,32 @@
 				//////////////////////////////////START - block when APPROVED or CANCELLED///////////////////////////////////////////////////
 				$disable = 'disabled';
 				$btnAddMovementType = '';
+				
 				if($documentState == 'PENDANT' OR $documentState == ''){
 					$disable = 'enabled';	
-					$btnAddMovementType = '<a class="btn btn-primary" href="#" id="addMovementType" title="Nuevo Tipo Movimiento"><i class="icon-plus icon-white"></i></a>';
+					$btnAddMovementType = '<a class="btn btn-primary" href="#" id="btnAddMovementType" title="Nuevo Tipo Movimiento"><i class="icon-plus icon-white"></i></a>';
 				}
+				
 				//////////////////////////////////END - block when APPROVED or CANCELLED///////////////////////////////////////////////////
 				
 				echo $this->BootstrapForm->input('movement_hidden', array(
-					'id'=>'movement_hidden',
+					//'id'=>'movement_hidden',
+					'id'=>'txtMovementIdHidden',
 					'value'=>$id,
 					'type'=>'hidden'
 				));
 				
+				/*
+				echo $this->BootstrapForm->input('document_state', array(
+					'id'=>'txtDocumentStateHidden',
+					'value'=>$documentState,
+					//'type'=>'hidden'
+				));
+				*/
+				
 				echo $this->BootstrapForm->input('code', array(
-					'id'=>'code',
+					//'id'=>'code',
+					'id'=>'txtCode',
 					'label'=>'Código:',
 					'style'=>'background-color:#EEEEEE',
 					'disabled'=>$disable,
@@ -81,7 +93,7 @@
 				echo $this->BootstrapForm->input('date_in', array(
 					'required' => 'required',
 					'label' => 'Fecha:',
-					'id'=>'date',
+					'id'=>'txtDate',
 					'value'=>$date,
 					'disabled'=>$disable,
 					'maxlength'=>'0',
@@ -93,14 +105,15 @@
 				echo $this->BootstrapForm->input('inv_warehouse_id', array(
 					'required' => 'required',
 					'label' => 'Almacen:',
-					'id'=>'warehouses',
+					'id'=>'cbxWarehouses',
+					//'value'=>$invWarehouses,
 					'disabled'=>$disable,
 					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 				));
 
 				echo $this->BootstrapForm->input('inv_movement_type_id', array(
 					'label' => 'Tipo Movimiento:',
-					'id'=>'movementTypes',
+					'id'=>'cbxMovementTypes',
 					'disabled'=>$disable,
 					'required' => 'required',
 					'helpInline' => $btnAddMovementType.'<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;')
@@ -110,7 +123,7 @@
 					'style'=>'width:400px',
 					'label' => 'Descripción:',
 					'disabled'=>$disable,
-					'id'=>'description'
+					'id'=>'txtDescription'
 				));
 				?>
 				<!-- ////////////////////////////////// FIN CAMPOS FORMULARIOS MOVIMIENTO /////////////////////////////////////// -->
@@ -143,7 +156,7 @@
 									<th>Stock</th>
 									<th>Cantidad</th>
 									<?php if($documentState == 'PENDANT' OR $documentState == ''){ ?>
-									<th></th>
+									<th class="columnItemsButtons"></th>
 									<?php }?>
 								</tr>
 							</thead>
@@ -151,11 +164,11 @@
 								<?php
 								for($i=0; $i<count($invMovementDetails); $i++){
 									echo '<tr>';
-										echo '<td>'.$invMovementDetails[$i]['item'].'<input type="hidden" value="'.$invMovementDetails[$i]['itemId'].'" id="item_hidden" ></td>';
+										echo '<td><span id="item_name_hidden'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['item'].'</span><input type="hidden" value="'.$invMovementDetails[$i]['itemId'].'" id="item_hidden" ></td>';
 										echo '<td><span id="stock_hidden'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['stock'].'</span></td>';
 										echo '<td><span id="quantity_hidden'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['cantidad'].'</span></td>';
 										if($documentState == 'PENDANT' OR $documentState == ''){
-											echo '<td>';
+											echo '<td class="columnItemsButtons">';
 											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$invMovementDetails[$i]['itemId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
 												
 												<a class="btn btn-danger" href="#" id="btnDeleteItem'.$invMovementDetails[$i]['itemId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';

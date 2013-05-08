@@ -7,10 +7,20 @@ $(document).ready(function(){
 	var arrayItemsAlreadySaved = []; 
 	startEventsWhenExistsItems();
 	
+	clearFieldsForFirefox();
 
 	//************************************************************************//
 	//////////////////////////////////BEGIN-FUNCTIONS////////////////
 	//************************************************************************//
+	//firefox doesn't clear by himself the fields when there is a new form :@
+	function clearFieldsForFirefox(){
+		if(arr[3] == 'save_in'){
+			if(arr[4] == null){
+				$('input').val('');//empty all inputs including hidden thks jquery 
+			}
+		}
+	}
+	
 	//When exist items, it starts its events and fills arrayItemsAlreadySaved
 	function startEventsWhenExistsItems(){
 		var arrayAux = [];
@@ -44,10 +54,10 @@ $(document).ready(function(){
 	
 	function validateBeforeSaveAll(arrayItemsDetails){
 		var error = '';
-		var date = $('#date').val();
-		var warehouses = $('#warehouses').text();
-		var movementTypes = $('#movementTypes').text();
-		var movement_hidden = $('#movement_hidden').val();
+		var date = $('#txtDate').val();
+		var warehouses = $('#cbxWarehouses').text();
+		var movementTypes = $('#cbxMovementTypes').text();
+		//var movement_hidden = $('#txtMovementIdHidden').val();
 
 		if(date == ''){	error+='<li> El campo "Fecha" no puede estar vacio </li>'; }
 		if(warehouses == ''){	error+='<li> El campo "Almacen" no puede estar vacio </li>'; }
@@ -83,7 +93,6 @@ $(document).ready(function(){
 	}
 	
 	function validateWarehouse(){
-		
 		var arrayItemsDetails = [];
 		arrayItemsDetails = getItemsDetails();
 		
@@ -91,6 +100,19 @@ $(document).ready(function(){
 			ajax_update_multiple_stocks(arrayItemsDetails);
 			alert('Se cambio de "Almacen", se actualizara los "Stocks" de los "Items"');
 		}
+	}
+	
+	function validateCancelMovementIn(arrayItemsStocksErrors){
+		var error = '';
+		var auxItemsStocks = [];
+		for(var i=0; i<arrayItemsStocksErrors.length; i++){
+			auxItemsStocks = arrayItemsStocksErrors[i].split('=>');//  item5=>9stock
+			$('#stock_hidden'+auxItemsStocks[0]).text(auxItemsStocks[1]);
+			if(auxItemsStocks[0] != ''){
+				error+='<li>'+$('#item_name_hidden'+auxItemsStocks[0]).text()+': la "Cantidad = '+$('#quantity_hidden'+auxItemsStocks[0]).text()+'" es mayor su "Stock = '+auxItemsStocks[1]+'" </li>';	
+			}
+		}
+		return error;
 	}
 	
 	function initiateModalAddItem(){
@@ -145,10 +167,10 @@ $(document).ready(function(){
 	
 	function createRowItemTable(itemId, itemCodeName, stock, quantity){
 		$('#tablaItems > tbody:last').append('<tr>\n\
-												<td>'+itemCodeName+'<input type="hidden" value="'+itemId+'" id="item_hidden" ></td>\n\
+												<td><span id="item_name_hidden'+itemId+'">'+itemCodeName+'</span><input type="hidden" value="'+itemId+'" id="item_hidden" ></td>\n\
 												<td><span id="stock_hidden'+itemId+'">'+stock+'</span></td>\n\
 												<td><span id="quantity_hidden'+itemId+'">'+quantity+'</span></td>\n\
-												<td>\n\
+												<td class="columnItemsButtons">\n\
 													<a class="btn btn-primary" href="#" id="btnEditItem'+itemId+'" title="Editar"><i class="icon-pencil icon-white"></i></a>\n\
 													<a class="btn btn-danger" href="#" id="btnDeleteItem'+itemId+'" title="Eliminar"><i class="icon-trash icon-white"></i></a>\n\
 												</td>\n\
@@ -228,9 +250,27 @@ $(document).ready(function(){
 		var auxItemsStocks = [];
 		for(var i=0; i<arrayItemsStocks.length; i++){
 			auxItemsStocks = arrayItemsStocks[i].split('=>');//  item5=>9stock
-			$('#stock_hidden'+auxItemsStocks[0]).text(auxItemsStocks[1]);
+			$('#stock_hidden'+auxItemsStocks[0]).text(auxItemsStocks[1]);  //update only if quantities are APPROVED
 		}
 	}
+	
+	function changeStateApproved(){
+		if(confirm('Al APROBAR este documento ya no se podra hacer mas modificaciones. Esta seguro?')){
+			var arrayItemsDetails = [];
+			arrayItemsDetails = getItemsDetails();
+			ajax_change_state_approved_movement_in(arrayItemsDetails);
+		}
+	}
+	
+	function changeStateCancelled(){
+		if(confirm('Al CANCELAR este documento ya no sera valido y no habra marcha atras. Esta seguro?')){
+			$('#cbxWarehouses').removeAttr('disabled');
+			var arrayItemsDetails = [];
+			arrayItemsDetails = getItemsDetails();
+			ajax_change_state_cancelled_movement_in(arrayItemsDetails);
+		}
+	}
+	
 	//************************************************************************//
 	//////////////////////////////////END-FUNCTIONS//////////////////////
 	//************************************************************************//
@@ -246,7 +286,7 @@ $(document).ready(function(){
 			validateOnlyNumbers(event);			
 	});
 	//Calendar script
-	$('#date').glDatePicker(
+	$('#txtDate').glDatePicker(
 	{
 		cssName: 'flatwhite',		
 		onClick: function(target, cell, date, data) {
@@ -285,20 +325,22 @@ $(document).ready(function(){
 	});
 	////////////////
 	$('#btnApproveState').click(function(){
-		alert('Se aprueba entrada');
+		//alert('Se aprueba entrada');
+		changeStateApproved();
 		return false;
 	});
 	$('#btnCancellState').click(function(){
-		alert('Se cancela entrada');
+		//alert('Se cancela entrada');
+		changeStateCancelled();
 		return false;
 	});
 	
-	$('#warehouses').change(function(){
+	$('#cbxWarehouses').change(function(){
 		validateWarehouse();
 	});
 	
-	$('#date').keypress(function(){return false;});
-	$('#code').keypress(function(){return false;});
+	$('#txtDate').keypress(function(){return false;});
+	$('#txtCode').keypress(function(){return false;});
 	//************************************************************************//
 	//////////////////////////////////END-CONTROLS EVENTS//////////////////////
 	//************************************************************************//
@@ -317,11 +359,11 @@ $(document).ready(function(){
             type:"POST",
             url:moduleController + "ajax_save_movement_in",			
             data:{arrayItemsDetails: arrayItemsDetails 
-				  ,movementId:$('#movement_hidden').val()
-				  ,date:$('#date').val()
-				  ,warehouse:$('#warehouses').val()
-				  ,movementType:$('#movementTypes').val()
-				  ,description:$('#description').val()
+				  ,movementId:$('#txtMovementIdHidden').val()
+				  ,date:$('#txtDate').val()
+				  ,warehouse:$('#cbxWarehouses').val()
+				  ,movementType:$('#cbxMovementTypes').val()
+				  ,description:$('#txtDescription').val()
 			  },
             beforeSend: showProcessing(),
             success: function(data){
@@ -330,10 +372,10 @@ $(document).ready(function(){
 				var arrayCatch = data.split('|');
 
 				if(arrayCatch[0] == 'insertado'){ 
-					$('#code').val(arrayCatch[2]);
+					$('#txtCode').val(arrayCatch[2]);
 					$('#columnStateMovementIn').css('background-color','#F99C17');
 					$('#btnApproveState').show();
-					$('#movement_hidden').val(arrayCatch[3]);
+					$('#txtMovementIdHidden').val(arrayCatch[3]);
 				}
 				
 				//update items stocks
@@ -353,14 +395,90 @@ $(document).ready(function(){
 	}
 	
 	
+	function ajax_change_state_approved_movement_in(arrayItemsDetails){
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_change_state_approved_movement_in",			
+            data:{arrayItemsDetails: arrayItemsDetails 
+				  ,movementId:$('#txtMovementIdHidden').val()
+				  ,warehouse:$('#cbxWarehouses').val()
+			  },
+            beforeSend: showProcessing(),
+            success: function(data){
+				var arrayItemsStocks = data.split(',');
+				updateMultipleStocks(arrayItemsStocks);
+				$('#columnStateMovementIn').css('background-color','#54AA54');
+				$('#btnApproveState').hide();
+				$('#btnCancellState').show();
+				$('#btnSaveAll').hide();
+				$('#btnAddMovementType').hide();
+				$('#btnAddItem').hide();
+				$('.columnItemsButtons').hide();
+				
+				$('#txtDate').attr('disabled','disabled');
+				$('#txtCode').attr('disabled','disabled');
+				$('#cbxWarehouses').attr('disabled','disabled');
+				$('#cbxMovementTypes').attr('disabled','disabled');
+				$('#txtDescription').attr('disabled','disabled');
+				
+				$('#processing').text('');
+				$('#boxMessage').html('<div class="alert alert-success">\n\
+				<button type="button" class="close" data-dismiss="alert">&times;</button>Aprobado con exito<div>');
+			},
+			error:function(data){
+				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				$('#processing').text('');
+			}
+        });
+	}
+	
+	function ajax_change_state_cancelled_movement_in(arrayItemsDetails){
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_change_state_cancelled_movement_in",			
+            data:{arrayItemsDetails: arrayItemsDetails 
+				  ,movementId:$('#txtMovementIdHidden').val()
+				  //,warehouse:$('#cbxWarehouses').val()//is disabled doesn't send nothing
+			  },
+            beforeSend: function(data){
+				//$('#cbxWarehouses').removeAttr('disabled');
+				showProcessing();
+			},
+            success: function(data){
+				var arrayCatch = data.split('|');
+				var arrayItemsStocks = arrayCatch[1].split(',');
+				if(arrayCatch[0] == 'cancelado'){
+					updateMultipleStocks(arrayItemsStocks);
+					$('#columnStateMovementIn').css('background-color','#BD362F');
+					$('#btnCancellState').hide();
+					$('#boxMessage').html('<div class="alert alert-success">\n\
+					<button type="button" class="close" data-dismiss="alert">&times;</button>Cancelado con exito<div>');
+				}
+				if(arrayCatch[0] == 'error'){
+					var error = validateCancelMovementIn(arrayItemsStocks);
+					$('#boxMessage').html('<div class="alert alert-error">\n\
+					<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo cancelar debido a falta de stock:</p><ul>'+error+'</ul><div>');
+				}
+				//$('#cbxWarehouses').attr('disabled','disabled');
+				$('#processing').text('');
+			},
+			error:function(data){
+				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				$('#processing').text('');
+			}
+        });
+	}
+	
+	
+	
 	
 	//Get items and stock for the fist item when inititates modal
 	function ajax_initiate_modal_add_item_in(itemsAlreadySaved){
 		 $.ajax({
             type:"POST",
             url:moduleController + "ajax_initiate_modal_add_item_in",			
-            data:{itemsAlreadySaved: itemsAlreadySaved, warehouse: $('#warehouses').val()},
-            beforeSend: showProcessing,
+            data:{itemsAlreadySaved: itemsAlreadySaved, warehouse: $('#cbxWarehouses').val()},
+            beforeSend: showProcessing(),
             success: function(data){
 				$('#processing').text('');
 				$('#itemSaveError').text('');
@@ -373,6 +491,10 @@ $(document).ready(function(){
 				$('#stock').keypress(function(){
 					return false;
 				});
+			},
+			error:function(data){
+				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				$('#processing').text('');
 			}
         });
 	}
@@ -382,14 +504,18 @@ $(document).ready(function(){
 		$.ajax({
             type:"POST",
             url:moduleController + "ajax_update_stock",			
-            data:{warehouse: $('#warehouses').val(), item: $('#items').val()},
-            beforeSend: showProcessing,
+            data:{warehouse: $('#cbxWarehouses').val(), item: $('#items').val()},
+            beforeSend: showProcessing(),
             success: function(data){
 				$('#processing').text("");
 				$('#boxStock').html(data);
 				$('#stock').bind("keypress",function(){ //must be binded 'cause input is re-loaded by a previous ajax'
 					return false;
 				});
+			},
+			error:function(data){
+				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				$('#processing').text('');
 			}
         });
 	}
@@ -399,16 +525,24 @@ $(document).ready(function(){
 		$.ajax({
             type:"POST",
             url:moduleController + "ajax_update_multiple_stocks",			
-            data:{warehouse: $('#warehouses').val(), arrayItemsDetails: arrayItemsDetails},
+            data:{warehouse: $('#cbxWarehouses').val(), arrayItemsDetails: arrayItemsDetails},
             beforeSend: showProcessing(),
             success: function(data){
 				var arrayItemsStocks = data.split(',');
 				updateMultipleStocks(arrayItemsStocks);
 				$('#processing').text('');
 				//$('#boxStock').html(data);
+			},
+			error:function(data){
+				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				$('#processing').text('');
 			}
         });
 	}
+	
+	
+	
+	
 	
 	//************************************************************************//
 	//////////////////////////////////END-AJAX FUNCTIONS////////////////////////

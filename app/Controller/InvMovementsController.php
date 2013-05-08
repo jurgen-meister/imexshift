@@ -47,13 +47,11 @@ class InvMovementsController extends AppController {
 		$this->paginate = array(
 		// 'conditions' => $conditions,
 		// 'order' => array('InvMovement.code DESC'),
-		/*
+		
 		'conditions'=>array(
-			 'InvMovement.lc_transaction !='=>'LOGIC_DELETE',
+			 //'InvMovement.lc_state !='=>'LOGIC_DELETE',
 			 'InvMovementType.status'=> 'entrada'
-			 ),
-		 * 
-		 */
+		 ),
 		//'recursive'=>2,	
 		'order'=> array('InvMovement.id'),
 		'limit' => 20,
@@ -107,7 +105,6 @@ class InvMovementsController extends AppController {
 		//debug($this->request->data);
 		
 	}
-	
 	
 	
 	public function ajax_initiate_modal_add_item_in(){
@@ -177,7 +174,12 @@ class InvMovementsController extends AppController {
 		//Movements
 		$movements = $this->InvMovement->InvMovementDetail->find('all', array(
 			'fields'=>array('InvMovementDetail.inv_movement_id', 'InvMovementDetail.quantity'),
-			'conditions'=>array('InvMovement.inv_warehouse_id'=>$idWarehouse, 'InvMovementDetail.inv_item_id'=>$idItem, 'InvMovementType.status'=>$status)
+			'conditions'=>array(
+				'InvMovement.inv_warehouse_id'=>$idWarehouse,
+				'InvMovementDetail.inv_item_id'=>$idItem,
+				'InvMovementType.status'=>$status,
+				'InvMovement.lc_state'=>'APPROVED',
+				)
 		));
 		//Give format to nested array movements
 		$movementsCleaned = $this->_clean_nested_arrays($movements);
@@ -243,6 +245,9 @@ class InvMovementsController extends AppController {
 			
 			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
 			$arrayMovement = array('date'=>$date, 'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType, 'description'=>$description);
+			
+			//print_r($arrayMovement);
+			
 			$movementCode = '';
 			if($movementId <> ''){//update
 				$arrayMovement['id'] = $movementId;
@@ -278,7 +283,45 @@ class InvMovementsController extends AppController {
 		}
 	}
 	
-	
+	public function ajax_change_state_approved_movement_in(){
+		if($this->RequestHandler->isAjax()){
+			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
+			$movementId = $this->request->data['movementId'];
+			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
+			$warehouse = $this->request->data['warehouse'];
+			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
+						
+			$data = array('id'=>$movementId, 'lc_state'=>'APPROVED');
+			if($this->InvMovement->save($data)){
+				$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
+				echo $strItemsStock;
+			}
+		}
+	}
+
+		public function ajax_change_state_cancelled_movement_in(){
+		if($this->RequestHandler->isAjax()){
+			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
+			$movementId = $this->request->data['movementId'];
+			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
+			//$warehouse = $this->request->data['warehouse']; //combobox is disabled doesn't send nothing
+			$warehouse = $this->InvMovement->field('InvMovement.inv_warehouse_id', array('InvMovement.id'=>$movementId));
+			//debug($warehouse);
+			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
+			$error=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouse);
+			if($error == ''){
+				$data = array('id'=>$movementId, 'lc_state'=>'CANCELLED');
+				if($this->InvMovement->save($data)){
+					$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
+					echo 'cancelado|'.$strItemsStock;
+				}
+			}else{
+				echo 'error|'.$error;
+			}
+						
+		}
+	}
+
 	public function ajax_update_multiple_stocks(){
 		if($this->RequestHandler->isAjax()){
 			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
@@ -292,7 +335,8 @@ class InvMovementsController extends AppController {
 		}
 	}
 
-
+	
+	
 	private function _createStringItemsStocksUpdated($arrayItemsDetails, $idWarehouse){
 		////////////////////////////////////////////INICIO-CREAR CADENA ITEMS STOCK ACUTALIZADOS//////////////////////////////
 			$strItemsStock = '';
@@ -304,7 +348,16 @@ class InvMovementsController extends AppController {
 			return $strItemsStock;
 	}
 
-
+	private function _validateItemsStocksOut($arrayItemsDetails, $idWarehouse){
+		$strItemsStockError = '';
+		for($i = 0; $i<count($arrayItemsDetails); $i++){
+				$updatedStock = $this->_find_stock($arrayItemsDetails[$i]['inv_item_id'], $idWarehouse);
+				if($updatedStock < $arrayItemsDetails[$i]['quantity']){
+					$strItemsStockError .= $arrayItemsDetails[$i]['inv_item_id'].'=>'.$updatedStock.',';
+				}
+		}
+		return $strItemsStockError;
+	}
 	///////////////////////////////////////// My fuctions - FINISH	 ///////////////////////////////////////////////
 /*
 	public function index_out() {
