@@ -47,8 +47,14 @@ $(document).ready(function(){
 				
 				error+='<li>El campo "Cantidad" no puede ser cero</li>'; 
 			}
+			if ($("#quantityPurchase").length > 0){//existe
+				if(parseInt(quantity, 10) > $('#quantityPurchase').val()){
+					error+='<li>La "Cantidad" de entrada no puede ser mayor a la "Compra"</li>'; 
+				}
+			}
 		}
 		if(item == ''){error+='<li>El campo "Item" no puede estar vacio</li>';}
+		
 		return error;
 	}
 	
@@ -56,18 +62,29 @@ $(document).ready(function(){
 		var error = '';
 		var date = $('#txtDate').val();
 		var warehouses = $('#cbxWarehouses').text();
-		var movementTypes = $('#cbxMovementTypes').text();
-		//var movement_hidden = $('#txtMovementIdHidden').val();
-
+		if ($("#cbxMovementTypes").length > 0){//existe
+			var movementTypes = $('#cbxMovementTypes').text();
+			if(movementTypes == ''){	error+='<li> El campo "Tipo Movimiento" no puede estar vacio </li>'; }
+		}
 		if(date == ''){	error+='<li> El campo "Fecha" no puede estar vacio </li>'; }
 		if(warehouses == ''){	error+='<li> El campo "Almacen" no puede estar vacio </li>'; }
-		if(movementTypes == ''){	error+='<li> El campo "Tipo Movimiento" no puede estar vacio </li>'; }
-		//if(movement_hidden == ''){	//if it's new
-		if(arrayItemsDetails[0] == 0){
-			error+='<li> Debe existir al menos 1 "Item" </li>'; 
-		}
-		//}
+		
+		if(arrayItemsDetails[0] == 0){error+='<li> Debe existir al menos 1 "Item" </li>';}
+		
+		var itemZero = findIfOneItemHasQuantityZero(arrayItemsDetails);
+		if(itemZero > 0){error+='<li> Se encontraron '+ itemZero +' "Items" con "Cantidad" 0, no puede existir ninguno </li>';}
+		
 		return error;
+	}
+	
+	function findIfOneItemHasQuantityZero(arrayItemsDetails){
+		var cont = 0;
+		for(var i = 0; i < arrayItemsDetails.length; i++){
+			if(parseInt(arrayItemsDetails[i]['quantity'],10) == 0){
+				cont++;
+			}
+		}
+		return cont;
 	}
 	
 	function initiateModal(){
@@ -133,6 +150,10 @@ $(document).ready(function(){
 		$('#quantity').val(objectTableRowSelected.find('#quantity_hidden'+itemIdForEdit).text());
 		$('#stock').val(objectTableRowSelected.find('#stock_hidden'+itemIdForEdit).text());
 		$('#stock').keypress(function(){return false;});
+		if ($("#quantityPurchase").length > 0){//existe
+			$('#quantityPurchase').val(objectTableRowSelected.find('#quantity_purchase_hidden'+itemIdForEdit).text());
+			$('#quantityPurchase').keypress(function(){return false;});
+		}
 		$('#items').empty();
 		$('#items').append('<option value="'+itemIdForEdit+'">'+objectTableRowSelected.find('td').text()+'</option>');
 		initiateModal();
@@ -213,13 +234,19 @@ $(document).ready(function(){
 		var itemId = '';
 		var itemStock = '';
 		var itemQuantity = '';
+		var itemQuantityDocument = '';
 		
 		$('#tablaItems tbody tr').each(function(){		
 			itemId = $(this).find('#item_hidden').val();
 			itemStock = $(this).find('#stock_hidden'+itemId).text();
 			itemQuantity = $(this).find('#quantity_hidden'+itemId).text();
-			arrayItemsDetails.push({'inv_item_id':itemId, 'stock':itemStock, 'quantity':itemQuantity});
-
+	
+			if ($('#quantity_purchase_hidden'+itemId).length > 0){//existe
+				itemQuantityDocument = $(this).find('#quantity_purchase_hidden'+itemId).text();
+			}
+			
+			arrayItemsDetails.push({'inv_item_id':itemId, 'stock':itemStock, 'quantity':itemQuantity, 'quantity_document':itemQuantityDocument});
+			
 		});
 		
 		if(arrayItemsDetails.length == 0){  //For fix undefined index
@@ -240,7 +267,7 @@ $(document).ready(function(){
 		
 		var error = validateBeforeSaveAll(arrayItemsDetails);
 		if( error == ''){
-			ajax_save_movement_in(arrayItemsDetails);
+				ajax_save_movement_in(arrayItemsDetails);
 		}else{
 			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
 		}
@@ -341,6 +368,9 @@ $(document).ready(function(){
 	
 	$('#txtDate').keypress(function(){return false;});
 	$('#txtCode').keypress(function(){return false;});
+	if ($("#txtDocumentCode").length > 0){//existe
+		$('#txtDocumentCode').keypress(function(){return false;});
+	}
 	//************************************************************************//
 	//////////////////////////////////END-CONTROLS EVENTS//////////////////////
 	//************************************************************************//
@@ -353,8 +383,17 @@ $(document).ready(function(){
 	////************************************************************************//
 	
 	
+	
 	//Save movement IN
 	function ajax_save_movement_in(arrayItemsDetails){
+		var movementType =1;
+		var documentCode ='';
+		if ($("#cbxMovementTypes").length > 0){//existe
+			movementType = $('#cbxMovementTypes').val();
+		}
+		if ($("#txtDocumentCode").length > 0){//existe
+			documentCode = $('#txtDocumentCode').val();
+		}
 		$.ajax({
             type:"POST",
             url:moduleController + "ajax_save_movement_in",			
@@ -362,8 +401,9 @@ $(document).ready(function(){
 				  ,movementId:$('#txtMovementIdHidden').val()
 				  ,date:$('#txtDate').val()
 				  ,warehouse:$('#cbxWarehouses').val()
-				  ,movementType:$('#cbxMovementTypes').val()
+				  ,movementType:movementType
 				  ,description:$('#txtDescription').val()
+				  ,documentCode:documentCode
 			  },
             beforeSend: showProcessing(),
             success: function(data){
@@ -374,6 +414,7 @@ $(document).ready(function(){
 				if(arrayCatch[0] == 'insertado'){ 
 					$('#txtCode').val(arrayCatch[2]);
 					$('#columnStateMovementIn').css('background-color','#F99C17');
+					$('#columnStateMovementIn').text('Pendiente');
 					$('#btnApproveState').show();
 					$('#txtMovementIdHidden').val(arrayCatch[3]);
 				}
@@ -396,29 +437,49 @@ $(document).ready(function(){
 	
 	
 	function ajax_change_state_approved_movement_in(arrayItemsDetails){
+		var movementType =1;
+		var documentCode ='';
+		if ($("#cbxMovementTypes").length > 0){//existe
+			movementType = $('#cbxMovementTypes').val();
+		}
+		if ($("#txtDocumentCode").length > 0){//existe
+			documentCode = $('#txtDocumentCode').val();
+		}
 		$.ajax({
             type:"POST",
             url:moduleController + "ajax_change_state_approved_movement_in",			
             data:{arrayItemsDetails: arrayItemsDetails 
 				  ,movementId:$('#txtMovementIdHidden').val()
+				  ,date:$('#txtDate').val()
 				  ,warehouse:$('#cbxWarehouses').val()
+				  ,movementType:movementType
+				  ,description:$('#txtDescription').val()
+				  ,documentCode:documentCode
 			  },
             beforeSend: showProcessing(),
             success: function(data){
 				var arrayItemsStocks = data.split(',');
 				updateMultipleStocks(arrayItemsStocks);
 				$('#columnStateMovementIn').css('background-color','#54AA54');
+				$('#columnStateMovementIn').text('Aprobado');
 				$('#btnApproveState').hide();
 				$('#btnCancellState').show();
 				$('#btnSaveAll').hide();
 				$('#btnAddMovementType').hide();
-				$('#btnAddItem').hide();
+				if ($("#btnAddItem").length > 0){//existe
+					$('#btnAddItem').hide();
+				}
 				$('.columnItemsButtons').hide();
 				
+				if ($("#txtDocumentCode").length > 0){//existe
+					$("#txtDocumentCode").attr('disabled','disabled');
+				}
 				$('#txtDate').attr('disabled','disabled');
 				$('#txtCode').attr('disabled','disabled');
 				$('#cbxWarehouses').attr('disabled','disabled');
-				$('#cbxMovementTypes').attr('disabled','disabled');
+				if ($('#cbxMovementTypes').length > 0){//existe
+					$('#cbxMovementTypes').attr('disabled','disabled');
+				}
 				$('#txtDescription').attr('disabled','disabled');
 				
 				$('#processing').text('');
@@ -438,18 +499,15 @@ $(document).ready(function(){
             url:moduleController + "ajax_change_state_cancelled_movement_in",			
             data:{arrayItemsDetails: arrayItemsDetails 
 				  ,movementId:$('#txtMovementIdHidden').val()
-				  //,warehouse:$('#cbxWarehouses').val()//is disabled doesn't send nothing
 			  },
-            beforeSend: function(data){
-				//$('#cbxWarehouses').removeAttr('disabled');
-				showProcessing();
-			},
+            beforeSend:showProcessing(),
             success: function(data){
 				var arrayCatch = data.split('|');
 				var arrayItemsStocks = arrayCatch[1].split(',');
 				if(arrayCatch[0] == 'cancelado'){
 					updateMultipleStocks(arrayItemsStocks);
 					$('#columnStateMovementIn').css('background-color','#BD362F');
+					$('#columnStateMovementIn').text('Cancelado');
 					$('#btnCancellState').hide();
 					$('#boxMessage').html('<div class="alert alert-success">\n\
 					<button type="button" class="close" data-dismiss="alert">&times;</button>Cancelado con exito<div>');
@@ -459,7 +517,6 @@ $(document).ready(function(){
 					$('#boxMessage').html('<div class="alert alert-error">\n\
 					<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo cancelar debido a falta de stock:</p><ul>'+error+'</ul><div>');
 				}
-				//$('#cbxWarehouses').attr('disabled','disabled');
 				$('#processing').text('');
 			},
 			error:function(data){

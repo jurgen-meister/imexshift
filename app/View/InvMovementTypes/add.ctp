@@ -9,21 +9,18 @@
 					'required' => 'required',
 					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
 				);
-				echo $this->BootstrapForm->input('status_id', array(
+				echo $this->BootstrapForm->input('status', array(
 					'label'=>'Status:',
 					'required' => 'required',
 					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
 				);
-				echo $this->BootstrapForm->input('document_id', array(
+				/*
+				echo $this->BootstrapForm->input('document', array(
 					'label'=>'Tiene Documento:',
 					'required' => 'required',
 					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
 				);
-				echo $this->BootstrapForm->input('ref_table', array(
-				'label'=>'Tabla BD Ref:',
-				'required' => 'required',
-				'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
-				);
+				 */
 				?>
 				<?php echo $this->BootstrapForm->submit(__('Guardar'));?>
 			</fieldset>

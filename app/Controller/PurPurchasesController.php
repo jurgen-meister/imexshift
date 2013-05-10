@@ -1,11 +1,11 @@
 <?php
 App::uses('AppController', 'Controller');
 /**
- * InvMovementTypes Controller
+ * PurPurchases Controller
  *
- * @property InvMovementType $InvMovementType
+ * @property PurPurchase $PurPurchase
  */
-class InvMovementTypesController extends AppController {
+class PurPurchasesController extends AppController {
 
 /**
  *  Layout
@@ -32,17 +32,10 @@ class InvMovementTypesController extends AppController {
  * @return void
  */
 	public function index() {
-		
-	$this->paginate = array(
-     //'order' => array('InvMovementType.id DESC'),
-	 //'conditions'=>array('InvMovement.lc_transaction !='=>'LOGIC_DELETE'),
-     'limit' => 10
-	);
-		
-		$this->InvMovementType->recursive = 0;
-		$this->set('invMovementTypes', $this->paginate('InvMovementType'));
+		$this->PurPurchase->recursive = 0;
+		$this->set('purPurchases', $this->paginate());
 	}
-
+	
 /**
  * view method
  *
@@ -50,11 +43,11 @@ class InvMovementTypesController extends AppController {
  * @return void
  */
 	public function view($id = null) {
-		$this->InvMovementType->id = $id;
-		if (!$this->InvMovementType->exists()) {
-			throw new NotFoundException(__('Tipo de movimiento invalido'));
+		$this->PurPurchase->id = $id;
+		if (!$this->PurPurchase->exists()) {
+			throw new NotFoundException(__('Invalid %s', __('pur purchase')));
 		}
-		$this->set('invMovementType', $this->InvMovementType->read(null, $id));
+		$this->set('purPurchase', $this->PurPurchase->read(null, $id));
 	}
 
 /**
@@ -64,12 +57,10 @@ class InvMovementTypesController extends AppController {
  */
 	public function add() {
 		if ($this->request->is('post')) {
-			$this->InvMovementType->create();
-			//debug($this->request->data);
-			$this->request->data['InvMovementType']['document'] = 0;
-			if ($this->InvMovementType->save($this->request->data)) {
+			$this->PurPurchase->create();
+			if ($this->PurPurchase->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('Se guardo con exito'),
+					__('The %s has been saved', __('pur purchase')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -79,7 +70,7 @@ class InvMovementTypesController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('No se puedo guardar, intentelo de nuevo'),
+					__('The %s could not be saved. Please, try again.', __('pur purchase')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -88,12 +79,8 @@ class InvMovementTypesController extends AppController {
 				);
 			}
 		}
-		
-		$statuses = array("entrada"=>"entrada","salida"=>"salida");
-		//$documents = array(1=>"Si",0=>"No");
-		//$this->set(compact("statuses", "documents"));
-		$this->set(compact("statuses"));
-		
+		$invSuppliers = $this->PurPurchase->InvSupplier->find('list');
+		$this->set(compact('invSuppliers'));
 	}
 
 /**
@@ -103,15 +90,14 @@ class InvMovementTypesController extends AppController {
  * @return void
  */
 	public function edit($id = null) {
-		$this->InvMovementType->id = $id;
-		if (!$this->InvMovementType->exists()) {
-			throw new NotFoundException(__('Tipo de movimiento invalido'));
+		$this->PurPurchase->id = $id;
+		if (!$this->PurPurchase->exists()) {
+			throw new NotFoundException(__('Invalid %s', __('pur purchase')));
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
-			$this->request->data['InvMovementType']['lc_transaction']='MODIFY';
-			if ($this->InvMovementType->save($this->request->data)) {
+			if ($this->PurPurchase->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('inv movement type')),
+					__('The %s has been saved', __('pur purchase')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -121,7 +107,7 @@ class InvMovementTypesController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('No se puedo guardar intentelo de nuevo'),
+					__('The %s could not be saved. Please, try again.', __('pur purchase')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -130,11 +116,10 @@ class InvMovementTypesController extends AppController {
 				);
 			}
 		} else {
-			$this->request->data = $this->InvMovementType->read(null, $id);
-			$statuses = array("entrada"=>"entrada","salida"=>"salida");
-			$documents = array(1=>"Si",0=>"No");
-			$this->set(compact("statuses", "documents"));
+			$this->request->data = $this->PurPurchase->read(null, $id);
 		}
+		$invSuppliers = $this->PurPurchase->InvSupplier->find('list');
+		$this->set(compact('invSuppliers'));
 	}
 
 /**
@@ -147,13 +132,13 @@ class InvMovementTypesController extends AppController {
 		if (!$this->request->is('post')) {
 			throw new MethodNotAllowedException();
 		}
-		$this->InvMovementType->id = $id;
-		if (!$this->InvMovementType->exists()) {
-			throw new NotFoundException(__('Tipo de movimiento invalido'));
+		$this->PurPurchase->id = $id;
+		if (!$this->PurPurchase->exists()) {
+			throw new NotFoundException(__('Invalid %s', __('pur purchase')));
 		}
-		if ($this->InvMovementType->delete()) {
+		if ($this->PurPurchase->delete()) {
 			$this->Session->setFlash(
-				__('Se elimino correctamente'),
+				__('The %s deleted', __('pur purchase')),
 				'alert',
 				array(
 					'plugin' => 'TwitterBootstrap',
@@ -163,7 +148,7 @@ class InvMovementTypesController extends AppController {
 			$this->redirect(array('action' => 'index'));
 		}
 		$this->Session->setFlash(
-			__('El tipo de movimiento no se elimino'),
+			__('The %s was not deleted', __('pur purchase')),
 			'alert',
 			array(
 				'plugin' => 'TwitterBootstrap',

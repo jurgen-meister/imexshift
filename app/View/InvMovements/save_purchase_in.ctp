@@ -9,7 +9,7 @@
 	<!-- ////////////////////////////////// INICIO - INICIO FORM ///////////////////////////////////// -->
 		<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-horizontal'));?>
 		<fieldset>
-		<legend><?php echo __('Entrada al Almacén'); ?></legend>
+		<legend><?php echo __('Entrada de Compra al Almacén'); ?></legend>
 	<!-- ////////////////////////////////// FIN - INICIO FORM /////////////////////////////////////// -->			
 				
 				
@@ -92,6 +92,14 @@
 					'title'=>'Código generado por sistema'
 				));
 				
+				echo $this->BootstrapForm->input('document_code', array(
+					'id'=>'txtDocumentCode',
+					'label'=>'Código Compra:',
+					'style'=>'background-color:#EEEEEE',
+					'disabled'=>$disable,
+					'value'=>$documentCode
+				));
+				
 				echo $this->BootstrapForm->input('date_in', array(
 					'required' => 'required',
 					'label' => 'Fecha:',
@@ -113,13 +121,7 @@
 					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 				));
 
-				echo $this->BootstrapForm->input('inv_movement_type_id', array(
-					'label' => 'Tipo Movimiento:',
-					'id'=>'cbxMovementTypes',
-					'disabled'=>$disable,
-					'required' => 'required',
-					'helpInline' => /*$btnAddMovementType.*/'<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;')
-				);
+				
 				echo $this->BootstrapForm->input('description', array(
 					'rows' => 2,
 					'style'=>'width:400px',
@@ -146,9 +148,9 @@
 					
 					<div id="boxTable" class="span8">
 						
-						<?php if($documentState == 'PENDANT' OR $documentState == ''){ ?>
-						<a class="btn btn-primary" href='#' id="btnAddItem" title="Adicionar Item"><i class="icon-plus icon-white"></i></a>
-						<?php } ?>
+						<?php //if($documentState == 'PENDANT' OR $documentState == ''){ ?>
+						<!--<a class="btn btn-primary" href='#' id="btnAddItem" title="Adicionar Item"><i class="icon-plus icon-white"></i></a>-->
+						<?php //} ?>
 						<p></p>
 						
 						<table class="table table-bordered table-condensed table-striped table-hover" id="tablaItems">
@@ -156,6 +158,7 @@
 								<tr>
 									<th>Item</th>
 									<th>Stock</th>
+									<th>Compra</th>
 									<th>Cantidad</th>
 									<?php if($documentState == 'PENDANT' OR $documentState == ''){ ?>
 									<th class="columnItemsButtons"></th>
@@ -168,6 +171,7 @@
 									echo '<tr>';
 										echo '<td><span id="item_name_hidden'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['item'].'</span><input type="hidden" value="'.$invMovementDetails[$i]['itemId'].'" id="item_hidden" ></td>';
 										echo '<td><span id="stock_hidden'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['stock'].'</span></td>';
+										echo '<td><span id="quantity_purchase_hidden'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['cantidadCompra'].'</span></td>';
 										echo '<td><span id="quantity_hidden'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['cantidad'].'</span></td>';
 										if($documentState == 'PENDANT' OR $documentState == ''){
 											echo '<td class="columnItemsButtons">';
@@ -200,7 +204,11 @@
 									echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));	
 
 								}
-								echo $this->Html->link('Cancelar', array('action'=>'index_in'), array('class'=>'btn') );
+								$action = 'index_purchase_in';
+								if($idMovement <> ''){
+									$action = 'index_in';
+								}
+								echo $this->Html->link('Cancelar', array('action'=>$action), array('class'=>'btn') );
 							?>
 
 							<?php 
@@ -272,7 +280,7 @@
 						'class'=>'input-xlarge',
 						'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 						));
-						echo '<br>';
+						//echo '<br>';
 						$stock='';
 						echo '<div id="boxStock">';
 							echo $this->BootstrapForm->input('stock', array(				
@@ -285,11 +293,20 @@
 							));
 
 						echo '</div>';		
-						echo '<br>';
+						//echo '<br>';
 
 						//////////////////////////////////////
 					echo '</div>';
-
+					
+					echo $this->BootstrapForm->input('quantity_purchase', array(				
+							'label' => 'Compra:',
+							'id'=>'quantityPurchase',
+							'style'=>'background-color:#EEEEEE',
+							'class'=>'input-small',
+							'maxlength'=>'15'
+							));
+					
+					//echo '<br>';
 					echo $this->BootstrapForm->input('quantity', array(				
 					'label' => 'Cantidad:',
 					'id'=>'quantity',

@@ -76,8 +76,31 @@ class InvMovementsController extends AppController {
 		$this->set('invMovements', $this->paginate('InvMovement'));
 		//$this->set('array', $array);
 	}
-
+	
+	public function index_purchase_in(){
+	
+		//$this->InvPriceType->recursive = 0;
+		//$this->set('invPriceTypes', $this->paginate());
+		
+		/*
+		$this->paginate = array(
+			'conditions'=>array(
+				 'InvMovementType.status'=> 'entrada'
+			 ),
+			'order'=> array('InvMovement.id'),
+			'limit' => 20,
+		);
+		*/
+		$this->loadModel('PurPurchase');
+		//debug($this->paginate('InvMovement'));
+		$this->PurPurchase->recursive = 0;
+		//debug($this->paginate('PurPurchase'));
+		$this->set('purPurchases', $this->paginate('PurPurchase'));
+		//$this->set('invMovements', $this->paginate('InvMovement'));
+	}
+	
 	public function save_in($id = null){
+		
 		$invWarehouses = $this->InvMovement->InvWarehouse->find('list');
 		$invMovementTypes = $this->InvMovement->InvMovementType->find('list', array(
 			'conditions'=>array('InvMovementType.status'=>'entrada', 'InvMovementType.document'=>0)//0 'cause don't have system document
@@ -86,26 +109,97 @@ class InvMovementsController extends AppController {
 		$this->InvMovement->recursive = -1;
 		$this->request->data = $this->InvMovement->read(null, $id);
 		$date='';
-		/*
-		if($this->request->data['InvMovement']['date'] <> ''){
-			$date = date("d/m/Y", strtotime($this->request->data['InvMovement']['date']));//$this->request->data['InvMovement']['date'];
-		}
-		*/
+
 		$invMovementDetails = array();
 		$documentState = '';
 		if($id <> null){
 			$date = date("d/m/Y", strtotime($this->request->data['InvMovement']['date']));//$this->request->data['InvMovement']['date'];
-			//debug($this->_get_movements_details($id));
 			$invMovementDetails = $this->_get_movements_details($id);
 			$documentState =$this->request->data['InvMovement']['lc_state'];
 		}
-		
-		$this->set(compact('invMovementTypes', 'invWarehouses', 'id', 'date', 'invMovementDetails', 'documentState'));
-		//echo $id;
-		//debug($this->request->data);
+		$this->set(compact('invMovementTypes','invWarehouses', 'id', 'date', 'invMovementDetails', 'documentState'));
+	
 		
 	}
 	
+	
+	
+	
+	public function save_purchase_in($documentCode = null, $idMovement = null){
+		//debug($purchase);
+		////////////////////////////////INICIO - VALIDAR SI ID COMPRA NO ESTA VACIO///////////////////////////////////
+		if($documentCode == ''){
+			$this->redirect(array('action' => 'index_purchase_in'));
+		}
+		////////////////////////////////FIN - VALIDAR SI ID COMPRA NO ESTA VACIO/////////////////////////////////////
+
+
+		////////////////////////////////INICIO - VALIDAR SI CODIGO COMPRA EXISTE///////////////////////////////////
+		$this->loadModel('PurPurchase');	
+		$idPurchase = $this->PurPurchase->field('PurPurchase.id', array('PurPurchase.code'=>$documentCode));
+		if(!$idPurchase){
+			$this->redirect(array('action' => 'index_purchase_in'));
+		}
+		////////////////////////////////FIN - VALIDAR SI ID COMPRA EXISTE/////////////////////////////////////
+		
+		////////////////////////////////INICIO - DECLARAR VARIABLES///////////////////////////////////
+		$arrayAux = array();
+		$invWarehouses = $this->InvMovement->InvWarehouse->find('list');
+		$firstWarehouse = key($invWarehouses);
+		$invMovementDetails = array();
+		$documentState = '';
+		$id='';
+		$date = '';
+		////////////////////////////////FIN - DECLARAR VARIABLES///////////////////////////////////
+		
+		
+		
+		if($idMovement <> ''){//Si idMovimiento esta lleno, mostrar todo, hasta cancelados en index_in
+			$this->InvMovement->recursive = -1;
+			$arrayAux = $this->InvMovement->find('all', array('conditions'=>array(
+			 'InvMovement.document_code'=>$documentCode
+			,'InvMovement.id'=>$idMovement
+			)));
+			if(count($arrayAux) == 0){//si no existe el movimiento
+				$this->redirect(array('action' => 'index_in'));
+			}
+		}else{//Si idMovimiento esta vacio, mostrar solo (nuevo, pendiente o aprobado) en index_save_in
+			$this->InvMovement->recursive = -1;
+			$arrayAux = $this->InvMovement->find('all', array('conditions'=>array(
+			'InvMovement.document_code'=>trim($documentCode), 'InvMovement.lc_state'=>array('APPROVED','PENDANT')
+			)));
+		}
+		
+		//mostrar cancelados
+		
+		//mostrar activos
+		
+
+		////////////////////////////////INICIO - LLENAR VISTA ///////////////////////////////////////////////
+		if(count($arrayAux) > 0){ //UPDATE
+			$this->request->data = $arrayAux[0];
+			$date = date("d/m/Y", strtotime($this->request->data['InvMovement']['date']));//$this->request->data['InvMovement']['date'];
+			$id = $this->request->data['InvMovement']['id'];
+			$invMovementDetails = array();//$this->_get_movements_details($id);
+			$documentState =$this->request->data['InvMovement']['lc_state'];
+			
+			$arrPurchases = $this->_get_purchases_details($idPurchase, $firstWarehouse, 'editar');//$firstWarehouse no se usara porque es "editar", sino doble query para stock
+			$arrMovementsSaved = $this->_get_movements_details($id);
+			foreach ($arrMovementsSaved as $key => $value) {
+				$invMovementDetails[$key]['itemId']=$value['itemId'];
+				$invMovementDetails[$key]['item']=$value['item'];
+				$invMovementDetails[$key]['cantidadCompra']=$arrPurchases[$key]['cantidadCompra'];
+				$invMovementDetails[$key]['stock']=$value['stock'];
+				$invMovementDetails[$key]['cantidad']=$value['cantidad'];
+			}
+		}else{//INSERT
+			$invMovementDetails = $this->_get_purchases_details($idPurchase, $firstWarehouse,'nuevo');
+		}
+		
+		$this->set(compact('invWarehouses', 'id', 'documentCode', 'date', 'invMovementDetails', 'documentState', 'idMovement'));
+		////////////////////////////////FIN - LLENAR VISTA //////////////////////////////////////////////////
+		
+	}
 	
 	public function ajax_initiate_modal_add_item_in(){
 		if($this->RequestHandler->isAjax()){
@@ -128,7 +222,6 @@ class InvMovementsController extends AppController {
 	
 	private function _get_movements_details($idMovement){
 		$movementDetails = $this->InvMovement->InvMovementDetail->find('all', array(
-			//'recursive'=>-1,
 			'conditions'=>array('InvMovementDetail.inv_movement_id'=>$idMovement),
 			'fields'=>array('InvItem.name', 'InvItem.code', 'InvMovementDetail.quantity', 'InvItem.id', 'InvMovement.inv_warehouse_id')
 			));
@@ -143,6 +236,31 @@ class InvMovementsController extends AppController {
 		}
 		
 		return $formatedMovementDetails;
+	}
+	
+	private function _get_purchases_details($idPurchase, $idWarehouse, $state){
+		$stock = 0;
+		$this->loadModel('PurDetail');
+		$purchaseDetails = $this->PurDetail->find('all', array(
+		'conditions'=>array('PurDetail.pur_purchase_id'=>$idPurchase),
+		'fields'=>array('InvItem.name', 'InvItem.code', 'PurDetail.quantity', 'InvItem.id')
+		));
+		$formatedPurchaseDetails = array();
+		foreach ($purchaseDetails as $key => $value) {
+			
+			if($state == 'nuevo'){
+				$stock = $this->_find_stock($value['InvItem']['id'], $idWarehouse);
+			}
+			$formatedPurchaseDetails[$key] = array(
+				'itemId'=>$value['InvItem']['id'],
+				'item'=>'[ '. $value['InvItem']['code'].' ] '.$value['InvItem']['name'],
+				'cantidadCompra'=>$value['PurDetail']['quantity'],
+				'stock'=> $stock,//llamar funcion
+				'cantidad'=>$value['PurDetail']['quantity']
+				);
+		}
+		//debug($formatedPurchaseDetails);
+		return $formatedPurchaseDetails;
 	}
 	
 	private function _find_stock($idItem, $idWarehouse){		
@@ -236,16 +354,21 @@ class InvMovementsController extends AppController {
 			////////////////////////////////////////////INICIO-CAPTURAR AJAX////////////////////////////////////////////////////////
 			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
 			$movementId = $this->request->data['movementId'];
-			$date = $this->request->data['date'];
 			$warehouse = $this->request->data['warehouse'];
-			$movementType = $this->request->data['movementType'];
+
+			$date = $this->request->data['date'];
 			$description = $this->request->data['description'];
+			$movementType = $this->request->data['movementType'];
+			$documentCode = $this->request->data['documentCode'];
+			
 			////////////////////////////////////////////FIN-CAPTURAR AJAX////////////////////////////////////////////////////////
 			
 			
 			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
 			$arrayMovement = array('date'=>$date, 'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType, 'description'=>$description);
-			
+			if($documentCode <> ''){
+				$arrayMovement['document_code']=$documentCode;
+			}
 			//print_r($arrayMovement);
 			
 			$movementCode = '';
@@ -282,20 +405,50 @@ class InvMovementsController extends AppController {
 		
 		}
 	}
-	
+
+		
 	public function ajax_change_state_approved_movement_in(){
 		if($this->RequestHandler->isAjax()){
 			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
-			$movementId = $this->request->data['movementId'];
 			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
+			$movementId = $this->request->data['movementId'];
 			$warehouse = $this->request->data['warehouse'];
+
+			$date = $this->request->data['date'];
+			$description = $this->request->data['description'];
+			$movementType = $this->request->data['movementType'];
+			$documentCode = $this->request->data['documentCode'];
 			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
-						
+			
+			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
+			$arrayMovement = array('date'=>$date, 'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType, 'description'=>$description);
+			$arrayMovement['lc_state'] = 'APPROVED';
+			$arrayMovement['id'] = $movementId;
+			if($documentCode <> ''){
+				$arrayMovement['document_code']=$documentCode;
+			}
+			
+			$data = array('InvMovement'=>$arrayMovement, 'InvMovementDetail'=>$arrayItemsDetails);
+			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
+			
+			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////
+			if($movementId <> ''){//update
+				if($this->InvMovement->InvMovementDetail->deleteAll(array('InvMovementDetail.inv_movement_id'=>$movementId))){
+					if($this->InvMovement->saveAssociated($data)){
+						$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
+						echo $strItemsStock;
+					}
+				}
+			}
+			////////////////////////////////////////////FIN-SAVE////////////////////////////////////////////////////////
+			
+			/*
 			$data = array('id'=>$movementId, 'lc_state'=>'APPROVED');
 			if($this->InvMovement->save($data)){
 				$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
 				echo $strItemsStock;
 			}
+			*/
 		}
 	}
 

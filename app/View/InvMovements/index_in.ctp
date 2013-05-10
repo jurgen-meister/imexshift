@@ -3,16 +3,12 @@
 <!-- ************************************************************************************************************************ -->
 <div class="span9"><!-- INICIO CONTAINER FLUID/ROW FLUID/SPAN9 - Del Template Principal (SPAN3 reservado para menu izquierdo) -->
 <!-- ************************************************************************************************************************ -->
-		<h2><?php echo __('Entradas de Almacen');?></h2>
+		<h2><?php echo __('Entradas al Almacén');?></h2>
 		<p>
-			<?php 
-			//echo $this->Html->image("add.png");
-			//echo $this->Html->link(('(+) Nuevo'), array('action' => 'save_in')); 
-			
-			//echo $this->Html->link('Nuevo', array('action'=>'save_in'), array('class'=>'btn') );
+			<!--<a href="save_in" id="btnChangeState" class="btn btn-primary" title="Nueva entrada a almacén"><i class="icon-plus icon-white"></i> Nuevo</a>-->
+			<?php
+			echo $this->Html->link('<i class="icon-plus icon-white"></i>'.__(' Nuevo'), array('action' => 'save_in'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nueva entrada almacen')); 
 			?>
-			<a href="save_in" id="btnChangeState" class="btn btn-primary" title="Nueva entrada de almacen"><i class="icon-plus icon-white"></i> Nuevo</a>
-			
 		</p>
 		<p>
 			<?php echo $this->BootstrapPaginator->counter(array('format' => __('Pagina {:page} de {:pages}, mostrando {:current} registros de {:count} total, comenzando en  {:start}, terminando en {:end}')));?>
@@ -22,7 +18,7 @@
 			<tr>
 				<th><?php echo "#";?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('code', 'Codigo Entrada');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('code', 'Codigo Compra');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('document_code', 'Codigo Compra');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('inv_movement_type_id', 'Movimiento');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('inv_warehouse_id', 'Almacen');?></th>
@@ -73,8 +69,11 @@
 									$stateName = 'Cancelado';
 									break;
 							}
-							
-							echo $this->Html->link('<i class="icon-pencil icon-white"></i>'.__(' '.$stateName), array('action' => 'save_in', $invMovement['InvMovement']['id']), array('class'=>'btn '.$stateColor, 'escape'=>false, 'title'=>'Editar')); 
+					$action = 'save_in';
+					if($invMovement['InvMovement']['document_code'] <> ''){
+						$action = 'save_purchase_in';;
+					}
+							echo $this->Html->link('<i class="icon-pencil icon-white"></i>'.__(' '.$stateName), array('action' => $action, $invMovement['InvMovement']['document_code'], $invMovement['InvMovement']['id']), array('class'=>'btn '.$stateColor, 'escape'=>false, 'title'=>'Editar')); 
 					?>&nbsp;
 				</td>
 				
