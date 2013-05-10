@@ -7,6 +7,17 @@ $(document).ready(function(){
 	var arrayItemsAlreadySaved = []; 
 	startEventsWhenExistsItems();
 	
+	/////////////START - Token Status///////////////
+	/*
+	var tokenStatus = '';
+	var tokenIn = 'entrada';
+	var tokenOut = 'salida';
+	if($('txtTokenStatusHidden').length > 0){ //exists
+		tokenStatus = $('txtTokenStatusHidden').val();
+	}
+	*/
+	/////////////FINISH - Token Status//////////////
+	
 	clearFieldsForFirefox();
 
 	//************************************************************************//
@@ -47,8 +58,8 @@ $(document).ready(function(){
 				
 				error+='<li>El campo "Cantidad" no puede ser cero</li>'; 
 			}
-			if ($("#quantityPurchase").length > 0){//existe
-				if(parseInt(quantity, 10) > $('#quantityPurchase').val()){
+			if ($('#txtModalQuantityDocument').length > 0){//existe
+				if(parseInt(quantity, 10) > $('#txtModalQuantityDocument').val()){
 					error+='<li>La "Cantidad" de entrada no puede ser mayor a la "Compra"</li>'; 
 				}
 			}
@@ -62,7 +73,7 @@ $(document).ready(function(){
 		var error = '';
 		var date = $('#txtDate').val();
 		var warehouses = $('#cbxWarehouses').text();
-		if ($("#cbxMovementTypes").length > 0){//existe
+		if ($('#cbxMovementTypes').length > 0){//existe
 			var movementTypes = $('#cbxMovementTypes').text();
 			if(movementTypes == ''){	error+='<li> El campo "Tipo Movimiento" no puede estar vacio </li>'; }
 		}
@@ -124,9 +135,9 @@ $(document).ready(function(){
 		var auxItemsStocks = [];
 		for(var i=0; i<arrayItemsStocksErrors.length; i++){
 			auxItemsStocks = arrayItemsStocksErrors[i].split('=>');//  item5=>9stock
-			$('#stock_hidden'+auxItemsStocks[0]).text(auxItemsStocks[1]);
+			$('#txtStock'+auxItemsStocks[0]).text(auxItemsStocks[1]);
 			if(auxItemsStocks[0] != ''){
-				error+='<li>'+$('#item_name_hidden'+auxItemsStocks[0]).text()+': la "Cantidad = '+$('#quantity_hidden'+auxItemsStocks[0]).text()+'" es mayor su "Stock = '+auxItemsStocks[1]+'" </li>';	
+				error+='<li>'+$('#spaItemName'+auxItemsStocks[0]).text()+': la "Cantidad = '+$('#spaQuantity'+auxItemsStocks[0]).text()+'" es mayor su "Stock = '+auxItemsStocks[1]+'" </li>';	
 			}
 		}
 		return error;
@@ -136,31 +147,31 @@ $(document).ready(function(){
 		if(arrayItemsAlreadySaved.length == 0){  //For fix undefined index
 			arrayItemsAlreadySaved = [0] //if there isn't any row, the array must have at least one field 0 otherwise it sends null
 		}
-		$('#btnSaveAddItem').show();
-		$('#btnSaveEditItem').hide();
-		$('#boxValidateItem').html('');//clear error message
+		$('#btnModalAddItem').show();
+		$('#btnModalEditItem').hide();
+		$('#boxModalValidateItem').html('');//clear error message
 		ajax_initiate_modal_add_item_in(arrayItemsAlreadySaved);
 	}
 	
 	function initiateModalEditItem(objectTableRowSelected){
-		var itemIdForEdit = objectTableRowSelected.find('#item_hidden').val();  //
-		$('#btnSaveAddItem').hide();
-		$('#btnSaveEditItem').show();
-		$('#boxValidateItem').html('');//clear error message
-		$('#quantity').val(objectTableRowSelected.find('#quantity_hidden'+itemIdForEdit).text());
-		$('#stock').val(objectTableRowSelected.find('#stock_hidden'+itemIdForEdit).text());
-		$('#stock').keypress(function(){return false;});
-		if ($("#quantityPurchase").length > 0){//existe
-			$('#quantityPurchase').val(objectTableRowSelected.find('#quantity_purchase_hidden'+itemIdForEdit).text());
-			$('#quantityPurchase').keypress(function(){return false;});
+		var itemIdForEdit = objectTableRowSelected.find('#txtItemId').val();  //
+		$('#btnModalAddItem').hide();
+		$('#btnModalEditItem').show();
+		$('#boxModalValidateItem').html('');//clear error message
+		$('#txtModalQuantity').val(objectTableRowSelected.find('#spaQuantity'+itemIdForEdit).text());
+		$('#txtModalStock').val(objectTableRowSelected.find('#txtStock'+itemIdForEdit).text());
+		$('#txtModalStock').keypress(function(){return false;});
+		if ($('#txtModalQuantityDocument').length > 0){//existe
+			$('#txtModalQuantityDocument').val(objectTableRowSelected.find('#spaQuantityDocument'+itemIdForEdit).text());
+			$('#txtModalQuantityDocument').keypress(function(){return false;});
 		}
-		$('#items').empty();
-		$('#items').append('<option value="'+itemIdForEdit+'">'+objectTableRowSelected.find('td').text()+'</option>');
+		$('#cbxModalItems').empty();
+		$('#cbxModalItems').append('<option value="'+itemIdForEdit+'">'+objectTableRowSelected.find('td').text()+'</option>');
 		initiateModal();
 	}
 	
 	function createEventClickEditItemButton(itemId){
-			$("#btnEditItem"+itemId).bind("click",function(){ //must be binded 'cause loaded live with javascript'
+			$('#btnEditItem'+itemId).bind("click",function(){ //must be binded 'cause loaded live with javascript'
 					var objectTableRowSelected = $(this).closest('tr')
 					initiateModalEditItem(objectTableRowSelected);
 					return false; //avoid page refresh
@@ -168,7 +179,7 @@ $(document).ready(function(){
 	}
 	
 	function createEventClickDeleteItemButton(itemId){
-		$("#btnDeleteItem"+itemId).bind("click",function(){ //must be binded 'cause loaded live with javascript'
+		$('#btnDeleteItem'+itemId).bind("click",function(){ //must be binded 'cause loaded live with javascript'
 					var objectTableRowSelected = $(this).closest('tr')
 					deleteItem(objectTableRowSelected);
 					return false; //avoid page refresh
@@ -178,7 +189,7 @@ $(document).ready(function(){
 	function deleteItem(objectTableRowSelected){
 		if(confirm('Esta seguro de Eliminar el item?')){	
 
-			var itemIdForDelete = objectTableRowSelected.find('#item_hidden').val();  //
+			var itemIdForDelete = objectTableRowSelected.find('#txtItemId').val();  //
 			arrayItemsAlreadySaved = jQuery.grep(arrayItemsAlreadySaved, function(value){
 				return value != itemIdForDelete;
 			});
@@ -188,9 +199,9 @@ $(document).ready(function(){
 	
 	function createRowItemTable(itemId, itemCodeName, stock, quantity){
 		$('#tablaItems > tbody:last').append('<tr>\n\
-												<td><span id="item_name_hidden'+itemId+'">'+itemCodeName+'</span><input type="hidden" value="'+itemId+'" id="item_hidden" ></td>\n\
-												<td><span id="stock_hidden'+itemId+'">'+stock+'</span></td>\n\
-												<td><span id="quantity_hidden'+itemId+'">'+quantity+'</span></td>\n\
+												<td><span id="spaItemName'+itemId+'">'+itemCodeName+'</span><input type="hidden" value="'+itemId+'" id="txtItemId" ></td>\n\
+												<td><span id="txtStock'+itemId+'">'+stock+'</span></td>\n\
+												<td><span id="spaQuantity'+itemId+'">'+quantity+'</span></td>\n\
 												<td class="columnItemsButtons">\n\
 													<a class="btn btn-primary" href="#" id="btnEditItem'+itemId+'" title="Editar"><i class="icon-pencil icon-white"></i></a>\n\
 													<a class="btn btn-danger" href="#" id="btnDeleteItem'+itemId+'" title="Eliminar"><i class="icon-trash icon-white"></i></a>\n\
@@ -199,23 +210,23 @@ $(document).ready(function(){
 	}
 	
 	function editItem(){
-		var itemId = $('#items').val();
-		var quantity = $('#quantity').val();
-		var itemCodeName = $('#items option:selected').text();
+		var itemId = $('#cbxModalItems').val();
+		var quantity = $('#txtModalQuantity').val();
+		var itemCodeName = $('#cbxModalItems option:selected').text();
 		var error = validateItem(itemCodeName, quantity, ''); 
 		if(error == ''){
-			$('#quantity_hidden'+itemId).text(parseInt(quantity,10));
+			$('#spaQuantity'+itemId).text(parseInt(quantity,10));
 			$('#modalAddItem').modal('hide');
 		}else{
-			$('#boxValidateItem').html('<ul>'+error+'</ul>');
+			$('#boxModalValidateItem').html('<ul>'+error+'</ul>');
 		}
 	}
 	
 	function addItem(){
-		var quantity = $('#quantity').val();
-		var itemId = $('#items').val();
-		var itemCodeName = $('#items option:selected').text();
-		var stock = $('#stock').val();
+		var quantity = $('#txtModalQuantity').val();
+		var itemId = $('#cbxModalItems').val();
+		var itemCodeName = $('#cbxModalItems option:selected').text();
+		var stock = $('#txtModalStock').val();
 		var error = validateItem(itemCodeName, quantity, ''); 
 		if(error == ''){
 			createRowItemTable(itemId, itemCodeName, stock, parseInt(quantity,10));
@@ -224,7 +235,7 @@ $(document).ready(function(){
 			arrayItemsAlreadySaved.push(itemId);  //push into array of the added item
 			$('#modalAddItem').modal('hide');
 		}else{
-			$('#boxValidateItem').html('<ul>'+error+'</ul>');
+			$('#boxModalValidateItem').html('<ul>'+error+'</ul>');
 		}
 	}
 	
@@ -237,12 +248,12 @@ $(document).ready(function(){
 		var itemQuantityDocument = '';
 		
 		$('#tablaItems tbody tr').each(function(){		
-			itemId = $(this).find('#item_hidden').val();
-			itemStock = $(this).find('#stock_hidden'+itemId).text();
-			itemQuantity = $(this).find('#quantity_hidden'+itemId).text();
+			itemId = $(this).find('#txtItemId').val();
+			itemStock = $(this).find('#txtStock'+itemId).text();
+			itemQuantity = $(this).find('#spaQuantity'+itemId).text();
 	
-			if ($('#quantity_purchase_hidden'+itemId).length > 0){//existe
-				itemQuantityDocument = $(this).find('#quantity_purchase_hidden'+itemId).text();
+			if ($('#spaQuantityDocument'+itemId).length > 0){//existe
+				itemQuantityDocument = $(this).find('#spaQuantityDocument'+itemId).text();
 			}
 			
 			arrayItemsDetails.push({'inv_item_id':itemId, 'stock':itemStock, 'quantity':itemQuantity, 'quantity_document':itemQuantityDocument});
@@ -258,7 +269,7 @@ $(document).ready(function(){
 	
 	//show message of procesing for ajax
 	function showProcessing(){
-        $("#processing").text("Procesando...");
+        $('#processing').text("Procesando...");
     }
 	
 	function saveAll(){
@@ -277,7 +288,7 @@ $(document).ready(function(){
 		var auxItemsStocks = [];
 		for(var i=0; i<arrayItemsStocks.length; i++){
 			auxItemsStocks = arrayItemsStocks[i].split('=>');//  item5=>9stock
-			$('#stock_hidden'+auxItemsStocks[0]).text(auxItemsStocks[1]);  //update only if quantities are APPROVED
+			$('#txtStock'+auxItemsStocks[0]).text(auxItemsStocks[1]);  //update only if quantities are APPROVED
 		}
 	}
 	
@@ -309,7 +320,7 @@ $(document).ready(function(){
 	//////////////////////////////////BEGIN-CONTROLS EVENTS/////////////////////
 	//************************************************************************//
 	//Validate only numbers
-	$("#quantity").keydown(function(event) {
+	$('#txtModalQuantity').keydown(function(event) {
 			validateOnlyNumbers(event);			
 	});
 	//Calendar script
@@ -334,13 +345,13 @@ $(document).ready(function(){
 		return false; //avoid page refresh
 	});
 	//Add a new item quantity
-	$('#btnSaveAddItem').click(function(){
+	$('#btnModalAddItem').click(function(){
 		addItem();
 		return false; //avoid page refresh
 	});
 	
 	//edit an existing item quantity
-	$('#btnSaveEditItem').click(function(){
+	$('#btnModalEditItem').click(function(){
 		editItem();
 		return false; //avoid page refresh
 	});
@@ -368,7 +379,7 @@ $(document).ready(function(){
 	
 	$('#txtDate').keypress(function(){return false;});
 	$('#txtCode').keypress(function(){return false;});
-	if ($("#txtDocumentCode").length > 0){//existe
+	if ($('#txtDocumentCode').length > 0){//existe
 		$('#txtDocumentCode').keypress(function(){return false;});
 	}
 	//************************************************************************//
@@ -388,10 +399,10 @@ $(document).ready(function(){
 	function ajax_save_movement_in(arrayItemsDetails){
 		var movementType =1;
 		var documentCode ='';
-		if ($("#cbxMovementTypes").length > 0){//existe
+		if ($('#cbxMovementTypes').length > 0){//existe
 			movementType = $('#cbxMovementTypes').val();
 		}
-		if ($("#txtDocumentCode").length > 0){//existe
+		if ($('#txtDocumentCode').length > 0){//existe
 			documentCode = $('#txtDocumentCode').val();
 		}
 		$.ajax({
@@ -439,10 +450,10 @@ $(document).ready(function(){
 	function ajax_change_state_approved_movement_in(arrayItemsDetails){
 		var movementType =1;
 		var documentCode ='';
-		if ($("#cbxMovementTypes").length > 0){//existe
+		if ($('#cbxMovementTypes').length > 0){//existe
 			movementType = $('#cbxMovementTypes').val();
 		}
-		if ($("#txtDocumentCode").length > 0){//existe
+		if ($('#txtDocumentCode').length > 0){//existe
 			documentCode = $('#txtDocumentCode').val();
 		}
 		$.ajax({
@@ -466,13 +477,13 @@ $(document).ready(function(){
 				$('#btnCancellState').show();
 				$('#btnSaveAll').hide();
 				$('#btnAddMovementType').hide();
-				if ($("#btnAddItem").length > 0){//existe
+				if ($('#btnAddItem').length > 0){//existe
 					$('#btnAddItem').hide();
 				}
 				$('.columnItemsButtons').hide();
 				
-				if ($("#txtDocumentCode").length > 0){//existe
-					$("#txtDocumentCode").attr('disabled','disabled');
+				if ($('#txtDocumentCode').length > 0){//existe
+					$('#txtDocumentCode').attr('disabled','disabled');
 				}
 				$('#txtDate').attr('disabled','disabled');
 				$('#txtCode').attr('disabled','disabled');
@@ -538,14 +549,14 @@ $(document).ready(function(){
             beforeSend: showProcessing(),
             success: function(data){
 				$('#processing').text('');
-				$('#itemSaveError').text('');
-				$('#boxIntiateModal').html(data);
-				$('#quantity').val('');  
+				//$('#itemSaveError').text('');
+				$('#boxModalIntiateItemStock').html(data);
+				$('#txtModalQuantity').val('');  
 				initiateModal()
-				$('#items').bind("change",function(){ //must be binded 'cause dropbox is loaded by a previous ajax'
+				$('#cbxModalItems').bind("change",function(){ //must be binded 'cause dropbox is loaded by a previous ajax'
 					ajax_update_stock();
 				});
-				$('#stock').keypress(function(){
+				$('#txtModalStock').keypress(function(){
 					return false;
 				});
 			},
@@ -561,12 +572,12 @@ $(document).ready(function(){
 		$.ajax({
             type:"POST",
             url:moduleController + "ajax_update_stock",			
-            data:{warehouse: $('#cbxWarehouses').val(), item: $('#items').val()},
+            data:{warehouse: $('#cbxWarehouses').val(), item: $('#cbxModalItems').val()},
             beforeSend: showProcessing(),
             success: function(data){
 				$('#processing').text("");
-				$('#boxStock').html(data);
-				$('#stock').bind("keypress",function(){ //must be binded 'cause input is re-loaded by a previous ajax'
+				$('#boxModalStock').html(data);
+				$('#txtModalStock').bind("keypress",function(){ //must be binded 'cause input is re-loaded by a previous ajax'
 					return false;
 				});
 			},
@@ -588,7 +599,7 @@ $(document).ready(function(){
 				var arrayItemsStocks = data.split(',');
 				updateMultipleStocks(arrayItemsStocks);
 				$('#processing').text('');
-				//$('#boxStock').html(data);
+				//$('#boxModalStock').html(data);
 			},
 			error:function(data){
 				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');

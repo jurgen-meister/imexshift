@@ -66,21 +66,20 @@
 				}
 				
 				//////////////////////////////////END - block when APPROVED or CANCELLED///////////////////////////////////////////////////
+				/*
+				echo $this->BootstrapForm->input('token_status_hidden', array(
+					'id'=>'txtTokenStatusHidden',
+					'value'=>'entrada',
+					'type'=>'hidden'
+				));
+				*/
 				echo $this->BootstrapForm->input('movement_hidden', array(
 					//'id'=>'movement_hidden',
 					'id'=>'txtMovementIdHidden',
 					'value'=>$id,
 					'type'=>'hidden'
 				));
-				
-				/*
-				echo $this->BootstrapForm->input('document_state', array(
-					'id'=>'txtDocumentStateHidden',
-					'value'=>$documentState,
-					//'type'=>'hidden'
-				));
-				*/
-				
+							
 				echo $this->BootstrapForm->input('code', array(
 					//'id'=>'code',
 					'id'=>'txtCode',
@@ -166,9 +165,9 @@
 								<?php
 								for($i=0; $i<count($invMovementDetails); $i++){
 									echo '<tr>';
-										echo '<td><span id="item_name_hidden'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['item'].'</span><input type="hidden" value="'.$invMovementDetails[$i]['itemId'].'" id="item_hidden" ></td>';
-										echo '<td><span id="stock_hidden'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['stock'].'</span></td>';
-										echo '<td><span id="quantity_hidden'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['cantidad'].'</span></td>';
+										echo '<td><span id="spaItemName'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['item'].'</span><input type="hidden" value="'.$invMovementDetails[$i]['itemId'].'" id="txtItemId" ></td>';
+										echo '<td><span id="txtStock'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['stock'].'</span></td>';
+										echo '<td><span id="spaQuantity'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['cantidad'].'</span></td>';
 										if($documentState == 'PENDANT' OR $documentState == ''){
 											echo '<td class="columnItemsButtons">';
 											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$invMovementDetails[$i]['itemId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
@@ -263,21 +262,21 @@
 				  <div class="modal-body form-horizontal">
 					<!--<p>One fine body…</p>-->
 					<?php
-					echo '<div id="boxIntiateModal">';
+					echo '<div id="boxModalIntiateItemStock">';
 						//////////////////////////////////////
 
 						echo $this->BootstrapForm->input('items_id', array(				
 						'label' => 'Item:',
-						'id'=>'items',
+						'id'=>'cbxModalItems',
 						'class'=>'input-xlarge',
 						'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 						));
 						echo '<br>';
 						$stock='';
-						echo '<div id="boxStock">';
+						echo '<div id="boxModalStock">';
 							echo $this->BootstrapForm->input('stock', array(				
 							'label' => 'Stock:',
-							'id'=>'stock',
+							'id'=>'txtModalStock',
 							'value'=>$stock,
 							'style'=>'background-color:#EEEEEE',
 							'class'=>'input-small',
@@ -292,19 +291,19 @@
 
 					echo $this->BootstrapForm->input('quantity', array(				
 					'label' => 'Cantidad:',
-					'id'=>'quantity',
+					'id'=>'txtModalQuantity',
 					'class'=>'input-small',
 					//'value'=>'6',
 					'maxlength'=>'10',
 					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 					));
 					?>
-					  <div id="boxValidateItem" class="alert-error"></div> 
+					  <div id="boxModalValidateItem" class="alert-error"></div> 
 				  </div>
 				  
 				  <div class="modal-footer">
-					<a href='#' class="btn btn-primary" id="btnSaveAddItem">Guardar</a>
-					<a href='#' class="btn btn-primary" id="btnSaveEditItem">Guardar</a>
+					<a href='#' class="btn btn-primary" id="btnModalAddItem">Guardar</a>
+					<a href='#' class="btn btn-primary" id="btnModalEditItem">Guardar</a>
 					<button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
 					
 				  </div>

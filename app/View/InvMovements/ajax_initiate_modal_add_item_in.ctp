@@ -2,16 +2,16 @@
 						
 		echo $this->BootstrapForm->input('items_id', array(				
 		'label' => 'Item:',
-		'id'=>'items',
+		'id'=>'cbxModalItems',
 		'class'=>'input-xlarge',
 		'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 		));
 		echo '<br>';
 		
-		echo '<div id="boxStock">';
+		echo '<div id="boxModalStock">';
 			echo $this->BootstrapForm->input('stock', array(				
 			'label' => 'Stock:',
-			'id'=>'stock',
+			'id'=>'txtModalStock',
 			'value'=>$stock,
 			'style'=>'background-color:#EEEEEE',
 			'class'=>'input-small',
