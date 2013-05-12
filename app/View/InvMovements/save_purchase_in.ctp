@@ -85,9 +85,9 @@
 					'label'=>'Código:',
 					'style'=>'background-color:#EEEEEE',
 					'disabled'=>$disable,
+					'placeholder'=>'El sistema generará el código',
 					//'data-toggle'=>'tooltip',
 					//'data-placement'=>'top',
-					'title'=>'Código generado por sistema'
 				));
 				
 				echo $this->BootstrapForm->input('document_code', array(
@@ -202,11 +202,42 @@
 									echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));	
 
 								}
-								$action = 'index_purchase_in';
-								if($idMovement <> ''){
-									$action = 'index_in';
+								/////////////////START - SETTINGS BUTTON CANCEL /////////////////
+								
+								$parameters = $this->passedArgs;
+								$url=array();
+								if($idMovement == ''){
+									$url=array('action'=>'index_purchase_in');
+									if(!isset($parameters['search'])){
+										unset($parameters['document_code']);
+									}else{
+										if($parameters['search'] == 'empty'){
+											unset($parameters['document_code']);
+										}
+									}
+								}else{
+									$url['action']='index_in';
+									if(!isset($parameters['search'])){//no search
+										unset($parameters['document_code']);
+										unset($parameters['code']);
+									}else{//yes search
+										if($parameters['search']=='yes'){
+											if(isset($parameters['document_code']) && isset($parameters['code'])){
+												unset($parameters['document_code']);
+											}
+											if(isset($parameters['document_code'])){
+												unset($parameters['code']);
+											}
+										}
+										if($parameters['search']=='empty'){
+											unset($parameters['document_code']);
+										}
+									}
 								}
-								echo $this->Html->link('Cancelar', array('action'=>$action), array('class'=>'btn') );
+								unset($parameters['id']);
+								
+								echo $this->Html->link('Cancelar', array_merge($url,$parameters), array('class'=>'btn') );
+								//////////////////END - SETTINGS BUTTON CANCEL /////////////////
 							?>
 
 							<?php 

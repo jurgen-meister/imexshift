@@ -1,7 +1,24 @@
-
+<?php echo  $this->BootstrapPaginator->options(array('url' => $this->passedArgs));?>
 <div class="span9">
 		<h2><?php echo __('Entradas de Compras al Almacén');?></h2>
-		
+		<!-- ////////////////////////////////////////INCIO - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
+		<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-search', 'novalidate' => true));?>
+		<fieldset>
+		<legend><?php echo __(''); ?></legend>
+					<?php
+					echo $this->BootstrapForm->input('document_code', array(				
+							//'label' => 'Codigo Compra:',
+							'id'=>'txtCodeDocument',
+							'value'=>$document_code,
+							'placeholder'=>'Codigo Compra'
+							));
+					?>
+				<?php
+					echo $this->BootstrapForm->submit('<i class="icon-search icon-white"></i>',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSearch', 'title'=>'Buscar'));
+				?>
+		</fieldset>
+		<?php echo $this->BootstrapForm->end();?>
+		<!-- ////////////////////////////////////////FIN - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
 		<p>
 			<?php echo $this->BootstrapPaginator->counter(array('format' => __('Pagina {:page} de {:pages}, mostrando {:current} registros de {:count} total, comenzando en  {:start}, terminando en {:end}')));?>
 		</p>
@@ -30,7 +47,12 @@
 				</td>
 				<!--<td></td>-->
 				<td><?php
-					echo $this->Html->link('<i class="icon-circle-arrow-right icon-white"></i>'.__(' Entrada Almacen'), array('action' => 'save_purchase_in', $purPurchase['PurPurchase']['code']), array('class'=>'btn btn-primary', 'escape'=>false)); 
+				///////////START - SETTING URL AND PARAMETERS/////////////
+					$url = array('action'=>'save_purchase_in');
+					$parameters = $this->passedArgs;
+					$parameters['document_code']=$purPurchase['PurPurchase']['code'];
+				////////////END - SETTING URL AND PARAMETERS//////////////
+					echo $this->Html->link('<i class="icon-circle-arrow-right icon-white"></i>'.__(' Entrada Almacen'), array_merge($url, $parameters), array('class'=>'btn btn-primary', 'escape'=>false)); 
 					?>
 				</td>
 			</tr>

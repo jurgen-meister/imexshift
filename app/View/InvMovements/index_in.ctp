@@ -1,24 +1,52 @@
 <!--<div class="row-fluid">--> <!-- No va porque ya esta dentro del row-fluid del container del template principal-->
-
+<?php echo  $this->BootstrapPaginator->options(array('url' => $this->passedArgs));?>
 <!-- ************************************************************************************************************************ -->
 <div class="span9"><!-- INICIO CONTAINER FLUID/ROW FLUID/SPAN9 - Del Template Principal (SPAN3 reservado para menu izquierdo) -->
 <!-- ************************************************************************************************************************ -->
-		<h2><?php echo __('Entradas al Almacén');?></h2>
-		<p>
-			<!--<a href="save_in" id="btnChangeState" class="btn btn-primary" title="Nueva entrada a almacén"><i class="icon-plus icon-white"></i> Nuevo</a>-->
-			<?php
-			echo $this->Html->link('<i class="icon-plus icon-white"></i>'.__(' Nuevo'), array('action' => 'save_in'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nueva entrada almacen')); 
+		<h2><?php
+			echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' => 'save_in'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo')); 
 			?>
-		</p>
+<?php echo __(' Entradas al Almacén');?></h2>
+		
+			<!--<a href="save_in" id="btnChangeState" class="btn btn-primary" title="Nueva entrada a almacén"><i class="icon-plus icon-white"></i> Nuevo</a>-->
+			
+		
+		<!-- ////////////////////////////////////////INCIO - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
+		<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-search', 'novalidate' => true));?>
+		<fieldset>
+		<legend><?php echo __(''); ?></legend>
+					<?php
+					echo $this->BootstrapForm->input('code', array(				
+									//'label' => 'Codigo Entrada:',
+									'id'=>'txtCode',
+									'value'=>$code,
+									'placeholder'=>'Codigo Entrada'
+									));
+					?>
+					<?php
+					echo $this->BootstrapForm->input('document_code', array(				
+							//'label' => 'Codigo Compra:',
+							'id'=>'txtCodeDocument',
+							'value'=>$document_code,
+							'placeholder'=>'Codigo Documento'
+							));
+					?>
+				<?php
+					echo $this->BootstrapForm->submit('<i class="icon-search icon-white"></i>',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSearch', 'title'=>'Buscar'));
+				?>
+		</fieldset>
+		<?php echo $this->BootstrapForm->end();?>
+		<!-- ////////////////////////////////////////FIN - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
+		
 		<p>
 			<?php echo $this->BootstrapPaginator->counter(array('format' => __('Pagina {:page} de {:pages}, mostrando {:current} registros de {:count} total, comenzando en  {:start}, terminando en {:end}')));?>
 		</p>
-		<?php $cont = 1;?>
+		<?php $cont = $this->BootstrapPaginator->counter('{:start}');?>
 		<table class="table table-striped table-bordered table-hover">
 			<tr>
 				<th><?php echo "#";?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('code', 'Codigo Entrada');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('document_code', 'Codigo Compra');?></th>
+				<th><?php echo 'Codigo Entrada';?></th>
+				<th><?php echo 'Codigo Documento';?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('inv_movement_type_id', 'Movimiento');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('inv_warehouse_id', 'Almacen');?></th>
@@ -31,11 +59,11 @@
 				<td>
 					<?php 
 					
-					if(isset($invMovement['InvMovement']['document_code'])){
+					//if(isset($invMovement['InvMovement']['document_code'])){
 					echo h($invMovement['InvMovement']['document_code']); 
-					}else{
-						echo 'Sin codigo';
-					}
+					//}else{
+					//	echo 'Sin codigo';
+					//}
 					?>
 					&nbsp;
 				</td>
@@ -69,11 +97,33 @@
 									$stateName = 'Cancelado';
 									break;
 							}
-					$action = 'save_in';
-					if($invMovement['InvMovement']['document_code'] <> ''){
-						$action = 'save_purchase_in';;
+					///////////START - SETTING URL AND PARAMETERS/////////////
+					$url = array();
+					$parameters = $this->passedArgs;
+					if($invMovement['InvMovement']['inv_movement_type_id'] == 1){//Compra
+						$url['action']='save_purchase_in';
+						$parameters['document_code']=$invMovement['InvMovement']['document_code'];
+						$parameters['id']=$invMovement['InvMovement']['id'];
+					}else{
+						$url['action'] = 'save_in';
+						$parameters['id']=$invMovement['InvMovement']['id'];
 					}
-							echo $this->Html->link('<i class="icon-pencil icon-white"></i>'.__(' '.$stateName), array('action' => $action, $invMovement['InvMovement']['document_code'], $invMovement['InvMovement']['id']), array('class'=>'btn '.$stateColor, 'escape'=>false, 'title'=>'Editar')); 
+					
+					//$parameters['document_code']=$invMovement['InvMovement']['document_code'];
+					
+					
+					/*
+					if(!isset($parameters['search'])){
+						unset($parameters['document_code']);
+						unset($parameters['code']);
+					}else{
+						
+					}
+					*/
+					
+					////////////END - SETTING URL AND PARAMETERS//////////////
+							//echo $this->Html->link('<i class="icon-pencil icon-white"></i>'.__(' '.$stateName), array('action' => $action, $invMovement['InvMovement']['document_code'], $invMovement['InvMovement']['id']), array('class'=>'btn '.$stateColor, 'escape'=>false, 'title'=>'Editar')); 
+					echo $this->Html->link('<i class="icon-pencil icon-white"></i>'.__(' '.$stateName),  array_merge($url,$parameters), array('class'=>'btn '.$stateColor, 'escape'=>false, 'title'=>'Editar')); 
 					?>&nbsp;
 				</td>
 				
@@ -82,6 +132,7 @@
 		</table>
 
 		<?php echo $this->BootstrapPaginator->pagination(); ?>
+		
 <!-- ************************************************************************************************************************ -->
 </div><!-- FIN CONTAINER FLUID/ROW FLUID/SPAN9 - Del Template Principal (SPAN3 reservado para menu izquierdo) -->
 <!-- ************************************************************************************************************************ -->

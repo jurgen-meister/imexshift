@@ -44,41 +44,132 @@ class InvMovementsController extends AppController {
 	
 	public function index_in() {
 		
+		//debug($this->request->params);
+		//debug($this->passedArgs);
+		///////////////////////////////////////START - CREATING VARIABLES//////////////////////////////////////
+		$filters = array();
+		$code = '';
+		$document_code = '';
+		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
+		
+		
+		////////////////////////////START - WHEN SEARCH IS SEND THROUGH POST//////////////////////////////////////
+		if($this->request->is("post")) {
+			$url = array('action'=>'index_in');
+			$parameters = array();
+			$empty=0;
+			if(isset($this->request->data['InvMovement']['code']) && $this->request->data['InvMovement']['code']){
+				$parameters['code'] = trim(strip_tags($this->request->data['InvMovement']['code']));
+			}else{
+				$empty++;
+			}
+			if(isset($this->request->data['InvMovement']['document_code']) && $this->request->data['InvMovement']['document_code']){
+				$parameters['document_code'] = trim(strip_tags($this->request->data['InvMovement']['document_code']));
+			}else{
+				$empty++;
+			}
+			if($empty == 2){
+				$parameters['search']='empty';
+			}else{
+				$parameters['search']='yes';
+			}
+			$this->redirect(array_merge($url,$parameters));
+		}
+		////////////////////////////END - WHEN SEARCH IS SEND THROUGH POST//////////////////////////////////////
+		
+		
+		
+		////////////////////////////START - SETTING URL FILTERS//////////////////////////////////////
+		if(isset($this->passedArgs['code'])){
+			$filters['InvMovement.code'] = strtoupper($this->passedArgs['code']);
+			$code = $this->passedArgs['code'];
+		}
+		if(isset($this->passedArgs['document_code'])){
+			$filters['InvMovement.document_code'] = strtoupper($this->passedArgs['document_code']);
+			$document_code = $this->passedArgs['document_code'];
+		}
+		////////////////////////////END - SETTING URL FILTERS//////////////////////////////////////
+		
+		
+		
+		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
 		$this->paginate = array(
-		// 'conditions' => $conditions,
-		// 'order' => array('InvMovement.code DESC'),
-		
-		'conditions'=>array(
-			 //'InvMovement.lc_state !='=>'LOGIC_DELETE',
-			 'InvMovementType.status'=> 'entrada'
-		 ),
-		//'recursive'=>2,	
-		'order'=> array('InvMovement.id'),
-		'limit' => 20,
-		/*
-		'joins' => array(
-			array(
-				'alias'=>'InvMovementType',
-				'table'=>'inv_movement_types',
-				'type'=>'INNER',
-				'conditions'=>'`InvMovementType`.`id` = `InvMovement`.`inv_movement_type_id`'
-			)
-		),
-		 * 
-		 */
+			'conditions'=>array(
+				'InvMovement.lc_state !='=>'LOGIC_DELETE',
+				'InvMovementType.status'=> 'entrada',
+				$filters
+			 ),
+			//'recursive'=>2,	
+			'order'=> array('InvMovement.id'=>'desc'),
+			'limit' => 15,
 		);
+		////////////////////////////END - SETTING PAGINATING VARIABLES//////////////////////////////////////
 		
-		//$array = array('uno','dos','tres');
 		
-		//$this->InvMovement->recursive = 0;
-		//debug($this->paginate('InvMovement'));
-		//print_r($this->paginate('InvMovement'));
+		////////////////////////START - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
 		$this->set('invMovements', $this->paginate('InvMovement'));
-		//$this->set('array', $array);
+		$this->set('code', $code);
+		$this->set('document_code', $document_code);
+		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
 	}
 	
 	public function index_purchase_in(){
 	
+		///////////////////////////////////////START - CREATING VARIABLES//////////////////////////////////////
+		$filters = array();
+		$document_code = '';  //seria code de pur_purchases
+		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
+		
+		
+		////////////////////////////START - WHEN SEARCH IS SEND THROUGH POST//////////////////////////////////////
+		if($this->request->is("post")) {
+			$url = array('action'=>'index_purchase_in');
+			$parameters = array();
+			$empty=0;
+			if(isset($this->request->data['InvMovement']['document_code']) && $this->request->data['InvMovement']['document_code']){
+				$parameters['document_code'] = trim(strip_tags($this->request->data['InvMovement']['document_code']));
+			}else{
+				$empty++;
+			}
+			if($empty == 1){
+				$parameters['search']='empty';
+			}else{
+				$parameters['search']='yes';
+			}
+			
+			$this->redirect(array_merge($url,$parameters));
+		}
+		////////////////////////////END - WHEN SEARCH IS SEND THROUGH POST//////////////////////////////////////
+		
+		$this->loadModel('PurPurchase');
+		
+		////////////////////////////START - SETTING URL FILTERS//////////////////////////////////////
+		if(isset($this->passedArgs['document_code'])){
+			$filters['PurPurchase.code'] = strtoupper($this->passedArgs['document_code']);
+			$document_code = $this->passedArgs['document_code'];
+		}
+		////////////////////////////END - SETTING URL FILTERS//////////////////////////////////////
+		
+		
+		
+		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
+		$this->paginate = array(
+			'conditions'=>array(
+				'PurPurchase.lc_state !='=>'LOGIC_DELETE',
+				$filters
+			 ),
+			'recursive'=>0,	
+			'order'=> array('PurPurchase.id'=>'desc'),
+			'limit' => 15,
+		);
+		////////////////////////////END - SETTING PAGINATING VARIABLES//////////////////////////////////////
+		
+		
+		////////////////////////START - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
+		$this->set('purPurchases', $this->paginate('PurPurchase'));
+		$this->set('document_code', $document_code);
+		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
+		
 		//$this->InvPriceType->recursive = 0;
 		//$this->set('invPriceTypes', $this->paginate());
 		
@@ -91,16 +182,19 @@ class InvMovementsController extends AppController {
 			'limit' => 20,
 		);
 		*/
-		$this->loadModel('PurPurchase');
+		//$this->loadModel('PurPurchase');
 		//debug($this->paginate('InvMovement'));
-		$this->PurPurchase->recursive = 0;
+		//$this->PurPurchase->recursive = 0;
 		//debug($this->paginate('PurPurchase'));
-		$this->set('purPurchases', $this->paginate('PurPurchase'));
+		//$this->set('purPurchases', $this->paginate('PurPurchase'));
 		//$this->set('invMovements', $this->paginate('InvMovement'));
 	}
 	
-	public function save_in($id = null){
-		
+	public function save_in(){
+		$id = '';
+		if(isset($this->passedArgs['id'])){
+			$id = $this->passedArgs['id'];
+		}
 		$invWarehouses = $this->InvMovement->InvWarehouse->find('list');
 		$invMovementTypes = $this->InvMovement->InvMovementType->find('list', array(
 			'conditions'=>array('InvMovementType.status'=>'entrada', 'InvMovementType.document'=>0)//0 'cause don't have system document
@@ -125,11 +219,21 @@ class InvMovementsController extends AppController {
 	
 	
 	
-	public function save_purchase_in($documentCode = null, $idMovement = null){
+	public function save_purchase_in(){
 		//debug($purchase);
 		////////////////////////////////INICIO - VALIDAR SI ID COMPRA NO ESTA VACIO///////////////////////////////////
+		$idMovement = '';
+		$documentCode = '';
+		if(isset($this->passedArgs['id'])){
+			$idMovement = $this->passedArgs['id'];
+		}
+		if(isset($this->passedArgs['document_code'])){
+			$documentCode = $this->passedArgs['document_code'];
+		}
+		
 		if($documentCode == ''){
 			$this->redirect(array('action' => 'index_purchase_in'));
+			//echo 'codigo vacio';
 		}
 		////////////////////////////////FIN - VALIDAR SI ID COMPRA NO ESTA VACIO/////////////////////////////////////
 
@@ -139,6 +243,7 @@ class InvMovementsController extends AppController {
 		$idPurchase = $this->PurPurchase->field('PurPurchase.id', array('PurPurchase.code'=>$documentCode));
 		if(!$idPurchase){
 			$this->redirect(array('action' => 'index_purchase_in'));
+			//echo 'no existe codigo compra';
 		}
 		////////////////////////////////FIN - VALIDAR SI ID COMPRA EXISTE/////////////////////////////////////
 		
@@ -366,9 +471,9 @@ class InvMovementsController extends AppController {
 			
 			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
 			$arrayMovement = array('date'=>$date, 'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType, 'description'=>$description);
-			if($documentCode <> ''){
-				$arrayMovement['document_code']=$documentCode;
-			}
+			
+			$arrayMovement['document_code']=$documentCode;
+			
 			//print_r($arrayMovement);
 			
 			$movementCode = '';

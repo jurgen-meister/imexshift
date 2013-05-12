@@ -398,7 +398,7 @@ $(document).ready(function(){
 	//Save movement IN
 	function ajax_save_movement_in(arrayItemsDetails){
 		var movementType =1;
-		var documentCode ='';
+		var documentCode ='NINGUNO';
 		if ($('#cbxMovementTypes').length > 0){//existe
 			movementType = $('#cbxMovementTypes').val();
 		}

@@ -86,9 +86,9 @@
 					'label'=>'Código:',
 					'style'=>'background-color:#EEEEEE',
 					'disabled'=>$disable,
+					'placeholder'=>'El sistema generará el código',
 					//'data-toggle'=>'tooltip',
 					//'data-placement'=>'top',
-					'title'=>'Código generado por sistema'
 				));
 				
 				echo $this->BootstrapForm->input('date_in', array(
@@ -199,7 +199,16 @@
 									echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));	
 
 								}
-								echo $this->Html->link('Cancelar', array('action'=>'index_in'), array('class'=>'btn') );
+								/////////////////START - SETTINGS BUTTON CANCEL /////////////////
+								$url=array('action'=>'index_in');
+								$parameters = $this->passedArgs;
+								if(!isset($parameters['search'])){
+									unset($parameters['document_code']);
+									unset($parameters['code']);
+								}
+								unset($parameters['id']);
+								echo $this->Html->link('Cancelar', array_merge($url,$parameters), array('class'=>'btn') );
+								//////////////////END - SETTINGS BUTTON CANCEL /////////////////
 							?>
 
 							<?php 
