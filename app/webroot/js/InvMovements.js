@@ -293,7 +293,10 @@ $(document).ready(function(){
 			}
 			if(arr[3] == 'save_out'){
 				ajax_save_movement_out(arrayItemsDetails);
-				//alert('funciona para salidas de almacen');
+			}
+			if(arr[3] == 'save_warehouses_transfer'){
+				//ajax_save_movement_out(arrayItemsDetails);
+				alert('funciona para transferencias entre almacenes');
 			}
 		}else{
 			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');

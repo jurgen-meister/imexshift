@@ -26,21 +26,11 @@ class InvMovementsController extends AppController {
  * @var array
  */
 //	public $components = array('Session');
-/**
- * index method
- *
- * @return void
- */
+	//*******************************************************************************************************//
+	///////////////////////////////////////// START - FUNCTIONS ///////////////////////////////////////////////
+	//*******************************************************************************************************//
 	
-	/*
-	public function index() {
-		$this->InvMovement->recursive = 0;
-		$this->set('invMovements', $this->paginate());
-	}
-	*/
-	
-	
-	///////////////////////////////////////// My fuctions - BEGIN///////////////////////////////////////////////
+	//////////////////////////////////////////// START - INDEX ///////////////////////////////////////////////
 	
 	public function index_in() {
 		
@@ -240,26 +230,12 @@ class InvMovementsController extends AppController {
 		$this->set('purPurchases', $this->paginate('PurPurchase'));
 		$this->set('document_code', $document_code);
 		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
-		
-		//$this->InvPriceType->recursive = 0;
-		//$this->set('invPriceTypes', $this->paginate());
-		
-		/*
-		$this->paginate = array(
-			'conditions'=>array(
-				 'InvMovementType.status'=> 'entrada'
-			 ),
-			'order'=> array('InvMovement.id'),
-			'limit' => 20,
-		);
-		*/
-		//$this->loadModel('PurPurchase');
-		//debug($this->paginate('InvMovement'));
-		//$this->PurPurchase->recursive = 0;
-		//debug($this->paginate('PurPurchase'));
-		//$this->set('purPurchases', $this->paginate('PurPurchase'));
-		//$this->set('invMovements', $this->paginate('InvMovement'));
 	}
+	
+	///////////////////////////////////////////// END - INDEX ////////////////////////////////////////////////
+	
+	
+	//////////////////////////////////////////// START - SAVE ///////////////////////////////////////////////
 	
 	public function save_in(){
 		$id = '';
@@ -283,8 +259,6 @@ class InvMovementsController extends AppController {
 			$documentState =$this->request->data['InvMovement']['lc_state'];
 		}
 		$this->set(compact('invMovementTypes','invWarehouses', 'id', 'date', 'invMovementDetails', 'documentState'));
-	
-		
 	}
 	
 	public function save_out(){
@@ -310,7 +284,6 @@ class InvMovementsController extends AppController {
 		}
 		$this->set(compact('invMovementTypes','invWarehouses', 'id', 'date', 'invMovementDetails', 'documentState'));
 	}
-	
 	
 	public function save_purchase_in(){
 		//debug($purchase);
@@ -399,6 +372,37 @@ class InvMovementsController extends AppController {
 		
 	}
 	
+	public function save_warehouses_transfer(){
+		$id = '';
+		if(isset($this->passedArgs['id'])){
+			$id = $this->passedArgs['id'];
+		}
+		$documentCode = '';
+		if(isset($this->passedArgs['document_code'])){
+			$documentCode = $this->passedArgs['document_code'];
+		}
+		$invWarehouses = $this->InvMovement->InvWarehouse->find('list');
+		
+		
+		$this->InvMovement->recursive = -1;
+		$this->request->data = $this->InvMovement->read(null, $id);
+		$date='';
+
+		$invMovementDetails = array();
+		$documentState = '';
+		if($id <> null){
+			$date = date("d/m/Y", strtotime($this->request->data['InvMovement']['date']));//$this->request->data['InvMovement']['date'];
+			$invMovementDetails = $this->_get_movements_details($id);
+			$documentState =$this->request->data['InvMovement']['lc_state'];
+		}
+		$this->set(compact('invWarehouses', 'id', 'date', 'invMovementDetails', 'documentState', 'documentCode'));
+	}
+	
+	//////////////////////////////////////////// END - SAVE /////////////////////////////////////////////////
+	
+	
+	//////////////////////////////////////////// START - AJAX ///////////////////////////////////////////////
+	
 	public function ajax_initiate_modal_add_item_in(){
 		if($this->RequestHandler->isAjax()){
 						
@@ -418,99 +422,6 @@ class InvMovementsController extends AppController {
 		}
 	}
 	
-	private function _get_movements_details($idMovement){
-		$movementDetails = $this->InvMovement->InvMovementDetail->find('all', array(
-			'conditions'=>array('InvMovementDetail.inv_movement_id'=>$idMovement),
-			'fields'=>array('InvItem.name', 'InvItem.code', 'InvMovementDetail.quantity', 'InvItem.id', 'InvMovement.inv_warehouse_id')
-			));
-		$formatedMovementDetails = array();
-		foreach ($movementDetails as $key => $value) {
-			$formatedMovementDetails[$key] = array(
-				'itemId'=>$value['InvItem']['id'],
-				'item'=>'[ '. $value['InvItem']['code'].' ] '.$value['InvItem']['name'],
-				'stock'=> $this->_find_stock($value['InvItem']['id'], $value['InvMovement']['inv_warehouse_id']),//llamar funcion
-				'cantidad'=>$value['InvMovementDetail']['quantity']//llamar cantidad
-				);
-		}
-		
-		return $formatedMovementDetails;
-	}
-	
-	private function _get_purchases_details($idPurchase, $idWarehouse, $state){
-		$stock = 0;
-		$this->loadModel('PurDetail');
-		$purchaseDetails = $this->PurDetail->find('all', array(
-		'conditions'=>array('PurDetail.pur_purchase_id'=>$idPurchase),
-		'fields'=>array('InvItem.name', 'InvItem.code', 'PurDetail.quantity', 'InvItem.id')
-		));
-		$formatedPurchaseDetails = array();
-		foreach ($purchaseDetails as $key => $value) {
-			
-			if($state == 'nuevo'){
-				$stock = $this->_find_stock($value['InvItem']['id'], $idWarehouse);
-			}
-			$formatedPurchaseDetails[$key] = array(
-				'itemId'=>$value['InvItem']['id'],
-				'item'=>'[ '. $value['InvItem']['code'].' ] '.$value['InvItem']['name'],
-				'cantidadCompra'=>$value['PurDetail']['quantity'],
-				'stock'=> $stock,//llamar funcion
-				'cantidad'=>$value['PurDetail']['quantity']
-				);
-		}
-		//debug($formatedPurchaseDetails);
-		return $formatedPurchaseDetails;
-	}
-	
-	private function _find_stock($idItem, $idWarehouse){		
-		$movementsIn = $this->_get_quantity_movements_item($idItem, $idWarehouse, 'entrada');
-		$movementsOut = $this->_get_quantity_movements_item($idItem, $idWarehouse, 'salida');
-		$add = array_sum($movementsIn);
-		$sub = array_sum($movementsOut);
-		$stock = $add - $sub;
-		return $stock;
-	}
-	
-	private function _get_quantity_movements_item($idItem, $idWarehouse, $status){
-		//******************************************************************************//
-		//unbind for perfomance InvItem 'cause it isn't needed
-		$this->InvMovement->InvMovementDetail->unbindModel(array(
-			'belongsTo' => array('InvItem')
-		));
-		//Add association for InvMovementType
-		$this->InvMovement->InvMovementDetail->bindModel(array(
-			'hasOne'=>array(
-				'InvMovementType'=>array(
-					'foreignKey'=>false,
-					'conditions'=> array('InvMovement.inv_movement_type_id = InvMovementType.id')
-				)
-				
-			)
-		));
-		//******************************************************************************//
-		//Movements
-		$movements = $this->InvMovement->InvMovementDetail->find('all', array(
-			'fields'=>array('InvMovementDetail.inv_movement_id', 'InvMovementDetail.quantity'),
-			'conditions'=>array(
-				'InvMovement.inv_warehouse_id'=>$idWarehouse,
-				'InvMovementDetail.inv_item_id'=>$idItem,
-				'InvMovementType.status'=>$status,
-				'InvMovement.lc_state'=>'APPROVED',
-				)
-		));
-		//Give format to nested array movements
-		$movementsCleaned = $this->_clean_nested_arrays($movements);
-		return $movementsCleaned;
-	}
-	
-	private function _clean_nested_arrays($array){
-		$clean = array();
-		foreach ($array as $key => $value) {
-			$clean[$key] = $value['InvMovementDetail']['quantity'];
-		}
-		return $clean;
-	}
-
-	
 	public function ajax_update_stock(){
 		if($this->RequestHandler->isAjax()){
 			$item = $this->request->data['item'];
@@ -519,7 +430,7 @@ class InvMovementsController extends AppController {
 			$this->set(compact('stock'));
 		}
 	}
-	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 	public function ajax_create_temporal_movement_in(){
 		if($this->RequestHandler->isAjax()){
 			$idItem = $this->request->data['item'];
@@ -533,18 +444,6 @@ class InvMovementsController extends AppController {
 		}
 		
 	}
-	
-	private function _generate_code($keyword){
-		$period = $this->Session->read('Period.year');
-		$movementType = 'entrada';
-		if($keyword == 'SAL'){$movementType = 'salida';}
-		$movements = $this->InvMovement->find('count', array('conditions'=>array('InvMovementType.status'=>$movementType))); // there are duplicates :S, unless there is no movement delete
-		$quantity = $movements + 1; 
-		//$quantity = $this->InvMovement->getLastInsertID(); //hmm..
-		$code = 'MOV-'.$period.'-'.$keyword.'-'.$quantity;
-		return $code;
-	}
-	
 	
 	public function ajax_save_movement_in(){
 		if($this->RequestHandler->isAjax()){
@@ -742,21 +641,6 @@ class InvMovementsController extends AppController {
 		}
 	}
 	
-	private function _validateItemsStocksOut($arrayItemsDetails, $warehouse){
-		$strItemsStockErrorSuccess = '';
-		$cont=0;
-		for($i = 0; $i<count($arrayItemsDetails); $i++){
-				$updatedStock = $this->_find_stock($arrayItemsDetails[$i]['inv_item_id'], $warehouse);
-				if($updatedStock < $arrayItemsDetails[$i]['quantity']){
-					$strItemsStockErrorSuccess .= $arrayItemsDetails[$i]['inv_item_id'].'=>error:'.$updatedStock.','; //error
-					$cont++;
-				}else{
-					$strItemsStockErrorSuccess .= $arrayItemsDetails[$i]['inv_item_id'].'=>success:'.$updatedStock.',';//success
-				}
-		}
-		return array('error'=>$cont, 'itemsStocks'=>$strItemsStockErrorSuccess);
-	}
-	
 	public function ajax_change_state_cancelled_movement_in(){
 		if($this->RequestHandler->isAjax()){
 			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
@@ -815,8 +699,129 @@ class InvMovementsController extends AppController {
 			echo $strItemsStock;
 		}
 	}
-
+	//////////////////////////////////////////// END - AJAX /////////////////////////////////////////////////
 	
+	
+	
+	//////////////////////////////////////////// START - PRIVATE ///////////////////////////////////////////////
+	
+	private function _get_movements_details($idMovement){
+		$movementDetails = $this->InvMovement->InvMovementDetail->find('all', array(
+			'conditions'=>array('InvMovementDetail.inv_movement_id'=>$idMovement),
+			'fields'=>array('InvItem.name', 'InvItem.code', 'InvMovementDetail.quantity', 'InvItem.id', 'InvMovement.inv_warehouse_id')
+			));
+		$formatedMovementDetails = array();
+		foreach ($movementDetails as $key => $value) {
+			$formatedMovementDetails[$key] = array(
+				'itemId'=>$value['InvItem']['id'],
+				'item'=>'[ '. $value['InvItem']['code'].' ] '.$value['InvItem']['name'],
+				'stock'=> $this->_find_stock($value['InvItem']['id'], $value['InvMovement']['inv_warehouse_id']),//llamar funcion
+				'cantidad'=>$value['InvMovementDetail']['quantity']//llamar cantidad
+				);
+		}
+		
+		return $formatedMovementDetails;
+	}
+	
+	private function _get_purchases_details($idPurchase, $idWarehouse, $state){
+		$stock = 0;
+		$this->loadModel('PurDetail');
+		$purchaseDetails = $this->PurDetail->find('all', array(
+		'conditions'=>array('PurDetail.pur_purchase_id'=>$idPurchase),
+		'fields'=>array('InvItem.name', 'InvItem.code', 'PurDetail.quantity', 'InvItem.id')
+		));
+		$formatedPurchaseDetails = array();
+		foreach ($purchaseDetails as $key => $value) {
+			
+			if($state == 'nuevo'){
+				$stock = $this->_find_stock($value['InvItem']['id'], $idWarehouse);
+			}
+			$formatedPurchaseDetails[$key] = array(
+				'itemId'=>$value['InvItem']['id'],
+				'item'=>'[ '. $value['InvItem']['code'].' ] '.$value['InvItem']['name'],
+				'cantidadCompra'=>$value['PurDetail']['quantity'],
+				'stock'=> $stock,//llamar funcion
+				'cantidad'=>$value['PurDetail']['quantity']
+				);
+		}
+		//debug($formatedPurchaseDetails);
+		return $formatedPurchaseDetails;
+	}
+	
+	private function _find_stock($idItem, $idWarehouse){		
+		$movementsIn = $this->_get_quantity_movements_item($idItem, $idWarehouse, 'entrada');
+		$movementsOut = $this->_get_quantity_movements_item($idItem, $idWarehouse, 'salida');
+		$add = array_sum($movementsIn);
+		$sub = array_sum($movementsOut);
+		$stock = $add - $sub;
+		return $stock;
+	}
+	
+	private function _get_quantity_movements_item($idItem, $idWarehouse, $status){
+		//******************************************************************************//
+		//unbind for perfomance InvItem 'cause it isn't needed
+		$this->InvMovement->InvMovementDetail->unbindModel(array(
+			'belongsTo' => array('InvItem')
+		));
+		//Add association for InvMovementType
+		$this->InvMovement->InvMovementDetail->bindModel(array(
+			'hasOne'=>array(
+				'InvMovementType'=>array(
+					'foreignKey'=>false,
+					'conditions'=> array('InvMovement.inv_movement_type_id = InvMovementType.id')
+				)
+				
+			)
+		));
+		//******************************************************************************//
+		//Movements
+		$movements = $this->InvMovement->InvMovementDetail->find('all', array(
+			'fields'=>array('InvMovementDetail.inv_movement_id', 'InvMovementDetail.quantity'),
+			'conditions'=>array(
+				'InvMovement.inv_warehouse_id'=>$idWarehouse,
+				'InvMovementDetail.inv_item_id'=>$idItem,
+				'InvMovementType.status'=>$status,
+				'InvMovement.lc_state'=>'APPROVED',
+				)
+		));
+		//Give format to nested array movements
+		$movementsCleaned = $this->_clean_nested_arrays($movements);
+		return $movementsCleaned;
+	}
+	
+	private function _clean_nested_arrays($array){
+		$clean = array();
+		foreach ($array as $key => $value) {
+			$clean[$key] = $value['InvMovementDetail']['quantity'];
+		}
+		return $clean;
+	}
+	
+	private function _generate_code($keyword){
+		$period = $this->Session->read('Period.year');
+		$movementType = 'entrada';
+		if($keyword == 'SAL'){$movementType = 'salida';}
+		$movements = $this->InvMovement->find('count', array('conditions'=>array('InvMovementType.status'=>$movementType))); // there are duplicates :S, unless there is no movement delete
+		$quantity = $movements + 1; 
+		//$quantity = $this->InvMovement->getLastInsertID(); //hmm..
+		$code = 'MOV-'.$period.'-'.$keyword.'-'.$quantity;
+		return $code;
+	}
+	
+	private function _validateItemsStocksOut($arrayItemsDetails, $warehouse){
+		$strItemsStockErrorSuccess = '';
+		$cont=0;
+		for($i = 0; $i<count($arrayItemsDetails); $i++){
+				$updatedStock = $this->_find_stock($arrayItemsDetails[$i]['inv_item_id'], $warehouse);
+				if($updatedStock < $arrayItemsDetails[$i]['quantity']){
+					$strItemsStockErrorSuccess .= $arrayItemsDetails[$i]['inv_item_id'].'=>error:'.$updatedStock.','; //error
+					$cont++;
+				}else{
+					$strItemsStockErrorSuccess .= $arrayItemsDetails[$i]['inv_item_id'].'=>success:'.$updatedStock.',';//success
+				}
+		}
+		return array('error'=>$cont, 'itemsStocks'=>$strItemsStockErrorSuccess);
+	}
 	
 	private function _createStringItemsStocksUpdated($arrayItemsDetails, $idWarehouse){
 		////////////////////////////////////////////INICIO-CREAR CADENA ITEMS STOCK ACUTALIZADOS//////////////////////////////
@@ -828,148 +833,13 @@ class InvMovementsController extends AppController {
 			////////////////////////////////////////////FIN-CREAR CADENA ITEMS STOCK ACUTALIZADOS/////////////////////////////////
 			return $strItemsStock;
 	}
+	//////////////////////////////////////////// END - PRIVATE /////////////////////////////////////////////////
+	
+	
 
 	
-	///////////////////////////////////////// My fuctions - FINISH	 ///////////////////////////////////////////////
-/*
-	public function index_out() {
-		
-		$this->paginate = array(
-		// 'conditions' => $conditions,
-		 'order' => array('InvMovement.code DESC'),
-		 'conditions'=>array(
-			 'InvMovement.lc_transaction !='=>'LOGIC_DELETE',
-			 'InvMovementType.status'=> 'salida'
-			 ),
-		 'limit' => 20
-		);
-		
-		$this->InvMovement->recursive = 0;
-		$this->set('invMovements', $this->paginate('InvMovement'));
-	}
-*/
-	
-	
-/**
- * view method
- *
- * @param string $id
- * @return void
- */
-	public function view($id = null) {
-		$this->InvMovement->id = $id;
-		if (!$this->InvMovement->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('inv movement')));
-		}
-		$this->set('invMovement', $this->InvMovement->read(null, $id));
-	}
 
-/**
- * add method
- *
- * @return void
- */
-	public function add() {
-		if ($this->request->is('post')) {
-			$this->InvMovement->create();
-			if ($this->InvMovement->save($this->request->data)) {
-				$this->Session->setFlash(
-					__('The %s has been saved', __('inv movement')),
-					'alert',
-					array(
-						'plugin' => 'TwitterBootstrap',
-						'class' => 'alert-success'
-					)
-				);
-				$this->redirect(array('action' => 'index'));
-			} else {
-				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('inv movement')),
-					'alert',
-					array(
-						'plugin' => 'TwitterBootstrap',
-						'class' => 'alert-error'
-					)
-				);
-			}
-		}
-		$invMovementTypes = $this->InvMovement->InvMovementType->find('list');
-		$this->set(compact('invMovementTypes'));
-	}
-	
-/**
- * edit method
- *
- * @param string $id
- * @return void
- */
-	public function edit($id = null) {
-		$this->InvMovement->id = $id;
-		if (!$this->InvMovement->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('inv movement')));
-		}
-		
-		if ($this->request->is('post') || $this->request->is('put')) {
-			if ($this->InvMovement->save($this->request->data)) {
-				$this->Session->setFlash(
-					__('The %s has been saved', __('inv movement')),
-					'alert',
-					array(
-						'plugin' => 'TwitterBootstrap',
-						'class' => 'alert-success'
-					)
-				);
-				$this->redirect(array('action' => 'index'));
-			} else {
-				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('inv movement')),
-					'alert',
-					array(
-						'plugin' => 'TwitterBootstrap',
-						'class' => 'alert-error'
-					)
-				);
-			}
-		} else {
-			$this->request->data = $this->InvMovement->read(null, $id);
-		}
-		$invMovementTypes = $this->InvMovement->InvMovementType->find('list');
-		$this->set(compact('invMovementTypes'));
-	}
-
-/**
- * delete method
- *
- * @param string $id
- * @return void
- */
-	public function delete($id = null) {
-		if (!$this->request->is('post')) {
-			throw new MethodNotAllowedException();
-		}
-		$this->InvMovement->id = $id;
-		if (!$this->InvMovement->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('inv movement')));
-		}
-		if ($this->InvMovement->delete()) {
-			$this->Session->setFlash(
-				__('The %s deleted', __('inv movement')),
-				'alert',
-				array(
-					'plugin' => 'TwitterBootstrap',
-					'class' => 'alert-success'
-				)
-			);
-			$this->redirect(array('action' => 'index'));
-		}
-		$this->Session->setFlash(
-			__('The %s was not deleted', __('inv movement')),
-			'alert',
-			array(
-				'plugin' => 'TwitterBootstrap',
-				'class' => 'alert-error'
-			)
-		);
-		$this->redirect(array('action' => 'index'));
-	}
+	//*******************************************************************************************************//
+	/////////////////////////////////////////// END - FUNCTIONS ///////////////////////////////////////////////
+	//*******************************************************************************************************//
 }
