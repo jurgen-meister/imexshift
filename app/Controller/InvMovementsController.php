@@ -113,6 +113,77 @@ class InvMovementsController extends AppController {
 		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
 	}
 	
+	public function index_out() {
+		
+		//debug($this->request->params);
+		//debug($this->passedArgs);
+		///////////////////////////////////////START - CREATING VARIABLES//////////////////////////////////////
+		$filters = array();
+		$code = '';
+		$document_code = '';
+		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
+		
+		
+		////////////////////////////START - WHEN SEARCH IS SEND THROUGH POST//////////////////////////////////////
+		if($this->request->is("post")) {
+			$url = array('action'=>'index_out');
+			$parameters = array();
+			$empty=0;
+			if(isset($this->request->data['InvMovement']['code']) && $this->request->data['InvMovement']['code']){
+				$parameters['code'] = trim(strip_tags($this->request->data['InvMovement']['code']));
+			}else{
+				$empty++;
+			}
+			if(isset($this->request->data['InvMovement']['document_code']) && $this->request->data['InvMovement']['document_code']){
+				$parameters['document_code'] = trim(strip_tags($this->request->data['InvMovement']['document_code']));
+			}else{
+				$empty++;
+			}
+			if($empty == 2){
+				$parameters['search']='empty';
+			}else{
+				$parameters['search']='yes';
+			}
+			$this->redirect(array_merge($url,$parameters));
+		}
+		////////////////////////////END - WHEN SEARCH IS SEND THROUGH POST//////////////////////////////////////
+		
+		
+		
+		////////////////////////////START - SETTING URL FILTERS//////////////////////////////////////
+		if(isset($this->passedArgs['code'])){
+			$filters['InvMovement.code'] = strtoupper($this->passedArgs['code']);
+			$code = $this->passedArgs['code'];
+		}
+		if(isset($this->passedArgs['document_code'])){
+			$filters['InvMovement.document_code'] = strtoupper($this->passedArgs['document_code']);
+			$document_code = $this->passedArgs['document_code'];
+		}
+		////////////////////////////END - SETTING URL FILTERS//////////////////////////////////////
+		
+		
+		
+		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
+		$this->paginate = array(
+			'conditions'=>array(
+				'InvMovement.lc_state !='=>'LOGIC_DELETE',
+				'InvMovementType.status'=> 'salida',
+				$filters
+			 ),
+			//'recursive'=>2,	
+			'order'=> array('InvMovement.id'=>'desc'),
+			'limit' => 15,
+		);
+		////////////////////////////END - SETTING PAGINATING VARIABLES//////////////////////////////////////
+		
+		
+		////////////////////////START - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
+		$this->set('invMovements', $this->paginate('InvMovement'));
+		$this->set('code', $code);
+		$this->set('document_code', $document_code);
+		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
+	}
+	
 	public function index_purchase_in(){
 	
 		///////////////////////////////////////START - CREATING VARIABLES//////////////////////////////////////
@@ -216,7 +287,29 @@ class InvMovementsController extends AppController {
 		
 	}
 	
-	
+	public function save_out(){
+		$id = '';
+		if(isset($this->passedArgs['id'])){
+			$id = $this->passedArgs['id'];
+		}
+		$invWarehouses = $this->InvMovement->InvWarehouse->find('list');
+		$invMovementTypes = $this->InvMovement->InvMovementType->find('list', array(
+			'conditions'=>array('InvMovementType.status'=>'salida', 'InvMovementType.document'=>0)//0 'cause don't have system document
+		));
+		
+		$this->InvMovement->recursive = -1;
+		$this->request->data = $this->InvMovement->read(null, $id);
+		$date='';
+
+		$invMovementDetails = array();
+		$documentState = '';
+		if($id <> null){
+			$date = date("d/m/Y", strtotime($this->request->data['InvMovement']['date']));//$this->request->data['InvMovement']['date'];
+			$invMovementDetails = $this->_get_movements_details($id);
+			$documentState =$this->request->data['InvMovement']['lc_state'];
+		}
+		$this->set(compact('invMovementTypes','invWarehouses', 'id', 'date', 'invMovementDetails', 'documentState'));
+	}
 	
 	
 	public function save_purchase_in(){
@@ -511,6 +604,63 @@ class InvMovementsController extends AppController {
 		}
 	}
 
+	public function ajax_save_movement_out(){
+		if($this->RequestHandler->isAjax()){
+			
+			////////////////////////////////////////////INICIO-CAPTURAR AJAX////////////////////////////////////////////////////////
+			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
+			$movementId = $this->request->data['movementId'];
+			$warehouse = $this->request->data['warehouse'];
+
+			$date = $this->request->data['date'];
+			$description = $this->request->data['description'];
+			$movementType = $this->request->data['movementType'];
+			$documentCode = $this->request->data['documentCode'];
+			
+			////////////////////////////////////////////FIN-CAPTURAR AJAX////////////////////////////////////////////////////////
+			
+			
+			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
+			$arrayMovement = array('date'=>$date, 'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType, 'description'=>$description);
+			
+			$arrayMovement['document_code']=$documentCode;
+			
+			//print_r($arrayMovement);
+			
+			$movementCode = '';
+			if($movementId <> ''){//update
+				$arrayMovement['id'] = $movementId;
+			}else{//insert
+				$movementCode = $this->_generate_code('SAL');
+				$arrayMovement['lc_state'] = 'PENDANT';
+				$arrayMovement['lc_transaction'] = 'CREATE';
+				$arrayMovement['code'] = $movementCode;
+			}
+			
+			$data = array('InvMovement'=>$arrayMovement, 'InvMovementDetail'=>$arrayItemsDetails);
+			//print_r($data);
+			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
+			
+
+			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////
+			if($movementId <> ''){//update
+				if($this->InvMovement->InvMovementDetail->deleteAll(array('InvMovementDetail.inv_movement_id'=>$movementId))){
+					if($this->InvMovement->saveAssociated($data)){
+						$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
+						echo 'modificado|'.$strItemsStock;
+					}
+				}
+			}else{//insert
+				if($this->InvMovement->saveAssociated($data)){
+					$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
+					$movementIdInserted = $this->InvMovement->id;
+						echo 'insertado|'.$strItemsStock.'|'.$movementCode.'|'.$movementIdInserted;
+				}
+			}
+			////////////////////////////////////////////FIN-SAVE////////////////////////////////////////////////////////
+		
+		}
+	}
 		
 	public function ajax_change_state_approved_movement_in(){
 		if($this->RequestHandler->isAjax()){
@@ -541,23 +691,73 @@ class InvMovementsController extends AppController {
 				if($this->InvMovement->InvMovementDetail->deleteAll(array('InvMovementDetail.inv_movement_id'=>$movementId))){
 					if($this->InvMovement->saveAssociated($data)){
 						$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
-						echo $strItemsStock;
+						echo 'aprobado|'. $strItemsStock;
 					}
 				}
 			}
 			////////////////////////////////////////////FIN-SAVE////////////////////////////////////////////////////////
-			
-			/*
-			$data = array('id'=>$movementId, 'lc_state'=>'APPROVED');
-			if($this->InvMovement->save($data)){
-				$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
-				echo $strItemsStock;
-			}
-			*/
 		}
 	}
 
-		public function ajax_change_state_cancelled_movement_in(){
+	public function ajax_change_state_approved_movement_out(){
+		if($this->RequestHandler->isAjax()){
+			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
+			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
+			$movementId = $this->request->data['movementId'];
+			$warehouse = $this->request->data['warehouse'];
+
+			$date = $this->request->data['date'];
+			$description = $this->request->data['description'];
+			$movementType = $this->request->data['movementType'];
+			$documentCode = $this->request->data['documentCode'];
+			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
+			
+			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
+			$arrayMovement = array('date'=>$date, 'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType, 'description'=>$description);
+			$arrayMovement['lc_state'] = 'APPROVED';
+			$arrayMovement['id'] = $movementId;
+			if($documentCode <> ''){
+				$arrayMovement['document_code']=$documentCode;
+			}
+			
+			$data = array('InvMovement'=>$arrayMovement, 'InvMovementDetail'=>$arrayItemsDetails);
+			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
+			
+			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////
+			$error=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouse);
+			if($error['error'] == 0){
+				if($movementId <> ''){//update
+					if($this->InvMovement->InvMovementDetail->deleteAll(array('InvMovementDetail.inv_movement_id'=>$movementId))){
+						if($this->InvMovement->saveAssociated($data)){
+							$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
+							echo 'aprobado|'.$strItemsStock;
+						}
+					}
+				}
+			}else{
+				echo 'error|'.$error['itemsStocks'];
+			}
+			
+			////////////////////////////////////////////FIN-SAVE////////////////////////////////////////////////////////		
+		}
+	}
+	
+	private function _validateItemsStocksOut($arrayItemsDetails, $warehouse){
+		$strItemsStockErrorSuccess = '';
+		$cont=0;
+		for($i = 0; $i<count($arrayItemsDetails); $i++){
+				$updatedStock = $this->_find_stock($arrayItemsDetails[$i]['inv_item_id'], $warehouse);
+				if($updatedStock < $arrayItemsDetails[$i]['quantity']){
+					$strItemsStockErrorSuccess .= $arrayItemsDetails[$i]['inv_item_id'].'=>error:'.$updatedStock.','; //error
+					$cont++;
+				}else{
+					$strItemsStockErrorSuccess .= $arrayItemsDetails[$i]['inv_item_id'].'=>success:'.$updatedStock.',';//success
+				}
+		}
+		return array('error'=>$cont, 'itemsStocks'=>$strItemsStockErrorSuccess);
+	}
+	
+	public function ajax_change_state_cancelled_movement_in(){
 		if($this->RequestHandler->isAjax()){
 			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
 			$movementId = $this->request->data['movementId'];
@@ -567,19 +767,42 @@ class InvMovementsController extends AppController {
 			//debug($warehouse);
 			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
 			$error=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouse);
-			if($error == ''){
+			if($error['error'] == 0){
 				$data = array('id'=>$movementId, 'lc_state'=>'CANCELLED');
 				if($this->InvMovement->save($data)){
 					$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
 					echo 'cancelado|'.$strItemsStock;
 				}
 			}else{
-				echo 'error|'.$error;
+				echo 'error|'.$error['itemsStocks'];
 			}
 						
 		}
 	}
-
+	
+	public function ajax_change_state_cancelled_movement_out(){
+		if($this->RequestHandler->isAjax()){
+			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
+			$movementId = $this->request->data['movementId'];
+			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
+			//$warehouse = $this->request->data['warehouse']; //combobox is disabled doesn't send nothing
+			$warehouseId = $this->InvMovement->field('InvMovement.inv_warehouse_id', array('InvMovement.id'=>$movementId));
+			//debug($warehouse);
+			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
+			//$error=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouseId);
+			//if($error == ''){
+				$data = array('id'=>$movementId, 'lc_state'=>'CANCELLED');
+				if($this->InvMovement->save($data)){
+					$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouseId);
+					echo 'cancelado|'.$strItemsStock;
+				}
+			//}else{
+			//	echo 'error|'.$error;
+			//}
+						
+		}
+	}
+	
 	public function ajax_update_multiple_stocks(){
 		if($this->RequestHandler->isAjax()){
 			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
@@ -606,16 +829,7 @@ class InvMovementsController extends AppController {
 			return $strItemsStock;
 	}
 
-	private function _validateItemsStocksOut($arrayItemsDetails, $idWarehouse){
-		$strItemsStockError = '';
-		for($i = 0; $i<count($arrayItemsDetails); $i++){
-				$updatedStock = $this->_find_stock($arrayItemsDetails[$i]['inv_item_id'], $idWarehouse);
-				if($updatedStock < $arrayItemsDetails[$i]['quantity']){
-					$strItemsStockError .= $arrayItemsDetails[$i]['inv_item_id'].'=>'.$updatedStock.',';
-				}
-		}
-		return $strItemsStockError;
-	}
+	
 	///////////////////////////////////////// My fuctions - FINISH	 ///////////////////////////////////////////////
 /*
 	public function index_out() {
