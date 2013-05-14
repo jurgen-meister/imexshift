@@ -560,7 +560,87 @@ class InvMovementsController extends AppController {
 		
 		}
 	}
+	
+	public function ajax_save_warehouses_transfer(){
+		if($this->RequestHandler->isAjax()){
+			
+			////////////////////////////////////////////INICIO-CAPTURAR AJAX////////////////////////////////////////////////////////
+			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
+			$documentCode = $this->request->data['documentCode'];
+			$movementIdOut = $this->request->data['movementId'];
+			debug($movementIdOut);
+			$movementIdIn = '';
+			if($documentCode <> ''){
+				$movementIdIn = $this->InvMovement->field('InvMovement.id', array(
+					'InvMovement.document_code'=>$documentCode,
+					'InvMovement.id !='=>$movementIdOut
+					));
+			}else{
+				$documentCode = $this->_generate_document_code_transfer('TRA-ALM');
+			}
+			debug($movementIdIn);
+			$date = $this->request->data['date'];
+			$warehouseOut = $this->request->data['warehouseOut'];
+			$warehouseIn = $this->request->data['warehouseIn'];
+			
+			$description = $this->request->data['description'];
+			$movementTypeOut = 10;//Traspaso Almacenes Salida
+			$movementTypeIn = 9;//Traspaso Almacenes Entrada
+			
+			
+			////////////////////////////////////////////FIN-CAPTURAR AJAX////////////////////////////////////////////////////////
+			
+			
+			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
+			$arrayMovementOut = array('date'=>$date, 'inv_warehouse_id'=>$warehouseOut, 'inv_movement_type_id'=>$movementTypeOut, 'description'=>$description);
+			$arrayMovementIn = array('date'=>$date, 'inv_warehouse_id'=>$warehouseIn, 'inv_movement_type_id'=>$movementTypeIn, 'description'=>$description);
+			
+			
+			//print_r($arrayMovement);
+			
+			if($movementIdOut <> ''){//update
+				$arrayMovementOut['id'] = $movementIdOut;
+				$arrayMovementIn['id'] = $movementIdIn;
+			}else{//insert
+				$arrayMovementOut['lc_state'] = 'PENDANT';
+				$arrayMovementOut['lc_transaction'] = 'CREATE';
+				$arrayMovementOut['document_code']=$documentCode;
+				$arrayMovementOut['code'] = $this->_generate_code('SAL');
+				
+				$arrayMovementIn['lc_state'] = 'PENDANT';
+				$arrayMovementIn['lc_transaction'] = 'CREATE';
+				$arrayMovementIn['document_code']=$documentCode;
+				$arrayMovementIn['code'] = $this->_generate_code('ENT');
+			}
+			
+			$dataOut = array('InvMovement'=>$arrayMovementOut, 'InvMovementDetail'=>$arrayItemsDetails);
+			$dataIn = array('InvMovement'=>$arrayMovementIn, 'InvMovementDetail'=>$arrayItemsDetails);
+			debug($dataOut);
+			debug($dataIn);
+			//print_r($data);
+			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
+			
+
+			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////
+			if($movementIdOut <> ''){//update
+				$this->InvMovement->InvMovementDetail->deleteAll(array('InvMovementDetail.inv_movement_id'=>$movementIdOut));
+				$this->InvMovement->InvMovementDetail->deleteAll(array('InvMovementDetail.inv_movement_id'=>$movementIdIn));
+				$this->InvMovement->saveAssociated($dataOut);
+				$this->InvMovement->saveAssociated($dataIn);
+				$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouseOut);
+				echo 'modificado|'.$strItemsStock;
+			}else{//insert
+				$this->InvMovement->saveAssociated($dataOut);
+				$movementIdInsertedOut = $this->InvMovement->id;
+				$this->InvMovement->saveAssociated($dataIn);
+				$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouseOut);
+				echo 'insertado|'.$strItemsStock.'|'.$documentCode.'|'.$movementIdInsertedOut;
+			}
+			////////////////////////////////////////////FIN-SAVE////////////////////////////////////////////////////////
 		
+		}
+	}
+	
 	public function ajax_change_state_approved_movement_in(){
 		if($this->RequestHandler->isAjax()){
 			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
@@ -799,10 +879,21 @@ class InvMovementsController extends AppController {
 	
 	private function _generate_code($keyword){
 		$period = $this->Session->read('Period.year');
-		$movementType = 'entrada';
+		$movementType = '';
+		if($keyword == 'ENT'){$movementType = 'entrada';}
 		if($keyword == 'SAL'){$movementType = 'salida';}
 		$movements = $this->InvMovement->find('count', array('conditions'=>array('InvMovementType.status'=>$movementType))); // there are duplicates :S, unless there is no movement delete
 		$quantity = $movements + 1; 
+		//$quantity = $this->InvMovement->getLastInsertID(); //hmm..
+		$code = 'MOV-'.$period.'-'.$keyword.'-'.$quantity;
+		return $code;
+	}
+	
+	private function _generate_document_code_transfer($keyword){
+		$period = $this->Session->read('Period.year');
+		if($keyword == 'TRA-ALM'){$idMovementType = 10;}
+		$transfers = $this->InvMovement->find('count', array('conditions'=>array('InvMovement.inv_movement_type_id'=>$idMovementType))); 
+		$quantity = $transfers + 1; 
 		//$quantity = $this->InvMovement->getLastInsertID(); //hmm..
 		$code = 'MOV-'.$period.'-'.$keyword.'-'.$quantity;
 		return $code;

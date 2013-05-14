@@ -79,7 +79,7 @@
 					'value'=>$id,
 					'type'=>'hidden'
 				));
-							
+				
 				echo $this->BootstrapForm->input('code', array(
 					'id'=>'txtCode',
 					'label'=>'Código:',
@@ -161,7 +161,7 @@
 							<thead>
 								<tr>
 									<th>Item</th>
-									<th>Stock</th>
+									<th>Stock Origen</th>
 									<th>Cantidad</th>
 									<?php if($documentState == 'PENDANT' OR $documentState == ''){ ?>
 									<th class="columnItemsButtons"></th>
@@ -290,6 +290,7 @@
 						echo '<br>';
 						$stock='';
 						echo '<div id="boxModalStock">';
+						
 							echo $this->BootstrapForm->input('stock', array(				
 							'label' => 'Stock:',
 							'id'=>'txtModalStock',

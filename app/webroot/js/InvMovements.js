@@ -80,6 +80,12 @@ $(document).ready(function(){
 		if(date == ''){	error+='<li> El campo "Fecha" no puede estar vacio </li>'; }
 		if(warehouses == ''){	error+='<li> El campo "Almacen" no puede estar vacio </li>'; }
 		
+		if ($('#cbxWarehouses2').length > 0){//existe
+			if($('#cbxWarehouses').val() == $('#cbxWarehouses2').val()){
+				error+='<li> No se puede hacer una transferencia al mismo almacen </li>';
+			}
+		}
+		
 		if(arrayItemsDetails[0] == 0){error+='<li> Debe existir al menos 1 "Item" </li>';}
 		
 		var itemZero = findIfOneItemHasQuantityZero(arrayItemsDetails);
@@ -288,15 +294,15 @@ $(document).ready(function(){
 		
 		var error = validateBeforeSaveAll(arrayItemsDetails);
 		if( error == ''){
-			if(arr[3] == 'save_in'){
+			if(arr[3] == 'save_in' || arr[3] == 'save_purchase_in'){
 				ajax_save_movement_in(arrayItemsDetails);
 			}
 			if(arr[3] == 'save_out'){
 				ajax_save_movement_out(arrayItemsDetails);
 			}
 			if(arr[3] == 'save_warehouses_transfer'){
-				//ajax_save_movement_out(arrayItemsDetails);
 				alert('funciona para transferencias entre almacenes');
+				ajax_save_warehouses_transfer(arrayItemsDetails);
 			}
 		}else{
 			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
@@ -315,7 +321,7 @@ $(document).ready(function(){
 		if(confirm('Al APROBAR este documento ya no se podra hacer mas modificaciones. Esta seguro?')){
 			var arrayItemsDetails = [];
 			arrayItemsDetails = getItemsDetails();
-			if(arr[3]=='save_in'){
+			if(arr[3] == 'save_in' || arr[3] == 'save_purchase_in'){
 				ajax_change_state_approved_movement_in(arrayItemsDetails);
 			}
 			if(arr[3]=='save_out'){
@@ -329,7 +335,7 @@ $(document).ready(function(){
 			$('#cbxWarehouses').removeAttr('disabled');
 			var arrayItemsDetails = [];
 			arrayItemsDetails = getItemsDetails();
-			if(arr[3]=='save_in'){
+			if(arr[3] == 'save_in' || arr[3] == 'save_purchase_in'){
 				ajax_change_state_cancelled_movement_in(arrayItemsDetails);
 			}
 			if(arr[3]=='save_out'){
@@ -447,8 +453,6 @@ $(document).ready(function(){
 			  },
             beforeSend: showProcessing(),
             success: function(data){
-				$('#processing').text('');
-				
 				var arrayCatch = data.split('|');
 
 				if(arrayCatch[0] == 'insertado'){ 
@@ -466,7 +470,7 @@ $(document).ready(function(){
 				
 					$('#boxMessage').html('<div class="alert alert-success">\n\
 					<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
-				
+				$('#processing').text('');
 			},
 			error:function(data){
 				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
@@ -498,7 +502,6 @@ $(document).ready(function(){
 			  },
             beforeSend: showProcessing(),
             success: function(data){
-				$('#processing').text('');
 				
 				var arrayCatch = data.split('|');
 
@@ -517,6 +520,56 @@ $(document).ready(function(){
 				
 					$('#boxMessage').html('<div class="alert alert-success">\n\
 					<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
+				$('#processing').text('');
+			},
+			error:function(data){
+				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				$('#processing').text('');
+			}
+        });
+	}
+	
+	//Save movement IN
+	function ajax_save_warehouses_transfer(arrayItemsDetails){
+		//var movementType =1;//Purchase
+		//var documentCode ='NO';
+		//if ($('#cbxMovementTypes').length > 0){//existe
+		//	movementType = $('#cbxMovementTypes').val();
+		//}
+		//if ($('#txtDocumentCode').length > 0){//existe
+			//documentCode = $('#txtDocumentCode').val();
+		//}
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_save_warehouses_transfer",			
+            data:{arrayItemsDetails: arrayItemsDetails 
+				  ,movementId:$('#txtMovementIdHidden').val()
+				  ,date:$('#txtDate').val()
+				  ,warehouseOut:$('#cbxWarehouses').val()
+				  ,warehouseIn:$('#cbxWarehouses2').val()
+				  //,movementType:movementType
+				  ,description:$('#txtDescription').val()
+				  ,documentCode:$('#txtDocumentCode').val()//transfer code for both parts
+			  },
+            beforeSend: showProcessing(),
+            success: function(data){
+				var arrayCatch = data.split('|');
+				if(arrayCatch[0] == 'insertado'){ 
+					$('#txtDocumentCode').val(arrayCatch[2]);
+					$('#columnStateMovementIn').css('background-color','#F99C17');
+					$('#columnStateMovementIn').text('Pendiente');
+					$('#btnApproveState').show();
+					$('#txtMovementIdHidden').val(arrayCatch[3]);
+				}
+				
+				//update items stocks
+				var arrayItemsStocks = arrayCatch[1].split(',');
+				updateMultipleStocks(arrayItemsStocks);
+
+				
+					$('#boxMessage').html('<div class="alert alert-success">\n\
+					<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
+				$('#processing').text('');
 				
 			},
 			error:function(data){
