@@ -4,6 +4,8 @@ App::uses('AppModel', 'Model');
  * PurPurchase Model
  *
  * @property InvSupplier $InvSupplier
+ * @property PurPrice $PurPrice
+ * @property PurPayment $PurPayment
  * @property PurDetail $PurDetail
  */
 class PurPurchase extends AppModel {
@@ -14,6 +16,16 @@ class PurPurchase extends AppModel {
  * @var array
  */
 	public $validate = array(
+		'inv_supplier_id' => array(
+			'notempty' => array(
+				'rule' => array('notempty'),
+				//'message' => 'Your custom message here',
+				//'allowEmpty' => false,
+				//'required' => false,
+				//'last' => false, // Stop validation after this rule
+				//'on' => 'create', // Limit validation to 'create' or 'update' operations
+			),
+		),
 		'code' => array(
 			'notempty' => array(
 				'rule' => array('notempty'),
@@ -34,7 +46,7 @@ class PurPurchase extends AppModel {
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
-		'inv_supplier_id' => array(
+		'description' => array(
 			'notempty' => array(
 				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
@@ -69,6 +81,32 @@ class PurPurchase extends AppModel {
  * @var array
  */
 	public $hasMany = array(
+		'PurPrice' => array(
+			'className' => 'PurPrice',
+			'foreignKey' => 'pur_purchase_id',
+			'dependent' => false,
+			'conditions' => '',
+			'fields' => '',
+			'order' => '',
+			'limit' => '',
+			'offset' => '',
+			'exclusive' => '',
+			'finderQuery' => '',
+			'counterQuery' => ''
+		),
+		'PurPayment' => array(
+			'className' => 'PurPayment',
+			'foreignKey' => 'pur_purchase_id',
+			'dependent' => false,
+			'conditions' => '',
+			'fields' => '',
+			'order' => '',
+			'limit' => '',
+			'offset' => '',
+			'exclusive' => '',
+			'finderQuery' => '',
+			'counterQuery' => ''
+		),
 		'PurDetail' => array(
 			'className' => 'PurDetail',
 			'foreignKey' => 'pur_purchase_id',

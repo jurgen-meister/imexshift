@@ -12,20 +12,20 @@ class PurPurchasesController extends AppController {
  *
  * @var string
  */
-//	public $layout = 'bootstrap';
+	public $layout = 'bootstrap';
 
 /**
  * Helpers
  *
  * @var array
  */
-//	public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
+	public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
 /**
  * Components
  *
  * @var array
  */
-//	public $components = array('Session');
+	public $components = array('Session');
 /**
  * index method
  *
@@ -35,7 +35,7 @@ class PurPurchasesController extends AppController {
 		$this->PurPurchase->recursive = 0;
 		$this->set('purPurchases', $this->paginate());
 	}
-	
+
 /**
  * view method
  *
