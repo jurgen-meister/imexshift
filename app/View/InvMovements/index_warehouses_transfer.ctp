@@ -4,9 +4,9 @@
 <div class="span9"><!-- INICIO CONTAINER FLUID/ROW FLUID/SPAN9 - Del Template Principal (SPAN3 reservado para menu izquierdo) -->
 <!-- ************************************************************************************************************************ -->
 		<h2><?php
-			echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' => 'save_in'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo')); 
+			echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' => 'save_warehouses_transfer'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo')); 
 			?>
-<?php echo __(' Entradas al Almacén');?></h2>
+<?php echo __(' Transferencias entre Almacenes');?></h2>
 		
 			<!--<a href="save_in" id="btnChangeState" class="btn btn-primary" title="Nueva entrada a almacén"><i class="icon-plus icon-white"></i> Nuevo</a>-->
 			
@@ -15,14 +15,6 @@
 		<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-search', 'novalidate' => true));?>
 		<fieldset>
 		<legend><?php echo __(''); ?></legend>
-					<?php
-					echo $this->BootstrapForm->input('code', array(				
-									//'label' => 'Codigo Entrada:',
-									'id'=>'txtCode',
-									'value'=>$code,
-									'placeholder'=>'Codigo Entrada'
-									));
-					?>
 					<?php
 					echo $this->BootstrapForm->input('document_code', array(				
 							//'label' => 'Codigo Compra:',
@@ -45,9 +37,7 @@
 		<table class="table table-striped table-bordered table-hover">
 			<tr>
 				<th><?php echo "#";?></th>
-				<th><?php echo 'Codigo Entrada';?></th>
 				<th><?php echo 'Codigo Documento';?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('inv_movement_type_id', 'Movimiento');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('inv_warehouse_id', 'Almacen');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('lc_state', 'Estado Documento');?></th>
@@ -55,7 +45,6 @@
 		<?php foreach ($invMovements as $invMovement): ?>
 			<tr>
 				<td><?php echo $cont++;?></td>
-				<td><?php echo h($invMovement['InvMovement']['code']); ?>&nbsp;</td>
 				<td>
 					<?php 
 					
@@ -67,9 +56,7 @@
 					?>
 					&nbsp;
 				</td>
-				<td>
-					<?php echo h($invMovement['InvMovementType']['name']); ?>
-				</td>
+				
 				<td>
 					<?php 
 					echo date("d/m/Y", strtotime($invMovement['InvMovement']['date']));
@@ -100,18 +87,8 @@
 					///////////START - SETTING URL AND PARAMETERS/////////////
 					$url = array();
 					$parameters = $this->passedArgs;
-					if($invMovement['InvMovement']['inv_movement_type_id'] == 1){//Compra
-						$url['action']='save_purchase_in';
-						$parameters['document_code']=$invMovement['InvMovement']['document_code'];
-						$parameters['id']=$invMovement['InvMovement']['id'];
-					}elseif($invMovement['InvMovement']['inv_movement_type_id'] == 4){
-						$url['action']='save_warehouses_transfer';
-						$parameters['document_code']=$invMovement['InvMovement']['document_code'];
-						$parameters['origin']='in';
-					}else{
-						$url['action'] = 'save_in';
-						$parameters['id']=$invMovement['InvMovement']['id'];
-					}
+					$url['action']='save_warehouses_transfer';
+					$parameters['document_code']=$invMovement['InvMovement']['document_code'];
 					////////////END - SETTING URL AND PARAMETERS//////////////
 					echo $this->Html->link('<i class="icon-pencil icon-white"></i>'.__(' '.$stateName),  array_merge($url,$parameters), array('class'=>'btn '.$stateColor, 'escape'=>false, 'title'=>'Editar')); 
 					?>&nbsp;

@@ -168,7 +168,7 @@
 								for($i=0; $i<count($invMovementDetails); $i++){
 									echo '<tr>';
 										echo '<td><span id="spaItemName'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['item'].'</span><input type="hidden" value="'.$invMovementDetails[$i]['itemId'].'" id="txtItemId" ></td>';
-										echo '<td><span id="txtStock'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['stock'].'</span></td>';
+										echo '<td><span id="spaStock'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['stock'].'</span></td>';
 										echo '<td><span id="spaQuantityDocument'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['cantidadCompra'].'</span></td>';
 										echo '<td><span id="spaQuantity'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['cantidad'].'</span></td>';
 										if($documentState == 'PENDANT' OR $documentState == ''){

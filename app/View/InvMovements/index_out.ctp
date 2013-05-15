@@ -100,16 +100,18 @@
 					///////////START - SETTING URL AND PARAMETERS/////////////
 					$url = array();
 					$parameters = $this->passedArgs;
-					if($invMovement['InvMovement']['inv_movement_type_id'] == 1){//Compra
-						//$url['action']='save_purchase_in';
+					if($invMovement['InvMovement']['inv_movement_type_id'] == 2){//Venta
 						$url['action']='save_sale_out';
 						$parameters['document_code']=$invMovement['InvMovement']['document_code'];
 						$parameters['id']=$invMovement['InvMovement']['id'];
+					}elseif($invMovement['InvMovement']['inv_movement_type_id'] == 3){
+						$url['action']='save_warehouses_transfer';
+						$parameters['document_code']=$invMovement['InvMovement']['document_code'];
+						$parameters['origin']='out';
 					}else{
 						$url['action'] = 'save_out';
 						$parameters['id']=$invMovement['InvMovement']['id'];
 					}
-					
 					////////////END - SETTING URL AND PARAMETERS//////////////
 					echo $this->Html->link('<i class="icon-pencil icon-white"></i>'.__(' '.$stateName),  array_merge($url,$parameters), array('class'=>'btn '.$stateColor, 'escape'=>false, 'title'=>'Editar')); 
 					?>&nbsp;

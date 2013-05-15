@@ -23,11 +23,15 @@ $(document).ready(function(){
 	//************************************************************************//
 	//////////////////////////////////BEGIN-FUNCTIONS////////////////
 	//************************************************************************//
-	//firefox doesn't clear by himself the fields when there is a new form :@
+	//firefox doesn't clear by himself the fields when there is a refresh in a new form
 	function clearFieldsForFirefox(){
-		if(arr[3] == 'save_in'){
-			if(arr[4] == null){
-				$('input').val('');//empty all inputs including hidden thks jquery 
+		var urlController = ['save_in', 'save_out', 'save_warehouses_transfer'];
+		for(var i=0;i < urlController.length; i++ ){
+			if(arr[3] == urlController[i]){
+				if(arr[4] == null){
+					$('input').val('');//empty all inputs including hidden thks jquery 
+					$('textarea').val('');
+				}
 			}
 		}
 	}
@@ -126,17 +130,17 @@ $(document).ready(function(){
 		}
 	}
 	
-	function validateWarehouse(){
+	function updateItemsWarehouseStocks(warehouse, controlName){
 		var arrayItemsDetails = [];
 		arrayItemsDetails = getItemsDetails();
 		
 		if(arrayItemsDetails[0] != 0){
-			ajax_update_multiple_stocks(arrayItemsDetails);
+			ajax_update_multiple_stocks(arrayItemsDetails, warehouse, controlName);
 			alert('Se cambio de "Almacen", se actualizara los "Stocks" de los "Items"');
 		}
 	}
 	
-	function validateBeforeMoveOut(arrayItemsStocksErrors){
+	function validateBeforeMoveOut(arrayItemsStocksErrors, controlName){
 		var error = '';
 		var arrItemsStatusStock = [];
 		var arrStatusStock =[];
@@ -153,7 +157,7 @@ $(document).ready(function(){
 				if(status == 'error'){ 
 						error+='<li>'+$('#spaItemName'+itemId).text()+': la "Cantidad = '+$('#spaQuantity'+itemId).text()+'" es mayor su "Stock = '+stock+'" </li>';	
 				}
-				$('#txtStock'+itemId).text(stock);
+				$('#'+controlName+itemId).text(stock);
 			}
 		}
 		return error;
@@ -175,11 +179,15 @@ $(document).ready(function(){
 		$('#btnModalEditItem').show();
 		$('#boxModalValidateItem').html('');//clear error message
 		$('#txtModalQuantity').val(objectTableRowSelected.find('#spaQuantity'+itemIdForEdit).text());
-		$('#txtModalStock').val(objectTableRowSelected.find('#txtStock'+itemIdForEdit).text());
+		$('#txtModalStock').val(objectTableRowSelected.find('#spaStock'+itemIdForEdit).text());
 		$('#txtModalStock').keypress(function(){return false;});
 		if ($('#txtModalQuantityDocument').length > 0){//existe
 			$('#txtModalQuantityDocument').val(objectTableRowSelected.find('#spaQuantityDocument'+itemIdForEdit).text());
 			$('#txtModalQuantityDocument').keypress(function(){return false;});
+		}
+		if($('#cbxWarehouses2').length > 0){
+			$('#txtModalStock2').val(objectTableRowSelected.find('#spaStock2-'+itemIdForEdit).text());
+			$('#txtModalStock2').keypress(function(){return false;});
 		}
 		$('#cbxModalItems').empty();
 		$('#cbxModalItems').append('<option value="'+itemIdForEdit+'">'+objectTableRowSelected.find('td').text()+'</option>');
@@ -213,16 +221,20 @@ $(document).ready(function(){
 		}
 	}
 	
-	function createRowItemTable(itemId, itemCodeName, stock, quantity){
-		$('#tablaItems > tbody:last').append('<tr>\n\
-												<td><span id="spaItemName'+itemId+'">'+itemCodeName+'</span><input type="hidden" value="'+itemId+'" id="txtItemId" ></td>\n\
-												<td><span id="txtStock'+itemId+'">'+stock+'</span></td>\n\
-												<td><span id="spaQuantity'+itemId+'">'+quantity+'</span></td>\n\
-												<td class="columnItemsButtons">\n\
-													<a class="btn btn-primary" href="#" id="btnEditItem'+itemId+'" title="Editar"><i class="icon-pencil icon-white"></i></a>\n\
-													<a class="btn btn-danger" href="#" id="btnDeleteItem'+itemId+'" title="Eliminar"><i class="icon-trash icon-white"></i></a>\n\
-												</td>\n\
-											 </tr>');
+	function createRowItemTable(itemId, itemCodeName, stock, quantity, stock2){
+		var row = '<tr>';
+		row +='<td><span id="spaItemName'+itemId+'">'+itemCodeName+'</span><input type="hidden" value="'+itemId+'" id="txtItemId" ></td>';
+		row +='<td><span id="spaStock'+itemId+'">'+stock+'</span></td>';
+		if(stock2 != ''){
+			row +='<td><span id="spaStock2-'+itemId+'">'+stock2+'</span></td>';
+		}
+		row +='<td><span id="spaQuantity'+itemId+'">'+quantity+'</span></td>';
+		row +='<td class="columnItemsButtons">';
+		row +='<a class="btn btn-primary" href="#" id="btnEditItem'+itemId+'" title="Editar"><i class="icon-pencil icon-white"></i></a>';
+		row +='<a class="btn btn-danger" href="#" id="btnDeleteItem'+itemId+'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
+		row +='</td>';
+		row +='</tr>'
+		$('#tablaItems > tbody:last').append(row);
 	}
 	
 	function editItem(){
@@ -243,9 +255,13 @@ $(document).ready(function(){
 		var itemId = $('#cbxModalItems').val();
 		var itemCodeName = $('#cbxModalItems option:selected').text();
 		var stock = $('#txtModalStock').val();
+		var stock2 = '';
+		if(arr[3] == 'save_warehouses_transfer'){
+			stock2 = $('#txtModalStock2').val();
+		}
 		var error = validateItem(itemCodeName, quantity, ''); 
 		if(error == ''){
-			createRowItemTable(itemId, itemCodeName, stock, parseInt(quantity,10));
+			createRowItemTable(itemId, itemCodeName, stock, parseInt(quantity,10), stock2);
 			createEventClickEditItemButton(itemId);
 			createEventClickDeleteItemButton(itemId);
 			arrayItemsAlreadySaved.push(itemId);  //push into array of the added item
@@ -260,19 +276,25 @@ $(document).ready(function(){
 		var arrayItemsDetails = [];
 		var itemId = '';
 		var itemStock = '';
+		var itemStock2 = '';
 		var itemQuantity = '';
 		var itemQuantityDocument = '';
 		
 		$('#tablaItems tbody tr').each(function(){		
 			itemId = $(this).find('#txtItemId').val();
-			itemStock = $(this).find('#txtStock'+itemId).text();
+			itemStock = $(this).find('#spaStock'+itemId).text();
+			
+			if ($('#spaStock2-'+itemId).length > 0){//exists warehouse_transfer
+				itemStock2 = $(this).find('#spaStock2-'+itemId).text();
+			}
+			
 			itemQuantity = $(this).find('#spaQuantity'+itemId).text();
 	
-			if ($('#spaQuantityDocument'+itemId).length > 0){//existe
+			if ($('#spaQuantityDocument'+itemId).length > 0){//exists
 				itemQuantityDocument = $(this).find('#spaQuantityDocument'+itemId).text();
 			}
 			
-			arrayItemsDetails.push({'inv_item_id':itemId, 'stock':itemStock, 'quantity':itemQuantity, 'quantity_document':itemQuantityDocument});
+			arrayItemsDetails.push({'inv_item_id':itemId, 'stock':itemStock, 'quantity':itemQuantity, 'quantity_document':itemQuantityDocument, 'stock2':itemStock2});
 			
 		});
 		
@@ -301,7 +323,7 @@ $(document).ready(function(){
 				ajax_save_movement_out(arrayItemsDetails);
 			}
 			if(arr[3] == 'save_warehouses_transfer'){
-				alert('funciona para transferencias entre almacenes');
+				//alert('funciona para transferencias entre almacenes');
 				ajax_save_warehouses_transfer(arrayItemsDetails);
 			}
 		}else{
@@ -309,11 +331,11 @@ $(document).ready(function(){
 		}
 	}
 	
-	function updateMultipleStocks(arrayItemsStocks){
+	function updateMultipleStocks(arrayItemsStocks, controlName){
 		var auxItemsStocks = [];
 		for(var i=0; i<arrayItemsStocks.length; i++){
 			auxItemsStocks = arrayItemsStocks[i].split('=>');//  item5=>9stock
-			$('#txtStock'+auxItemsStocks[0]).text(auxItemsStocks[1]);  //update only if quantities are APPROVED
+			$('#'+controlName+auxItemsStocks[0]).text(auxItemsStocks[1]);  //update only if quantities are APPROVED
 		}
 	}
 	
@@ -327,12 +349,15 @@ $(document).ready(function(){
 			if(arr[3]=='save_out'){
 				ajax_change_state_approved_movement_out(arrayItemsDetails);
 			}
+			if(arr[3] == 'save_warehouses_transfer'){
+				ajax_change_state_approved_warehouses_transfer(arrayItemsDetails);
+			}
 		}
 	}
 	
 	function changeStateCancelled(){
 		if(confirm('Al CANCELAR este documento ya no sera valido y no habra marcha atras. Esta seguro?')){
-			$('#cbxWarehouses').removeAttr('disabled');
+			//$('#cbxWarehouses').removeAttr('disabled');
 			var arrayItemsDetails = [];
 			arrayItemsDetails = getItemsDetails();
 			if(arr[3] == 'save_in' || arr[3] == 'save_purchase_in'){
@@ -340,6 +365,9 @@ $(document).ready(function(){
 			}
 			if(arr[3]=='save_out'){
 				ajax_change_state_cancelled_movement_out(arrayItemsDetails);
+			}
+			if(arr[3] == 'save_warehouses_transfer'){
+				ajax_change_state_cancelled_warehouses_transfer(arrayItemsDetails);
 			}
 		}
 	}
@@ -409,7 +437,17 @@ $(document).ready(function(){
 	});
 	
 	$('#cbxWarehouses').change(function(){
-		validateWarehouse();
+		//validateWarehouse();
+		var warehouse=$('#cbxWarehouses').val();
+		var controlName ='spaStock';
+		updateItemsWarehouseStocks(warehouse, controlName)
+	});
+	
+	$('#cbxWarehouses2').change(function(){
+		//validateWarehouse();
+		var warehouse=$('#cbxWarehouses2').val();
+		var controlName ='spaStock2-';
+		updateItemsWarehouseStocks(warehouse, controlName)
 	});
 	
 	$('#txtDate').keypress(function(){return false;});
@@ -465,7 +503,7 @@ $(document).ready(function(){
 				
 				//update items stocks
 				var arrayItemsStocks = arrayCatch[1].split(',');
-				updateMultipleStocks(arrayItemsStocks);
+				updateMultipleStocks(arrayItemsStocks, 'spaStock');
 
 				
 					$('#boxMessage').html('<div class="alert alert-success">\n\
@@ -515,7 +553,7 @@ $(document).ready(function(){
 				
 				//update items stocks
 				var arrayItemsStocks = arrayCatch[1].split(',');
-				updateMultipleStocks(arrayItemsStocks);
+				updateMultipleStocks(arrayItemsStocks, 'spaStock');
 
 				
 					$('#boxMessage').html('<div class="alert alert-success">\n\
@@ -531,15 +569,7 @@ $(document).ready(function(){
 	
 	//Save movement IN
 	function ajax_save_warehouses_transfer(arrayItemsDetails){
-		//var movementType =1;//Purchase
-		//var documentCode ='NO';
-		//if ($('#cbxMovementTypes').length > 0){//existe
-		//	movementType = $('#cbxMovementTypes').val();
-		//}
-		//if ($('#txtDocumentCode').length > 0){//existe
-			//documentCode = $('#txtDocumentCode').val();
-		//}
-		$.ajax({
+			$.ajax({
             type:"POST",
             url:moduleController + "ajax_save_warehouses_transfer",			
             data:{arrayItemsDetails: arrayItemsDetails 
@@ -547,28 +577,140 @@ $(document).ready(function(){
 				  ,date:$('#txtDate').val()
 				  ,warehouseOut:$('#cbxWarehouses').val()
 				  ,warehouseIn:$('#cbxWarehouses2').val()
-				  //,movementType:movementType
 				  ,description:$('#txtDescription').val()
 				  ,documentCode:$('#txtDocumentCode').val()//transfer code for both parts
 			  },
             beforeSend: showProcessing(),
             success: function(data){
 				var arrayCatch = data.split('|');
+				var arrayItemsStocks = [];
 				if(arrayCatch[0] == 'insertado'){ 
 					$('#txtDocumentCode').val(arrayCatch[2]);
 					$('#columnStateMovementIn').css('background-color','#F99C17');
 					$('#columnStateMovementIn').text('Pendiente');
 					$('#btnApproveState').show();
 					$('#txtMovementIdHidden').val(arrayCatch[3]);
+					//update items stocks when transfer
+					arrayItemsStocks = arrayCatch[4].split(',');
+					updateMultipleStocks(arrayItemsStocks, 'spaStock2-');
 				}
 				
 				//update items stocks
-				var arrayItemsStocks = arrayCatch[1].split(',');
-				updateMultipleStocks(arrayItemsStocks);
-
+				arrayItemsStocks = arrayCatch[1].split(',');
+				updateMultipleStocks(arrayItemsStocks, 'spaStock');
+				
+				if(arrayCatch[0] == 'modificado'){ 
+					//update items stocks when transfer
+					arrayItemsStocks = arrayCatch[2].split(',');
+					updateMultipleStocks(arrayItemsStocks, 'spaStock2-');
+				}
 				
 					$('#boxMessage').html('<div class="alert alert-success">\n\
 					<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
+				$('#processing').text('');
+				
+			},
+			error:function(data){
+				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				$('#processing').text('');
+			}
+        });
+	}
+	
+	function ajax_change_state_approved_warehouses_transfer(arrayItemsDetails){//almoste the same as movement out
+		
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_change_state_approved_warehouses_transfer",			
+            data:{arrayItemsDetails: arrayItemsDetails 
+				  ,movementId:$('#txtMovementIdHidden').val()
+				  ,date:$('#txtDate').val()
+				  ,warehouseOut:$('#cbxWarehouses').val()
+				  ,warehouseIn:$('#cbxWarehouses2').val()
+				  ,description:$('#txtDescription').val()
+				  ,documentCode:$('#txtDocumentCode').val()//transfer code for both parts
+			  },
+            beforeSend: showProcessing(),
+            success: function(data){
+				var arrayCatch = data.split('|');
+				var arrayItemsStocks = arrayCatch[1].split(',');
+				if(arrayCatch[0] == 'aprobado'){
+					updateMultipleStocks(arrayItemsStocks, 'spaStock');
+					arrayItemsStocks = arrayCatch[2].split(',')
+					updateMultipleStocks(arrayItemsStocks, 'spaStock2-');
+					$('#columnStateMovementIn').css('background-color','#54AA54');
+					$('#columnStateMovementIn').text('Aprobado');
+					$('#btnApproveState').hide();
+					$('#btnCancellState').show();
+					$('#btnSaveAll').hide();
+					//$('#btnAddMovementType').hide();
+					if ($('#btnAddItem').length > 0){//existe
+						$('#btnAddItem').hide();
+					}
+					$('.columnItemsButtons').hide();
+
+					//if ($('#txtDocumentCode').length > 0){//existe
+						$('#txtDocumentCode').attr('disabled','disabled');
+					//}
+					$('#txtDate').attr('disabled','disabled');
+					$('#cbxWarehouses').attr('disabled','disabled');
+					$('#cbxWarehouses2').attr('disabled','disabled');
+					if ($('#cbxMovementTypes').length > 0){//existe
+						$('#cbxMovementTypes').attr('disabled','disabled');
+					}
+					$('#txtDescription').attr('disabled','disabled');
+
+					//$('#processing').text('');
+					$('#boxMessage').html('<div class="alert alert-success">\n\
+					<button type="button" class="close" data-dismiss="alert">&times;</button>Aprobado con exito<div>');
+				}
+				if(arrayCatch[0] == 'error'){
+					var error = validateBeforeMoveOut(arrayItemsStocks, 'spaStock');
+					arrayItemsStocks = arrayCatch[2].split(',')
+					updateMultipleStocks(arrayItemsStocks, 'spaStock2-');
+					$('#boxMessage').html('<div class="alert alert-error">\n\
+					<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo Aprobar el traspaso porque falta "Stock" para la "Salida" del "Almacen Origen":</p><ul>'+error+'</ul><div>');
+				}
+				$('#processing').text('');
+				
+			},
+			error:function(data){
+				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				$('#processing').text('');
+			}
+        });
+	}
+	
+	function ajax_change_state_cancelled_warehouses_transfer(arrayItemsDetails){//almoste the same as movement out
+		
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_change_state_cancelled_warehouses_transfer",			
+            data:{arrayItemsDetails: arrayItemsDetails 
+				  ,movementId:$('#txtMovementIdHidden').val()
+				  ,documentCode:$('#txtDocumentCode').val()//transfer code for both parts
+			  },
+            beforeSend: showProcessing(),
+            success: function(data){
+				var arrayCatch = data.split('|');
+				var arrayItemsStocks = arrayCatch[1].split(',');//in, destino
+				if(arrayCatch[0] == 'cancelado'){
+					updateMultipleStocks(arrayItemsStocks, 'spaStock2-');//in, destino
+					arrayItemsStocks = arrayCatch[2].split(',');
+					updateMultipleStocks(arrayItemsStocks, 'spaStock');//out, origen
+					$('#columnStateMovementIn').css('background-color','#BD362F');
+					$('#columnStateMovementIn').text('Cancelado');
+					$('#btnCancellState').hide();
+					$('#boxMessage').html('<div class="alert alert-success">\n\
+					<button type="button" class="close" data-dismiss="alert">&times;</button>Cancelado con exito<div>');
+				}
+				if(arrayCatch[0] == 'error'){
+					var error = validateBeforeMoveOut(arrayItemsStocks, 'spaStock2-');//in, destino
+					arrayItemsStocks = arrayCatch[2].split(',')//out, origen
+					updateMultipleStocks(arrayItemsStocks, 'spaStock');
+					$('#boxMessage').html('<div class="alert alert-error">\n\
+					<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo Cancelar el traspaso porque falta "Stock" para la "Salida" del "Almacen Destino":</p><ul>'+error+'</ul><div>');
+				}
 				$('#processing').text('');
 				
 			},
@@ -604,7 +746,7 @@ $(document).ready(function(){
 				var arrayCatch = data.split('|');
 				var arrayItemsStocks = arrayCatch[1].split(',');
 				if(arrayCatch[0] == 'aprobado'){
-					updateMultipleStocks(arrayItemsStocks);
+					updateMultipleStocks(arrayItemsStocks, 'spaStock');
 					$('#columnStateMovementIn').css('background-color','#54AA54');
 					$('#columnStateMovementIn').text('Aprobado');
 					$('#btnApproveState').hide();
@@ -663,7 +805,7 @@ $(document).ready(function(){
 				var arrayCatch = data.split('|');
 				var arrayItemsStocks = arrayCatch[1].split(',');
 				if(arrayCatch[0] == 'aprobado'){
-					updateMultipleStocks(arrayItemsStocks);
+					updateMultipleStocks(arrayItemsStocks, 'spaStock');
 					$('#columnStateMovementIn').css('background-color','#54AA54');
 					$('#columnStateMovementIn').text('Aprobado');
 					$('#btnApproveState').hide();
@@ -691,7 +833,7 @@ $(document).ready(function(){
 					<button type="button" class="close" data-dismiss="alert">&times;</button>Aprobado con exito<div>');
 				}
 				if(arrayCatch[0] == 'error'){
-					var error = validateBeforeMoveOut(arrayItemsStocks);
+					var error = validateBeforeMoveOut(arrayItemsStocks, 'spaStock');
 					$('#boxMessage').html('<div class="alert alert-error">\n\
 					<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo "Aprobar" la salida debido a falta de stock:</p><ul>'+error+'</ul><div>');
 				}
@@ -705,6 +847,7 @@ $(document).ready(function(){
         });
 	}
 	
+	
 	function ajax_change_state_cancelled_movement_in(arrayItemsDetails){
 		$.ajax({
             type:"POST",
@@ -717,7 +860,7 @@ $(document).ready(function(){
 				var arrayCatch = data.split('|');
 				var arrayItemsStocks = arrayCatch[1].split(',');
 				if(arrayCatch[0] == 'cancelado'){
-					updateMultipleStocks(arrayItemsStocks);
+					updateMultipleStocks(arrayItemsStocks, 'spaStock');
 					$('#columnStateMovementIn').css('background-color','#BD362F');
 					$('#columnStateMovementIn').text('Cancelado');
 					$('#btnCancellState').hide();
@@ -725,7 +868,7 @@ $(document).ready(function(){
 					<button type="button" class="close" data-dismiss="alert">&times;</button>Cancelado con exito<div>');
 				}
 				if(arrayCatch[0] == 'error'){
-					var error = validateBeforeMoveOut(arrayItemsStocks);
+					var error = validateBeforeMoveOut(arrayItemsStocks, 'spaStock');
 					$('#boxMessage').html('<div class="alert alert-error">\n\
 					<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo "Cancelar" la entrada debido a falta de stock:</p><ul>'+error+'</ul><div>');
 				}
@@ -750,7 +893,7 @@ $(document).ready(function(){
 				var arrayCatch = data.split('|');
 				var arrayItemsStocks = arrayCatch[1].split(',');
 				if(arrayCatch[0] == 'cancelado'){
-					updateMultipleStocks(arrayItemsStocks);
+					updateMultipleStocks(arrayItemsStocks, 'spaStock');
 					$('#columnStateMovementIn').css('background-color','#BD362F');
 					$('#columnStateMovementIn').text('Cancelado');
 					$('#btnCancellState').hide();
@@ -769,10 +912,16 @@ $(document).ready(function(){
 	
 	//Get items and stock for the fist item when inititates modal
 	function ajax_initiate_modal_add_item_in(itemsAlreadySaved){
+		var transfer = '';
+		var warehouse2 = '';
+		if(arr[3] == 'save_warehouses_transfer'){
+			transfer = 'warehouses_transfer';
+			warehouse2 = $('#cbxWarehouses2').val();
+		}
 		 $.ajax({
             type:"POST",
             url:moduleController + "ajax_initiate_modal_add_item_in",			
-            data:{itemsAlreadySaved: itemsAlreadySaved, warehouse: $('#cbxWarehouses').val()},
+            data:{itemsAlreadySaved: itemsAlreadySaved, warehouse: $('#cbxWarehouses').val(), transfer:transfer, warehouse2:warehouse2},
             beforeSend: showProcessing(),
             success: function(data){
 				$('#processing').text('');
@@ -780,12 +929,16 @@ $(document).ready(function(){
 				$('#boxModalIntiateItemStock').html(data);
 				$('#txtModalQuantity').val('');  
 				initiateModal()
+				//if($('#txtModalStock').length > 0){
 				$('#cbxModalItems').bind("change",function(){ //must be binded 'cause dropbox is loaded by a previous ajax'
-					ajax_update_stock();
+					ajax_update_stock_modal();
 				});
-				$('#txtModalStock').keypress(function(){
-					return false;
-				});
+				$('#txtModalStock').keypress(function(){return false;});
+				if($('#cbxWarehouses2').length > 0){
+					$('#txtModalStock2').keypress(function(){return false;});	
+				}
+				//}
+				
 			},
 			error:function(data){
 				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
@@ -795,11 +948,17 @@ $(document).ready(function(){
 	}
 	
 	//Update one stock value
-	function ajax_update_stock(){
+	function ajax_update_stock_modal(){
+		var transfer = '';
+		var warehouse2 = '';
+		if(arr[3] == 'save_warehouses_transfer'){
+			transfer = 'warehouses_transfer';
+			warehouse2 = $('#cbxWarehouses2').val();
+		}
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_update_stock",			
-            data:{warehouse: $('#cbxWarehouses').val(), item: $('#cbxModalItems').val()},
+            url:moduleController + "ajax_update_stock_modal",			
+            data:{warehouse: $('#cbxWarehouses').val(), item: $('#cbxModalItems').val(), transfer:transfer, warehouse2:warehouse2},
             beforeSend: showProcessing(),
             success: function(data){
 				$('#processing').text("");
@@ -816,17 +975,16 @@ $(document).ready(function(){
 	}
 	
 	//Update one stock value
-	function ajax_update_multiple_stocks(arrayItemsDetails){
+	function ajax_update_multiple_stocks(arrayItemsDetails, warehouse, controlName){
 		$.ajax({
             type:"POST",
             url:moduleController + "ajax_update_multiple_stocks",			
-            data:{warehouse: $('#cbxWarehouses').val(), arrayItemsDetails: arrayItemsDetails},
+            data:{warehouse: warehouse, arrayItemsDetails: arrayItemsDetails},
             beforeSend: showProcessing(),
             success: function(data){
 				var arrayItemsStocks = data.split(',');
-				updateMultipleStocks(arrayItemsStocks);
+				updateMultipleStocks(arrayItemsStocks, controlName);
 				$('#processing').text('');
-				//$('#boxModalStock').html(data);
 			},
 			error:function(data){
 				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');

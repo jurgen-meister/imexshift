@@ -74,9 +74,8 @@
 				));
 				*/
 				echo $this->BootstrapForm->input('movement_hidden', array(
-					//'id'=>'movement_hidden',
 					'id'=>'txtMovementIdHidden',
-					'value'=>$id,
+					'value'=>$movementIdOut,
 					'type'=>'hidden'
 				));
 				
@@ -108,20 +107,26 @@
 					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 				));
 				
-								
-				echo $this->BootstrapForm->input('inv_warehouse_id', array(
+				//debug($warehouses);				
+				echo $this->BootstrapForm->input('warehouseOrigin', array(
 					'required' => 'required',
 					'label' => 'Almacen Origen:',
 					'id'=>'cbxWarehouses',
+					'options'=>$warehouses,
+					'value'=>$warehouseOut,
 					'disabled'=>$disable,
+					'type'=>'select',
 					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 				));
 				
-				echo $this->BootstrapForm->input('inv_warehouse_id', array(
+				echo $this->BootstrapForm->input('warehouseDestination', array(
 					'required' => 'required',
 					'label' => 'Almacen Destino:',
 					'id'=>'cbxWarehouses2',
+					'options'=>$warehouses,
+					'value'=>$warehouseIn,
 					'disabled'=>$disable,
+					'type'=>'select',
 					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 				));
 
@@ -148,9 +153,9 @@
 
 				<div class="row-fluid">
 					
-					<div class="span1"></div>
+					<!--<div class="span1"></div>-->
 					
-					<div id="boxTable" class="span8">
+					<div id="boxTable" class="span9">
 						
 						<?php if($documentState == 'PENDANT' OR $documentState == ''){ ?>
 						<a class="btn btn-primary" href='#' id="btnAddItem" title="Adicionar Item"><i class="icon-plus icon-white"></i></a>
@@ -162,6 +167,7 @@
 								<tr>
 									<th>Item</th>
 									<th>Stock Origen</th>
+									<th>Stock Destino</th>
 									<th>Cantidad</th>
 									<?php if($documentState == 'PENDANT' OR $documentState == ''){ ?>
 									<th class="columnItemsButtons"></th>
@@ -170,16 +176,19 @@
 							</thead>
 							<tbody>
 								<?php
-								for($i=0; $i<count($invMovementDetails); $i++){
+								//debug($invMovementDetailsOut);
+								//debug($invMovementDetailsIn);
+								for($i=0; $i<count($invMovementDetailsOut); $i++){
 									echo '<tr>';
-										echo '<td><span id="spaItemName'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['item'].'</span><input type="hidden" value="'.$invMovementDetails[$i]['itemId'].'" id="txtItemId" ></td>';
-										echo '<td><span id="txtStock'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['stock'].'</span></td>';
-										echo '<td><span id="spaQuantity'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['cantidad'].'</span></td>';
+										echo '<td><span id="spaItemName'.$invMovementDetailsOut[$i]['itemId'].'">'.$invMovementDetailsOut[$i]['item'].'</span><input type="hidden" value="'.$invMovementDetailsOut[$i]['itemId'].'" id="txtItemId" ></td>';
+										echo '<td><span id="spaStock'.$invMovementDetailsOut[$i]['itemId'].'">'.$invMovementDetailsOut[$i]['stock'].'</span></td>';
+										echo '<td><span id="spaStock2-'.$invMovementDetailsOut[$i]['itemId'].'">'.$invMovementDetailsIn[$i]['stock'].'</span></td>';
+										echo '<td><span id="spaQuantity'.$invMovementDetailsOut[$i]['itemId'].'">'.$invMovementDetailsOut[$i]['cantidad'].'</span></td>';
 										if($documentState == 'PENDANT' OR $documentState == ''){
 											echo '<td class="columnItemsButtons">';
-											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$invMovementDetails[$i]['itemId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
+											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$invMovementDetailsOut[$i]['itemId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
 												
-												<a class="btn btn-danger" href="#" id="btnDeleteItem'.$invMovementDetails[$i]['itemId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
+												<a class="btn btn-danger" href="#" id="btnDeleteItem'.$invMovementDetailsOut[$i]['itemId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
 											echo '</td>';
 										}
 									echo '</tr>';								
@@ -190,6 +199,7 @@
 					</div>
 					
 					<div class="span3"></div>
+					
 					
 				</div>
 			<!-- ////////////////////////////////// FIN ITEMS /////////////////////////////////////// -->
@@ -207,13 +217,28 @@
 
 								}
 								/////////////////START - SETTINGS BUTTON CANCEL /////////////////
-								$url=array('action'=>'index_in');
 								$parameters = $this->passedArgs;
+								if(isset($parameters['origin'])){
+									if($parameters['origin']=='in'){
+										$url=array('action'=>'index_in');
+									}elseif($parameters['origin']=='out'){
+										$url=array('action'=>'index_out');	
+									}
+									if(!isset($parameters['search'])){
+										unset($parameters['document_code']);
+										unset($parameters['code']);
+									}
+								}else{
+									$url=array('action'=>'index_warehouses_transfer');
+								}
 								if(!isset($parameters['search'])){
 									unset($parameters['document_code']);
-									unset($parameters['code']);
+								}else{
+									if($parameters['search'] == 'empty'){
+										unset($parameters['document_code']);
+									}
 								}
-								unset($parameters['id']);
+								//unset($parameters['id']);
 								echo $this->Html->link('Cancelar', array_merge($url,$parameters), array('class'=>'btn') );
 								//////////////////END - SETTINGS BUTTON CANCEL /////////////////
 							?>
