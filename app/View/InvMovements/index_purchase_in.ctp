@@ -20,7 +20,7 @@
 		<?php echo $this->BootstrapForm->end();?>
 		<!-- ////////////////////////////////////////FIN - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
 		<p>
-			<?php echo $this->BootstrapPaginator->counter(array('format' => __('Pagina {:page} de {:pages}, mostrando {:current} registros de {:count} total, comenzando en  {:start}, terminando en {:end}')));?>
+			<?php echo $this->BootstrapPaginator->counter(array('format' => __('Pagina {:page} de {:pages}, mostrando {:current} de un total de {:count} registros')));?>
 		</p>
 		<?php $cont = $this->BootstrapPaginator->counter('{:start}');?>
 		<table class="table table-striped table-bordered table-hover">
@@ -52,7 +52,21 @@
 					$parameters = $this->passedArgs;
 					$parameters['document_code']=$purPurchase['PurPurchase']['code'];
 				////////////END - SETTING URL AND PARAMETERS//////////////
-					echo $this->Html->link('<i class="icon-circle-arrow-right icon-white"></i>'.__(' Entrada Almacen'), array_merge($url, $parameters), array('class'=>'btn btn-primary', 'escape'=>false)); 
+					for($i=0; $i<count($movements); $i++){
+						if($movements[$i]['InvMovement']['document_code'] == $purPurchase['PurPurchase']['code']){
+							if($movements[$i]['InvMovement']['lc_state'] == 'PENDANT'){
+								$btnColor = 'btn-warning';
+								$btnName = ' Entrada Pendiente';
+							}elseif( $movements[$i]['InvMovement']['lc_state'] == 'APPROVED'){
+								$btnColor = 'btn-success';
+								$btnName = ' Entrada Aprobada';
+							}else{
+								$btnColor = 'btn-primary';
+								$btnName = ' Entrada Nueva';
+							}
+						}
+					}
+					echo $this->Html->link('<i class="icon-circle-arrow-right icon-white"></i>'.__($btnName), array_merge($url, $parameters), array('class'=>'btn '.$btnColor, 'escape'=>false)); 
 					?>
 				</td>
 			</tr>

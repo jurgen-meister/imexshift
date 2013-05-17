@@ -504,10 +504,9 @@ $(document).ready(function(){
 				//update items stocks
 				var arrayItemsStocks = arrayCatch[1].split(',');
 				updateMultipleStocks(arrayItemsStocks, 'spaStock');
-
-				
-					$('#boxMessage').html('<div class="alert alert-success">\n\
-					<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
+				$('#btnPrint').show();
+				$('#boxMessage').html('<div class="alert alert-success">\n\
+				<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
 				$('#processing').text('');
 			},
 			error:function(data){
@@ -555,9 +554,9 @@ $(document).ready(function(){
 				var arrayItemsStocks = arrayCatch[1].split(',');
 				updateMultipleStocks(arrayItemsStocks, 'spaStock');
 
-				
-					$('#boxMessage').html('<div class="alert alert-success">\n\
-					<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
+				$('#btnPrint').show();	
+				$('#boxMessage').html('<div class="alert alert-success">\n\
+				<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
 				$('#processing').text('');
 			},
 			error:function(data){
@@ -604,9 +603,9 @@ $(document).ready(function(){
 					arrayItemsStocks = arrayCatch[2].split(',');
 					updateMultipleStocks(arrayItemsStocks, 'spaStock2-');
 				}
-				
-					$('#boxMessage').html('<div class="alert alert-success">\n\
-					<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
+				$('#btnPrint').show();
+				$('#boxMessage').html('<div class="alert alert-success">\n\
+				<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
 				$('#processing').text('');
 				
 			},

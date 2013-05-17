@@ -10,7 +10,6 @@
 		
 			<!--<a href="save_in" id="btnChangeState" class="btn btn-primary" title="Nueva entrada a almacén"><i class="icon-plus icon-white"></i> Nuevo</a>-->
 			
-		
 		<!-- ////////////////////////////////////////INCIO - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
 		<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-search', 'novalidate' => true));?>
 		<fieldset>
@@ -31,22 +30,40 @@
 							'placeholder'=>'Codigo Documento'
 							));
 					?>
+				<!--<div class="btn-group" data-toggle="buttons-checkbox">
+					<button type="button" class="btn">Pendientes</button>
+					<button type="button" class="btn">Aprobados</button>
+					<button type="button" class="btn">Cancelados</button>
+				 </div>-->
+				<?php 	/*			
+						echo $this->BootstrapForm->input('nose]', array(
+							'label' => '',
+							'type' => 'select',
+							'multiple' => 'checkbox inline',
+							'options' => array('Pendientes','Aprobados','Cancelados'),
+							'selected' => array(0,1,2)
+						)); 
+				 * 
+				 */
+						?>
+
 				<?php
 					echo $this->BootstrapForm->submit('<i class="icon-search icon-white"></i>',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSearch', 'title'=>'Buscar'));
 				?>
+				
 		</fieldset>
 		<?php echo $this->BootstrapForm->end();?>
 		<!-- ////////////////////////////////////////FIN - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
-		
 		<p>
-			<?php echo $this->BootstrapPaginator->counter(array('format' => __('Pagina {:page} de {:pages}, mostrando {:current} registros de {:count} total, comenzando en  {:start}, terminando en {:end}')));?>
+		 <?php echo $this->BootstrapPaginator->counter(array('format' => __('Pagina {:page} de {:pages}, mostrando {:current} de un total de {:count} registros')));?>
 		</p>
+		
 		<?php $cont = $this->BootstrapPaginator->counter('{:start}');?>
 		<table class="table table-striped table-bordered table-hover">
 			<tr>
 				<th><?php echo "#";?></th>
 				<th><?php echo 'Codigo Entrada';?></th>
-				<th><?php echo 'Codigo Documento';?></th>
+				<th><?php echo 'Codigo Documento Ref';?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('inv_movement_type_id', 'Movimiento');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('inv_warehouse_id', 'Almacen');?></th>
