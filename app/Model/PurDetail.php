@@ -1,18 +1,12 @@
 <?php
 App::uses('AppModel', 'Model');
 /**
- * InvMovementType Model
+ * PurDetail Model
  *
- * @property InvMovement $InvMovement
+ * @property PurPurchase $PurPurchase
+ * @property InvItem $InvItem
  */
-class InvMovementType extends AppModel {
-
-/**
- * Display field
- *
- * @var string
- */
-	public $displayField = 'name';
+class PurDetail extends AppModel {
 
 /**
  * Validation rules
@@ -20,7 +14,7 @@ class InvMovementType extends AppModel {
  * @var array
  */
 	public $validate = array(
-		'name' => array(
+		'pur_purchase_id' => array(
 			'notempty' => array(
 				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
@@ -30,7 +24,7 @@ class InvMovementType extends AppModel {
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
-		'status' => array(
+		'inv_item_id' => array(
 			'notempty' => array(
 				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
@@ -40,7 +34,7 @@ class InvMovementType extends AppModel {
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
-		'document' => array(
+		'quantity' => array(
 			'notempty' => array(
 				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
@@ -55,24 +49,24 @@ class InvMovementType extends AppModel {
 	//The Associations below have been created with all possible keys, those that are not needed can be removed
 
 /**
- * hasMany associations
+ * belongsTo associations
  *
  * @var array
  */
-	public $hasMany = array(
-		'InvMovement' => array(
-			'className' => 'InvMovement',
-			'foreignKey' => 'inv_movement_type_id',
-			'dependent' => false,
+	public $belongsTo = array(
+		'PurPurchase' => array(
+			'className' => 'PurPurchase',
+			'foreignKey' => 'pur_purchase_id',
 			'conditions' => '',
 			'fields' => '',
-			'order' => '',
-			'limit' => '',
-			'offset' => '',
-			'exclusive' => '',
-			'finderQuery' => '',
-			'counterQuery' => ''
+			'order' => ''
+		),
+		'InvItem' => array(
+			'className' => 'InvItem',
+			'foreignKey' => 'inv_item_id',
+			'conditions' => '',
+			'fields' => '',
+			'order' => ''
 		)
 	);
-
 }

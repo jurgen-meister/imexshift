@@ -16,7 +16,8 @@ class InvItem extends AppModel {
  *
  * @var string
  */
-	public $displayField = 'name';
+	public $virtualFields = array("full_name"=>"CONCAT('[ ',code, ' ] ' ,name)");
+	public $displayField = 'full_name';
 
 /**
  * Validation rules
@@ -119,8 +120,8 @@ class InvItem extends AppModel {
 			'finderQuery' => '',
 			'counterQuery' => ''
 		),
-		'InvMovement' => array(
-			'className' => 'InvMovement',
+		'InvMovementDetail' => array(
+			'className' => 'InvMovementDetail',
 			'foreignKey' => 'inv_item_id',
 			'dependent' => false,
 			'conditions' => '',

@@ -14,16 +14,7 @@
 					'required' => 'required',
 					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
 				);
-				echo $this->BootstrapForm->input('document', array(
-					'label'=>'Tiene Documento:',
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('ref_table', array(
-					'label'=>'Tabla BD Ref:',
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
-				);
+				
 				echo $this->BootstrapForm->hidden('id');
 				?>
 				<?php echo $this->BootstrapForm->submit(__('Guardar'));?>

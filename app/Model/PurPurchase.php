@@ -1,18 +1,12 @@
 <?php
 App::uses('AppModel', 'Model');
 /**
- * InvMovementType Model
+ * PurPurchase Model
  *
- * @property InvMovement $InvMovement
+ * @property InvSupplier $InvSupplier
+ * @property PurDetail $PurDetail
  */
-class InvMovementType extends AppModel {
-
-/**
- * Display field
- *
- * @var string
- */
-	public $displayField = 'name';
+class PurPurchase extends AppModel {
 
 /**
  * Validation rules
@@ -20,7 +14,7 @@ class InvMovementType extends AppModel {
  * @var array
  */
 	public $validate = array(
-		'name' => array(
+		'code' => array(
 			'notempty' => array(
 				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
@@ -30,7 +24,7 @@ class InvMovementType extends AppModel {
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
-		'status' => array(
+		'date' => array(
 			'notempty' => array(
 				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
@@ -40,7 +34,7 @@ class InvMovementType extends AppModel {
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
-		'document' => array(
+		'inv_supplier_id' => array(
 			'notempty' => array(
 				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
@@ -55,14 +49,29 @@ class InvMovementType extends AppModel {
 	//The Associations below have been created with all possible keys, those that are not needed can be removed
 
 /**
+ * belongsTo associations
+ *
+ * @var array
+ */
+	public $belongsTo = array(
+		'InvSupplier' => array(
+			'className' => 'InvSupplier',
+			'foreignKey' => 'inv_supplier_id',
+			'conditions' => '',
+			'fields' => '',
+			'order' => ''
+		)
+	);
+
+/**
  * hasMany associations
  *
  * @var array
  */
 	public $hasMany = array(
-		'InvMovement' => array(
-			'className' => 'InvMovement',
-			'foreignKey' => 'inv_movement_type_id',
+		'PurDetail' => array(
+			'className' => 'PurDetail',
+			'foreignKey' => 'pur_purchase_id',
 			'dependent' => false,
 			'conditions' => '',
 			'fields' => '',

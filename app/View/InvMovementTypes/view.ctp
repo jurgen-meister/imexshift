@@ -27,11 +27,6 @@
 				}
 				?>
 			</dd>
-			<dt><?php echo __('Tabla BD Ref:'); ?></dt>
-			<dd>
-				<?php echo h($invMovementType['InvMovementType']['ref_table']); ?>
-				&nbsp;
-			</dd>
 			
 		</dl>
 	</div>
