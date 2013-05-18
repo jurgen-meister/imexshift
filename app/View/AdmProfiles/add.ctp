@@ -23,7 +23,7 @@
 					'required' => 'required',
 					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
 				);
-				echo $this->BootstrapForm->input('place_of_issue');
+				echo $this->BootstrapForm->input('adm_parameter_detail_id');
 				echo $this->BootstrapForm->input('address', array(
 					'required' => 'required',
 					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')

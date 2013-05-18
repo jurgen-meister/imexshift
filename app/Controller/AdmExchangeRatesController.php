@@ -1,11 +1,11 @@
 <?php
 App::uses('AppController', 'Controller');
 /**
- * AdmProfiles Controller
+ * AdmExchangeRates Controller
  *
- * @property AdmProfile $AdmProfile
+ * @property AdmExchangeRate $AdmExchangeRate
  */
-class AdmProfilesController extends AppController {
+class AdmExchangeRatesController extends AppController {
 
 /**
  *  Layout
@@ -19,15 +19,13 @@ class AdmProfilesController extends AppController {
  *
  * @var array
  */
-//	public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
+	//public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
 /**
  * Components
  *
  * @var array
  */
-//	public $components = array('Session');
-	
-
+	//public $components = array('Session');
 	public  function isAuthorized($user){
 		return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
 	}
@@ -37,8 +35,8 @@ class AdmProfilesController extends AppController {
  * @return void
  */
 	public function index() {
-		$this->AdmProfile->recursive = 0;
-		$this->set('admProfiles', $this->paginate());
+		$this->AdmExchangeRate->recursive = 0;
+		$this->set('admExchangeRates', $this->paginate());
 	}
 
 /**
@@ -48,11 +46,11 @@ class AdmProfilesController extends AppController {
  * @return void
  */
 	public function view($id = null) {
-		$this->AdmProfile->id = $id;
-		if (!$this->AdmProfile->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm profile')));
+		$this->AdmExchangeRate->id = $id;
+		if (!$this->AdmExchangeRate->exists()) {
+			throw new NotFoundException(__('Invalid %s', __('adm exchange rate')));
 		}
-		$this->set('admProfile', $this->AdmProfile->read(null, $id));
+		$this->set('admExchangeRate', $this->AdmExchangeRate->read(null, $id));
 	}
 
 /**
@@ -66,8 +64,8 @@ class AdmProfilesController extends AppController {
 		$admParameterDetails = $this->AdmParameter->AdmParameterDetail->find('all',array(			
 			'order' => 'AdmParameterDetail.id',
 			//'contain' => array('AdmParameter' => array('conditions' => array('AdmParameter.name' => 'Lugar Expedicion'))),
-			'conditions' => array('AdmParameter.name' => 'Lugar Expedicion'),
-			'fields' => array('AdmParameterDetail.id', 'AdmParameterDetail.par_char1')					
+			'conditions' => array('AdmParameter.name' => 'Moneda'),
+			'fields' => array('AdmParameterDetail.id', 'AdmParameterDetail.par_char1')
 		));
 		
 		if(count($admParameterDetails) != 0)
@@ -80,10 +78,10 @@ class AdmProfilesController extends AppController {
 		}
 		$this->set(compact('admParameterDetails'));
 		if ($this->request->is('post')) {
-			$this->AdmProfile->create();
-			if ($this->AdmProfile->save($this->request->data)) {
+			$this->AdmExchangeRate->create();
+			if ($this->AdmExchangeRate->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('adm profile')),
+					__('The %s has been saved', __('adm exchange rate')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -93,7 +91,7 @@ class AdmProfilesController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('adm profile')),
+					__('The %s could not be saved. Please, try again.', __('adm exchange rate')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -102,8 +100,6 @@ class AdmProfilesController extends AppController {
 				);
 			}
 		}
-		$admUsers = $this->AdmProfile->AdmUser->find('list');
-		$this->set(compact('admUsers'));
 	}
 
 /**
@@ -113,15 +109,14 @@ class AdmProfilesController extends AppController {
  * @return void
  */
 	public function edit($id = null) {
-		$this->AdmProfile->id = $id;
-		if (!$this->AdmProfile->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm profile')));
+		$this->AdmExchangeRate->id = $id;
+		if (!$this->AdmExchangeRate->exists()) {
+			throw new NotFoundException(__('Invalid %s', __('adm exchange rate')));
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
-                     $this->request->data['AdmProfile']['lc_transaction']='MODIFY';
-			if ($this->AdmProfile->save($this->request->data)) {
+			if ($this->AdmExchangeRate->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('adm profile')),
+					__('The %s has been saved', __('adm exchange rate')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -131,7 +126,7 @@ class AdmProfilesController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('adm profile')),
+					__('The %s could not be saved. Please, try again.', __('adm exchange rate')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -140,10 +135,8 @@ class AdmProfilesController extends AppController {
 				);
 			}
 		} else {
-			$this->request->data = $this->AdmProfile->read(null, $id);
+			$this->request->data = $this->AdmExchangeRate->read(null, $id);
 		}
-		$admUsers = $this->AdmProfile->AdmUser->find('list');
-		$this->set(compact('admUsers'));
 	}
 
 /**
@@ -156,13 +149,13 @@ class AdmProfilesController extends AppController {
 		if (!$this->request->is('post')) {
 			throw new MethodNotAllowedException();
 		}
-		$this->AdmProfile->id = $id;
-		if (!$this->AdmProfile->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm profile')));
+		$this->AdmExchangeRate->id = $id;
+		if (!$this->AdmExchangeRate->exists()) {
+			throw new NotFoundException(__('Invalid %s', __('adm exchange rate')));
 		}
-		if ($this->AdmProfile->delete()) {
+		if ($this->AdmExchangeRate->delete()) {
 			$this->Session->setFlash(
-				__('The %s deleted', __('adm profile')),
+				__('The %s deleted', __('adm exchange rate')),
 				'alert',
 				array(
 					'plugin' => 'TwitterBootstrap',
@@ -172,7 +165,7 @@ class AdmProfilesController extends AppController {
 			$this->redirect(array('action' => 'index'));
 		}
 		$this->Session->setFlash(
-			__('The %s was not deleted', __('adm profile')),
+			__('The %s was not deleted', __('adm exchange rate')),
 			'alert',
 			array(
 				'plugin' => 'TwitterBootstrap',

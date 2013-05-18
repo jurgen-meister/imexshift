@@ -12,14 +12,14 @@ class PurPurchasesController extends AppController {
  *
  * @var string
  */
-	public $layout = 'bootstrap';
+	public $layout = 'default';
 
 /**
  * Helpers
  *
  * @var array
  */
-	public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
+	//public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
 /**
  * Components
  *
@@ -31,12 +31,46 @@ class PurPurchasesController extends AppController {
  *
  * @return void
  */
-	public function index() {
+	public function index_order() {
+		$this->paginate = array(
+			'conditions' => array(
+				'PurPurchase.lc_state !='=>'LOGIC_DELETE',
+				'PurPurchase.lc_state LIKE'=> '%ORDER%'
+			),
+			'order' => array('PurPurchase.id' => 'desc'),
+			'limit' => 15
+		);
+		$this->PurPurchase->recursive = 0;
+		$this->set('purPurchases', $this->paginate());
+	}
+	
+	public function index_invoice(){
+		$this->paginate = array(
+			'conditions' => array(
+				'PurPurchase.lc_state !='=>'LOGIC_DELETE',
+				'PurPurchase.lc_state LIKE'=> '%INVOICE%',
+			),
+			'order' => array('PurPurchase.id' => 'desc'),
+			'limit' => 15
+		);
+		$this->PurPurchase->recursive = 0;
+		$this->set('purPurchases', $this->paginate());
+	}
+	
+	public function index_remit(){
+		$this->paginate = array(
+			'conditions' => array(
+				'PurPurchase.lc_state !='=>'LOGIC_DELETE',
+				'PurPurchase.lc_state LIKE'=> '%REMIT%',
+			),
+			'order' => array('PurPurchase.id' => 'desc'),
+			'limit' => 15
+		);
 		$this->PurPurchase->recursive = 0;
 		$this->set('purPurchases', $this->paginate());
 	}
 
-/**
+	/**
  * view method
  *
  * @param string $id
