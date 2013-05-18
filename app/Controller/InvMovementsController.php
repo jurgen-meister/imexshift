@@ -31,7 +31,7 @@ class InvMovementsController extends AppController {
 	//*******************************************************************************************************//
 	
 	//////////////////////////////////////////// START - PDF ///////////////////////////////////////////////
-	public function view_report_movement_pdf($id = null) {
+	public function view_document_movement_pdf($id = null) {
 		
 		$this->InvMovement->id = $id;
 		
@@ -177,11 +177,11 @@ class InvMovementsController extends AppController {
 		
 		////////////////////////////START - SETTING URL FILTERS//////////////////////////////////////
 		if(isset($this->passedArgs['code'])){
-			$filters['InvMovement.code'] = strtoupper($this->passedArgs['code']);
+			$filters['InvMovement.code LIKE'] = '%'.strtoupper($this->passedArgs['code']).'%';
 			$code = $this->passedArgs['code'];
 		}
 		if(isset($this->passedArgs['document_code'])){
-			$filters['InvMovement.document_code'] = strtoupper($this->passedArgs['document_code']);
+			$filters['InvMovement.document_code LIKE'] = '%'.strtoupper($this->passedArgs['document_code']).'%';
 			$document_code = $this->passedArgs['document_code'];
 		}
 		////////////////////////////END - SETTING URL FILTERS//////////////////////////////////////
@@ -242,7 +242,7 @@ class InvMovementsController extends AppController {
 		
 		////////////////////////////START - SETTING URL FILTERS//////////////////////////////////////
 		if(isset($this->passedArgs['document_code'])){
-			$filters['PurPurchase.code'] = strtoupper($this->passedArgs['document_code']);
+			$filters['PurPurchase.code LIKE'] = '%'.strtoupper($this->passedArgs['document_code']).'%';
 			$document_code = $this->passedArgs['document_code'];
 		}
 		////////////////////////////END - SETTING URL FILTERS//////////////////////////////////////
@@ -273,16 +273,20 @@ class InvMovementsController extends AppController {
 			'limit' => 15,
 		);
 		////////////////////////////END - SETTING PAGINATING VARIABLES//////////////////////////////////////
-		
+		$pagination = $this->paginate('PurPurchase');
+		$paginatedCodes = array();
+		for($i = 0; $i<count($pagination); $i++){ 
+			$paginatedCodes[$i] = $pagination[$i]['PurPurchase']['code'];
+		}
 		$movements = $this->InvMovement->find('all',array(
-			'conditions'=>array('InvMovement.inv_movement_type_id'=>1,'NOT'=>array('InvMovement.lc_state'=>array('LOGIC_DELETE', 'CANCELLED'))),
+			'conditions'=>array('InvMovement.inv_movement_type_id'=>1, 'InvMovement.document_code'=>$paginatedCodes,'NOT'=>array('InvMovement.lc_state'=>array('LOGIC_DELETE', 'CANCELLED'))),
 			'fields'=>array('InvMovement.lc_state', 'InvMovement.document_code'),
 			'recursive'=>-1
 		));
 		//debug($this->paginate('PurPurchase'));
 		//debug($movements);
 		////////////////////////START - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
-		$this->set('purPurchases', $this->paginate('PurPurchase'));
+		$this->set('purPurchases', $pagination);
 		$this->set('document_code', $document_code);
 		$this->set('movements', $movements);
 		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
@@ -518,7 +522,7 @@ class InvMovementsController extends AppController {
 		
 		////////////////////////////START - SETTING URL FILTERS//////////////////////////////////////
 		if(isset($this->passedArgs['document_code'])){
-			$filters['InvMovement.document_code'] = strtoupper($this->passedArgs['document_code']);
+			$filters['InvMovement.document_code LIKE'] = '%'.strtoupper($this->passedArgs['document_code']).'%';
 			$document_code = $this->passedArgs['document_code'];
 		}
 		////////////////////////////END - SETTING URL FILTERS//////////////////////////////////////
@@ -537,9 +541,16 @@ class InvMovementsController extends AppController {
 			'limit' => 15,
 		);
 		
+		$pagination = $this->paginate('InvMovement');
+		//debug($pagination);
+		$paginatedDocumentCodes = array();
+		for($i = 0; $i<count($pagination); $i++){ 
+			$paginatedDocumentCodes[$i] = $pagination[$i]['InvMovement']['document_code'];
+		}
 		$warehouseDestination = $this->InvMovement->find('all', array(
 				'conditions'=>array(
 					'InvMovement.lc_state !='=>'LOGIC_DELETE',
+					'InvMovement.document_code'=>$paginatedDocumentCodes,
 					'InvMovement.inv_movement_type_id'=> 4,//in
 					$filters
 				 ),
@@ -549,7 +560,7 @@ class InvMovementsController extends AppController {
 		//debug($warehouseDestination);
 		
 		////////////////////////START - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
-		$this->set('invMovements', $this->paginate('InvMovement'));
+		$this->set('invMovements', $pagination);
 		$this->set('document_code', $document_code);
 		$this->set('warehouseDestination',$warehouseDestination);
 		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
