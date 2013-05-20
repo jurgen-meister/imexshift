@@ -1,5 +1,5 @@
 <div class="span9">
-	<h2>	<?php echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' => 'add'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo')); ?>
+	<h2>	<?php echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' => 'save_invoice'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo')); ?>
 			<?php echo __('Facturas de %s', __('Compra'));?></h2>
 
 		<p>

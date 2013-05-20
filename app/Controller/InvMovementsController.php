@@ -217,6 +217,7 @@ class InvMovementsController extends AppController {
 		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
 		$this->paginate = array(
 			'conditions'=>array(
+				'PurPurchase.lc_state =' => 'INVOICE_APPROVED',
 				'PurPurchase.lc_state !='=>'LOGIC_DELETE',
 				$filters
 			 ),
