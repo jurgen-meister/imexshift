@@ -1,10 +1,59 @@
-<div class="span9">
-	<h2>	<?php echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' => 'save_order'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo')); ?>
-			<?php echo __('Ordenes de %s', __('Compra'));?></h2>
+<!--<div class="row-fluid">--> <!-- No va porque ya esta dentro del row-fluid del container del template principal-->
+<?php echo  $this->BootstrapPaginator->options(array('url' => $this->passedArgs));?>
+<!-- ************************************************************************************************************************ -->
+<div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
+<!-- ************************************************************************************************************************ -->
+<h3>	<?php echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' => 'save_order'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo')); ?>
+			<?php echo __('Ordenes de %s', __('Compra'));?></h3>
+<!-- *********************************************** #UNICORN SEARCH WRAP ********************************************-->
+		<div class="widget-box">
+			<div class="widget-title">
+				<span class="icon">
+					<i class="icon-search"></i>
+				</span>
+				<h5>Filtro</h5>
+			</div>
+			<div class="widget-content nopadding">
+			<!-- ////////////////////////////////////////INCIO - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
+			<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-search', 'novalidate' => true));?>
+			<fieldset>
+						<?php
+						echo $this->BootstrapForm->input('code', array(				
+										//'label' => 'Codigo Entrada:',
+										'id'=>'txtCode',
+//										'value'=>$code,
+										'placeholder'=>'Codigo Entrada'
+										));
+						?>
+						<?php
+						echo $this->BootstrapForm->input('document_code', array(				
+								'id'=>'txtCodeDocument',
+//								'value'=>$document_code,
+								'placeholder'=>'Codigo Documento'
+								));
+						?>
 
-		<p>
-			<?php echo $this->BootstrapPaginator->counter(array('format' => __('Página {:page} de {:pages}, mostrando {:current} registros de {:count} total, comenzando en {:start}, terminando en {:end}')));?>
-		</p>
+					<?php
+						echo $this->BootstrapForm->submit('<i class="icon-search icon-white"></i>',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSearch', 'title'=>'Buscar'));
+					?>
+
+			</fieldset>
+			<?php echo $this->BootstrapForm->end();?>
+			<!-- ////////////////////////////////////////FIN - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->		
+			</div>
+		</div>
+		<!-- *********************************************** #UNICORN SEARCH WRAP ********************************************-->
+<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
+		<div class="widget-box">
+			<div class="widget-title">
+				<span class="icon">
+					<i class="icon-th"></i>
+				</span>
+				<h5><?php echo $this->BootstrapPaginator->counter(array('format' => __('Página {:page} de {:pages}, mostrando {:current} registros de {:count} total, comenzando en {:start}, terminando en {:end}')));?></h5>
+		</div>
+			<div class="widget-content nopadding">
+		<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
+
 			<?php $cont = $this->BootstrapPaginator->counter('{:start}'); ?>
 		<table class="table table-striped table-bordered table-hover">
 			<tr>
@@ -21,7 +70,7 @@
 				<td>
 					<?php echo $this->Html->link($purPurchase['InvSupplier']['name'], array('controller' => 'inv_suppliers', 'action' => 'view', $purPurchase['InvSupplier']['id'])); ?>
 				</td>
-				<td><?php echo h($purPurchase['PurPurchase']['code']); ?>&nbsp;</td>
+				<td><?php echo h($purPurchase['PurPurchase']['doc_code']); ?>&nbsp;</td>
 				<td><?php echo h($purPurchase['PurPurchase']['date']); ?>&nbsp;</td>
 				<td><?php echo h($purPurchase['PurPurchase']['description']); ?>&nbsp;</td>				
 				<td><?php 
@@ -29,18 +78,28 @@
 						switch ($documentState){
 							case 'ORDER_PENDANT':
 								$stateColor = 'btn-warning';
-								$stateName = 'Pendiente';
+								$stateName = 'Orden Pendiente';
 								break;
 							case 'ORDER_APPROVED':
-								$stateColor = 'btn-succes';
-								$stateName = 'Aprobado';
+								$stateColor = 'btn-success';
+								$stateName = 'Orden Aprobada';
 								break;
-							case 'ORDER_CANCELED':
+							case 'ORDER_CANCELLED':
 								$stateColor = 'btn-danger';
-								$stateName = 'Cancelado';
+								$stateName = 'Orden Cancelada';
 								break;						
 						}
-						echo $this->Html->link('<i class="icon-pencil icon-white"></i>'.__(' '.$stateName),  array('action' => 'edit', $purPurchase['PurPurchase']['id']), array('class'=>'btn '.$stateColor, 'escape'=>false, 'title'=>'Editar')); 
+						
+						///////////START - SETTING URL AND PARAMETERS/////////////
+					$url = array();
+					$parameters = $this->passedArgs;
+						$url['action'] = 'save_order';
+						$parameters['id']=$purPurchase['PurPurchase']['id'];
+						
+					////////////END - SETTING URL AND PARAMETERS//////////////
+						
+						echo $this->Html->link('<i class="icon-pencil icon-white"></i>'.__(' '.$stateName),  array_merge($url,$parameters), array('class'=>'btn '.$stateColor, 'escape'=>false, 'title'=>'Editar')); 
+					
 					?>&nbsp;
 				</td>
 				
@@ -48,5 +107,12 @@
 		<?php endforeach; ?>
 		</table>
 
-		<?php echo $this->BootstrapPaginator->pagination(); ?>
+		<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
+		</div>
 	</div>
+	<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
+		<?php echo $this->BootstrapPaginator->pagination(); ?>
+<!-- ************************************************************************************************************************ -->
+</div><!-- FIN CONTAINER FLUID/ROW FLUID/SPAN12 - Del Template Principal #UNICORN
+<!-- ************************************************************************************************************************ -->
+<!--</div>--><!-- No va porque ya esta dentro del row-fluid del container del template principal-->

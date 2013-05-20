@@ -35,7 +35,7 @@
 								$stateColor = 'btn-succes';
 								$stateName = 'Aprobado';
 								break;
-							case 'REMIT_CANCELED':
+							case 'REMIT_CANCELLED':
 								$stateColor = 'btn-danger';
 								$stateName = 'Cancelado';
 								break;						

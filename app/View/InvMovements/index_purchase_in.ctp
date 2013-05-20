@@ -75,6 +75,7 @@
 					$parameters = $this->passedArgs;
 					$parameters['document_code']=$purPurchase['PurPurchase']['code'];
 				////////////END - SETTING URL AND PARAMETERS//////////////
+/*WTF*/					$btnColor = '';
 					$movementsSize = count($movements);
 					if($movementsSize > 0){
 						for($i=0; $i<$movementsSize; $i++){
@@ -95,6 +96,12 @@
 						$btnColor = 'btn-primary';
 						$btnName = ' Entrada Nueva';
 					}
+	/*WTF*/				
+		/*WTF*/			if($btnColor == NULL or $btnColor == NULL ){
+		/*WTF*/				$btnColor = 'btn-primary';
+		/*WTF*/				$btnName = ' Entrada Nueva';
+		/*WTF*/			}
+					
 					echo $this->Html->link('<i class="icon-circle-arrow-right icon-white"></i>'.__($btnName), array_merge($url, $parameters), array('class'=>'btn '.$btnColor, 'escape'=>false)); 
 					?>
 				</td>

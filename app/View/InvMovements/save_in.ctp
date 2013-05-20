@@ -131,7 +131,7 @@
 					//'data-toggle'=>'tooltip',
 					//'data-placement'=>'top',
 				));
-				
+								
 				echo $this->BootstrapForm->input('date_in', array(
 					'required' => 'required',
 					'label' => 'Fecha:',
