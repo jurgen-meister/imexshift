@@ -16,7 +16,7 @@ class InvItem extends AppModel {
  *
  * @var string
  */
-	public $virtualFields = array("full_name"=>"CONCAT('[ ',code, ' ] ' ,name)");
+	public $virtualFields = array("full_name"=>"CONCAT('[ ',InvItem.code, ' ] ' ,InvItem.name)");
 	public $displayField = 'full_name';
 
 /**

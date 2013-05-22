@@ -9,12 +9,12 @@
 			</dd>
 			<dt><?php echo __('Inv Item'); ?></dt>
 			<dd>
-				<?php echo $this->Html->link($invPrice['InvItem']['code'], array('controller' => 'inv_items', 'action' => 'view', $invPrice['InvItem']['id'])); ?>
+				<?php echo $this->Html->link($invPrice['InvItem']['full_name'], array('controller' => 'inv_items', 'action' => 'view', $invPrice['InvItem']['id'])); ?>
 				&nbsp;
 			</dd>
-			<dt><?php echo __('Inv Price Type Id'); ?></dt>
+			<dt><?php echo __('Inv Price Type'); ?></dt>
 			<dd>
-				<?php echo h($invPrice['InvPrice']['inv_price_type_id']); ?>
+				<?php echo $this->Html->link($invPrice['InvPriceType']['name'], array('controller' => 'inv_price_types', 'action' => 'view', $invPrice['InvPriceType']['id'])); ?>
 				&nbsp;
 			</dd>
 			<dt><?php echo __('Price'); ?></dt>
@@ -69,6 +69,8 @@
 			<li><?php echo $this->Html->link(__('New %s', __('Inv Price')), array('action' => 'add')); ?> </li>
 			<li><?php echo $this->Html->link(__('List %s', __('Inv Items')), array('controller' => 'inv_items', 'action' => 'index')); ?> </li>
 			<li><?php echo $this->Html->link(__('New %s', __('Inv Item')), array('controller' => 'inv_items', 'action' => 'add')); ?> </li>
+			<li><?php echo $this->Html->link(__('List %s', __('Inv Price Types')), array('controller' => 'inv_price_types', 'action' => 'index')); ?> </li>
+			<li><?php echo $this->Html->link(__('New %s', __('Inv Price Type')), array('controller' => 'inv_price_types', 'action' => 'add')); ?> </li>
 		</ul>
 		</div>
 	</div>

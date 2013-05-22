@@ -25,10 +25,7 @@ class InvPricesController extends AppController {
  *
  * @var array
  */
-	//public $components = array('Session');
-	public  function isAuthorized($user){
-		return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
-	}
+	public $components = array('Session');
 /**
  * index method
  *
@@ -59,20 +56,6 @@ class InvPricesController extends AppController {
  * @return void
  */
 	public function add() {
-		//Section where the controls of the page are loaded		
-		$invItems = $this->InvPrice->InvItem->find('list', array('order' => 'InvItem.id'));
-		if(count($invItems) == 0)
-		{
-			$invItems[""] = '--- Vacio ---';
-		}
-		
-		$invPriceTypes = $this->InvPrice->InvPriceType->find('list', array('order' => 'InvPriceType.id'));
-		if(count($invPriceTypes) == 0)
-		{
-			$invTypePrices[""] = '--- Vacio ---';
-		}
-		$this->set(compact('invItems', 'invPriceTypes'));	
-		
 		if ($this->request->is('post')) {
 			$this->InvPrice->create();
 			if ($this->InvPrice->save($this->request->data)) {
@@ -95,7 +78,10 @@ class InvPricesController extends AppController {
 					)
 				);
 			}
-		}		
+		}
+		$invItems = $this->InvPrice->InvItem->find('list');
+		$invPriceTypes = $this->InvPrice->InvPriceType->find('list');
+		$this->set(compact('invItems', 'invPriceTypes'));
 	}
 
 /**
@@ -109,21 +95,7 @@ class InvPricesController extends AppController {
 		if (!$this->InvPrice->exists()) {
 			throw new NotFoundException(__('Invalid %s', __('inv price')));
 		}
-		//Section where the controls of the page are loaded		
-		$invItems = $this->InvPrice->InvItem->find('list', array('order' => 'InvItem.id'));
-		if(count($invItems) == 0)
-		{
-			$invItems[""] = '--- Vacio ---';
-		}
-		
-		$invPriceTypes = $this->InvPrice->InvPriceType->find('list', array('order' => 'InvPriceType.id'));
-		if(count($invPriceTypes) == 0)
-		{
-			$invTypePrices[""] = '--- Vacio ---';
-		}
-		$this->set(compact('invItems', 'invPriceTypes'));	
 		if ($this->request->is('post') || $this->request->is('put')) {
-			$this->request->data['InvPrice']['lc_transaction']='MODIFY';
 			if ($this->InvPrice->save($this->request->data)) {
 				$this->Session->setFlash(
 					__('The %s has been saved', __('inv price')),
@@ -146,7 +118,10 @@ class InvPricesController extends AppController {
 			}
 		} else {
 			$this->request->data = $this->InvPrice->read(null, $id);
-		}		
+		}
+		$invItems = $this->InvPrice->InvItem->find('list');
+		$invPriceTypes = $this->InvPrice->InvPriceType->find('list');
+		$this->set(compact('invItems', 'invPriceTypes'));
 	}
 
 /**
