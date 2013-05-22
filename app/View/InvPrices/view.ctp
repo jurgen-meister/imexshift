@@ -1,4 +1,3 @@
-<div class="row-fluid">
 	<div class="span9">
 		<h2><?php  echo __('Inv Price');?></h2>
 		<dl>
@@ -59,20 +58,3 @@
 			</dd>
 		</dl>
 	</div>
-	<div class="span3">
-		<div class="well" style="padding: 8px 0; margin-top:8px;">
-		<ul class="nav nav-list">
-			<li class="nav-header"><?php echo __('Actions'); ?></li>
-			<li><?php echo $this->Html->link(__('Edit %s', __('Inv Price')), array('action' => 'edit', $invPrice['InvPrice']['id'])); ?> </li>
-			<li><?php echo $this->Form->postLink(__('Delete %s', __('Inv Price')), array('action' => 'delete', $invPrice['InvPrice']['id']), null, __('Are you sure you want to delete # %s?', $invPrice['InvPrice']['id'])); ?> </li>
-			<li><?php echo $this->Html->link(__('List %s', __('Inv Prices')), array('action' => 'index')); ?> </li>
-			<li><?php echo $this->Html->link(__('New %s', __('Inv Price')), array('action' => 'add')); ?> </li>
-			<li><?php echo $this->Html->link(__('List %s', __('Inv Items')), array('controller' => 'inv_items', 'action' => 'index')); ?> </li>
-			<li><?php echo $this->Html->link(__('New %s', __('Inv Item')), array('controller' => 'inv_items', 'action' => 'add')); ?> </li>
-			<li><?php echo $this->Html->link(__('List %s', __('Inv Price Types')), array('controller' => 'inv_price_types', 'action' => 'index')); ?> </li>
-			<li><?php echo $this->Html->link(__('New %s', __('Inv Price Type')), array('controller' => 'inv_price_types', 'action' => 'add')); ?> </li>
-		</ul>
-		</div>
-	</div>
-</div>
-

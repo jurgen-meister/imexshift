@@ -60,7 +60,7 @@ class InvPricesController extends AppController {
 			$this->InvPrice->create();
 			if ($this->InvPrice->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('inv price')),
+					__('El precio se guardo exitosamente'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -96,9 +96,10 @@ class InvPricesController extends AppController {
 			throw new NotFoundException(__('Invalid %s', __('inv price')));
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
+			$this->request->data['InvPrice']['lc_transaction']='MODIFY';
 			if ($this->InvPrice->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('inv price')),
+					__('El precio se guardo exitosamente'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -140,7 +141,7 @@ class InvPricesController extends AppController {
 		}
 		if ($this->InvPrice->delete()) {
 			$this->Session->setFlash(
-				__('The %s deleted', __('inv price')),
+				__('Precio eliminado'),
 				'alert',
 				array(
 					'plugin' => 'TwitterBootstrap',

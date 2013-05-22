@@ -35,6 +35,9 @@ class InvItemsController extends AppController {
  * @return void
  */
 	public function index() {
+		$this->paginate = array(
+			'order' => array('InvItem.id' => 'asc')
+		);
 		$this->InvItem->recursive = 0;
 		$this->set('invItems', $this->paginate());
 	}
@@ -84,11 +87,10 @@ class InvItemsController extends AppController {
 		
 		//Section where information is saved into the database
 		if ($this->request->is('post')) {			
-			$this->InvItem->create();
-			$this->request->data['InvItem']['code'] = $this->_generate_code();
+			$this->InvItem->create();			
 			if ($this->InvItem->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('inv item')),
+					__('El Item se guardo satisfactoriamente'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -98,7 +100,7 @@ class InvItemsController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('inv item')),
+					__('El Item no se pudo guardar, por favor intente de nuevo'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -109,22 +111,7 @@ class InvItemsController extends AppController {
 		}
 		
 		
-	}
-	private function _generate_code(){
-		
-		$number = $this->InvItem->find('count');		
-		if($number == null)
-		{
-			$number = 1;
-		}
-		else 
-		{
-			$number++;
-		}	
-		
-		$code = 'ITEM-'.$number;
-		return $code;
-	}
+	}	
 	/**
  * edit method
  *
@@ -154,7 +141,7 @@ class InvItemsController extends AppController {
 			$this->request->data['InvItem']['lc_transaction']='MODIFY';
 			if ($this->InvItem->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('inv item')),
+					__('El item fue modificado'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -193,7 +180,7 @@ class InvItemsController extends AppController {
 		}
 		if ($this->InvItem->delete()) {
 			$this->Session->setFlash(
-				__('The %s deleted', __('inv item')),
+				__('El Item fue Eliminado'),
 				'alert',
 				array(
 					'plugin' => 'TwitterBootstrap',
@@ -203,7 +190,7 @@ class InvItemsController extends AppController {
 			$this->redirect(array('action' => 'index'));
 		}
 		$this->Session->setFlash(
-			__('The %s was not deleted', __('inv item')),
+			__('El Item no se pudo Eliminar'),
 			'alert',
 			array(
 				'plugin' => 'TwitterBootstrap',

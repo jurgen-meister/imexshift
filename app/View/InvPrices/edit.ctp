@@ -1,27 +1,39 @@
 	<div class="span9">
 		<?php echo $this->BootstrapForm->create('InvPrice', array('class' => 'form-horizontal'));?>
 			<fieldset>
-				<legend><?php echo __('Edit %s', __('Inv Price')); ?></legend>
+				<legend><?php echo __('Editar %s', __('Precio de Item')); ?></legend>
 				<?php
 				echo $this->BootstrapForm->input('inv_item_id', array(
+					'label' => 'Item:',
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+					'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
 				);
 				echo $this->BootstrapForm->input('inv_price_type_id', array(
+					'label' => 'Tipo de Precio:',
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+					'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
 				);
 				echo $this->BootstrapForm->input('price', array(
+					'label' => 'Monto:',
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+					'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
 				);
 				echo $this->BootstrapForm->input('description', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+					'label' => 'Descripcion:')
 				);				
 				echo $this->BootstrapForm->hidden('id');
 				?>
-				<?php echo $this->BootstrapForm->submit(__('Submit'));?>
+				<div class="row-fluid">
+					<div class="span2"></div>
+					<div class="span6">
+					<div class="btn-toolbar">
+					<?php echo $this->BootstrapForm->submit('Guardar', array('id'=>'saveButton', 'class' => 'btn btn-primary', 'div' => false));
+						   echo $this->Html->link('Cancelar', array('action' => 'index'), array('class'=>'btn') );
+					?>
+					</div>				
+					</div>
+					<div class="span4"></div>
+				</div>	
 			</fieldset>
 		<?php echo $this->BootstrapForm->end();?>
 	</div>
