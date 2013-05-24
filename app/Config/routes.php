@@ -43,3 +43,8 @@
  * the built-in default routes.
  */
 	require CAKE . 'Config' . DS . 'routes.php';
+
+ /**
+ *PDF, added for use dompdf
+ */	
+Router::parseExtensions('pdf');

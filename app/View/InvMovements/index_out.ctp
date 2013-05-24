@@ -20,7 +20,7 @@
 									//'label' => 'Codigo Entrada:',
 									'id'=>'txtCode',
 									'value'=>$code,
-									'placeholder'=>'Codigo Entrada'
+									'placeholder'=>'Codigo Salida'
 									));
 					?>
 					<?php
@@ -39,14 +39,14 @@
 		<!-- ////////////////////////////////////////FIN - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
 		
 		<p>
-			<?php echo $this->BootstrapPaginator->counter(array('format' => __('Pagina {:page} de {:pages}, mostrando {:current} registros de {:count} total, comenzando en  {:start}, terminando en {:end}')));?>
+			<?php echo $this->BootstrapPaginator->counter(array('format' => __('Pagina {:page} de {:pages}, mostrando {:current} de un total de {:count} registros')));?>
 		</p>
 		<?php $cont = $this->BootstrapPaginator->counter('{:start}');?>
 		<table class="table table-striped table-bordered table-hover">
 			<tr>
 				<th><?php echo "#";?></th>
-				<th><?php echo 'Codigo Entrada';?></th>
-				<th><?php echo 'Codigo Documento';?></th>
+				<th><?php echo 'Codigo Salida';?></th>
+				<th><?php echo 'Codigo Documento Ref';?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('inv_movement_type_id', 'Movimiento');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('inv_warehouse_id', 'Almacen');?></th>

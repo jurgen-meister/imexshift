@@ -83,7 +83,7 @@
 				echo $this->BootstrapForm->input('code', array(
 					//'id'=>'code',
 					'id'=>'txtCode',
-					'label'=>'Código:',
+					'label'=>'Codigo:',
 					'style'=>'background-color:#EEEEEE',
 					'disabled'=>$disable,
 					'placeholder'=>'El sistema generará el código',
@@ -153,7 +153,7 @@
 						<table class="table table-bordered table-condensed table-striped table-hover" id="tablaItems">
 							<thead>
 								<tr>
-									<th>Item</th>
+									<th>Item (unidad)</th>
 									<th>Stock</th>
 									<th>Cantidad</th>
 									<?php if($documentState == 'PENDANT' OR $documentState == ''){ ?>
@@ -192,7 +192,7 @@
 			<!--<div class="form-actions">--><!-- no sirve se desconfigura los botones en modo tablet -->
 			<div class="row-fluid"> <!-- INICIO - row fluid para alinear los botones -->
 				<div class="span2"></div> <!-- INICIO Y FIN - ESPACIO A LA IZQUIERDA -->
-				<div class="span6">	<!-- INICIO - span 6 -->
+				<div class="span10">	<!-- INICIO - span 6 -->
 					<div class="btn-toolbar"> <!-- INICIO - toolbar para dejar espacio entre botones -->
 							<?php 
 								if($documentState == 'PENDANT' OR $documentState == ''){
@@ -231,12 +231,18 @@
 												break;
 										}
 							?>
-
+							<?php
+								$displayPrint = 'none';
+								if($id <> ''){
+									$displayPrint = 'inline';
+								}
+								echo $this->Html->link('<i class="icon-print icon-white"></i> Imprimir', array('action' => 'view_document_movement_pdf', $id.'.pdf'), array('class'=>'btn btn-primary','style'=>'display:'.$displayPrint, 'escape'=>false, 'title'=>'Nuevo', 'id'=>'btnPrint', 'target'=>'_blank')); 
+								
+							?>
 							<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Entrada Almacen</a>
 							<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Entrada Almacen</a>
 					</div> <!-- FIN - toolbar para dejar espacio entre botones -->
-				</div> <!-- FIN - span 6 -->
-				<div class="span4"></div> <!-- INICIO Y FIN - ESPACIO A LA DERECHA PARA NO DEJAR HUECOS -->
+				</div> <!-- FIN - span 10 -->
 			</div> <!-- FIN - row fluid para alinear los botones -->
 			<!--</div>--><!-- no sirve se desconfigura los botones en modo tablet class="form-actions" -->
 			<!-- ////////////////////////////////// FIN BOTONES /////////////////////////////////////// -->

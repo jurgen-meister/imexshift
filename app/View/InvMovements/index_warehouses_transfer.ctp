@@ -20,7 +20,7 @@
 							//'label' => 'Codigo Compra:',
 							'id'=>'txtCodeDocument',
 							'value'=>$document_code,
-							'placeholder'=>'Codigo Documento'
+							'placeholder'=>'Codigo Transferencia'
 							));
 					?>
 				<?php
@@ -31,15 +31,16 @@
 		<!-- ////////////////////////////////////////FIN - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
 		
 		<p>
-			<?php echo $this->BootstrapPaginator->counter(array('format' => __('Pagina {:page} de {:pages}, mostrando {:current} registros de {:count} total, comenzando en  {:start}, terminando en {:end}')));?>
+			<?php echo $this->BootstrapPaginator->counter(array('format' => __('Pagina {:page} de {:pages}, mostrando {:current} de un total de {:count} registros')));?>
 		</p>
 		<?php $cont = $this->BootstrapPaginator->counter('{:start}');?>
 		<table class="table table-striped table-bordered table-hover">
 			<tr>
 				<th><?php echo "#";?></th>
-				<th><?php echo 'Codigo Documento';?></th>
+				<th><?php echo 'Codigo Transferencia';?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('inv_warehouse_id', 'Almacen');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('inv_warehouse_id', 'Almacen Origen (Salida)');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('inv_warehouse_id', 'Almacen Destino (Entrada)');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('lc_state', 'Estado Documento');?></th>
 			</tr>
 		<?php foreach ($invMovements as $invMovement): ?>
@@ -65,6 +66,16 @@
 				</td>
 				<td>
 					<?php echo h($invMovement['InvWarehouse']['name']); ?>
+				</td>
+				<td>
+					<?php 
+					
+					for($i=0; $i < count($warehouseDestination); $i++){
+						if($invMovement['InvMovement']['document_code'] == $warehouseDestination[$i]['InvMovement']['document_code']){
+							echo h($warehouseDestination[$i]['InvWarehouse']['name']); 
+						}
+					}
+					?>
 				</td>
 				<td>
 					<?php 
