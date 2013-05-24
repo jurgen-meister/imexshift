@@ -14,7 +14,7 @@
 			</dd>
 			<dt><?php echo __('Inv Item'); ?></dt>
 			<dd>
-				<?php echo $this->Html->link($purDetail['InvItem']['full_name'], array('controller' => 'inv_items', 'action' => 'view', $purDetail['InvItem']['id'])); ?>
+				<?php echo $this->Html->link($purDetail['InvItem']['name'], array('controller' => 'inv_items', 'action' => 'view', $purDetail['InvItem']['id'])); ?>
 				&nbsp;
 			</dd>
 			<dt><?php echo __('Quantity'); ?></dt>
@@ -30,6 +30,26 @@
 			<dt><?php echo __('Lc Transaction'); ?></dt>
 			<dd>
 				<?php echo h($purDetail['PurDetail']['lc_transaction']); ?>
+				&nbsp;
+			</dd>
+			<dt><?php echo __('Creator'); ?></dt>
+			<dd>
+				<?php echo h($purDetail['PurDetail']['creator']); ?>
+				&nbsp;
+			</dd>
+			<dt><?php echo __('Date Created'); ?></dt>
+			<dd>
+				<?php echo h($purDetail['PurDetail']['date_created']); ?>
+				&nbsp;
+			</dd>
+			<dt><?php echo __('Modifier'); ?></dt>
+			<dd>
+				<?php echo h($purDetail['PurDetail']['modifier']); ?>
+				&nbsp;
+			</dd>
+			<dt><?php echo __('Date Modified'); ?></dt>
+			<dd>
+				<?php echo h($purDetail['PurDetail']['date_modified']); ?>
 				&nbsp;
 			</dd>
 		</dl>

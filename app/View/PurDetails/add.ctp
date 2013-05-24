@@ -24,6 +24,16 @@
 					'required' => 'required',
 					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
 				);
+				echo $this->BootstrapForm->input('creator', array(
+					'required' => 'required',
+					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+				);
+				echo $this->BootstrapForm->input('date_created', array(
+					'required' => 'required',
+					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+				);
+				echo $this->BootstrapForm->input('modifier');
+				echo $this->BootstrapForm->input('date_modified');
 				?>
 				<?php echo $this->BootstrapForm->submit(__('Submit'));?>
 			</fieldset>

@@ -61,6 +61,24 @@ class AdmProfilesController extends AppController {
  * @return void
  */
 	public function add() {
+		$this->loadModel('AdmParameterDetail');
+		$this->loadModel('AdmParameter');
+		$admParameterDetails = $this->AdmParameter->AdmParameterDetail->find('all',array(			
+			'order' => 'AdmParameterDetail.id',
+			//'contain' => array('AdmParameter' => array('conditions' => array('AdmParameter.name' => 'Lugar Expedicion'))),
+			'conditions' => array('AdmParameter.name' => 'Lugar Expedicion'),
+			'fields' => array('AdmParameterDetail.id', 'AdmParameterDetail.par_char1')					
+		));
+		
+		if(count($admParameterDetails) != 0)
+		{
+			
+		}
+		else
+		{
+			$admParameterDetails[""] = "--- Vacio ---";
+		}
+		$this->set(compact('admParameterDetails'));
 		if ($this->request->is('post')) {
 			$this->AdmProfile->create();
 			if ($this->AdmProfile->save($this->request->data)) {

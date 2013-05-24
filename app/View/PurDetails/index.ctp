@@ -14,6 +14,10 @@
 				<th><?php echo $this->BootstrapPaginator->sort('quantity');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('lc_state');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('lc_transaction');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('creator');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('date_created');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('modifier');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('date_modified');?></th>
 				<th class="actions"><?php echo __('Actions');?></th>
 			</tr>
 		<?php foreach ($purDetails as $purDetail): ?>
@@ -23,11 +27,15 @@
 					<?php echo $this->Html->link($purDetail['PurPurchase']['id'], array('controller' => 'pur_purchases', 'action' => 'view', $purDetail['PurPurchase']['id'])); ?>
 				</td>
 				<td>
-					<?php echo $this->Html->link($purDetail['InvItem']['full_name'], array('controller' => 'inv_items', 'action' => 'view', $purDetail['InvItem']['id'])); ?>
+					<?php echo $this->Html->link($purDetail['InvItem']['name'], array('controller' => 'inv_items', 'action' => 'view', $purDetail['InvItem']['id'])); ?>
 				</td>
 				<td><?php echo h($purDetail['PurDetail']['quantity']); ?>&nbsp;</td>
 				<td><?php echo h($purDetail['PurDetail']['lc_state']); ?>&nbsp;</td>
 				<td><?php echo h($purDetail['PurDetail']['lc_transaction']); ?>&nbsp;</td>
+				<td><?php echo h($purDetail['PurDetail']['creator']); ?>&nbsp;</td>
+				<td><?php echo h($purDetail['PurDetail']['date_created']); ?>&nbsp;</td>
+				<td><?php echo h($purDetail['PurDetail']['modifier']); ?>&nbsp;</td>
+				<td><?php echo h($purDetail['PurDetail']['date_modified']); ?>&nbsp;</td>
 				<td class="actions">
 					<?php echo $this->Html->link(__('View'), array('action' => 'view', $purDetail['PurDetail']['id'])); ?>
 					<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $purDetail['PurDetail']['id'])); ?>
