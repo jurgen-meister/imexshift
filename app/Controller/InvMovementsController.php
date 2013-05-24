@@ -264,9 +264,9 @@ class InvMovementsController extends AppController {
 		*/
 		$this->paginate = array(
 			'conditions'=>array(
-				'PurPurchase.lc_state =' => 'INVOICE_APPROVED',
+				//'PurPurchase.lc_state =' => 'INVOICE_APPROVED',
 				'PurPurchase.lc_state !='=>'LOGIC_DELETE',
-				'PurPurchase.lc_state'=>'REMIT_APPROVED',
+				'PurPurchase.lc_state'=>'ORDER_APPROVED',
 				$filters
 			 ),
 			'recursive'=>0,	
@@ -279,6 +279,7 @@ class InvMovementsController extends AppController {
 		for($i = 0; $i<count($pagination); $i++){ 
 			$paginatedCodes[$i] = $pagination[$i]['PurPurchase']['code'];
 		}
+		//debug($paginatedCodes);
 		$movements = $this->InvMovement->find('all',array(
 			'conditions'=>array('InvMovement.inv_movement_type_id'=>1, 'InvMovement.document_code'=>$paginatedCodes,'NOT'=>array('InvMovement.lc_state'=>array('LOGIC_DELETE', 'CANCELLED'))),
 			'fields'=>array('InvMovement.lc_state', 'InvMovement.document_code'),

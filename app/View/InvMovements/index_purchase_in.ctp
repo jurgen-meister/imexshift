@@ -52,19 +52,25 @@
 					$parameters = $this->passedArgs;
 					$parameters['document_code']=$purPurchase['PurPurchase']['code'];
 				////////////END - SETTING URL AND PARAMETERS//////////////
-					for($i=0; $i<count($movements); $i++){
-						if($movements[$i]['InvMovement']['document_code'] == $purPurchase['PurPurchase']['code']){
-							if($movements[$i]['InvMovement']['lc_state'] == 'PENDANT'){
-								$btnColor = 'btn-warning';
-								$btnName = ' Entrada Pendiente';
-							}elseif( $movements[$i]['InvMovement']['lc_state'] == 'APPROVED'){
-								$btnColor = 'btn-success';
-								$btnName = ' Entrada Aprobada';
-							}else{
-								$btnColor = 'btn-primary';
-								$btnName = ' Entrada Nueva';
+					$movementsSize = count($movements);
+					if($movementsSize > 0){
+						for($i=0; $i<$movementsSize; $i++){
+							if($movements[$i]['InvMovement']['document_code'] == $purPurchase['PurPurchase']['code']){
+								if($movements[$i]['InvMovement']['lc_state'] == 'PENDANT'){
+									$btnColor = 'btn-warning';
+									$btnName = ' Entrada Pendiente';
+								}elseif( $movements[$i]['InvMovement']['lc_state'] == 'APPROVED'){
+									$btnColor = 'btn-success';
+									$btnName = ' Entrada Aprobada';
+								}else{
+									$btnColor = 'btn-primary';
+									$btnName = ' Entrada Nueva';
+								}
 							}
 						}
+					}else{
+						$btnColor = 'btn-primary';
+						$btnName = ' Entrada Nueva';
 					}
 					echo $this->Html->link('<i class="icon-circle-arrow-right icon-white"></i>'.__($btnName), array_merge($url, $parameters), array('class'=>'btn '.$btnColor, 'escape'=>false)); 
 					?>

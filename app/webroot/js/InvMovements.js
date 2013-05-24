@@ -62,11 +62,14 @@ $(document).ready(function(){
 				
 				error+='<li>El campo "Cantidad" no puede ser cero</li>'; 
 			}
+			//That was used to validate item quantity is greater than the quantity send in Purchase IN
+			/*
 			if ($('#txtModalQuantityDocument').length > 0){//existe
 				if(parseInt(quantity, 10) > $('#txtModalQuantityDocument').val()){
 					error+='<li>La "Cantidad" de entrada no puede ser mayor a la "Compra"</li>'; 
 				}
 			}
+			*/
 		}
 		if(item == ''){error+='<li>El campo "Item" no puede estar vacio</li>';}
 		
