@@ -1,16 +1,15 @@
 <?php echo  $this->BootstrapPaginator->options(array('url' => $this->passedArgs));?>
 <div class="span9">
-		<h2><?php echo __('Entradas de Compras al Almacén');?></h2>
+		<h2><?php echo __('Salidas de Ventas del Almacén');?></h2>
 		<!-- ////////////////////////////////////////INCIO - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
 		<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-search', 'novalidate' => true));?>
 		<fieldset>
 		<legend><?php echo __(''); ?></legend>
 					<?php
 					echo $this->BootstrapForm->input('document_code', array(				
-							//'label' => 'Codigo Compra:',
 							'id'=>'txtCodeDocument',
 							'value'=>$document_code,
-							'placeholder'=>'Codigo Compra'
+							'placeholder'=>'Codigo Venta'
 							));
 					?>
 				<?php
@@ -26,51 +25,52 @@
 		<table class="table table-striped table-bordered table-hover">
 			<tr>
 				<th><?php echo "#";?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('code', 'Codigo Compra');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('code', 'Codigo Venta');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('inv_supplier_id', 'Proveedor');?></th>
-				<!--<th><?php //echo ('Codigo Entrada Almacen');?></th>-->
+				<th><?php echo $this->BootstrapPaginator->sort('SalCustomer.name', 'Cliente');?></th>
+				<!--<th><?php //echo ('Codigo Salida Almacen');?></th>-->
 				<th><?php echo 'Acción';?></th>
 			</tr>
-		<?php foreach ($purPurchases as $purPurchase): ?>
+		<?php //debug($salSales);
+		foreach ($salSales as $salSale): ?>
 			<tr>
 				<td><?php echo $cont++;?></td>
-				<td><?php echo h($purPurchase['PurPurchase']['code']); ?>&nbsp;</td>
+				<td><?php echo h($salSale['SalSale']['code']); ?>&nbsp;</td>
 				<td>
 					<?php 
-					echo date("d/m/Y", strtotime($purPurchase['PurPurchase']['date']));
+					echo date("d/m/Y", strtotime($salSale['SalSale']['date']));
 					?>
 					&nbsp;
 				</td>
 				<td>
-					<?php echo h($purPurchase['InvSupplier']['name']); ?>
+					<?php echo h($salSale['SalCustomer']['name']); ?>
 				</td>
 				<!--<td></td>-->
 				<td><?php
 				///////////START - SETTING URL AND PARAMETERS/////////////
-					$url = array('action'=>'save_purchase_in');
+					$url = array('action'=>'save_sale_out');
 					$parameters = $this->passedArgs;
-					$parameters['document_code']=$purPurchase['PurPurchase']['code'];
+					$parameters['document_code']=$salSale['SalSale']['code'];
 				////////////END - SETTING URL AND PARAMETERS//////////////
 					$movementsSize = count($movements);
 					if($movementsSize > 0){
 						for($i=0; $i<$movementsSize; $i++){
-							if(trim($movements[$i]['InvMovement']['document_code']) == trim($purPurchase['PurPurchase']['code'])){
+							if(trim($movements[$i]['InvMovement']['document_code']) == trim($salSale['SalSale']['code'])){
 								if($movements[$i]['InvMovement']['lc_state'] == 'PENDANT'){
 									$btnColor = 'btn-warning';
-									$btnName = ' Entrada Pendiente';
+									$btnName = ' Salida Pendiente';
 								}elseif( $movements[$i]['InvMovement']['lc_state'] == 'APPROVED'){
 									$btnColor = 'btn-success';
-									$btnName = ' Entrada Aprobada';
+									$btnName = ' Salida Aprobada';
 								}else{
 									$btnColor = 'btn-primary';
-									$btnName = ' Entrada Nueva';
+									$btnName = ' Salida Nueva';
 								}
 							}
 						}
 					}else{
 						$btnColor = 'btn-primary';
-						$btnName = ' Entrada Nueva';
+						$btnName = ' Salida Nueva';
 					}
 					echo $this->Html->link('<i class="icon-circle-arrow-right icon-white"></i>'.__($btnName), array_merge($url, $parameters), array('class'=>'btn '.$btnColor, 'escape'=>false)); 
 					?>

@@ -124,7 +124,8 @@ class InvMovementsController extends AppController {
 				'InvMovementType.status'=> 'entrada',
 				$filters
 			 ),
-			//'recursive'=>2,	
+			'recursive'=>0,
+			'fields'=>array('InvMovement.id', 'InvMovement.code', 'InvMovement.document_code', 'InvMovement.date','InvMovement.inv_movement_type_id','InvMovementType.name', 'InvMovement.inv_warehouse_id', 'InvWarehouse.name', 'InvMovement.lc_state'),
 			'order'=> array('InvMovement.id'=>'desc'),
 			'limit' => 15,
 		);
@@ -195,7 +196,8 @@ class InvMovementsController extends AppController {
 				'InvMovementType.status'=> 'salida',
 				$filters
 			 ),
-			//'recursive'=>2,	
+			'recursive'=>0,
+			'fields'=>array('InvMovement.id', 'InvMovement.code', 'InvMovement.document_code', 'InvMovement.date','InvMovement.inv_movement_type_id','InvMovementType.name', 'InvMovement.inv_warehouse_id', 'InvWarehouse.name', 'InvMovement.lc_state'),
 			'order'=> array('InvMovement.id'=>'desc'),
 			'limit' => 15,
 		);
@@ -264,11 +266,11 @@ class InvMovementsController extends AppController {
 		*/
 		$this->paginate = array(
 			'conditions'=>array(
-				//'PurPurchase.lc_state =' => 'INVOICE_APPROVED',
 				'PurPurchase.lc_state !='=>'LOGIC_DELETE',
 				'PurPurchase.lc_state'=>'ORDER_APPROVED',
 				$filters
 			 ),
+			'fields'=>array('PurPurchase.id', 'PurPurchase.code', 'PurPurchase.date', 'PurPurchase.inv_supplier_id', 'InvSupplier.name'),
 			'recursive'=>0,	
 			'order'=> array('PurPurchase.id'=>'desc'),
 			'limit' => 15,
@@ -293,6 +295,94 @@ class InvMovementsController extends AppController {
 		$this->set('movements', $movements);
 		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
 	}
+	
+	
+	public function index_sale_out(){
+	
+		///////////////////////////////////////START - CREATING VARIABLES//////////////////////////////////////
+		$filters = array();
+		$document_code = '';  //seria code de pur_purchases
+		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
+		
+		
+		////////////////////////////START - WHEN SEARCH IS SEND THROUGH POST//////////////////////////////////////
+		if($this->request->is("post")) {
+			$url = array('action'=>'index_sale_out');
+			$parameters = array();
+			$empty=0;
+			if(isset($this->request->data['InvMovement']['document_code']) && $this->request->data['InvMovement']['document_code']){
+				$parameters['document_code'] = trim(strip_tags($this->request->data['InvMovement']['document_code']));
+			}else{
+				$empty++;
+			}
+			if($empty == 1){
+				$parameters['search']='empty';
+			}else{
+				$parameters['search']='yes';
+			}
+			
+			$this->redirect(array_merge($url,$parameters));
+		}
+		////////////////////////////END - WHEN SEARCH IS SEND THROUGH POST//////////////////////////////////////
+		
+		$this->loadModel('SalSale');
+		
+		////////////////////////////START - SETTING URL FILTERS//////////////////////////////////////
+		if(isset($this->passedArgs['document_code'])){
+			$filters['SalSale.code LIKE'] = '%'.strtoupper($this->passedArgs['document_code']).'%';
+			$document_code = $this->passedArgs['document_code'];
+		}
+		////////////////////////////END - SETTING URL FILTERS//////////////////////////////////////
+		
+		
+		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
+		//Add association for SalCustomers
+		$this->SalSale->bindModel(array(
+			'hasOne'=>array(
+				'SalCustomer'=>array(
+					'foreignKey'=>false,
+					'conditions'=> array('SalEmployee.sal_customer_id = SalCustomer.id')
+				)
+				
+			)
+		));
+		//debug($this->SalSale->find('all'));
+		
+		$this->paginate = array(
+			'conditions'=>array(
+				//'PurPurchase.lc_state =' => 'INVOICE_APPROVED',
+				'SalSale.lc_state !='=>'LOGIC_DELETE',
+				'SalSale.lc_state'=>'SALE_NOTE_APPROVED',
+				$filters
+			 ),
+			'fields'=>array('SalSale.id','SalSale.code', 'SalSale.date', 'SalCustomer.name'),
+			'recursive'=>0,	
+			'order'=> array('SalSale.id'=>'desc'),
+			'limit' => 15,
+		);
+		////////////////////////////END - SETTING PAGINATING VARIABLES//////////////////////////////////////
+		$pagination = $this->paginate('SalSale');
+		$paginatedCodes = array();
+		for($i = 0; $i<count($pagination); $i++){ 
+			$paginatedCodes[$i] = $pagination[$i]['SalSale']['code'];
+		}
+		//debug($paginatedCodes);
+		$movements = $this->InvMovement->find('all',array(
+			'conditions'=>array('InvMovement.inv_movement_type_id'=>2, 'InvMovement.document_code'=>$paginatedCodes,'NOT'=>array('InvMovement.lc_state'=>array('LOGIC_DELETE', 'CANCELLED'))),
+			'fields'=>array('InvMovement.lc_state', 'InvMovement.document_code'),
+			'recursive'=>-1
+		));
+		//debug($this->paginate('PurPurchase'));
+		//debug($movements);
+		////////////////////////START - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
+		$this->set('salSales', $pagination);
+		$this->set('document_code', $document_code);
+		$this->set('movements', $movements);
+		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
+		 
+	}
+	
+	
 	
 	///////////////////////////////////////////// END - INDEX ////////////////////////////////////////////////
 	
@@ -434,6 +524,90 @@ class InvMovementsController extends AppController {
 		
 	}
 	
+	
+	public function save_sale_out(){
+		//debug($purchase);
+		////////////////////////////////INICIO - VALIDAR SI ID COMPRA NO ESTA VACIO///////////////////////////////////
+		$idMovement = '';
+		$documentCode = '';
+		if(isset($this->passedArgs['id'])){
+			$idMovement = $this->passedArgs['id'];
+		}
+		if(isset($this->passedArgs['document_code'])){
+			$documentCode = $this->passedArgs['document_code'];
+		}
+		
+		if($documentCode == ''){
+			$this->redirect(array('action' => 'index_sale_out'));
+			//echo 'codigo vacio';
+		}
+		////////////////////////////////FIN - VALIDAR SI ID COMPRA NO ESTA VACIO/////////////////////////////////////
+
+
+		////////////////////////////////INICIO - VALIDAR SI CODIGO COMPRA EXISTE///////////////////////////////////
+		$this->loadModel('SalSale');	
+		$idSale = $this->SalSale->field('SalSale.id', array('SalSale.code'=>$documentCode));
+		if(!$idSale){
+			$this->redirect(array('action' => 'index_sale_out'));
+			//echo 'no existe codigo compra';
+		}
+		////////////////////////////////FIN - VALIDAR SI ID COMPRA EXISTE/////////////////////////////////////
+		
+		////////////////////////////////INICIO - DECLARAR VARIABLES///////////////////////////////////
+		$arrayAux = array();
+		$invWarehouses = $this->InvMovement->InvWarehouse->find('list');
+		$firstWarehouse = key($invWarehouses);
+		$invMovementDetails = array();
+		$documentState = '';
+		$id='';
+		$date = '';
+		////////////////////////////////FIN - DECLARAR VARIABLES///////////////////////////////////
+		
+		
+		
+		if($idMovement <> ''){//Si idMovimiento esta lleno, mostrar todo, hasta cancelados en index_in
+			$this->InvMovement->recursive = -1;
+			$arrayAux = $this->InvMovement->find('all', array('conditions'=>array(
+			 'InvMovement.document_code'=>$documentCode
+			,'InvMovement.id'=>$idMovement
+			)));
+			if(count($arrayAux) == 0){//si no existe el movimiento
+				$this->redirect(array('action' => 'index_in'));
+			}
+		}else{//Si idMovimiento esta vacio, mostrar solo (nuevo, pendiente o aprobado) en index_save_in
+			$this->InvMovement->recursive = -1;
+			$arrayAux = $this->InvMovement->find('all', array('conditions'=>array(
+			'InvMovement.document_code'=>trim($documentCode), 'InvMovement.lc_state'=>array('APPROVED','PENDANT')
+			)));
+		}
+		
+		////////////////////////////////INICIO - LLENAR VISTA ///////////////////////////////////////////////
+		if(count($arrayAux) > 0){ //UPDATE
+			$this->request->data = $arrayAux[0];
+			$date = date("d/m/Y", strtotime($this->request->data['InvMovement']['date']));//$this->request->data['InvMovement']['date'];
+			$id = $this->request->data['InvMovement']['id'];
+			$invMovementDetails = array();//$this->_get_movements_details($id);
+			$documentState =$this->request->data['InvMovement']['lc_state'];
+			
+			$arrSales = $this->_get_sales_details($idSale, $firstWarehouse, 'editar');//$firstWarehouse no se usara porque es "editar", sino doble query para stock
+			$arrMovementsSaved = $this->_get_movements_details($id);
+			foreach ($arrMovementsSaved as $key => $value) {
+				$invMovementDetails[$key]['itemId']=$value['itemId'];
+				$invMovementDetails[$key]['item']=$value['item'];
+				$invMovementDetails[$key]['cantidadVenta']=$arrSales[$key]['cantidadVenta'];
+				$invMovementDetails[$key]['stock']=$value['stock'];
+				$invMovementDetails[$key]['cantidad']=$value['cantidad'];
+			}
+		}else{//INSERT
+			$invMovementDetails = $this->_get_sales_details($idSale, $firstWarehouse,'nuevo');
+		}
+		
+		$this->set(compact('invWarehouses', 'id', 'documentCode', 'date', 'invMovementDetails', 'documentState', 'idMovement'));
+		////////////////////////////////FIN - LLENAR VISTA //////////////////////////////////////////////////
+		
+	}
+	
+	
 	public function save_warehouses_transfer(){
 		/////////////////////////////////////////START - VARIABLES DECLARATION///////////////////
 		$documentCode = '';
@@ -538,7 +712,9 @@ class InvMovementsController extends AppController {
 				'InvMovement.inv_movement_type_id'=> 3,//out
 				$filters
 			 ),
-			//'recursive'=>2,	
+			//'recursive'=>2,
+			'recursive'=>0,
+			'fields'=>array('InvMovement.id', 'InvMovement.document_code', 'InvMovement.date','InvMovement.inv_warehouse_id', 'InvWarehouse.name', 'InvMovement.lc_state'),
 			'order'=> array('InvMovement.id'=>'desc'),
 			'limit' => 15,
 		);
@@ -556,6 +732,7 @@ class InvMovementsController extends AppController {
 					'InvMovement.inv_movement_type_id'=> 4,//in
 					$filters
 				 ),
+				 'recursive'=>0,
 				 'fields'=>array('InvMovement.id','InvMovement.inv_warehouse_id','InvWarehouse.name', 'InvMovement.document_code')
 			));
 		////////////////////////////END - SETTING PAGINATING VARIABLES//////////////////////////////////////
@@ -1178,6 +1355,33 @@ class InvMovementsController extends AppController {
 		//debug($formatedPurchaseDetails);
 		return $formatedPurchaseDetails;
 	}
+	
+	private function _get_sales_details($idSale, $idWarehouse, $state){
+		$stock = 0;
+		$this->loadModel('SalDetail');
+		$saleDetails = $this->SalDetail->find('all', array(
+		'conditions'=>array('SalDetail.sal_sale_id'=>$idSale),
+		'fields'=>array('InvItem.name', 'InvItem.code', 'SalDetail.quantity', 'InvItem.id')
+		));
+		$formatedSaleDetails = array();
+		foreach ($saleDetails as $key => $value) {
+			
+			if($state == 'nuevo'){
+				$stock = $this->_find_stock($value['InvItem']['id'], $idWarehouse);
+			}
+			$formatedSaleDetails[$key] = array(
+				'itemId'=>$value['InvItem']['id'],
+				'item'=>'[ '. $value['InvItem']['code'].' ] '.$value['InvItem']['name'],
+				'cantidadVenta'=>$value['SalDetail']['quantity'],
+				'stock'=> $stock,//llamar funcion
+				'cantidad'=>$value['SalDetail']['quantity']
+				);
+		}
+		//debug($formatedPurchaseDetails);
+		return $formatedSaleDetails;
+	}
+	
+	
 	
 	private function _find_stock($idItem, $idWarehouse){		
 		$movementsIn = $this->_get_quantity_movements_item($idItem, $idWarehouse, 'entrada');

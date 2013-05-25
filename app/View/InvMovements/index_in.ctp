@@ -8,8 +8,6 @@
 			?>
 <?php echo __(' Entradas al Almacén');?></h2>
 		
-			<!--<a href="save_in" id="btnChangeState" class="btn btn-primary" title="Nueva entrada a almacén"><i class="icon-plus icon-white"></i> Nuevo</a>-->
-			
 		<!-- ////////////////////////////////////////INCIO - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
 		<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-search', 'novalidate' => true));?>
 		<fieldset>
@@ -24,28 +22,11 @@
 					?>
 					<?php
 					echo $this->BootstrapForm->input('document_code', array(				
-							//'label' => 'Codigo Compra:',
 							'id'=>'txtCodeDocument',
 							'value'=>$document_code,
 							'placeholder'=>'Codigo Documento'
 							));
 					?>
-				<!--<div class="btn-group" data-toggle="buttons-checkbox">
-					<button type="button" class="btn">Pendientes</button>
-					<button type="button" class="btn">Aprobados</button>
-					<button type="button" class="btn">Cancelados</button>
-				 </div>-->
-				<?php 	/*			
-						echo $this->BootstrapForm->input('nose]', array(
-							'label' => '',
-							'type' => 'select',
-							'multiple' => 'checkbox inline',
-							'options' => array('Pendientes','Aprobados','Cancelados'),
-							'selected' => array(0,1,2)
-						)); 
-				 * 
-				 */
-						?>
 
 				<?php
 					echo $this->BootstrapForm->submit('<i class="icon-search icon-white"></i>',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSearch', 'title'=>'Buscar'));
