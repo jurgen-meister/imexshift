@@ -8,6 +8,8 @@ App::uses('AppModel', 'Model');
  */
 class SalEmployee extends AppModel {
 
+	public $virtualFields = array("full_name"=>"CONCAT(SalEmployee.first_name , ' ', SalEmployee.last_name)");
+	public $displayField = 'full_name';
 /**
  * Validation rules
  *

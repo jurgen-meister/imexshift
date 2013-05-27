@@ -8,6 +8,8 @@ App::uses('AppModel', 'Model');
  */
 class SalTaxNumber extends AppModel {
 
+	public $virtualFields = array("full_nit"=>"CONCAT(SalTaxNumber.nit , ' - ', SalTaxNumber.name)");
+	public $displayField = 'full_nit';
 /**
  * Validation rules
  *

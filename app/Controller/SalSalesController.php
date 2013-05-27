@@ -25,7 +25,7 @@ class SalSalesController extends AppController {
  *
  * @var array
  */
-	public $components = array('Session');
+	//public $components = array('Session')
 /**
  * index method
  *
@@ -56,6 +56,7 @@ class SalSalesController extends AppController {
  * @return void
  */
 	public function add() {
+		$date='';
 		if ($this->request->is('post')) {
 			$this->SalSale->create();
 			if ($this->SalSale->save($this->request->data)) {
@@ -79,9 +80,13 @@ class SalSalesController extends AppController {
 				);
 			}
 		}
-		$salEmployees = $this->SalSale->SalEmployee->find('list');
-		$salTaxNumbers = $this->SalSale->SalTaxNumber->find('list');
-		$this->set(compact('salEmployees', 'salTaxNumbers'));
+		$salEmployees = $this->SalSale->SalEmployee->find('list',array(
+			'fields' => array('SalEmployee.id','SalEmployee.full_name')
+		));
+		$salTaxNumbers = $this->SalSale->SalTaxNumber->find('list', array(
+			'fields' => array('SalTaxNumber.id', 'SalTaxNumber.full_nit')
+		));
+		$this->set(compact('salEmployees', 'salTaxNumbers','date'));
 	}
 
 /**
