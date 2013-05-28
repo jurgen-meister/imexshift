@@ -1,20 +1,28 @@
 <!--<div class="row-fluid">--> <!-- No va porque ya esta dentro del row-fluid del container del template principal-->
 <?php echo  $this->BootstrapPaginator->options(array('url' => $this->passedArgs));?>
 <!-- ************************************************************************************************************************ -->
-<div class="span9"><!-- INICIO CONTAINER FLUID/ROW FLUID/SPAN9 - Del Template Principal (SPAN3 reservado para menu izquierdo) -->
+<div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
 <!-- ************************************************************************************************************************ -->
-		<h2><?php
+		<h3><?php
 			echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' => 'save_warehouses_transfer'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo')); 
 			?>
-<?php echo __(' Transferencias entre Almacenes');?></h2>
+<?php echo __(' Transferencias entre Almacenes');?></h3>
 		
-			<!--<a href="save_in" id="btnChangeState" class="btn btn-primary" title="Nueva entrada a almacén"><i class="icon-plus icon-white"></i> Nuevo</a>-->
+			<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
+		<div class="widget-box">
+			<div class="widget-title">
+				<span class="icon">
+					<i class="icon-th"></i>
+				</span>
+				<h5><?php echo $this->BootstrapPaginator->counter(array('format' => __('Página {:page} de {:pages}, mostrando {:current} de un total de {:count} registros')));?></h5>
+			</div>
+			<div class="widget-content nopadding">
+		<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
 			
 		
 		<!-- ////////////////////////////////////////INCIO - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
 		<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-search', 'novalidate' => true));?>
 		<fieldset>
-		<legend><?php echo __(''); ?></legend>
 					<?php
 					echo $this->BootstrapForm->input('document_code', array(				
 							//'label' => 'Codigo Compra:',
@@ -30,9 +38,6 @@
 		<?php echo $this->BootstrapForm->end();?>
 		<!-- ////////////////////////////////////////FIN - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
 		
-		<p>
-			<?php echo $this->BootstrapPaginator->counter(array('format' => __('Pagina {:page} de {:pages}, mostrando {:current} de un total de {:count} registros')));?>
-		</p>
 		<?php $cont = $this->BootstrapPaginator->counter('{:start}');?>
 		<table class="table table-striped table-bordered table-hover">
 			<tr>
@@ -109,9 +114,10 @@
 		<?php endforeach; ?>
 		</table>
 
+	<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
+		</div>
+	</div>
+	<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
 		<?php echo $this->BootstrapPaginator->pagination(); ?>
-		
 <!-- ************************************************************************************************************************ -->
-</div><!-- FIN CONTAINER FLUID/ROW FLUID/SPAN9 - Del Template Principal (SPAN3 reservado para menu izquierdo) -->
-<!-- ************************************************************************************************************************ -->
-<!--</div>--><!-- No va porque ya esta dentro del row-fluid del container del template principal-->
+</div><!-- FIN CONTAINER FLUID/ROW FLUID/SPAN12 - Del Template Principal #UNICORN-->

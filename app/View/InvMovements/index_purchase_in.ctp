@@ -1,10 +1,22 @@
 <?php echo  $this->BootstrapPaginator->options(array('url' => $this->passedArgs));?>
-<div class="span9">
-		<h2><?php echo __('Entradas de Compras al Almacén');?></h2>
+<!-- ************************************************************************************************************************ -->
+<div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
+<!-- ************************************************************************************************************************ -->
+		<h3><?php echo __('Entradas de Compras al Almacén');?></h3>
+		<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
+		<div class="widget-box">
+			<div class="widget-title">
+				<span class="icon">
+					<i class="icon-th"></i>
+				</span>
+				<h5><?php echo $this->BootstrapPaginator->counter(array('format' => __('Página {:page} de {:pages}, mostrando {:current} de un total de {:count} registros')));?></h5>
+			</div>
+			<div class="widget-content nopadding">
+		<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
+		
 		<!-- ////////////////////////////////////////INCIO - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
 		<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-search', 'novalidate' => true));?>
 		<fieldset>
-		<legend><?php echo __(''); ?></legend>
 					<?php
 					echo $this->BootstrapForm->input('document_code', array(				
 							//'label' => 'Codigo Compra:',
@@ -19,9 +31,7 @@
 		</fieldset>
 		<?php echo $this->BootstrapForm->end();?>
 		<!-- ////////////////////////////////////////FIN - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
-		<p>
-			<?php echo $this->BootstrapPaginator->counter(array('format' => __('Pagina {:page} de {:pages}, mostrando {:current} de un total de {:count} registros')));?>
-		</p>
+
 		<?php $cont = $this->BootstrapPaginator->counter('{:start}');?>
 		<table class="table table-striped table-bordered table-hover">
 			<tr>
@@ -30,7 +40,7 @@
 				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('inv_supplier_id', 'Proveedor');?></th>
 				<!--<th><?php //echo ('Codigo Entrada Almacen');?></th>-->
-				<th><?php echo 'Acción';?></th>
+				<th><?php echo 'Estado Documento';?></th>
 			</tr>
 		<?php foreach ($purPurchases as $purPurchase): ?>
 			<tr>
@@ -79,5 +89,10 @@
 		<?php endforeach; ?>
 		</table>
 
+		<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
+		</div>
+	</div>
+	<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
 		<?php echo $this->BootstrapPaginator->pagination(); ?>
-</div>
+<!-- ************************************************************************************************************************ -->
+</div><!-- FIN CONTAINER FLUID/ROW FLUID/SPAN12 - Del Template Principal #UNICORN-->

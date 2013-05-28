@@ -1,26 +1,65 @@
-<?php echo $this->Html->script('InvMovements', FALSE); ?>
-<?php echo $this->Html->script('glDatePicker', FALSE); ?>
-<?php echo $this->Html->css('glDatePicker.flatwhite'); ?>
+<?php echo $this->Html->script('modules/InvMovements', FALSE); ?> 
 
 <!-- ************************************************************************************************************************ -->
-<div class="span9"><!-- INICIO CONTAINER FLUID/ROW FLUID/SPAN9 - Del Template Principal (SPAN3 reservado para menu izquierdo) -->
+<div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
 <!-- ************************************************************************************************************************ -->
-
-	<!-- ////////////////////////////////// INICIO - INICIO FORM ///////////////////////////////////// -->
+	<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 1/2 *************************************** -->
+	<?php
+		switch ($documentState){
+			case '':
+				$documentStateColor = '';
+				$documentStateName = 'SIN ESTADO';
+				break;
+			case 'PENDANT':
+				$documentStateColor = 'label-warning';
+				$documentStateName = 'PENDIENTE';
+				break;
+			case 'APPROVED':
+				$documentStateColor = 'label-success';
+				$documentStateName = 'APROBADO';
+				break;
+			case 'CANCELLED':
+				$documentStateColor = 'label-important';
+				$documentStateName = 'CANCELADO';
+				break;
+		}
+	?>
+	<div class="widget-box">
+		<div class="widget-title">
+			<span class="icon">
+				<i class="icon-edit"></i>								
+			</span>
+			<h5>Entrada al Almacen</h5>
+			<span id="documentState" class="label <?php echo $documentStateColor;?>"><?php echo $documentStateName;?></span>
+		</div>
+		<div class="widget-content nopadding">
+		<!-- //////////////////////////// START - IF NEEDED BREADCRUMB, SHOW PROCESS STATE //////////////////////// -->
+		<!--
+		<div id="breadcrumb">
+			<a href="#" title="Go to Home" class="tip-bottom">Orden Compra</a>
+			<a href="#" class="current">Remito</a>
+		</div>
+		-->
+		<!-- //////////////////////////// END - IF NEEDED BREADCRUMB, SHOW PROCESS STATE //////////////////////// -->
+	<!-- //******************************** END - #UNICORN  WRAP FORM BOX PART 1/2 *************************************** -->
+		
+		
+	<!-- ////////////////////////////////// START - FORM STARTS ///////////////////////////////////// -->
 		<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-horizontal'));?>
 		<fieldset>
-		<legend><?php echo __('Entrada al Almacén'); ?></legend>
-	<!-- ////////////////////////////////// FIN - INICIO FORM /////////////////////////////////////// -->			
+		<!--<legend><?php// echo __('Entrada al Almacén'); //COMMENTED DUE #UNICORN ?></legend>-->
+	<!-- ////////////////////////////////// END - FORM ENDS /////////////////////////////////////// -->			
 				
 				
-				<!-- ////////////////////////////////// INICIO - TABLA ESTADO PROCESO Y DOCUMENTO /////////////////////////////////////// -->
+				<!-- ////////////////////////////////// START - TABLE STATE DOCUMENT PROCESS -> COMMENTED DUE #UNICORN/////////////////////////////////////// -->
+				<!--
 				<div class="row-fluid">
 					<div class="span7">
-						<!--Pedido | Orden | Compra | Ingreso-->
+						
 					</div>
 					<div class="span2" >
 						Estado Documento:
-						<?php
+						<?php/*
 							switch ($documentState){
 								case '':
 									$stateColor = '#BBBBBB';
@@ -38,31 +77,32 @@
 									$stateColor = '#BD362F';
 									$stateName = 'Cancelado';
 									break;
-							}
+							}*/
 						?>
 						<table id="tableProcessState" class="table table-bordered table-condensed">
 							<tr>
-								<td id="columnStateMovementIn" style="background-color:<?php echo $stateColor; ?>; color: white"><?php echo $stateName;?></td>
+								<td id="columnStateMovementIn" style="background-color:<?php //echo $stateColor; ?>; color: white"><?php //echo $stateName;?></td>
 							</tr>
 						</table>
 						
 					</div>
 					<div class="span3"></div>
 				</div>
-				<!-- ////////////////////////////////// FIN - TABLA ESTADO PROCESO Y DOCUMENTO /////////////////////////////////////// -->
+				-->
+				<!-- ////////////////////////////////// END - TABLE STATE DOCUMENT PROCESS  -> COMMENTED DUE #UNICORN /////////////////////////////////////// -->
 				
 				
 				
-				<!-- ////////////////////////////////// INICIO CAMPOS FORMULARIOS MOVIMIENTO /////////////////////////////////////// -->
+				<!-- ////////////////////////////////// START FORM MOVEMENT FIELDS  /////////////////////////////////////// -->
 				<?php
 				
 				//////////////////////////////////START - block when APPROVED or CANCELLED///////////////////////////////////////////////////
 				$disable = 'disabled';
-				$btnAddMovementType = '';
+				//$btnAddMovementType = '';
 				
 				if($documentState == 'PENDANT' OR $documentState == ''){
 					$disable = 'enabled';	
-					$btnAddMovementType = '<a class="btn btn-primary" href="#" id="btnAddMovementType" title="Nuevo Tipo Movimiento"><i class="icon-plus icon-white"></i></a>';
+					//$btnAddMovementType = '<a class="btn btn-primary" href="#" id="btnAddMovementType" title="Nuevo Tipo Movimiento"><i class="icon-plus icon-white"></i></a>';
 				}
 				
 				//////////////////////////////////END - block when APPROVED or CANCELLED///////////////////////////////////////////////////
@@ -79,7 +119,7 @@
 					'value'=>$id,
 					'type'=>'hidden'
 				));
-							
+				
 				echo $this->BootstrapForm->input('code', array(
 					//'id'=>'code',
 					'id'=>'txtCode',
@@ -87,6 +127,7 @@
 					'style'=>'background-color:#EEEEEE',
 					'disabled'=>$disable,
 					'placeholder'=>'El sistema generará el código',
+					//'class'=>'controls'
 					//'data-toggle'=>'tooltip',
 					//'data-placement'=>'top',
 				));
@@ -98,9 +139,8 @@
 					'value'=>$date,
 					'disabled'=>$disable,
 					'maxlength'=>'0',
-					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+					//'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 				));
-				
 				
 				
 				echo $this->BootstrapForm->input('inv_warehouse_id', array(
@@ -109,7 +149,7 @@
 					'id'=>'cbxWarehouses',
 					//'value'=>$invWarehouses,
 					'disabled'=>$disable,
-					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+					//'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 				));
 
 				echo $this->BootstrapForm->input('inv_movement_type_id', array(
@@ -117,83 +157,85 @@
 					'id'=>'cbxMovementTypes',
 					'disabled'=>$disable,
 					'required' => 'required',
-					'helpInline' => /*$btnAddMovementType.*/'<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;')
-				);
+					//'helpInline' => /*$btnAddMovementType.*/'<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+				));
 				echo $this->BootstrapForm->input('description', array(
 					'rows' => 2,
-					'style'=>'width:400px',
+					//'style'=>'width:400px',//#UNICORN, COMMENT OR REPONSIVE DOESN'T WORK
 					'label' => 'Descripción:',
 					'disabled'=>$disable,
 					'id'=>'txtDescription'
 				));
 				?>
-				<!-- ////////////////////////////////// FIN CAMPOS FORMULARIOS MOVIMIENTO /////////////////////////////////////// -->
+				<!-- ////////////////////////////////// END FORM MOVEMENT FIELDS /////////////////////////////////////// -->
 				
 				
 				
-				<!-- ////////////////////////////////// INICIO - ITEMS /////////////////////////////////////// -->
-				<ul class="nav nav-tabs">
-					<li class="active">
-						<a href="#">Items</a>
-					</li>
-				</ul>
+				<!-- ////////////////////////////////// START - MOVEMENT ITEMS DETAILS /////////////////////////////////////// -->
+				
 				
 
 				<div class="row-fluid">
 					
-					<div class="span1"></div>
+					<!--<div class="span1"></div>-->
 					
-					<div id="boxTable" class="span8">
-						
-						<?php if($documentState == 'PENDANT' OR $documentState == ''){ ?>
-						<a class="btn btn-primary" href='#' id="btnAddItem" title="Adicionar Item"><i class="icon-plus icon-white"></i></a>
-						<?php } ?>
-						<p></p>
-						
-						<table class="table table-bordered table-condensed table-striped table-hover" id="tablaItems">
-							<thead>
-								<tr>
-									<th>Item (unidad)</th>
-									<th>Stock</th>
-									<th>Cantidad</th>
-									<?php if($documentState == 'PENDANT' OR $documentState == ''){ ?>
-									<th class="columnItemsButtons"></th>
-									<?php }?>
-								</tr>
-							</thead>
-							<tbody>
-								<?php
-								for($i=0; $i<count($invMovementDetails); $i++){
-									echo '<tr>';
-										echo '<td><span id="spaItemName'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['item'].'</span><input type="hidden" value="'.$invMovementDetails[$i]['itemId'].'" id="txtItemId" ></td>';
-										echo '<td><span id="spaStock'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['stock'].'</span></td>';
-										echo '<td><span id="spaQuantity'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['cantidad'].'</span></td>';
-										if($documentState == 'PENDANT' OR $documentState == ''){
-											echo '<td class="columnItemsButtons">';
-											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$invMovementDetails[$i]['itemId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
-												
-												<a class="btn btn-danger" href="#" id="btnDeleteItem'.$invMovementDetails[$i]['itemId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
-											echo '</td>';
-										}
-									echo '</tr>';								
-								}
-								?>
-							</tbody>
-						</table>
-					</div>
-					
-					<div class="span3"></div>
-					
-				</div>
-			<!-- ////////////////////////////////// FIN ITEMS /////////////////////////////////////// -->
+					<!--<div id="boxTable" > It seems useless -->
+					<!--
+					<ul class="nav nav-tabs">
+						<li class="active">
 
+							<a href="#">Items</a>
+						</li>
+					</ul>
+					-->
+					<?php if($documentState == 'PENDANT' OR $documentState == ''){ ?>
+						<a class="btn btn-primary" href='#' id="btnAddItem" title="Adicionar Item"><i class="icon-plus icon-white"></i></a>
+					<?php } ?>
+					
+							<table class="table table-bordered table-striped table-hover" id="tablaItems">
+								<thead>
+									<tr>
+										<th>Item (unidad)</th>
+										<th>Stock</th>
+										<th>Cantidad</th>
+										<?php if($documentState == 'PENDANT' OR $documentState == ''){ ?>
+										<th class="columnItemsButtons"></th>
+										<?php }?>
+									</tr>
+								</thead>
+								<tbody>
+									<?php
+									for($i=0; $i<count($invMovementDetails); $i++){
+										echo '<tr>';
+											echo '<td><span id="spaItemName'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['item'].'</span><input type="hidden" value="'.$invMovementDetails[$i]['itemId'].'" id="txtItemId" ></td>';
+											echo '<td><span id="spaStock'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['stock'].'</span></td>';
+											echo '<td><span id="spaQuantity'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['cantidad'].'</span></td>';
+											if($documentState == 'PENDANT' OR $documentState == ''){
+												echo '<td class="columnItemsButtons">';
+												echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$invMovementDetails[$i]['itemId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
+													<a class="btn btn-danger" href="#" id="btnDeleteItem'.$invMovementDetails[$i]['itemId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
+												echo '</td>';
+											}
+										echo '</tr>';								
+									}
+									?>
+								</tbody>
+							</table>
+						
+					<!--</div> It seems useless--> 
+					
+					<!--<div class="span3"></div>-->
+					
 				
-			<!-- ////////////////////////////////// INICIO BOTONES /////////////////////////////////////// -->
+			<!-- ////////////////////////////////// END MOVEMENT ITEMS DETAILS /////////////////////////////////////// -->
+
+			<p></p>	
+			<!-- ////////////////////////////////// START BUTTONS /////////////////////////////////////// -->
 			<!--<div class="form-actions">--><!-- no sirve se desconfigura los botones en modo tablet -->
-			<div class="row-fluid"> <!-- INICIO - row fluid para alinear los botones -->
-				<div class="span2"></div> <!-- INICIO Y FIN - ESPACIO A LA IZQUIERDA -->
-				<div class="span10">	<!-- INICIO - span 6 -->
-					<div class="btn-toolbar"> <!-- INICIO - toolbar para dejar espacio entre botones -->
+			<div class="row-fluid"> <!-- START - row fluid para alinear los botones -->
+				<div class="span2"></div> <!-- START Y END - ESPACIO A LA IZQUIERDA -->
+				<div class="span10">	<!-- START - span 6 -->
+					<div class="btn-toolbar"> <!-- START - toolbar para dejar espacio entre botones -->
 							<?php 
 								if($documentState == 'PENDANT' OR $documentState == ''){
 									echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));	
@@ -241,32 +283,39 @@
 							?>
 							<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Entrada Almacen</a>
 							<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Entrada Almacen</a>
-					</div> <!-- FIN - toolbar para dejar espacio entre botones -->
-				</div> <!-- FIN - span 10 -->
-			</div> <!-- FIN - row fluid para alinear los botones -->
-			<!--</div>--><!-- no sirve se desconfigura los botones en modo tablet class="form-actions" -->
-			<!-- ////////////////////////////////// FIN BOTONES /////////////////////////////////////// -->
+					</div> <!-- END - toolbar leave space between buttons -->
+				</div> <!-- END - span 10 -->
+			</div> <!-- END - row fluid for align buttons -->
+			<!--</div>--><!-- Do not work, buttons are unordered in tablet mode class="form-actions" -->
+			<!-- ////////////////////////////////// END BOTONES /////////////////////////////////////// -->
 
-	<!-- ////////////////////////////////// INICIO - FIN FORM ///////////////////////////////////// -->		
+	<!-- ////////////////////////////////// START - END FORM ///////////////////////////////////// -->		
 	</fieldset>
 	<?php echo $this->BootstrapForm->end();?>
-	<!-- ////////////////////////////////// FIN - FIN FORM ///////////////////////////////////// -->
+	<!-- ////////////////////////////////// END - END FORM ///////////////////////////////////// -->
 	
 	
-	<!-- ////////////////////////////////// INICIO MENSAJES /////////////////////////////////////// -->
+	<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
+		</div> <!-- Belongs to: <div class="widget-content nopadding"> -->
+	</div> <!-- Belongs to: <div class="widget-box"> -->
+	<!-- //******************************** END - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
+
+	
+	
+	<!-- ////////////////////////////////// START MESSAGES /////////////////////////////////////// -->
 	<div id="boxMessage"></div>
 	<div id="processing"></div>
-	<!-- ////////////////////////////////// FIN MENSAJES /////////////////////////////////////// -->
+	<!-- ////////////////////////////////// END MESSAGES /////////////////////////////////////// -->
 	
 	
 <!-- ************************************************************************************************************************ -->
-</div><!-- FIN CONTAINER FLUID/ROW FLUID/SPAN9 - Del Template Principal (SPAN3 reservado para menu izquierdo) -->
+</div><!-- END CONTAINER FLUID/ROW FLUID/SPAN12 - MAIN Template #UNICORN -->
 <!-- ************************************************************************************************************************ -->
 
 
 
 
-<!-- ////////////////////////////////// INICIO MODAL (Esta fuera del span9 pero sigue pertenciendo al template principal CONTAINER FLUID/ROW FLUID) ////////////////////////////// -->
+<!-- ////////////////////////////////// START MODAL (Esta fuera del span9 pero sigue pertenciendo al template principal CONTAINER FLUID/ROW FLUID) ////////////////////////////// -->
 			<div id="modalAddItem" class="modal hide fade ">
 				  
 				  <div class="modal-header">
@@ -324,4 +373,4 @@
 				  </div>
 					
 			</div>
-<!-- ////////////////////////////////// FIN MODAL (Esta fuera del span9 pero sigue pertenciendo al template principal CONTAINER FLUID/ROW FLUID) ////////////////////////////// -->
+<!-- ////////////////////////////////// END MODAL (Esta fuera del span9 pero sigue pertenciendo al template principal CONTAINER FLUID/ROW FLUID) ////////////////////////////// -->
