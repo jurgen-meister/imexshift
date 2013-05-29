@@ -12,9 +12,8 @@
 		<table class="table table-striped table-bordered table-hover">
 			<tr>
 				<th><?php echo "#";?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('sal_customer', 'Cliente');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('first_name','Nombres');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('last_name', 'Apellidos');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('sal_customer_id', 'Cliente');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('name','Encargado(a)');?></th>				
 				<th><?php echo $this->BootstrapPaginator->sort('phone', 'Telf./Cel.');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('email');?></th>				
 				<th class="actions"><?php echo __('Acciones');?></th>
@@ -22,9 +21,10 @@
 		<?php foreach ($salEmployees as $salEmployee): ?>
 			<tr>
 				<td><?php echo $cont++;?></td>
-				<td><?php echo h($salEmployee['SalEmployee']['sal_customer_id']); ?>&nbsp;</td>
-				<td><?php echo h($salEmployee['SalEmployee']['first_name']); ?>&nbsp;</td>
-				<td><?php echo h($salEmployee['SalEmployee']['last_name']); ?>&nbsp;</td>
+				<td>
+					<?php echo $this->Html->link($salEmployee['SalCustomer']['name'], array('controller' => 'sal_customers', 'action' => 'view', $salEmployee['SalCustomer']['id'])); ?>
+				</td>				
+				<td><?php echo h($salEmployee['SalEmployee']['name']); ?>&nbsp;</td>				
 				<td><?php echo h($salEmployee['SalEmployee']['phone']); ?>&nbsp;</td>
 				<td><?php echo h($salEmployee['SalEmployee']['email']); ?>&nbsp;</td>				
 				<td class="actions">

@@ -18,6 +18,9 @@
 					'rows' => 3,
 					'label' => 'Telf./Cel.'
 				));
+				echo $this->BootstrapForm->input('location',array(
+					'label' => 'Ciudad'
+				));
 				echo $this->BootstrapForm->input('email');				
 				?>
 				<div class="row-fluid">

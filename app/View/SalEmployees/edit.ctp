@@ -8,16 +8,11 @@
 					'required' => 'required',
 					'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
 				);
-				echo $this->BootstrapForm->input('first_name', array(
-					'label' => 'Nombres',
+				echo $this->BootstrapForm->input('name', array(
+					'label' => 'Nombre',
 					'required' => 'required',
 					'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('last_name', array(
-					'label' => 'Apellidos',
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
-				);
+				);				
 				echo $this->BootstrapForm->input('phone', array(
 					'label' => 'Telf./Cel.',
 				));
