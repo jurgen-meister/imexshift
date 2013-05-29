@@ -62,11 +62,14 @@ $(document).ready(function(){
 				
 				error+='<li>El campo "Cantidad" no puede ser cero</li>'; 
 			}
+			//That was used to validate item quantity is greater than the quantity send in Purchase IN
+			/*
 			if ($('#txtModalQuantityDocument').length > 0){//existe
 				if(parseInt(quantity, 10) > $('#txtModalQuantityDocument').val()){
 					error+='<li>La "Cantidad" de entrada no puede ser mayor a la "Compra"</li>'; 
 				}
 			}
+			*/
 		}
 		if(item == ''){error+='<li>El campo "Item" no puede estar vacio</li>';}
 		
@@ -319,11 +322,10 @@ $(document).ready(function(){
 			if(arr[3] == 'save_in' || arr[3] == 'save_purchase_in'){
 				ajax_save_movement_in(arrayItemsDetails);
 			}
-			if(arr[3] == 'save_out'){
+			if(arr[3] == 'save_out' || arr[3] == 'save_sale_out'){
 				ajax_save_movement_out(arrayItemsDetails);
 			}
 			if(arr[3] == 'save_warehouses_transfer'){
-				//alert('funciona para transferencias entre almacenes');
 				ajax_save_warehouses_transfer(arrayItemsDetails);
 			}
 		}else{
@@ -346,7 +348,7 @@ $(document).ready(function(){
 			if(arr[3] == 'save_in' || arr[3] == 'save_purchase_in'){
 				ajax_change_state_approved_movement_in(arrayItemsDetails);
 			}
-			if(arr[3]=='save_out'){
+			if(arr[3]=='save_out' || arr[3] == 'save_sale_out'){
 				ajax_change_state_approved_movement_out(arrayItemsDetails);
 			}
 			if(arr[3] == 'save_warehouses_transfer'){
@@ -363,7 +365,7 @@ $(document).ready(function(){
 			if(arr[3] == 'save_in' || arr[3] == 'save_purchase_in'){
 				ajax_change_state_cancelled_movement_in(arrayItemsDetails);
 			}
-			if(arr[3]=='save_out'){
+			if(arr[3]=='save_out' || arr[3] == 'save_sale_out'){
 				ajax_change_state_cancelled_movement_out(arrayItemsDetails);
 			}
 			if(arr[3] == 'save_warehouses_transfer'){

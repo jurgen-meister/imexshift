@@ -1,63 +1,65 @@
 <!--<div class="row-fluid">--> <!-- No va porque ya esta dentro del row-fluid del container del template principal-->
 <?php echo  $this->BootstrapPaginator->options(array('url' => $this->passedArgs));?>
 <!-- ************************************************************************************************************************ -->
-<div class="span9"><!-- INICIO CONTAINER FLUID/ROW FLUID/SPAN9 - Del Template Principal (SPAN3 reservado para menu izquierdo) -->
+<div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
 <!-- ************************************************************************************************************************ -->
-		<h2><?php
+		<h3><?php
 			echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' => 'save_in'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo')); 
 			?>
-<?php echo __(' Entradas al Almacén');?></h2>
+<?php echo __(' Entradas al Almacen');?></h3>
 		
-			<!--<a href="save_in" id="btnChangeState" class="btn btn-primary" title="Nueva entrada a almacén"><i class="icon-plus icon-white"></i> Nuevo</a>-->
-			
-		<!-- ////////////////////////////////////////INCIO - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
-		<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-search', 'novalidate' => true));?>
-		<fieldset>
-		<legend><?php echo __(''); ?></legend>
-					<?php
-					echo $this->BootstrapForm->input('code', array(				
-									//'label' => 'Codigo Entrada:',
-									'id'=>'txtCode',
-									'value'=>$code,
-									'placeholder'=>'Codigo Entrada'
-									));
-					?>
-					<?php
-					echo $this->BootstrapForm->input('document_code', array(				
-							//'label' => 'Codigo Compra:',
-							'id'=>'txtCodeDocument',
-							'value'=>$document_code,
-							'placeholder'=>'Codigo Documento'
-							));
-					?>
-				<!--<div class="btn-group" data-toggle="buttons-checkbox">
-					<button type="button" class="btn">Pendientes</button>
-					<button type="button" class="btn">Aprobados</button>
-					<button type="button" class="btn">Cancelados</button>
-				 </div>-->
-				<?php 	/*			
-						echo $this->BootstrapForm->input('nose]', array(
-							'label' => '',
-							'type' => 'select',
-							'multiple' => 'checkbox inline',
-							'options' => array('Pendientes','Aprobados','Cancelados'),
-							'selected' => array(0,1,2)
-						)); 
-				 * 
-				 */
+		<!-- *********************************************** #UNICORN SEARCH WRAP ********************************************-->
+		<div class="widget-box">
+			<div class="widget-title">
+				<span class="icon">
+					<i class="icon-search"></i>
+				</span>
+				<h5>Filtro</h5>
+			</div>
+			<div class="widget-content nopadding">
+			<!-- ////////////////////////////////////////INCIO - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
+			<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-search', 'novalidate' => true));?>
+			<fieldset>
+						<?php
+						echo $this->BootstrapForm->input('code', array(				
+										//'label' => 'Codigo Entrada:',
+										'id'=>'txtCode',
+										'value'=>$code,
+										'placeholder'=>'Codigo Entrada'
+										));
+						?>
+						<?php
+						echo $this->BootstrapForm->input('document_code', array(				
+								'id'=>'txtCodeDocument',
+								'value'=>$document_code,
+								'placeholder'=>'Codigo Documento'
+								));
 						?>
 
-				<?php
-					echo $this->BootstrapForm->submit('<i class="icon-search icon-white"></i>',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSearch', 'title'=>'Buscar'));
-				?>
-				
-		</fieldset>
-		<?php echo $this->BootstrapForm->end();?>
-		<!-- ////////////////////////////////////////FIN - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
-		<p>
-		 <?php echo $this->BootstrapPaginator->counter(array('format' => __('Pagina {:page} de {:pages}, mostrando {:current} de un total de {:count} registros')));?>
-		</p>
+					<?php
+						echo $this->BootstrapForm->submit('<i class="icon-search icon-white"></i>',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSearch', 'title'=>'Buscar'));
+					?>
+
+			</fieldset>
+			<?php echo $this->BootstrapForm->end();?>
+			<!-- ////////////////////////////////////////FIN - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->		
+			</div>
+		</div>
+		<!-- *********************************************** #UNICORN SEARCH WRAP ********************************************-->
+
+		<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
+		<div class="widget-box">
+			<div class="widget-title">
+				<span class="icon">
+					<i class="icon-th"></i>
+				</span>
+				<h5><?php echo $this->BootstrapPaginator->counter(array('format' => __('Página {:page} de {:pages}, mostrando {:current} de un total de {:count} registros')));?></h5>
+			</div>
+			<div class="widget-content nopadding">
+		<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
 		
+		
+
 		<?php $cont = $this->BootstrapPaginator->counter('{:start}');?>
 		<table class="table table-striped table-bordered table-hover">
 			<tr>
@@ -137,10 +139,13 @@
 			</tr>
 		<?php endforeach; ?>
 		</table>
-
-		<?php echo $this->BootstrapPaginator->pagination(); ?>
 		
+	<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
+		</div>
+	</div>
+	<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
+		<?php echo $this->BootstrapPaginator->pagination(); ?>
 <!-- ************************************************************************************************************************ -->
-</div><!-- FIN CONTAINER FLUID/ROW FLUID/SPAN9 - Del Template Principal (SPAN3 reservado para menu izquierdo) -->
+</div><!-- FIN CONTAINER FLUID/ROW FLUID/SPAN12 - Del Template Principal #UNICORN
 <!-- ************************************************************************************************************************ -->
 <!--</div>--><!-- No va porque ya esta dentro del row-fluid del container del template principal-->

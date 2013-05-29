@@ -35,7 +35,7 @@ class InvMovementTypesController extends AppController {
 		
 	$this->paginate = array(
      //'order' => array('InvMovementType.id DESC'),
-	 //'conditions'=>array('InvMovement.lc_transaction !='=>'LOGIC_DELETE'),
+	 'conditions'=>array('NOT'=>array('InvMovementType.id' => array(1,2,3,4))),
      'limit' => 10
 	);
 		

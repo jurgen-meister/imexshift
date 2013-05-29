@@ -1,5 +1,5 @@
 <span style="font-size: 30px; font-weight: bold">IMEXPORT</span><span style="font-weight: bold">SRL</span>
-<div style="height: 3px; background-color: black"></div>
+<div style="height: 2px; background-color: black"></div>
 <?php
 	switch ($movement['InvMovement']['lc_state']){
 		case 'PENDANT':
@@ -27,7 +27,7 @@
 		<td align="right"><span class="report-title"><?php echo $documentType;?></span><?php echo $stateName;?></td>
 	</tr>
 </table>
-<br><br>
+<br>
 
 <?php if($movement['InvMovementType']['id'] == 3){?>
 <p><span class="report-title">Codigo: </span><?php echo $movement['InvMovement']['document_code'];?></p>
@@ -57,7 +57,7 @@
 <p><span class="report-title">Tipo Movimiento: </span><?php echo $movement['InvMovementType']['name'];?></p>
 <p><span class="report-title">Descripción: </span><?php echo $movement['InvMovement']['description'];?></p>
 
-<br><br>
+<br>
 
 <table class="report-table" border="1" bordercolor="red" style="border-collapse:collapse;">
 							<thead>

@@ -62,6 +62,7 @@ class AdmUsersController extends AppController {
 	}
 	*/
 	public function login() {
+		$this->layout = 'login';
 		if ($this->request->is('post')) {
 			//debug($this->Auth->login());
 			//var_dump($this->request->data);
@@ -253,12 +254,17 @@ class AdmUsersController extends AppController {
 			//////////////////////////////Parents
 				$str.='<ul>';
 				foreach ($parents as $key2 => $value2) {
-					$str.='<li>'.$this->_createLink($value2['AdmMenu']['id'], $value2['AdmMenu']['name']);//$value2['AdmMenu']['name'];
+					$arrLinkContent = $this->_createLink($value2['AdmMenu']['id'], $value2['AdmMenu']['name'], 'SI');
+						if($arrLinkContent['idForLi'] <> ''){$idForLi = 'id="'.$arrLinkContent['idForLi'].'"';}else{$idForLi='';}
+							$str.='<li '.$idForLi.' class="submenu">'.$arrLinkContent['link'];//$value2['AdmMenu']['name'];
 					////////////////////////////////////Children 1
 					$str.='<ul>';
 						$children1 = $this->_findMenus($value2['AdmMenu']['id'], $roleId);
 						foreach ($children1 as $key3 => $value3) {
-							$str.='<li>'.$this->_createLink($key3, $value3);//$value3;
+							$arrLinkContent = $this->_createLink($key3, $value3, '');
+							if($arrLinkContent['idForLi'] <> ''){$idForLi = 'id="'.$arrLinkContent['idForLi'].'"';}else{$idForLi='';}
+							$str.='<li '.$idForLi.'>'.$arrLinkContent['link'];//$value3;
+								/*
 								////////////////////////////////////Children 2
 								$str.='<ul>';
 									$children2=$this->_findMenus($key3, $roleId);
@@ -286,6 +292,7 @@ class AdmUsersController extends AppController {
 									}
 								$str.='</ul>';
 								////////////////////////////////////Children 2
+								*/
 							$str.='</li>';
 						}
 					$str.='</ul>';
@@ -302,7 +309,7 @@ class AdmUsersController extends AppController {
 	}
 	
 	
-	private function _createLink($idMenu, $nameMenu){
+	private function _createLink($idMenu, $nameMenu, $icon){
 		$projectName = 'imexport';
 		$this->loadModel('AdmMenu');
 		
@@ -327,16 +334,48 @@ class AdmUsersController extends AppController {
 		
 		$vec = $this->AdmMenu->find('all', array('fields'=>array('AdmAction.name', 'AdmController.name'),'conditions'=>array("AdmMenu.id"=>$idMenu)));
 		
-		$link = '/'.$projectName.'/'.$vec[0]['AdmController']['name'].'/'.strtolower($vec[0]['AdmAction']['name']);
+		$controlerName = $vec[0]['AdmController']['name'];
+		$actionName = strtolower($vec[0]['AdmAction']['name']);
+		$link = '/'.$projectName.'/'.$controlerName.'/'.$actionName;
+		$idForLi =$controlerName.'-'.$actionName;
 		
 		if($vec[0]['AdmAction']['name'] == null){
 			$link = '#';
 		}
 		//debug($vec);
-		$str = '<a href="'.$link.'">'.$nameMenu.'</a>';
-		return $str;
+		if($icon <> ''){
+			$idName = '';
+			$nameIcon='';
+			switch($nameMenu){
+				case 'ADMINISTRACION':
+					$nameIcon='icon-wrench';
+					$idName = 'adm';
+					break;
+				case 'INVENTARIO':
+					$nameIcon='icon-list-alt';
+					$idName = 'inv';
+					break;
+				case 'COMPRAS':
+					$nameIcon='icon-shopping-cart';
+					$idName = 'pur';
+					break;
+				case 'VENTAS':
+					$nameIcon='icon-tags';
+					$idName = 'sal';
+					break;
+			}
+			if($vec[0]['AdmAction']['name'] == null){$idForLi = 'mod-'.$idName;}
+			$str = '<a href="'.$link.'"><i class="icon '.$nameIcon.'"></i> <span>'.$nameMenu.'</span></a>';
+		}else{
+			if($vec[0]['AdmAction']['name'] == null){$idForLi = '';}
+			$str = '<a href="'.$link.'">'.$nameMenu.'</a>';
+		}
+		
+		//return $str;
+		return array('link'=>$str, 'idForLi'=>$idForLi);
 	}
 
+	
 	
 	private function _findMenus($parent, $roleId){
 		$this->loadModel('AdmRolesMenu');
