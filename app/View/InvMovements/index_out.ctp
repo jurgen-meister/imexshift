@@ -6,7 +6,7 @@
 		<h3><?php
 			echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' => 'save_out'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo')); 
 			?>
-<?php echo __(' Salidas del Almacén');?></h3>
+<?php echo __(' Salidas del Almacen');?></h3>
 		
 			<!--<a href="save_in" id="btnChangeState" class="btn btn-primary" title="Nueva entrada a almacén"><i class="icon-plus icon-white"></i> Nuevo</a>-->
 			

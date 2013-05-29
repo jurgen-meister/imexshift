@@ -57,7 +57,7 @@ class AppController extends Controller {
 				'controller' => 'admUsers',
 				'action' => 'login',
 			)
-			,'authError'=>'NO ESTA AUTORIZADO'
+			,'authError'=>'Auth Error'
 			,'authorize'=>array('Controller') // para que sirva la function isAuthorized sino naranjas
 		)
 	);

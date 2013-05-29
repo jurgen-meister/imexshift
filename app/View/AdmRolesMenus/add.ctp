@@ -1,8 +1,8 @@
-<?php echo $this->Html->script('jquery-1.4.4', FALSE); ?>
-<?php echo $this->Html->script('jquery-ui-1.8.12.custom.min', FALSE); ?>
-<?php echo $this->Html->script('jquery.checkboxtree', FALSE); ?>
+<?php echo $this->Html->script('checkboxtree/jquery-1.4.4', FALSE); ?>
+<?php echo $this->Html->script('checkboxtree/jquery-ui-1.8.12.custom.min', FALSE); ?>
+<?php echo $this->Html->script('checkboxtree/jquery.checkboxtree', FALSE); ?>
 <?php echo $this->Html->css('jquery.checkboxtree');?>
-<?php echo $this->Html->script('AdmRolesMenus', FALSE); ?>
+<?php echo $this->Html->script('modules/AdmRolesMenus', FALSE); ?>
 
 <div class="row-fluid">
 	<div class="span9">

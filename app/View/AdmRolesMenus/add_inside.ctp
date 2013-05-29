@@ -1,8 +1,8 @@
 <?php  
 //use this old version for compatibility "add action" older version array set even empty, new version not set if empty. Share action save
-echo $this->Html->script('jquery-1.4.4', FALSE);
+echo $this->Html->script('checkboxtree/jquery-1.4.4', FALSE);
 ?>
-<?php echo $this->Html->script('AdmRolesMenus', FALSE); ?>
+<?php echo $this->Html->script('modules/AdmRolesMenus', FALSE); ?>
 <div class="row-fluid">
 	<div class="span9">
 		<h2><?php echo __('Asignar roles menus internos');?></h2>

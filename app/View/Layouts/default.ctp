@@ -1,4 +1,4 @@
-<?php $cakeDescription = __d('cake_dev', 'Imexport srl '); ?>
+<?php $cakeDescription = __d('cake_dev', 'IMEXPORT SRL'); ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -35,6 +35,7 @@
 	?>
 	<!-- icons -->
 	<?php
+	/* //don't now their use
 		echo  $this->Html->meta('icon',$this->webroot.'img/favicon.ico');
 		echo $this->Html->meta(array('rel' => 'apple-touch-icon',
 		  'href'=>$this->webroot.'img/apple-touch-icon.png'));
@@ -42,6 +43,8 @@
 		  'href'=>$this->webroot.'img/apple-touch-icon.png',  'sizes'=>'72x72'));
 		echo $this->Html->meta(array('rel' => 'apple-touch-icon',
 		  'href'=>$this->webroot.'img/apple-touch-icon.png',  'sizes'=>'114x114'));
+	 * 
+	 */
 	?>	
 </head>
 <body>
@@ -79,24 +82,29 @@
 		
 		<?php endif;?>
 	</div>
+	<?php //echo $this->Session->read('Menu');
+			//debug($this->Session->read('Menu'));
+		?>
 	<!-- MENU -->
 	<div id="sidebar">
 		<a href="#" class="visible-phone"><i class="icon icon-home"></i> Dashboard</a>
-		<?php //echo $this->Session->read('Menu');?>
+		<?php echo $this->Session->read('Menu');
+			//debug($this->Session->read('Menu'));
+		?>
 		
 		
-		
+		<!--
 		<ul>
 				<li><a href="index.html"><i class="icon icon-wrench"></i> <span>Administracion</span></a></li>
 				<li class="submenu active open">
 					<a href="#"><i class="icon  icon-list-alt"></i> <span>Inventario</span> <span class="label">11</span></a>
 					<ul>
-						<li><a href="form-validation.html">Entradas</a></li>
-						<li><a href="form-validation.html">Entradas de Compras</a></li>
-						<li><a href="form-validation.html">Salidas</a></li>
-						<li><a href="form-validation.html">Salidas de Ventas</a></li>
-						<li><a href="form-validation.html">Transferencia Almacenes</a></li>
-						<li><a href="form-validation.html">Kardex</a></li>
+						<li><a href="index_in">Entradas</a></li>
+						<li><a href="index_purchase_in">Entradas de Compras</a></li>
+						<li><a href="index_out">Salidas</a></li>
+						<li><a href="index_sale_out">Salidas de Ventas</a></li>
+						<li><a href="index_warehouses_transfer">Transferencia Almacenes</a></li>
+						<li><a href="kardex">Kardex</a></li>
 						<li><a href="form-validation.html">Items</a></li>
 						<li><a href="form-validation.html">Almacenes</a></li>
 						<li><a href="form-validation.html">Proveedores</a></li>
@@ -123,7 +131,7 @@
 					</ul>
 				</li>
 			</ul>
-		
+		-->
 		
 		
 	</div>
@@ -155,8 +163,23 @@
 		-->
 		<!-- CONTENT STARTS HERE -->
 		<div class="container-fluid">
+			
 			<div class="row-fluid">
+				<?php 
+				//////////////////////// START - Message not authorized, when there is no permission///////////
+				//Is used authError from AppController 'authError'=>'Auth Error', but I don't use the message only the string not empty
+				if($this->Session->flash('auth') <> ''){?>
+					<div class="alert alert-error">
+							<button class="close" data-dismiss="alert">×</button>
+							<strong>NO TIENE PERMISO!</strong>
+					</div>
+				<?php }
+				///////////////////////// END - Message not authorized, when there is no permission////////////
+				?>	
+				
+				<!-- ////////////////////////// START - VIEWS CONTENT(CORE) //////////////////-->
 				<?php echo $this->fetch('content'); ?>			
+				<!-- ////////////////////////// END - VIEWS CONTENT(CORE) //////////////////-->
 			</div>
 			<div class="row-fluid">
 				<div id="footer" class="span12">

@@ -6,10 +6,8 @@
 		<h3><?php
 			echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' => 'save_in'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo')); 
 			?>
-<?php echo __(' Entradas al Almacén');?></h3>
+<?php echo __(' Entradas al Almacen');?></h3>
 		
-		
-				
 		<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
 		<div class="widget-box">
 			<div class="widget-title">

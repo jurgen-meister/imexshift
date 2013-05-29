@@ -1,4 +1,4 @@
-<?php echo $this->Html->script('AdmMenus', FALSE); ?>
+<?php echo $this->Html->script('modules/AdmMenus', FALSE); ?>
 <div class="row-fluid">
 	<div class="span9">
 		<?php echo $this->BootstrapForm->create('AdmMenu', array('class' => 'form-horizontal'));?>

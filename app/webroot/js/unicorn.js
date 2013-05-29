@@ -4,7 +4,12 @@
 **/
 $(document).ready(function(){
 
-	
+	//My script for set active menus when page loads
+	var url = window.location.pathname; 
+	var urlArr = url.split('/');
+	var urlCompare = urlArr[2]+'-'+urlArr[3];
+	$('#' + urlCompare).addClass('active');
+	$('#mod-' + urlArr[2].substr(0,3)).addClass('active open');
 	
 	// === Sidebar navigation === //
 	
@@ -131,4 +136,7 @@ $(document).ready(function(){
 		$(this).siblings('a').css({'border-color':'transparent'});
 		$(this).css({'border-color':'#aaaaaa'});
 	});
+	
+	
+			
 });
