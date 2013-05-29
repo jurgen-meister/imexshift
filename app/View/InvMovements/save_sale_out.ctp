@@ -30,7 +30,7 @@
 			<span class="icon">
 				<i class="icon-edit"></i>								
 			</span>
-			<h5>Salida de Venta del Almacén</h5>
+			<h5>Salida de Venta del Almacen</h5>
 			<span id="documentState" class="label <?php echo $documentStateColor;?>"><?php echo $documentStateName;?></span>
 		</div>
 		<div class="widget-content nopadding">

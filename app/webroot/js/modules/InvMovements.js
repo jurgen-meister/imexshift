@@ -528,7 +528,7 @@ $(document).ready(function(){
 					$('#txtCode').val(arrayCatch[2]);
 					//$('#columnStateMovementIn').css('background-color','#F99C17');
 					//$('#columnStateMovementIn').text('Pendiente');	
-					changeLabelDocumentState('PENDANT');
+					changeLabelDocumentState('PENDANT'); //#UNICORN
 					
 					$('#btnApproveState').show();
 					$('#txtMovementIdHidden').val(arrayCatch[3]);
@@ -579,7 +579,7 @@ $(document).ready(function(){
 					$('#txtCode').val(arrayCatch[2]);
 					//$('#columnStateMovementIn').css('background-color','#F99C17');
 					//$('#columnStateMovementIn').text('Pendiente');
-					changeLabelDocumentState('PENDANT');
+					changeLabelDocumentState('PENDANT');//#UNICORN
 					
 					$('#btnApproveState').show();
 					$('#txtMovementIdHidden').val(arrayCatch[3]);
@@ -622,7 +622,7 @@ $(document).ready(function(){
 					$('#txtDocumentCode').val(arrayCatch[2]);
 					//$('#columnStateMovementIn').css('background-color','#F99C17');
 					//$('#columnStateMovementIn').text('Pendiente');
-					changeLabelDocumentState('PENDANT');
+					changeLabelDocumentState('PENDANT');//#UNICORN
 					
 					$('#btnApproveState').show();
 					$('#txtMovementIdHidden').val(arrayCatch[3]);
@@ -676,7 +676,7 @@ $(document).ready(function(){
 					updateMultipleStocks(arrayItemsStocks, 'spaStock2-');
 					//$('#columnStateMovementIn').css('background-color','#54AA54');
 					//$('#columnStateMovementIn').text('Aprobado');
-					changeLabelDocumentState('APPROVED');
+					changeLabelDocumentState('APPROVED');//#UNICORN
 					
 					$('#btnApproveState').hide();
 					$('#btnCancellState').show();
@@ -738,7 +738,7 @@ $(document).ready(function(){
 					updateMultipleStocks(arrayItemsStocks, 'spaStock');//out, origen
 					//$('#columnStateMovementIn').css('background-color','#BD362F');
 					//$('#columnStateMovementIn').text('Cancelado');
-					changeLabelDocumentState('CANCELLED');
+					changeLabelDocumentState('CANCELLED');//#UNICORN
 					
 					$('#btnCancellState').hide();
 					$('#boxMessage').html('<div class="alert alert-success">\n\
@@ -789,7 +789,7 @@ $(document).ready(function(){
 					updateMultipleStocks(arrayItemsStocks, 'spaStock');
 					//$('#columnStateMovementIn').css('background-color','#54AA54');
 					//$('#columnStateMovementIn').text('Aprobado');
-					changeLabelDocumentState('APPROVED');
+					changeLabelDocumentState('APPROVED');//#UNICORN
 					
 					$('#btnApproveState').hide();
 					$('#btnCancellState').show();
@@ -850,7 +850,7 @@ $(document).ready(function(){
 					updateMultipleStocks(arrayItemsStocks, 'spaStock');
 					//$('#columnStateMovementIn').css('background-color','#54AA54');
 					//$('#columnStateMovementIn').text('Aprobado');
-					changeLabelDocumentState('APPROVED');
+					changeLabelDocumentState('APPROVED');//#UNICORN
 					
 					$('#btnApproveState').hide();
 					$('#btnCancellState').show();
@@ -907,7 +907,7 @@ $(document).ready(function(){
 					updateMultipleStocks(arrayItemsStocks, 'spaStock');
 					//$('#columnStateMovementIn').css('background-color','#BD362F');
 					//$('#columnStateMovementIn').text('Cancelado');
-					changeLabelDocumentState('CANCELLED');
+					changeLabelDocumentState('CANCELLED');//#UNICORN
 					
 					$('#btnCancellState').hide();
 					$('#boxMessage').html('<div class="alert alert-success">\n\
@@ -942,7 +942,7 @@ $(document).ready(function(){
 					updateMultipleStocks(arrayItemsStocks, 'spaStock');
 					//$('#columnStateMovementIn').css('background-color','#BD362F');
 					//$('#columnStateMovementIn').text('Cancelado');
-					changeLabelDocumentState('CANCELLED');
+					changeLabelDocumentState('CANCELLED');//#UNICORN
 					
 					$('#btnCancellState').hide();
 					$('#boxMessage').html('<div class="alert alert-success">\n\

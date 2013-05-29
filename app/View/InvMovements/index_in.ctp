@@ -8,6 +8,45 @@
 			?>
 <?php echo __(' Entradas al Almacen');?></h3>
 		
+		<!-- *********************************************** #UNICORN SEARCH WRAP ********************************************-->
+		<div class="widget-box">
+			<div class="widget-title">
+				<span class="icon">
+					<i class="icon-search"></i>
+				</span>
+				<h5>Filtro</h5>
+			</div>
+			<div class="widget-content nopadding">
+			<!-- ////////////////////////////////////////INCIO - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
+			<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-search', 'novalidate' => true));?>
+			<fieldset>
+						<?php
+						echo $this->BootstrapForm->input('code', array(				
+										//'label' => 'Codigo Entrada:',
+										'id'=>'txtCode',
+										'value'=>$code,
+										'placeholder'=>'Codigo Entrada'
+										));
+						?>
+						<?php
+						echo $this->BootstrapForm->input('document_code', array(				
+								'id'=>'txtCodeDocument',
+								'value'=>$document_code,
+								'placeholder'=>'Codigo Documento'
+								));
+						?>
+
+					<?php
+						echo $this->BootstrapForm->submit('<i class="icon-search icon-white"></i>',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSearch', 'title'=>'Buscar'));
+					?>
+
+			</fieldset>
+			<?php echo $this->BootstrapForm->end();?>
+			<!-- ////////////////////////////////////////FIN - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->		
+			</div>
+		</div>
+		<!-- *********************************************** #UNICORN SEARCH WRAP ********************************************-->
+
 		<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
 		<div class="widget-box">
 			<div class="widget-title">
@@ -19,32 +58,7 @@
 			<div class="widget-content nopadding">
 		<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
 		
-		<!-- ////////////////////////////////////////INCIO - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
-		<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-search', 'novalidate' => true));?>
-		<fieldset>
-					<?php
-					echo $this->BootstrapForm->input('code', array(				
-									//'label' => 'Codigo Entrada:',
-									'id'=>'txtCode',
-									'value'=>$code,
-									'placeholder'=>'Codigo Entrada'
-									));
-					?>
-					<?php
-					echo $this->BootstrapForm->input('document_code', array(				
-							'id'=>'txtCodeDocument',
-							'value'=>$document_code,
-							'placeholder'=>'Codigo Documento'
-							));
-					?>
-
-				<?php
-					echo $this->BootstrapForm->submit('<i class="icon-search icon-white"></i>',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSearch', 'title'=>'Buscar'));
-				?>
-				
-		</fieldset>
-		<?php echo $this->BootstrapForm->end();?>
-		<!-- ////////////////////////////////////////FIN - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->		
+		
 
 		<?php $cont = $this->BootstrapPaginator->counter('{:start}');?>
 		<table class="table table-striped table-bordered table-hover">

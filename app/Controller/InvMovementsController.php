@@ -211,7 +211,6 @@ class InvMovementsController extends AppController {
 		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
 	}
 	
-	
 	public function index_purchase_in(){
 	
 		///////////////////////////////////////START - CREATING VARIABLES//////////////////////////////////////
@@ -295,7 +294,6 @@ class InvMovementsController extends AppController {
 		$this->set('movements', $movements);
 		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
 	}
-	
 	
 	public function index_sale_out(){
 	
@@ -381,9 +379,7 @@ class InvMovementsController extends AppController {
 		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
 		 
 	}
-	
-	
-	
+		
 	///////////////////////////////////////////// END - INDEX ////////////////////////////////////////////////
 	
 	

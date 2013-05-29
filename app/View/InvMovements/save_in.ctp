@@ -1,4 +1,4 @@
-<?php echo $this->Html->script('modules/InvMovements', FALSE); ?> 
+<?php echo $this->Html->script('modules/InvMovements', FALSE); // AFTER #UNICORN IMPLEMENTATION?> 
 
 <!-- ************************************************************************************************************************ -->
 <div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
