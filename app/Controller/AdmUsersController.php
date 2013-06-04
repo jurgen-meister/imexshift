@@ -558,22 +558,51 @@ class AdmUsersController extends AppController {
 		$this->redirect($this->Auth->logout());
 	}
 	
-
-/**
- * view method
- *
- * @param string $id
- * @return void
- */
-	public function view($id = null) {
-		$this->AdmUser->id = $id;
-		if (!$this->AdmUser->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm user')));
+/////////////////////////////////////////////////////////////////////////////////////
+	
+	public  function ajax_generate_user_name(){
+		if($this->RequestHandler->isAjax()){
+			////////////////////////////////////////////START AJAX/////////////////////////////////////////////
+			return $this->_generate_user_name($this->request->data['first_name'], $this->request->data['last_name']);
+			////////////////////////////////////////////END AJAX///////////////////////////////////////////////
 		}
-		$this->set('admUser', $this->AdmUser->read(null, $id));
 	}
 
-/**
+	private function _generate_user_name($first_name, $last_name){
+		
+			$firstName = explode(' ',$first_name);
+			$lastName = explode(' ',$last_name);
+			
+			$userNameSimple = substr($firstName[0], 0, 1).$lastName[0];
+			$userNameFull = '';
+			if(isset($lastName[1]) && $lastName[1] <> ''){
+				$userNameFull = $userNameSimple.substr($lastName[1], 0, 1); 
+			}
+			
+			if($userNameFull == ''){
+				$userNameAux = $userNameSimple;
+			}else{
+				$userNameAux = $userNameFull;
+			}
+			
+			$founded = $this->AdmUser->find('count', array('conditions'=>array('AdmUser.login'=>$userNameAux)));
+			
+			if($founded > 0){
+				$arrAux = explode('_', $userNameAux);
+				if(isset($arrAux[1]) && $arrAux[1] <> ''){
+					$userName = $arrAux[0].'_'.($arrAux[1] + 1);
+				}else{
+					$userName = $arrAux[0];
+				}
+			}
+			return $userName;
+	}
+	
+	private function _generate_password($length=10){
+		return substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, $length);
+	}
+
+	/**
  * add method
  *
  * @return void
@@ -606,6 +635,35 @@ class AdmUsersController extends AppController {
 		$this->set(compact('admJobTitles'));
 	}
 
+	public function ajax_add_user_profile(){
+		if($this->RequestHandler->isAjax()){
+			////////////////////////////////////////////START AJAX///////////////////////////////////////////////
+			$AdmUser = array();
+			$AdmProfile = array();
+			
+			$AdmUser['AdmUser']['login'] = $this->request->data['login'];
+			$AdmUser['AdmUser']['password'] = $this->_generate_password(8);
+			$AdmUser['AdmUser']['active'] = 1;
+			$AdmUser['AdmUser']['active_date'] = $this->request->data['active_date'];
+			
+			$AdmProfile['AdmProfile']['first_name'] = $this->request->data['first_name'];	
+			$AdmProfile['AdmProfile']['last_name'] = $this->request->data['last_name'];	
+			$AdmProfile['AdmProfile']['birthdate'] = $this->request->data['birthdate'];
+			$AdmProfile['AdmProfile']['birthplace'] = $this->request->data['birthplace'];
+			$AdmProfile['AdmProfile']['identity_document'] = $this->request->data['identity_document'];
+			$AdmProfile['AdmProfile']['address'] = $this->request->data['address'];
+			$AdmProfile['AdmProfile']['email'] = $this->request->data['email'];
+			$AdmProfile['AdmProfile']['phone'] = $this->request->data['phone'];
+			$AdmProfile['AdmProfile']['job'] = $this->request->data['job'];
+			
+			$data = array($AdmUser, $AdmProfile);
+			
+			if($this->AdmUser->saveAssociated($data)){
+				echo 'inserted|'.$AdmUser['AdmUser']['password'];
+			}
+			////////////////////////////////////////////END AJAX///////////////////////////////////////////////
+		}
+	}
 /**
  * edit method
  *
@@ -684,3 +742,4 @@ class AdmUsersController extends AppController {
 		$this->redirect(array('action' => 'index'));
 	}
 }
+

@@ -1,11 +1,11 @@
 <?php
 App::uses('AppController', 'Controller');
 /**
- * AdmPeriods Controller
+ * AdmUserRestrictions Controller
  *
- * @property AdmPeriod $AdmPeriod
+ * @property AdmUserRestriction $AdmUserRestriction
  */
-class AdmPeriodsController extends AppController {
+class AdmUserRestrictionsController extends AppController {
 
 /**
  *  Layout
@@ -32,8 +32,8 @@ class AdmPeriodsController extends AppController {
  * @return void
  */
 	public function index() {
-		$this->AdmPeriod->recursive = 0;
-		$this->set('admPeriods', $this->paginate());
+		$this->AdmUserRestriction->recursive = 0;
+		$this->set('admUserRestrictions', $this->paginate());
 	}
 
 /**
@@ -43,11 +43,11 @@ class AdmPeriodsController extends AppController {
  * @return void
  */
 	public function view($id = null) {
-		$this->AdmPeriod->id = $id;
-		if (!$this->AdmPeriod->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm period')));
+		$this->AdmUserRestriction->id = $id;
+		if (!$this->AdmUserRestriction->exists()) {
+			throw new NotFoundException(__('Invalid %s', __('adm user restriction')));
 		}
-		$this->set('admPeriod', $this->AdmPeriod->read(null, $id));
+		$this->set('admUserRestriction', $this->AdmUserRestriction->read(null, $id));
 	}
 
 /**
@@ -57,10 +57,10 @@ class AdmPeriodsController extends AppController {
  */
 	public function add() {
 		if ($this->request->is('post')) {
-			$this->AdmPeriod->create();
-			if ($this->AdmPeriod->save($this->request->data)) {
+			$this->AdmUserRestriction->create();
+			if ($this->AdmUserRestriction->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('adm period')),
+					__('The %s has been saved', __('adm user restriction')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -70,7 +70,7 @@ class AdmPeriodsController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('adm period')),
+					__('The %s could not be saved. Please, try again.', __('adm user restriction')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -79,6 +79,10 @@ class AdmPeriodsController extends AppController {
 				);
 			}
 		}
+		$admUsers = $this->AdmUserRestriction->AdmUser->find('list');
+		$admRoles = $this->AdmUserRestriction->AdmRole->find('list');
+		$admAreas = $this->AdmUserRestriction->AdmArea->find('list');
+		$this->set(compact('admUsers', 'admRoles', 'admAreas'));
 	}
 
 /**
@@ -88,14 +92,14 @@ class AdmPeriodsController extends AppController {
  * @return void
  */
 	public function edit($id = null) {
-		$this->AdmPeriod->id = $id;
-		if (!$this->AdmPeriod->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm period')));
+		$this->AdmUserRestriction->id = $id;
+		if (!$this->AdmUserRestriction->exists()) {
+			throw new NotFoundException(__('Invalid %s', __('adm user restriction')));
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
-			if ($this->AdmPeriod->save($this->request->data)) {
+			if ($this->AdmUserRestriction->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('adm period')),
+					__('The %s has been saved', __('adm user restriction')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -105,7 +109,7 @@ class AdmPeriodsController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('adm period')),
+					__('The %s could not be saved. Please, try again.', __('adm user restriction')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -114,8 +118,12 @@ class AdmPeriodsController extends AppController {
 				);
 			}
 		} else {
-			$this->request->data = $this->AdmPeriod->read(null, $id);
+			$this->request->data = $this->AdmUserRestriction->read(null, $id);
 		}
+		$admUsers = $this->AdmUserRestriction->AdmUser->find('list');
+		$admRoles = $this->AdmUserRestriction->AdmRole->find('list');
+		$admAreas = $this->AdmUserRestriction->AdmArea->find('list');
+		$this->set(compact('admUsers', 'admRoles', 'admAreas'));
 	}
 
 /**
@@ -128,13 +136,13 @@ class AdmPeriodsController extends AppController {
 		if (!$this->request->is('post')) {
 			throw new MethodNotAllowedException();
 		}
-		$this->AdmPeriod->id = $id;
-		if (!$this->AdmPeriod->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm period')));
+		$this->AdmUserRestriction->id = $id;
+		if (!$this->AdmUserRestriction->exists()) {
+			throw new NotFoundException(__('Invalid %s', __('adm user restriction')));
 		}
-		if ($this->AdmPeriod->delete()) {
+		if ($this->AdmUserRestriction->delete()) {
 			$this->Session->setFlash(
-				__('The %s deleted', __('adm period')),
+				__('The %s deleted', __('adm user restriction')),
 				'alert',
 				array(
 					'plugin' => 'TwitterBootstrap',
@@ -144,7 +152,7 @@ class AdmPeriodsController extends AppController {
 			$this->redirect(array('action' => 'index'));
 		}
 		$this->Session->setFlash(
-			__('The %s was not deleted', __('adm period')),
+			__('The %s was not deleted', __('adm user restriction')),
 			'alert',
 			array(
 				'plugin' => 'TwitterBootstrap',

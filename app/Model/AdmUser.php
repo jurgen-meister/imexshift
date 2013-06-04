@@ -3,20 +3,12 @@ App::uses('AppModel', 'Model');
 /**
  * AdmUser Model
  *
- * @property AdmJobTitle $AdmJobTitle
  * @property AdmProfile $AdmProfile
- * @property AdmNodesRolesUser $AdmNodesRolesUser
+ * @property AdmLogin $AdmLogin
+ * @property AdmUserRestriction $AdmUserRestriction
  */
 class AdmUser extends AppModel {
 
-	
-	public function beforeSave($options = array()) {
-		if (isset($this->data[$this->alias]['password'])) {
-			$this->data[$this->alias]['password'] = AuthComponent::password($this->data[$this->alias]['password']);
-		}
-		return true;
-	}
-	
 /**
  * Validation rules
  *
@@ -43,9 +35,9 @@ class AdmUser extends AppModel {
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
-		'active_date' => array(
-			'datetime' => array(
-				'rule' => array('datetime'),
+		'active' => array(
+			'notempty' => array(
+				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
 				//'allowEmpty' => false,
 				//'required' => false,
@@ -53,8 +45,8 @@ class AdmUser extends AppModel {
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
-                'active_date' => array(
-			'datetime' => array(
+		'active_date' => array(
+			'notempty' => array(
 				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
 				//'allowEmpty' => false,
@@ -66,21 +58,6 @@ class AdmUser extends AppModel {
 	);
 
 	//The Associations below have been created with all possible keys, those that are not needed can be removed
-
-/**
- * belongsTo associations
- *
- * @var array
- */
-	public $belongsTo = array(
-		'AdmJobTitle' => array(
-			'className' => 'AdmJobTitle',
-			'foreignKey' => 'adm_job_title_id',
-			'conditions' => '',
-			'fields' => '',
-			'order' => ''
-		)
-	);
 
 /**
  * hasMany associations
@@ -101,8 +78,21 @@ class AdmUser extends AppModel {
 			'finderQuery' => '',
 			'counterQuery' => ''
 		),
-		'AdmNodesRolesUser' => array(
-			'className' => 'AdmNodesRolesUser',
+		'AdmLogin' => array(
+			'className' => 'AdmLogin',
+			'foreignKey' => 'adm_user_id',
+			'dependent' => false,
+			'conditions' => '',
+			'fields' => '',
+			'order' => '',
+			'limit' => '',
+			'offset' => '',
+			'exclusive' => '',
+			'finderQuery' => '',
+			'counterQuery' => ''
+		),
+		'AdmUserRestriction' => array(
+			'className' => 'AdmUserRestriction',
 			'foreignKey' => 'adm_user_id',
 			'dependent' => false,
 			'conditions' => '',

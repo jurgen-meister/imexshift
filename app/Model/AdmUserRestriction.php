@@ -1,15 +1,14 @@
 <?php
 App::uses('AppModel', 'Model');
 /**
- * AdmNodesRolesUser Model
+ * AdmUserRestriction Model
  *
  * @property AdmUser $AdmUser
  * @property AdmRole $AdmRole
- * @property AdmNode $AdmNode
+ * @property AdmArea $AdmArea
  */
-class AdmNodesRolesUser extends AppModel {
+class AdmUserRestriction extends AppModel {
 
-	
 /**
  * Validation rules
  *
@@ -17,8 +16,8 @@ class AdmNodesRolesUser extends AppModel {
  */
 	public $validate = array(
 		'adm_user_id' => array(
-			'numeric' => array(
-				'rule' => array('numeric'),
+			'notempty' => array(
+				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
 				//'allowEmpty' => false,
 				//'required' => false,
@@ -27,8 +26,8 @@ class AdmNodesRolesUser extends AppModel {
 			),
 		),
 		'adm_role_id' => array(
-			'numeric' => array(
-				'rule' => array('numeric'),
+			'notempty' => array(
+				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
 				//'allowEmpty' => false,
 				//'required' => false,
@@ -36,9 +35,9 @@ class AdmNodesRolesUser extends AppModel {
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
-		'adm_node_id' => array(
-			'numeric' => array(
-				'rule' => array('numeric'),
+		'adm_area_id' => array(
+			'notempty' => array(
+				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
 				//'allowEmpty' => false,
 				//'required' => false,
@@ -47,8 +46,8 @@ class AdmNodesRolesUser extends AppModel {
 			),
 		),
 		'active' => array(
-			'numeric' => array(
-				'rule' => array('numeric'),
+			'notempty' => array(
+				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
 				//'allowEmpty' => false,
 				//'required' => false,
@@ -57,8 +56,8 @@ class AdmNodesRolesUser extends AppModel {
 			),
 		),
 		'active_date' => array(
-			'datetime' => array(
-				'rule' => array('datetime'),
+			'notempty' => array(
+				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
 				//'allowEmpty' => false,
 				//'required' => false,
@@ -66,7 +65,16 @@ class AdmNodesRolesUser extends AppModel {
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
-		
+		'period' => array(
+			'notempty' => array(
+				'rule' => array('notempty'),
+				//'message' => 'Your custom message here',
+				//'allowEmpty' => false,
+				//'required' => false,
+				//'last' => false, // Stop validation after this rule
+				//'on' => 'create', // Limit validation to 'create' or 'update' operations
+			),
+		),
 	);
 
 	//The Associations below have been created with all possible keys, those that are not needed can be removed
@@ -91,13 +99,12 @@ class AdmNodesRolesUser extends AppModel {
 			'fields' => '',
 			'order' => ''
 		),
-		'AdmNode' => array(
-			'className' => 'AdmNode',
-			'foreignKey' => 'adm_node_id',
+		'AdmArea' => array(
+			'className' => 'AdmArea',
+			'foreignKey' => 'adm_area_id',
 			'conditions' => '',
 			'fields' => '',
 			'order' => ''
 		)
 	);
-	
 }

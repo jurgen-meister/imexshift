@@ -1,11 +1,11 @@
 <?php
 App::uses('AppController', 'Controller');
 /**
- * AdmPeriods Controller
+ * AdmLogins Controller
  *
- * @property AdmPeriod $AdmPeriod
+ * @property AdmLogin $AdmLogin
  */
-class AdmPeriodsController extends AppController {
+class AdmLoginsController extends AppController {
 
 /**
  *  Layout
@@ -32,8 +32,8 @@ class AdmPeriodsController extends AppController {
  * @return void
  */
 	public function index() {
-		$this->AdmPeriod->recursive = 0;
-		$this->set('admPeriods', $this->paginate());
+		$this->AdmLogin->recursive = 0;
+		$this->set('admLogins', $this->paginate());
 	}
 
 /**
@@ -43,11 +43,11 @@ class AdmPeriodsController extends AppController {
  * @return void
  */
 	public function view($id = null) {
-		$this->AdmPeriod->id = $id;
-		if (!$this->AdmPeriod->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm period')));
+		$this->AdmLogin->id = $id;
+		if (!$this->AdmLogin->exists()) {
+			throw new NotFoundException(__('Invalid %s', __('adm login')));
 		}
-		$this->set('admPeriod', $this->AdmPeriod->read(null, $id));
+		$this->set('admLogin', $this->AdmLogin->read(null, $id));
 	}
 
 /**
@@ -57,10 +57,10 @@ class AdmPeriodsController extends AppController {
  */
 	public function add() {
 		if ($this->request->is('post')) {
-			$this->AdmPeriod->create();
-			if ($this->AdmPeriod->save($this->request->data)) {
+			$this->AdmLogin->create();
+			if ($this->AdmLogin->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('adm period')),
+					__('The %s has been saved', __('adm login')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -70,7 +70,7 @@ class AdmPeriodsController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('adm period')),
+					__('The %s could not be saved. Please, try again.', __('adm login')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -79,6 +79,8 @@ class AdmPeriodsController extends AppController {
 				);
 			}
 		}
+		$admUsers = $this->AdmLogin->AdmUser->find('list');
+		$this->set(compact('admUsers'));
 	}
 
 /**
@@ -88,14 +90,14 @@ class AdmPeriodsController extends AppController {
  * @return void
  */
 	public function edit($id = null) {
-		$this->AdmPeriod->id = $id;
-		if (!$this->AdmPeriod->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm period')));
+		$this->AdmLogin->id = $id;
+		if (!$this->AdmLogin->exists()) {
+			throw new NotFoundException(__('Invalid %s', __('adm login')));
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
-			if ($this->AdmPeriod->save($this->request->data)) {
+			if ($this->AdmLogin->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('adm period')),
+					__('The %s has been saved', __('adm login')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -105,7 +107,7 @@ class AdmPeriodsController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('adm period')),
+					__('The %s could not be saved. Please, try again.', __('adm login')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -114,8 +116,10 @@ class AdmPeriodsController extends AppController {
 				);
 			}
 		} else {
-			$this->request->data = $this->AdmPeriod->read(null, $id);
+			$this->request->data = $this->AdmLogin->read(null, $id);
 		}
+		$admUsers = $this->AdmLogin->AdmUser->find('list');
+		$this->set(compact('admUsers'));
 	}
 
 /**
@@ -128,13 +132,13 @@ class AdmPeriodsController extends AppController {
 		if (!$this->request->is('post')) {
 			throw new MethodNotAllowedException();
 		}
-		$this->AdmPeriod->id = $id;
-		if (!$this->AdmPeriod->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm period')));
+		$this->AdmLogin->id = $id;
+		if (!$this->AdmLogin->exists()) {
+			throw new NotFoundException(__('Invalid %s', __('adm login')));
 		}
-		if ($this->AdmPeriod->delete()) {
+		if ($this->AdmLogin->delete()) {
 			$this->Session->setFlash(
-				__('The %s deleted', __('adm period')),
+				__('The %s deleted', __('adm login')),
 				'alert',
 				array(
 					'plugin' => 'TwitterBootstrap',
@@ -144,7 +148,7 @@ class AdmPeriodsController extends AppController {
 			$this->redirect(array('action' => 'index'));
 		}
 		$this->Session->setFlash(
-			__('The %s was not deleted', __('adm period')),
+			__('The %s was not deleted', __('adm login')),
 			'alert',
 			array(
 				'plugin' => 'TwitterBootstrap',
