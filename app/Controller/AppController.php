@@ -47,12 +47,12 @@ class AppController extends Controller {
 		'Auth'=>array(
 			'authenticate'=>array(
 				'Form'=>array(
-					'userModel'=>'AdmUser',
-					'fields'=>array('username'=>'login')
+					'userModel'=>'AdmUser'
+					,'fields'=>array('username'=>'login')
 				)
 			)
 			,'loginRedirect' => array('controller' => 'admUsers', 'action' => 'welcome')
-			,'logoutRedirect' => array('controller' => 'admUsers', 'action' => 'welcome')
+			,'logoutRedirect' => array('controller' => 'admUsers', 'action' => 'login')//this is used for login and logout
 			,'loginAction'=>array(
 				'controller' => 'admUsers',
 				'action' => 'login',
@@ -66,7 +66,8 @@ class AppController extends Controller {
 	public function beforeFilter() {
 			//$this->Auth->allow('index', 'view');
 			$this->set('logged_in', $this->Auth->loggedIn());
-			$this->set('current_user', $this->Auth->user());
+			//$this->set('current_user', $this->Auth->user()); //I store this inside a session
+			
 			//$this->set('menu', $this->Session->read('Role'));
 	}
 	

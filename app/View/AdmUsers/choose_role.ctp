@@ -1,0 +1,1 @@
+<?php debug($this->session->read('User.chooserole'));

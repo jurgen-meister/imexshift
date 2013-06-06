@@ -55,256 +55,144 @@ class AdmUsersController extends AppController {
 		$this->set('admUsers', $this->paginate());
 	}
 	
-	/* 
-	public function beforeFilter() {
-		parent::beforeFilter();
-		$this->Auth->allow('login'); // Por ahora no es necesario declare en AppController en loginAction ya que no es User por defecto sino AdmUser
-	}
-	*/
 	public function login() {
 		$this->layout = 'login';
 		if ($this->request->is('post')) {
-			//debug($this->Auth->login());
-			//var_dump($this->request->data);
 			if ($this->Auth->login()) { //If authentication is valid username and password
 							
-				/////////////////////BEGIN OF VALIDATION/////////////////////////
+			/////////////////////////////////////////////BEGIN OF VALIDATION///////////////////////////////////////////////////
 				$userInfo = $this->Auth->user();
 				$active=$userInfo['active'];
-				$activeDate = $this->AdmUser->find('count', array('conditions'=>array('AdmUser.active_date >' => date('Y-m-d H:i:s'), 'AdmUser.id'=>$userInfo['id']))); //se encarga la BD de hacer la comparacion sino mucho lio en vano
-				
-				$role = $this->AdmUser->AdmNodesRolesUser->find('count', array('conditions'=> array('AdmNodesRolesUser.adm_user_id'=>$userInfo['id'])));
-				$roleActive = $this->AdmUser->AdmNodesRolesUser->find('count', array('conditions'=> array('AdmNodesRolesUser.adm_user_id'=>$userInfo['id'], 'AdmNodesRolesUser.active'=>1)));
-				$roleActiveDate = $this->AdmUser->AdmNodesRolesUser->find('count', array('conditions'=> array('AdmNodesRolesUser.adm_user_id'=>$userInfo['id'], 'AdmNodesRolesUser.active_date >'=>date('Y-m-d H:i:s'))));;
-				$roleComplete = $this->AdmUser->AdmNodesRolesUser->find('count', array('conditions'=> array('AdmNodesRolesUser.adm_user_id'=>$userInfo['id'], 'AdmNodesRolesUser.active_date >'=>date('Y-m-d H:i:s'), 'AdmNodesRolesUser.active'=>1)));;
+				$activeDate = $this->AdmUser->find('count', array('conditions'=>array('AdmUser.active_date >' => date('Y-m-d H:i:s'), 'AdmUser.id'=>$userInfo['id']))); //The DB does the comparition between dates, it's simpler than creating a php function for this
+				$role = $this->AdmUser->AdmUserRestriction->find('count', array('conditions'=> array('AdmUserRestriction.adm_user_id'=>$userInfo['id'])));
+				$roleActive = $this->AdmUser->AdmUserRestriction->find('count', array('conditions'=> array('AdmUserRestriction.adm_user_id'=>$userInfo['id'], 'AdmUserRestriction.active'=>1, 'AdmUserRestriction.selected'=>1)));
+				$roleActiveDate = $this->AdmUser->AdmUserRestriction->find('count', array('conditions'=> array('AdmUserRestriction.adm_user_id'=>$userInfo['id'], 'AdmUserRestriction.active_date >'=>date('Y-m-d H:i:s'), 'AdmUserRestriction.selected'=>1)));;
 				$error=0;
 				
 				//User active
 				if($active != 1){
-					$this->Session->setFlash(
-							__('El usuario esta inactivo'),
-							'alert',
-							array(
-								'plugin' => 'TwitterBootstrap',
-								'class' => 'alert-error'
-							)
-					);
+					$this->_createMessage('El usuario esta inactivo');
+					$error++;
 					$this->redirect($this->Auth->logout());
-					$error++; 
 				}
 				
 				//User date active
 				if($activeDate == 0){
-					$this->Session->setFlash(__('El usuario expiró'),
-											'alert',
-											array(
-												'plugin' => 'TwitterBootstrap',
-												'class' => 'alert-error'
-											)	
-					);
-					$this->redirect($this->Auth->logout());
+					$this->_createMessage('El usuario expiró');
 					$error++;
+					$this->redirect($this->Auth->logout());
 				}
 				
 				//Roles Validation
 				if ($role == 0){//No roles found
-					$this->Session->setFlash(__('El usuario no tiene ningun rol asignado'),
-											'alert',
-											array(
-												'plugin' => 'TwitterBootstrap',
-												'class' => 'alert-error'
-											)	
-					);
-					$this->redirect($this->Auth->logout());
+					$this->_createMessage('El usuario no tiene ningun rol asignado');
 					$error++;
-				}elseif($role == 1){//One role found
-					if($roleActive == 0){
-						$this->Session->setFlash(__('El rol del usuario esta inactivo'),
-											'alert',
-											array(
-												'plugin' => 'TwitterBootstrap',
-												'class' => 'alert-error'
-											)	
-						);
-						$this->redirect($this->Auth->logout());
-						$error++;
-					}else{
-						if($roleActiveDate == 0){
-							$this->Session->setFlash(__('El rol del usuario expiró'),
-											'alert',
-											array(
-												'plugin' => 'TwitterBootstrap',
-												'class' => 'alert-error'
-											)	
-							);
-							$this->redirect($this->Auth->logout());
+					$this->redirect($this->Auth->logout());
+				}else{
+					if($roleActive == 0 OR $roleActiveDate == 0){
+						$otherRoles = $this->AdmUser->AdmUserRestriction->find('all', array(
+							'conditions'=> array('AdmUserRestriction.adm_user_id'=>$userInfo['id'],
+								'AdmUserRestriction.active_date >'=>date('Y-m-d H:i:s'),
+								'AdmUserRestriction.active'=>1)
+						));
+						if(count($otherRoles) > 0 ){
+							$this->Session->write('User.chooserole', $otherRoles);
 							$error++;
+							$this->redirect(array('action'=>'choose_role'));
 						}
-					}
-				}else{//More than one role found			
-					if($roleComplete == 0){//No complete role(active and active date), but I don't know which one is missing so..
-						//Must check FIRST if there is an active role THEN if there is an active date
-						if($roleActive == 0){//No active role
-							if($roleActiveDate > 0){//At least one of those roles has an active date						
-								$this->redirect(array('action' => 'choose_role')); //So the user can choose one in a view called "choose_role" and go on
-								$error++;
-							}else{
-								$this->Session->setFlash(__('Los roles de usuario estan inactivos y expiraron'),
-											'alert',
-											array(
-												'plugin' => 'TwitterBootstrap',
-												'class' => 'alert-error'
-											)	
-								);
-								$this->redirect($this->Auth->logout());
-								$error++;
-							}
-						}else{//one active role
-							if($roleActiveDate > 0){//At least one of those roles has an active date						
-								$this->redirect(array('action' => 'choose_role')); //So the user can choose one in a view called "choose_role" and go on
-								$error++;
-							}else{
-								$this->Session->setFlash(__('Los roles de usuario expiraron'),
-											'alert',
-											array(
-												'plugin' => 'TwitterBootstrap',
-												'class' => 'alert-error'
-											)	
-								);
-								$this->redirect($this->Auth->logout());
-								$error++;
-							}
+						if($roleActive == 0){
+							$this->_createMessage('El rol del usuario esta inactivo');
+							$error++;
+							$this->redirect($this->Auth->logout());
 						}
+						if($roleActiveDate == 0){
+							$this->_createMessage('El rol del usuario expiró');
+							$error++;
+							$this->redirect($this->Auth->logout());
+						}
+						
 					}
 				}
-				///////////////////////END OF VALIDATION/////////////////////////
-				if($error == 0){
-					////////Fill of sessions distinct to auth component users table
-					
-					$infoRole = $this->AdmUser->AdmNodesRolesUser->find('all', array('fields'=>array('AdmRole.name','AdmRole.id'),'conditions'=>array('AdmNodesRolesUser.adm_user_id'=>$userInfo['id'], 'AdmNodesRolesUser.active'=>1)));
-					
-					
-					$this->Session->write('Role.name', $infoRole[0]['AdmRole']['name']);
-					$this->Session->write('Role.id', $infoRole[0]['AdmRole']['id']);
-					$this->Session->write('Menu', $this->_createMenu($this->Session->read('Role.id')));
-					$this->Session->write('Period.year', $this->_findPeriod($userInfo['id'], $this->Session->read('Role.id')));
-					$this->_createPermissions($this->Session->read('Role.id'));
-					
-					
-					/*
-					$this->Session->write('Role.name', '<ul><li><a href="add">Haga click my friend</a></li></ul>');
-					$this->Session->write('Role.name2', '<ul><li><a href="/admin/admUsers/add">Haga click my friend2</a></li></ul>');
-					$this->Session->write('Role.name3', '<ul><li><a href="add">Haga click my friend3</a></li></ul>');
-					*/
-					//////////////////////////////////////////////////////////////////////////
-					
-					$this->redirect($this->Auth->redirect());//IN CASE OF NO ERRORS PROCEED TO LOGIN
-					
+			///////////////////////////////////////////////END OF VALIDATION////////////////////////////////////////////////////
+			
+			//////////////////////////////////////////////START - LOGIN /////////////////////////////////////////////////////////
+				if($error == 0){//if there is no error
+					$this->_createUserAccountSession($userInfo['id'], $userInfo['login']);
 				} 
+			//////////////////////////////////////////////END - LOGIN /////////////////////////////////////////////////////////		
 			} else {
-				$this->Session->setFlash(__('Usuario o contraseña incorrecta, intente de nuevo'),
-											'alert',
-											array(
-												'plugin' => 'TwitterBootstrap',
-												'class' => 'alert-error'
-											)	
-				);
+					$this->_createMessage('Usuario o contraseña incorrecta, intente de nuevo');
 			}
 		}
 	}
 	
+	
+	private function _createUserAccountSession($userId, $userName){
+		////////Fill of sessions distinct to auth component users table
+		$infoRole = $this->AdmUser->AdmUserRestriction->find('all', array(
+			'fields'=>array('AdmRole.name','AdmRole.id', 'AdmUserRestriction.period'/*, 'AdmUserRestriction.period'*/),
+			'conditions'=>array('AdmUserRestriction.adm_user_id'=>$userId, 'AdmUserRestriction.active'=>1, 'AdmUserRestriction.selected'=>1)
+		));
+		//$this->Session->write('UserRestriction.id', $infoRole[0]['AdmUserRestriction']['id']);  //in case there is no trigger postgres user integration, it will help
+		$this->Session->write('User.username', $userName);
+		$this->Session->write('Role.name', $infoRole[0]['AdmRole']['name']);
+		$this->Session->write('Role.id', $infoRole[0]['AdmRole']['id']);
+		$this->Session->write('Menu', $this->_createMenu($this->Session->read('Role.id')));
+		$this->Session->write('Period.name', $infoRole[0]['AdmUserRestriction']['period']);
+		$this->_createPermissions($this->Session->read('Role.id'));
+		//////////////////////////////////////////////////////////////////////////
+		if($this->AdmUser->AdmLogin->save(array('adm_user_id'=>$userId, 'creator'=>1))){
+			$this->redirect($this->Auth->redirect());//IN CASE OF NO ERRORS PROCEED TO LOGIN
+		}else{
+			$this->_createMessage('Ocurrio un problema vuelva a intentarlo');
+			$this->redirect($this->Auth->logout());
+		}
+	}
+
+	
 	public function choose_role(){
-		echo "Aqui va para elegir roles con fecha activa en caso de que un rol este inactivo y tenga otros roles";
+		//echo "Aqui va para elegir roles con fecha activa en caso de que un rol este inactivo y tenga otros roles";		
+	}
+	
+	private function _createMessage($message, $key = 'error'){
+		$this->Session->setFlash('<strong>'.$message.'</strong>',
+								 'alert',
+								 array('plugin' => 'TwitterBootstrap','class' => 'alert-'.$key)
+		);
 	}
 	
 	private function _createMenu($roleId){
 		$this->loadModel('AdmRolesMenu');
-		//$this->loadModel('AdmModule');
-		
-		
-		//$modules = $this->AdmModule->find('list');
-		
-		/*
-		$parents = array();
-		$cont = 0;
-		foreach ($modules as $key => $value) {
-			//$parents[$value] = $this->AdmRolesMenu->AdmMenu->find('all', array('fields'=>array('AdmMenu.id', 'AdmMenu.id') , 'order'=>array('AdmMenu.order_menu') ,'conditions'=>array("AdmMenu.parent_node"=>null, 'AdmMenu.adm_module_id'=>$key, 'AdmRolesMenu.adm_role_id'=>1)));
-			$children = $this->AdmRolesMenu->find('all', array('fields'=>array('AdmMenu.id', 'AdmMenu.name'),'conditions'=>array('AdmRolesMenu.adm_role_id'=>$roleId, 'AdmMenu.adm_module_id'=>$key, "AdmMenu.parent_node"=>null), 'order'=>array('AdmMenu.order_menu')));
-			if(count($children) > 0 ){ // to check if module is empty and exclude it
-			$parents[$value]= $children;
-			}
-			$cont++;
-		}
-		 * 
-		 */
 		$parents = $this->AdmRolesMenu->find('all', array(
 			'fields'=>array('AdmMenu.id', 'AdmMenu.name')
 			,'conditions'=>array('AdmRolesMenu.adm_role_id'=>$roleId, "AdmMenu.parent_node"=>null, 'AdmMenu.inside'=>null)
 			, 'order'=>array('AdmMenu.order_menu')
 		));
 		
-		
-		//debug($parents);
-		
 		/////////////////////////////////////////////////////////////////////
 		$str = '';
-		//$str.= '<ul>';
-		//foreach($parents as $key => $var){
-			//$str.='<li><a href="#">'.strtoupper($key).'</a>';
-			//////////////////////////////Parents
+			/////////////////////////////////////START - Parents///////////////////////////////////////////////////////
 				$str.='<ul>';
 				foreach ($parents as $key2 => $value2) {
 					$arrLinkContent = $this->_createLink($value2['AdmMenu']['id'], $value2['AdmMenu']['name'], 'SI');
 						if($arrLinkContent['idForLi'] <> ''){$idForLi = 'id="'.$arrLinkContent['idForLi'].'"';}else{$idForLi='';}
 							$str.='<li '.$idForLi.' class="submenu">'.$arrLinkContent['link'];//$value2['AdmMenu']['name'];
-					////////////////////////////////////Children 1
+					////////////////////////////////////START - Children 1////////////////////////////////////////////////
 					$str.='<ul>';
 						$children1 = $this->_findMenus($value2['AdmMenu']['id'], $roleId);
 						foreach ($children1 as $key3 => $value3) {
 							$arrLinkContent = $this->_createLink($key3, $value3, '');
 							if($arrLinkContent['idForLi'] <> ''){$idForLi = 'id="'.$arrLinkContent['idForLi'].'"';}else{$idForLi='';}
 							$str.='<li '.$idForLi.'>'.$arrLinkContent['link'];//$value3;
-								/*
-								////////////////////////////////////Children 2
-								$str.='<ul>';
-									$children2=$this->_findMenus($key3, $roleId);
-									foreach ($children2 as $key4 => $value4) {
-										$str.='<li>'.$this->_createLink($key4, $value4);//$value4;
-										////////////////////////////////////Children 3
-										$str.='<ul>';
-											$children3=$this->_findMenus($key4, $roleId);
-											foreach ($children3 as $key5 => $value5) {
-												$str.='<li>'.$this->_createLink($key5, $value5);//$value5;
-												////////////////////////////////////Children 4
-												$str.='<ul>';
-												$children4=$this->_findMenus($key5, $roleId);
-												foreach ($children4 as $key6 => $value6) {
-													$str.='<li>'.$this->_createLink($key6, $value6);//$value6;
-													$str.='</li>';
-												}
-												$str.='</ul>';
-												////////////////////////////////////Children 4
-												$str.='</li>';
-											}
-										$str.='</ul>';
-										////////////////////////////////////Children 3
-										$str.='</li>';
-									}
-								$str.='</ul>';
-								////////////////////////////////////Children 2
-								*/
+								//more children.....
 							$str.='</li>';
 						}
 					$str.='</ul>';
-					////////////////////////////////////Children 1
+					////////////////////////////////////END - Children 1////////////////////////////////////////////////
 					$str.='</li>';
 				}
 				$str.='</ul>';
-			//////////////////////////////Parents
-			//$str.='</li>';
-		//}
-		//$str.= '</ul>';
-		
+			//////////////////////////////////////END - Parents///////////////////////////////////////////////////////
 		return $str;
 	}
 	
@@ -480,81 +368,15 @@ class AdmUsersController extends AppController {
 		return $array;
 	}
 	
-	private function _findPeriod($user, $role){
-		$this->loadModel('AdmNodesRolesUser');	
-		$arrayNode = $this->AdmNodesRolesUser->find('all', array(
-			'conditions'=>array('AdmNodesRolesUser.adm_user_id'=>$user, 'AdmNodesRolesUser.adm_role_id'=>$role),
-			'fields'=>array('AdmNodesRolesUser.adm_node_id')
-		));
-		$nodeId = $arrayNode[0]['AdmNodesRolesUser']['adm_node_id'];
-		$this->loadModel('AdmNode');	
-		$arrayPeriod = $this->AdmNode->find('all', array(
-			'conditions'=>array('AdmNode.id'=>$nodeId)
-			,'fields'=>array('AdmPeriod.year')
-		));
-		$year = $arrayPeriod[0]['AdmPeriod']['year'];
-		return $year;
-	}
-	
+
 	public function welcome(){
 		
-		
-		//$this->_createPermissions($this->Session->read('Role.id'));
-		//debug($infoGestion = $this->AdmUser->AdmNodesRolesUser->AdmNode->AdmJobTitle->find('all')); //prueba para gestion
-		//$infoRole = $this->AdmUser->AdmNodesRolesUser->find('all', array('fields'=>array('AdmRole.name','AdmRole.id'),'conditions'=>array('AdmNodesRolesUser.adm_user_id'=>1, 'AdmNodesRolesUser.active'=>1)));
-		//debug($infoRole);
-		
-		//$prueba = $this->AdmUser->AdmJobTitle->AdmNode->find('all', array('conditions'=>array('AdmNodesRolesUser.'=>1)));
-		//debug($prueba);
-		
-		//$this->_createPermissions($this->Session->read('Role.id'));
-		/*
-		echo "aaaaaaaaa";
-		echo $this->name;
-		echo $this->Session->read('Permission.AdmModules.index');
-		*/
-		/*
-		$array=$this->Session->read('Permission.'.$this->name);
-		echo count($array);
-		debug($array);
-		if(count($array) > 0){
-			foreach ($array as $key => $value) {
-				echo $value;
-			}
-		}
-		*/
-		//$this->_createMenu();
-		/*
-		$this->loadModel('AdmRolesMenu');
-		$children = $this->AdmRolesMenu->find('all', array('fields'=>array('AdmMenu.id', 'AdmMenu.name'),'conditions'=>array('AdmRolesMenu.adm_role_id'=>1, "AdmMenu.parent_node"=>null), 'order'=>array('AdmMenu.order_menu')));
-		debug($children);
-		 */
-		//$userInfo = $this->Auth->user();
-		//debug($this->AdmUser->AdmNodesRolesUser->find('all', array('fields'=>array('AdmRole.name'/*, 'AdmNode.adm_period_id'*/),'conditions'=>array('AdmNodesRolesUser.adm_user_id'=>$userInfo['id'], 'AdmNodesRolesUser.active'=>1))));
-		/*
-		$this->loadModel('AdmRolesMenu');
-		$this->loadModel('AdmModule');
-		
-		$modules = $this->AdmModule->find('list');
-		
-		$parents = array();
-		$cont = 0;
-		foreach ($modules as $key => $value) {
-			//$parents[$value] = $this->AdmRolesMenu->AdmMenu->find('all', array('fields'=>array('AdmMenu.id', 'AdmMenu.id') , 'order'=>array('AdmMenu.order_menu') ,'conditions'=>array("AdmMenu.parent_node"=>null, 'AdmMenu.adm_module_id'=>$key, 'AdmRolesMenu.adm_role_id'=>1)));
-			$children = $this->AdmRolesMenu->find('all', array('fields'=>array('AdmMenu.id', 'AdmMenu.name'),'conditions'=>array('AdmRolesMenu.adm_role_id'=>1, 'AdmMenu.adm_module_id'=>$key, "AdmMenu.parent_node"=>null), 'order'=>array('AdmMenu.order_menu')));
-			if(count($children) > 0 ){ // to check if module is empty and exclude it
-			$parents[$value]= $children;
-			}
-			$cont++;
-		}
-		
-		debug($parents);
-		*/
 	}
 	
 
 	public function logout() {
 		$this->Session->destroy();
+		$this->_createMessage('La sesión termino!', 'info');
 		$this->redirect($this->Auth->logout());
 	}
 	
@@ -631,7 +453,7 @@ class AdmUsersController extends AppController {
 				);
 			}
 		}
-		$admJobTitles = $this->AdmUser->AdmJobTitle->find('list');
+		//$admJobTitles = $this->AdmUser->AdmJobTitle->find('list');
 		$this->set(compact('admJobTitles'));
 	}
 

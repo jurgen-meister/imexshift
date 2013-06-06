@@ -61,9 +61,9 @@
 	<div id="user-nav" class="navbar navbar-inverse">
 		<?php if($logged_in):?>
 			<ul class="nav btn-group">
-				<li class="btn btn-inverse"><a title="" href="#"><i class="icon icon-user"></i> <span class="text"><?php echo ' Usuario: '.$current_user['login'];?></span></a></li>
+				<li class="btn btn-inverse"><a title="" href="#"><i class="icon icon-user"></i> <span class="text"><?php echo ' Usuario: '.$this->session->read('User.username');?></span></a></li>
 				<li class="btn btn-inverse"><a title="" href="#"><i class="icon icon-briefcase"></i> <span class="text"><?php echo ' Rol: '.$this->Session->read('Role.name');?></span></a></li>
-				<li class="btn btn-inverse"><a title="" href="#"><i class="icon icon-time"></i> <span class="text"><?php echo ' Gestión: '.$this->Session->read('Period.year');?></span></a></li>
+				<li class="btn btn-inverse"><a title="" href="#"><i class="icon icon-time"></i> <span class="text"><?php echo ' Gestión: '.$this->Session->read('Period.name');?></span></a></li>
 				<!--<li class="btn btn-inverse dropdown" id="menu-messages"><a href="#" data-toggle="dropdown" data-target="#menu-messages" class="dropdown-toggle"><i class="icon icon-envelope"></i> <span class="text">Gestion 2013</span> <span class="label label-important">5</span> <b class="caret"></b></a>
 					<ul class="dropdown-menu">
 						<li><a class="sAdd" title="" href="#">Gestion 2012</a></li>
@@ -171,9 +171,10 @@
 				if($this->Session->flash('auth') <> ''){?>
 					<div class="alert alert-error">
 							<button class="close" data-dismiss="alert">×</button>
-							<strong>NO TIENE PERMISO!</strong>
+							<strong>NO TIENE PERMISO!</strong> Comuniquese con su administrador
 					</div>
 				<?php }
+				echo $this->Session->flash();  //to show setFlash messages
 				///////////////////////// END - Message not authorized, when there is no permission////////////
 				?>	
 				
@@ -184,6 +185,7 @@
 			<div class="row-fluid">
 				<div id="footer" class="span12">
 					<!--2013 &copy IMERPORT SRL-->
+					<?php echo $this->element('sql_dump'); ?>
 				</div>
 			</div>
 		</div>
@@ -227,6 +229,6 @@
 	echo $this->Html->script('bootstrap-datepicker'); //just for this project I gonna put the calendar here
 	?>
 	<?php echo $this->fetch('script'); //maybe not necessary?>
-	<?php //echo $this->element('sql_dump'); ?>
+	
 </body>
 </html>
