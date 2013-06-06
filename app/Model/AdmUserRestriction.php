@@ -107,4 +107,20 @@ class AdmUserRestriction extends AppModel {
 			'order' => ''
 		)
 	);
+	
+	public $hasMany = array(
+		'AdmUserLog' => array(
+			'className' => 'AdmUserLog',
+			'foreignKey' => 'adm_user_restriction_id',
+			'dependent' => false,
+			'conditions' => '',
+			'fields' => '',
+			'order' => '',
+			'limit' => '',
+			'offset' => '',
+			'exclusive' => '',
+			'finderQuery' => '',
+			'counterQuery' => ''
+		)
+	);
 }

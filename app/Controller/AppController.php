@@ -67,13 +67,13 @@ class AppController extends Controller {
 			//$this->Auth->allow('index', 'view');
 			$this->set('logged_in', $this->Auth->loggedIn());
 			//$this->set('current_user', $this->Auth->user()); //I store this inside a session
-			
 			//$this->set('menu', $this->Session->read('Role'));
 	}
 	
 	
 	public  function isAuthorized($user){
-		return true; //set to false to try de session auth message in default.ctp
+		return true; //when is true there aren't permissions
+		//return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name)); //it activates permission for all controllers
 	}
 
 }

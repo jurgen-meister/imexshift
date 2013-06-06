@@ -78,19 +78,6 @@ class AdmUser extends AppModel {
 			'finderQuery' => '',
 			'counterQuery' => ''
 		),
-		'AdmLogin' => array(
-			'className' => 'AdmLogin',
-			'foreignKey' => 'adm_user_id',
-			'dependent' => false,
-			'conditions' => '',
-			'fields' => '',
-			'order' => '',
-			'limit' => '',
-			'offset' => '',
-			'exclusive' => '',
-			'finderQuery' => '',
-			'counterQuery' => ''
-		),
 		'AdmUserRestriction' => array(
 			'className' => 'AdmUserRestriction',
 			'foreignKey' => 'adm_user_id',

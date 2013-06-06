@@ -1,11 +1,11 @@
 <?php
 App::uses('AppController', 'Controller');
 /**
- * AdmPermissions Controller
+ * AdmUserLogs Controller
  *
- * @property AdmPermission $AdmPermission
+ * @property AdmUserLog $AdmUserLog
  */
-class AdmPermissionsController extends AppController {
+class AdmUserLogsController extends AppController {
 
 /**
  *  Layout
@@ -32,8 +32,8 @@ class AdmPermissionsController extends AppController {
  * @return void
  */
 	public function index() {
-		$this->AdmPermission->recursive = 0;
-		$this->set('admPermissions', $this->paginate());
+		$this->AdmUserLog->recursive = 0;
+		$this->set('admUserLogs', $this->paginate());
 	}
 
 /**
@@ -43,11 +43,11 @@ class AdmPermissionsController extends AppController {
  * @return void
  */
 	public function view($id = null) {
-		$this->AdmPermission->id = $id;
-		if (!$this->AdmPermission->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm permission')));
+		$this->AdmUserLog->id = $id;
+		if (!$this->AdmUserLog->exists()) {
+			throw new NotFoundException(__('Invalid %s', __('adm user log')));
 		}
-		$this->set('admPermission', $this->AdmPermission->read(null, $id));
+		$this->set('admUserLog', $this->AdmUserLog->read(null, $id));
 	}
 
 /**
@@ -57,10 +57,10 @@ class AdmPermissionsController extends AppController {
  */
 	public function add() {
 		if ($this->request->is('post')) {
-			$this->AdmPermission->create();
-			if ($this->AdmPermission->save($this->request->data)) {
+			$this->AdmUserLog->create();
+			if ($this->AdmUserLog->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('adm permission')),
+					__('The %s has been saved', __('adm user log')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -70,7 +70,7 @@ class AdmPermissionsController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('adm permission')),
+					__('The %s could not be saved. Please, try again.', __('adm user log')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -79,9 +79,8 @@ class AdmPermissionsController extends AppController {
 				);
 			}
 		}
-		$admRoles = $this->AdmPermission->AdmRole->find('list');
-		$admActions = $this->AdmPermission->AdmAction->find('list');
-		$this->set(compact('admRoles', 'admActions'));
+		$admUserRestrictions = $this->AdmUserLog->AdmUserRestriction->find('list');
+		$this->set(compact('admUserRestrictions'));
 	}
 
 /**
@@ -91,14 +90,14 @@ class AdmPermissionsController extends AppController {
  * @return void
  */
 	public function edit($id = null) {
-		$this->AdmPermission->id = $id;
-		if (!$this->AdmPermission->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm permission')));
+		$this->AdmUserLog->id = $id;
+		if (!$this->AdmUserLog->exists()) {
+			throw new NotFoundException(__('Invalid %s', __('adm user log')));
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
-			if ($this->AdmPermission->save($this->request->data)) {
+			if ($this->AdmUserLog->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('adm permission')),
+					__('The %s has been saved', __('adm user log')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -108,7 +107,7 @@ class AdmPermissionsController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('adm permission')),
+					__('The %s could not be saved. Please, try again.', __('adm user log')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -117,11 +116,10 @@ class AdmPermissionsController extends AppController {
 				);
 			}
 		} else {
-			$this->request->data = $this->AdmPermission->read(null, $id);
+			$this->request->data = $this->AdmUserLog->read(null, $id);
 		}
-		$admRoles = $this->AdmPermission->AdmRole->find('list');
-		$admActions = $this->AdmPermission->AdmAction->find('list');
-		$this->set(compact('admRoles', 'admActions'));
+		$admUserRestrictions = $this->AdmUserLog->AdmUserRestriction->find('list');
+		$this->set(compact('admUserRestrictions'));
 	}
 
 /**
@@ -134,13 +132,13 @@ class AdmPermissionsController extends AppController {
 		if (!$this->request->is('post')) {
 			throw new MethodNotAllowedException();
 		}
-		$this->AdmPermission->id = $id;
-		if (!$this->AdmPermission->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm permission')));
+		$this->AdmUserLog->id = $id;
+		if (!$this->AdmUserLog->exists()) {
+			throw new NotFoundException(__('Invalid %s', __('adm user log')));
 		}
-		if ($this->AdmPermission->delete()) {
+		if ($this->AdmUserLog->delete()) {
 			$this->Session->setFlash(
-				__('The %s deleted', __('adm permission')),
+				__('The %s deleted', __('adm user log')),
 				'alert',
 				array(
 					'plugin' => 'TwitterBootstrap',
@@ -150,7 +148,7 @@ class AdmPermissionsController extends AppController {
 			$this->redirect(array('action' => 'index'));
 		}
 		$this->Session->setFlash(
-			__('The %s was not deleted', __('adm permission')),
+			__('The %s was not deleted', __('adm user log')),
 			'alert',
 			array(
 				'plugin' => 'TwitterBootstrap',

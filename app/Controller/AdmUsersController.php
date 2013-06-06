@@ -93,12 +93,26 @@ class AdmUsersController extends AppController {
 						$otherRoles = $this->AdmUser->AdmUserRestriction->find('all', array(
 							'conditions'=> array('AdmUserRestriction.adm_user_id'=>$userInfo['id'],
 								'AdmUserRestriction.active_date >'=>date('Y-m-d H:i:s'),
-								'AdmUserRestriction.active'=>1)
+								'AdmUserRestriction.active'=>1),
+							'fields'=>array('AdmUser.id', 'AdmUser.login', 'AdmRole.name', 'AdmUserRestriction.period'),
+							'order'=>array('AdmUserRestriction.adm_role_id', 'AdmUserRestriction.period')
 						));
 						if(count($otherRoles) > 0 ){
-							$this->Session->write('User.chooserole', $otherRoles);
-							$error++;
-							$this->redirect(array('action'=>'choose_role'));
+							$roleInactive = $this->AdmUser->AdmUserRestriction->find('all', array(
+								'conditions'=>array('AdmUserRestriction.selected'=>1, 'AdmUserRestriction.adm_user_id'=>$userInfo['id']),
+								'fields'=>array('AdmRole.name', 'AdmUserRestriction.period')
+								));
+							if(count($roleInactive) > 0){//if there is one role selected
+								$this->Session->write('RoleInactive.name', $roleInactive[0]['AdmRole']['name']);
+								$this->Session->write('PeriodInactive.name', $roleInactive[0]['AdmUserRestriction']['period']);
+								$this->Session->write('User.chooserole', $otherRoles);
+								$error++;
+								$this->redirect(array('action'=>'choose_role'));
+							}else{
+								$this->_createMessage('No hay ningun rol asignado a esta cuenta');
+								$error++;
+								$this->redirect($this->Auth->logout());
+							}
 						}
 						if($roleActive == 0){
 							$this->_createMessage('El rol del usuario esta inactivo');
@@ -127,21 +141,25 @@ class AdmUsersController extends AppController {
 	}
 	
 	
-	private function _createUserAccountSession($userId, $userName){
+	private function _createUserAccountSession($userId, $userName, $tipo = 'login'){
 		////////Fill of sessions distinct to auth component users table
 		$infoRole = $this->AdmUser->AdmUserRestriction->find('all', array(
-			'fields'=>array('AdmRole.name','AdmRole.id', 'AdmUserRestriction.period'/*, 'AdmUserRestriction.period'*/),
+			'fields'=>array('AdmRole.name','AdmRole.id', 'AdmUserRestriction.period', 'AdmUserRestriction.id'),
 			'conditions'=>array('AdmUserRestriction.adm_user_id'=>$userId, 'AdmUserRestriction.active'=>1, 'AdmUserRestriction.selected'=>1)
 		));
-		//$this->Session->write('UserRestriction.id', $infoRole[0]['AdmUserRestriction']['id']);  //in case there is no trigger postgres user integration, it will help
+		//debug($userId);
+		//debug($userName);
+		//debug($infoRole);
+		$this->Session->write('UserRestriction.id', $infoRole[0]['AdmUserRestriction']['id']);  //in case there is no trigger postgres user integration, it will help
 		$this->Session->write('User.username', $userName);
+		$this->Session->write('User.id', $userId);
 		$this->Session->write('Role.name', $infoRole[0]['AdmRole']['name']);
 		$this->Session->write('Role.id', $infoRole[0]['AdmRole']['id']);
 		$this->Session->write('Menu', $this->_createMenu($this->Session->read('Role.id')));
 		$this->Session->write('Period.name', $infoRole[0]['AdmUserRestriction']['period']);
 		$this->_createPermissions($this->Session->read('Role.id'));
 		//////////////////////////////////////////////////////////////////////////
-		if($this->AdmUser->AdmLogin->save(array('adm_user_id'=>$userId, 'creator'=>1))){
+		if($this->AdmUser->AdmUserRestriction->AdmUserLog->save(array('adm_user_restriction_id'=>$infoRole[0]['AdmUserRestriction']['id'], 'tipo'=>$tipo,'creator'=>1))){
 			$this->redirect($this->Auth->redirect());//IN CASE OF NO ERRORS PROCEED TO LOGIN
 		}else{
 			$this->_createMessage('Ocurrio un problema vuelva a intentarlo');
@@ -151,7 +169,28 @@ class AdmUsersController extends AppController {
 
 	
 	public function choose_role(){
-		//echo "Aqui va para elegir roles con fecha activa en caso de que un rol este inactivo y tenga otros roles";		
+		//echo "Aqui va para elegir roles con fecha activa en caso de que un rol este inactivo y tenga otros roles";
+		if ($this->request->is('post')) {
+			//debug($this->request->data);
+			$data = explode('-', $this->request->data['AdmUser']['userAccountSession']);
+			//debug($data[1]);
+			//debug($data[2]);
+			$this->_selectOtherRole($data[0], $data[1], $data[2]);
+		}
+	}
+	
+	private function _selectOtherRole($userRestrictionId, $userId, $userName){
+		if($this->AdmUser->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected'=>0), array('AdmUserRestriction.adm_user_id'=>$userId))){
+			if($this->AdmUser->AdmUserRestriction->save(array('id'=>$userRestrictionId, 'selected'=>1))){
+				$this->_createUserAccountSession($userId, $userName, 'login escogiendo rol');
+			}else{
+				$this->_createMessage('Ocurrio un error, comuniquese con su administrador para habilitar su cuenta');
+				$this->redirect($this->Auth->logout());
+			}	
+		}else{
+			$this->_createMessage('Ocurrio un error, vuelva a intentarlo');
+			$this->redirect($this->Auth->logout());
+		}
 	}
 	
 	private function _createMessage($message, $key = 'error'){
