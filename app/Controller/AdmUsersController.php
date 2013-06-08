@@ -59,8 +59,24 @@ class AdmUsersController extends AppController {
  * @return void
  */
 	public function index() {
-		$this->AdmUser->recursive = 0;
-		$this->set('admUsers', $this->paginate());
+		//$this->AdmUser->recursive = 0;
+		//$this->set('admUsers', $this->paginate());
+		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
+		$filters = '';
+		$this->paginate = array(
+			'conditions'=>array(
+				$filters
+			 ),
+			'recursive'=>0,
+			//'fields'=>array('InvMovement.id', 'InvMovement.code', 'InvMovement.document_code', 'InvMovement.date','InvMovement.inv_movement_type_id','InvMovementType.name', 'InvMovement.inv_warehouse_id', 'InvWarehouse.name', 'InvMovement.lc_state'),
+			'order'=> array('AdmUser.id'=>'desc'),
+			'limit' => 15,
+		);
+		////////////////////////////END - SETTING PAGINATING VARIABLES//////////////////////////////////////
+		
+		
+		////////////////////////START - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
+		$this->set('admUsers', $this->paginate('AdmUser'));
 	}
 	
 	public function login() {
@@ -452,11 +468,11 @@ class AdmUsersController extends AppController {
 			//debug($firstName);
 			$lastName = explode(' ',  strtolower($last_name));
 			//debug($lastName);
-			$userNameSimple = substr($firstName[0], 0, 1).$lastName[0];
+			$userNameSimple = substr(trim($firstName[0]), 0, 1).trim($lastName[0]);
 			//debug($userNameSimple);
 			$userNameFull = '';
 			if(isset($lastName[1]) && $lastName[1] <> ''){
-				$userNameFull = $userNameSimple.substr($lastName[1], 0, 1); 
+				$userNameFull = $userNameSimple.substr(trim($lastName[1]), 0, 1); 
 				//debug($userNameFull);
 			}
 			
@@ -486,47 +502,34 @@ class AdmUsersController extends AppController {
  *
  * @return void
  */
-	public function add() {
-		/*
-		if ($this->request->is('post')) {
-			$this->AdmUser->create();
-			if ($this->AdmUser->save($this->request->data)) {
-				$this->Session->setFlash(
-					__('The %s has been saved', __('adm user')),
-					'alert',
-					array(
-						'plugin' => 'TwitterBootstrap',
-						'class' => 'alert-success'
-					)
-				);
-				$this->redirect(array('action' => 'index'));
-			} else {
-				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('adm user')),
-					'alert',
-					array(
-						'plugin' => 'TwitterBootstrap',
-						'class' => 'alert-error'
-					)
-				);
-			}
-		}
-		//$admJobTitles = $this->AdmUser->AdmJobTitle->find('list');
-		$this->set(compact('admJobTitles'));*/
-		if ($this->request->is('post')) {
-		echo "igual hace submit";
-		
-		}
+	public function add(){
+		//everything is done with ajax thats why is empty
 	}
 
 	public function ajax_verify_unique_di_number(){
 		if($this->RequestHandler->isAjax()){
-			$di_number = $this->request->data['di_number'];
+			$diNumber = $this->request->data['diNumber'];
+			
 			$res = $this->AdmUser->AdmProfile->find('count', array(
-				'conditions'=>array('AdmProfile.di_number'=>$di_number),
+				'conditions'=>array('AdmProfile.di_number'=>$diNumber),
 				'recursive'=>-1
 				));
 			echo $res;
+		}
+	}
+	
+	public function ajax_reset_password(){
+		if($this->RequestHandler->isAjax()){
+			$idUser = $this->request->data['idUser'];
+			$password = $this->_generate_password(8);
+			$this->AdmUser->save(array('id'=>$idUser, 'password'=>$password));
+			$username = $this->AdmUser->find('list', array(
+				'conditions'=>array('AdmUser.id'=>$idUser),
+				'fields'=>array('AdmUser.id', 'AdmUser.login')
+				));
+			//debug(reset($username));
+			$this->Session->write('Temp.username', reset($username));
+			$this->Session->write('Temp.password', $password);
 		}
 	}
 	
@@ -536,53 +539,85 @@ class AdmUsersController extends AppController {
 			$AdmUser = array();
 			$AdmProfile = array();
 			
-			$username = $this->_generate_user_name($this->request->data['txtFirstName'], $this->request->data['txtLastName1'].' '.$this->request->data['txtLastName2']);
+			$username = $this->_generate_user_name(trim($this->request->data['txtFirstName']), str_replace(' ', '', $this->request->data['txtLastName1']).' '.str_replace(' ', '', $this->request->data['txtLastName2']));
 			$password = $this->_generate_password(8);
-			
 			$AdmUser['login'] = $username;
 			$AdmUser['password'] = $password;
 			$AdmUser['active'] = $this->request->data['cbxActive'];
 			$AdmUser['active_date'] = $this->request->data['txtActiveDate'];
 			$AdmUser['creator'] = $this->Session->read('UserRestriction.id');
 			
+			
 			$AdmProfile['di_number'] = $this->request->data['txtDiNumber'];
 			$AdmProfile['di_place'] = $this->request->data['txtDiPlace'];
-			$AdmProfile['first_name'] = $this->request->data['txtFirstName'];	
-			$AdmProfile['last_name'] = $this->request->data['txtLastName1'].' '.$this->request->data['txtLastName2'];	
+			$AdmProfile['first_name'] = trim($this->request->data['txtFirstName']);	
+			$AdmProfile['last_name1'] = trim($this->request->data['txtLastName1']);	
+			$AdmProfile['last_name2'] = trim($this->request->data['txtLastName2']);
 			$AdmProfile['email'] = $this->request->data['txtEmail'];
 			$AdmProfile['job'] = $this->request->data['txtJob'];
 			$AdmProfile['birthdate'] = $this->request->data['txtBirthdate'];
 			$AdmProfile['birthplace'] = $this->request->data['txtBirthplace'];
-			$AdmProfile['address'] = $this->request->data['txtAddress'];
-			$AdmProfile['phone'] = $this->request->data['txtPhone'];
+			if($this->request->data['txtAddress'] <> ''){
+				$AdmProfile['address'] = $this->request->data['txtAddress'];
+			}
+			if($this->request->data['txtPhone'] <> ''){
+				$AdmProfile['phone'] = $this->request->data['txtPhone'];
+			}
 			$AdmProfile['creator'] = $this->Session->read('UserRestriction.id');
+
 			
 			$data = array('AdmUser'=>$AdmUser, 'AdmProfile'=>$AdmProfile);
-			
-			
-			//debug($data);
-			
-			//try{
-				//if($this->AdmUser->saveAssociated($data)){
-				$this->AdmUser->saveAssociated($data);
+			if($this->AdmUser->saveAssociated($data)){
 				$this->Session->write('Temp.username', $username);
 				$this->Session->write('Temp.password', $password);
-					//echo 'inserted|'.$username.'|'.$password;
-				//}else{
-				//	echo "no guardo una mierda";
-				//}
-			/*	
-			}catch(Exception $e){
-				echo 'error';
+				echo 'success';
 			}
-			*/
-			//echo $data;
-			
-			//echo 'mierda';
-			//echo $username;
-			//echo $password;
 			
 			////////////////////////////////////////////END AJAX///////////////////////////////////////////////
+		}
+	}
+	
+	public function ajax_edit_user_profile(){
+		if($this->RequestHandler->isAjax()){
+			$AdmUser = array();
+			$AdmProfile = array();
+			$idUser = $this->request->data['idUser'];
+			$AdmUser['id']=$idUser;
+			$idProfile = $this->AdmUser->AdmProfile->find('list', array('conditions'=>array('AdmProfile.adm_user_id'=>$idUser)));
+			$AdmProfile['id']= reset($idProfile); //get first element value
+			
+			$AdmUser['active'] = $this->request->data['cbxActive'];
+			$AdmUser['active_date'] = $this->request->data['txtActiveDate'];
+			$AdmUser['creator'] = $this->Session->read('UserRestriction.id');
+			
+			$AdmProfile['di_number'] = $this->request->data['txtDiNumber'];
+			$AdmProfile['di_place'] = $this->request->data['txtDiPlace'];
+			$AdmProfile['first_name'] = trim($this->request->data['txtFirstName']);	
+			$AdmProfile['last_name1'] = trim($this->request->data['txtLastName1']);	
+			$AdmProfile['last_name2'] = trim($this->request->data['txtLastName2']);	
+			$AdmProfile['email'] = $this->request->data['txtEmail'];
+			$AdmProfile['job'] = $this->request->data['txtJob'];
+			$AdmProfile['birthdate'] = $this->request->data['txtBirthdate'];
+			$AdmProfile['birthplace'] = $this->request->data['txtBirthplace'];
+			if($this->request->data['txtAddress'] <> ''){
+				$AdmProfile['address'] = $this->request->data['txtAddress'];
+			}
+			if($this->request->data['txtPhone'] <> ''){
+				$AdmProfile['phone'] = $this->request->data['txtPhone'];
+			}
+			$AdmProfile['modifier'] = $this->Session->read('UserRestriction.id');
+			$AdmProfile['lc_state'] = 'MODIFY';
+			
+			$cont=0;
+			if($this->AdmUser->save($AdmUser)){
+				$cont++;
+			}
+			if($this->AdmUser->AdmProfile->save($AdmProfile)){
+				$cont++;
+			}
+			if($cont == 2){
+				echo 'success';
+			}
 		}
 	}
 	
@@ -604,40 +639,19 @@ class AdmUsersController extends AppController {
  * @param string $id
  * @return void
  */
-	public function edit($id = null) {
+	public function edit() {
+		$id = '';
+		if(isset($this->passedArgs['id'])){
+			$id = $this->passedArgs['id'];
+		}else{
+			$this->redirect(array('action'=>'index'));
+		}
 		$this->AdmUser->id = $id;
 		if (!$this->AdmUser->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm user')));
+			throw new NotFoundException(__('No existe'));
 		}
-		if ($this->request->is('post') || $this->request->is('put')) {
-            //$this->request->data['AdmUser']['modifier']=$this->Auth->user['id'];
-			$this->request->data['AdmUser']['lc_transaction']='MODIFY';
-			if ($this->AdmUser->save($this->request->data)) {
-				$this->Session->setFlash(
-					__('The %s has been saved', __('adm user')),
-					'alert',
-					array(
-						'plugin' => 'TwitterBootstrap',
-						'class' => 'alert-success'
-					)
-				);
-				$this->redirect(array('action' => 'index'));
-			} else {
-				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('adm user')),
-					'alert',
-					array(
-						'plugin' => 'TwitterBootstrap',
-						'class' => 'alert-error'
-					)
-				);
-			}
-		} else {
-			$this->request->data = $this->AdmUser->read(null, $id);
-			
-		}
-		$admJobTitles = $this->AdmUser->AdmJobTitle->find('list');
-		$this->set(compact('admJobTitles'));
+		$this->request->data = $this->AdmUser->read(null, $id);
+		$this->set('data', $this->request->data);
 	}
 
 /**
@@ -650,10 +664,12 @@ class AdmUsersController extends AppController {
 		if (!$this->request->is('post')) {
 			throw new MethodNotAllowedException();
 		}
-		$this->AdmUser->id = $id;
+		//$this->AdmUser->id = $id;
+		/*
 		if (!$this->AdmUser->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm user')));
-		}
+			throw new NotFoundException(__('Invalido'));
+		}*/
+		/*
 		if ($this->AdmUser->delete()) {
 			$this->Session->setFlash(
 				__('The %s deleted', __('adm user')),
@@ -664,7 +680,57 @@ class AdmUsersController extends AppController {
 				)
 			);
 			$this->redirect(array('action' => 'index'));
+		}*/
+		if ($this->AdmUser->AdmUserRestriction->find('count') > 0){
+			$this->Session->setFlash(
+				'No se puede eliminar este usuario, ya que tiene roles asignados!',
+				'alert',
+				array(
+					'plugin' => 'TwitterBootstrap',
+					'class' => 'alert-error'
+				)
+			);
+			$this->redirect(array('action' => 'index'));
 		}
+		
+		try{
+			$this->AdmUser->AdmProfile->deleteAll(array('AdmProfile.adm_user_id'=>$id));
+			try{
+				$this->AdmUser->deleteAll(array('AdmUser.id'=>$id));
+				$this->Session->setFlash(
+				'Eliminado con exito!',
+				'alert',
+				array(
+					'plugin' => 'TwitterBootstrap',
+					'class' => 'alert-success'
+				)
+				);
+				$this->redirect(array('action' => 'index'));
+			}catch(Exception $e){
+				$this->Session->setFlash(
+				'Ocurrio un problema, vuelva a intentarlo',
+				'alert',
+				array(
+					'plugin' => 'TwitterBootstrap',
+					'class' => 'alert-error'
+				)
+				);
+				$this->redirect(array('action' => 'index'));
+			}
+		}catch(Exception $e){
+			$this->Session->setFlash(
+			'Ocurrio un problema, vuelva a intentarlo',
+			'alert',
+			array(
+				'plugin' => 'TwitterBootstrap',
+				'class' => 'alert-error'
+			)
+			);
+			$this->redirect(array('action' => 'index'));
+		}
+		
+		
+		/*
 		$this->Session->setFlash(
 			__('The %s was not deleted', __('adm user')),
 			'alert',
@@ -674,6 +740,8 @@ class AdmUsersController extends AppController {
 			)
 		);
 		$this->redirect(array('action' => 'index'));
+		 * 
+		 */
 	}
 }
 

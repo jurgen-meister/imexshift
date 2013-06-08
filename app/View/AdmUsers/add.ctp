@@ -23,14 +23,16 @@
 	</div>
 	<div class="widget-content nopadding">
 		<?php
-		echo $this->BootstrapForm->create('AdmUser', array('class' => 'form-horizontal'));
+		echo $this->BootstrapForm->create('AdmUser', array('class' => 'form-horizontal', 'id'=>'AdmUserFormAdd'));
 				echo $this->BootstrapForm->input('di_number', array(
+					'required' => 'required',
 					'label' => '* Documento identidad:',
 					'id'=>'txtDiNumber',
 					'name'=>'txtDiNumber',
 					//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 				));
 				echo $this->BootstrapForm->input('di_place', array(
+					'required' => 'required',
 					'label' => '* Expedido:',
 					'id'=>'txtDiPlace',
 					'data-provide'=>'typeahead',
@@ -41,6 +43,7 @@
 				//	'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 				));
 				echo $this->BootstrapForm->input('first_name', array(
+					'required' => 'required',
 					'label' => '* Nombres:',
 					'id'=>'txtFirstName',
 					'name'=>'txtFirstName',
@@ -48,29 +51,22 @@
 						//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 				));
 				echo $this->BootstrapForm->input('last_name1', array(
+					'required' => 'required',
 					'label' => '* Apellido paterno:',
 					'id'=>'txtLastName1',
 					'name'=>'txtLastName1',
 						//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 				));
 				echo $this->BootstrapForm->input('last_name2', array(
+					'required' => 'required',
 					'label' => '* Apellido materno:',
 					'id'=>'txtLastName2',
 					'name'=>'txtLastName2',
 						//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 				));
-				/*
-				echo $this->BootstrapForm->input('login', array(
-					'required' => 'required',
-					'after'=>'<button type="button" class="btn btn-primary" id="generarUsuario">Generar</button>',
-					'id'=>'txtLogin',
-					'name'=>'txtLogin',
-					'label' => '* Usuario:',
-					'placeholder'=>'Puede crear su propio usuario o generarlo con el sistema',
-					//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
-				));
-				*/
+
 				echo $this->BootstrapForm->input('active', array(
+					'required' => 'required',
 					'label'=>'* Activo:',
 					'type'=>'select',
 					'options'=>array('1'=>'SI','0'=>'NO'),
@@ -81,6 +77,7 @@
 				));
 				
 				echo $this->BootstrapForm->input('active_date', array(
+					'required' => 'required',
 					'label'=>'* Fecha actividad:',
 					'type'=>'text',
 					'id'=>'txtActiveDate',
@@ -89,7 +86,7 @@
 				));
 				
 				echo $this->BootstrapForm->input('email', array(
-					//'required' => 'required',
+					'required' => 'required',
 					'id'=>'txtEmail',
 					'name'=>'txtEmail',
 					'label' => '* Correo electrónico:',
@@ -98,7 +95,7 @@
 				));
 				
 				echo $this->BootstrapForm->input('job', array(
-					//'required' => 'required',
+					'required' => 'required',
 					'label' => '* Cargo:',
 					'id'=>'txtJob',
 					'name'=>'txtJob',
@@ -108,6 +105,7 @@
 				));
 				
 				echo $this->BootstrapForm->input('birthdate', array(
+					'required' => 'required',
 					'id'=>'txtBirthdate',
 					'name'=>'txtBirthdate',
 					'label' => '* Fecha nacimiento:',
@@ -115,10 +113,11 @@
 				));
 				
 				echo $this->BootstrapForm->input('birthplace', array(
+					'required' => 'required',
 					'id'=>'txtBirthplace',
 					'name'=>'txtBirthplace',
 					'label' => '* Pais Origen:',
-					//'value'=>'Bolivia'
+					'value'=>'Bolivia'
 					//'placeholder'=>'Ciudad, Pais',
 				//	'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 				));
@@ -138,7 +137,9 @@
 				));
 	?>
 		<div class="form-actions" style="text-align: center">
-		<?php echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));?>
+		<?php echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));
+		echo ' '.$this->Html->link('Cancelar', array_merge(array('action'=>'index')), array('class'=>'btn') );
+		?>
 		</div>
 		<?php		echo $this->BootstrapForm->end();
 				?>
