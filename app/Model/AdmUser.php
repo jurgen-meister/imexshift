@@ -59,12 +59,19 @@ class AdmUser extends AppModel {
 
 	//The Associations below have been created with all possible keys, those that are not needed can be removed
 
+	public function beforeSave($options = array()) {
+        if (isset($this->data['AdmUser']['password'])) {
+            $this->data['AdmUser']['password'] = AuthComponent::password($this->data['AdmUser']['password']);
+        }
+        return true;
+    }
+	
 /**
  * hasMany associations
  *
  * @var array
  */
-	public $hasMany = array(
+	public $hasOne = array(
 		'AdmProfile' => array(
 			'className' => 'AdmProfile',
 			'foreignKey' => 'adm_user_id',
@@ -77,7 +84,10 @@ class AdmUser extends AppModel {
 			'exclusive' => '',
 			'finderQuery' => '',
 			'counterQuery' => ''
-		),
+		)
+	);
+	
+	public $hasMany = array(
 		'AdmUserRestriction' => array(
 			'className' => 'AdmUserRestriction',
 			'foreignKey' => 'adm_user_id',

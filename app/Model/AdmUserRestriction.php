@@ -107,7 +107,7 @@ class AdmUserRestriction extends AppModel {
 			'order' => ''
 		)
 	);
-	
+	/*
 	public $hasMany = array(
 		'AdmUserLog' => array(
 			'className' => 'AdmUserLog',
@@ -123,4 +123,6 @@ class AdmUserRestriction extends AppModel {
 			'counterQuery' => ''
 		)
 	);
+	 * 
+	 */
 }

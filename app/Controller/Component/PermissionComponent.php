@@ -20,9 +20,15 @@ class PermissionComponent extends Component{
 		}
 		$allowed = array_unique(array_merge($normalActions, $ajaxActions));
 		
-		//here must add login default action if it is controller AdmUsers, tomorrow
+		//To always allow login actions, otherwise it won't work
+		if($controllerName == 'AdmUsers'){
+			$allowed['welcome'] = 'welcome';
+			$allowed['login'] = 'login';
+			$allowed['logout'] = 'logout';
+			$allowed['choose_role'] = 'choose_role';
+		}
 		//debug($allowed);
-
+		
 		if(count($allowed)>0){
 			if(in_array($actionName, $allowed)){
 				return true;

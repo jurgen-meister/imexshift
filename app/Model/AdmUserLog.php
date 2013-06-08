@@ -15,6 +15,7 @@ class AdmUserLog extends AppModel {
  *
  * @var array
  */
+	/*
 	public $belongsTo = array(
 		'AdmUserRestriction' => array(
 			'className' => 'AdmUserRestriction',
@@ -24,4 +25,6 @@ class AdmUserLog extends AppModel {
 			'order' => ''
 		)
 	);
+	 * 
+	 */
 }
