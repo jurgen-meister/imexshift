@@ -179,6 +179,84 @@ $.validator.addMethod('diNumberUnique', function(value,element){
 	});
 
 
+// Form Validation Add UserRestriction
+    $("#AdmUserRestrictionFormAdd").validate({
+		onkeyup:false,
+		submitHandler: function(form) {
+            //Replace form submit for:
+				ajax_add_user_restrictions();
+        },
+		rules:{
+			cbxActive:{
+				required:true
+				//,date:true
+			},
+			txtActiveDate:{
+				required:true
+				//,date:true
+			},
+			cbxRoles:{
+				required:true
+				//,date:true
+			},
+			cbxPeriods:{
+				required:true
+				//,date:true
+			}
+		},
+		errorClass: "help-inline",
+		errorElement: "span",
+		highlight:function(element, errorClass, validClass) {
+			$(element).parents('.control-group').addClass('error');
+			$(element).parents('.control-group').removeClass('success');
+		},
+		unhighlight: function(element, errorClass, validClass) {
+			$(element).parents('.control-group').removeClass('error');
+			$(element).parents('.control-group').addClass('success');
+		}
+	});
+
+
+// Form Validation Edit UserRestriction
+    $("#AdmUserRestrictionFormEdit").validate({
+		onkeyup:false,
+		submitHandler: function(form) {
+            //Replace form submit for:
+				//ajax_add_user_restrictions();
+				ajax_edit_user_restrictions();
+        },
+		rules:{
+			cbxActive:{
+				required:true
+				//,date:true
+			},
+			txtActiveDate:{
+				required:true
+				//,date:true
+			},
+			cbxRoles:{
+				required:true
+				//,date:true
+			},
+			cbxPeriods:{
+				required:true
+				//,date:true
+			}
+		},
+		errorClass: "help-inline",
+		errorElement: "span",
+		highlight:function(element, errorClass, validClass) {
+			$(element).parents('.control-group').addClass('error');
+			$(element).parents('.control-group').removeClass('success');
+		},
+		unhighlight: function(element, errorClass, validClass) {
+			$(element).parents('.control-group').removeClass('error');
+			$(element).parents('.control-group').addClass('success');
+		}
+	});
+
+
+
 	function ajax_add_user_profile(){
 		$.ajax({
 			type:"POST",
@@ -290,14 +368,23 @@ $.validator.addMethod('diNumberUnique', function(value,element){
 			data:{
 					idUser:$('#txtIdHidden').val()
 			  },
-			success: function(data){			
-				$.gritter.add({
-					title:	'EXITO!',
-					text: 'Contraseña reseteada',
-					sticky: false,
-					image:'/imexport/img/check.png'
-				});	
-				open_in_new_tab(moduleController+'view_user_created.pdf');
+			success: function(data){
+				if(data=='success'){
+					$.gritter.add({
+						title:	'EXITO!',
+						text: 'Contraseña reseteada',
+						sticky: false,
+						image:'/imexport/img/check.png'
+					});	
+					open_in_new_tab(moduleController+'view_user_created.pdf');
+				}else{
+					$.gritter.add({
+						title:	'OCURRIO UN PROBLEMA!',
+						text:	'Vuelva a intentarlo',
+						sticky: false,
+						image:'/imexport/img/error.png'
+					});		
+				}
 			},
 			error:function(data){
 				$.gritter.add({
@@ -309,6 +396,117 @@ $.validator.addMethod('diNumberUnique', function(value,element){
 			}
 		});
    }
+   
+   function ajax_add_user_restrictions(){
+	   $.ajax({
+			type:"POST",
+			//async:false, // the key to open new windows when success
+			url:moduleController + "ajax_add_user_restrictions",
+			data:{
+					 period:$('#cbxPeriods').val()
+					,areaId:$('#cbxAreas').val()
+					,roleId:$('#cbxRoles').val()
+					,userId:$('#txtUserIdHidden').val()
+					,active:$('#cbxActive').val()
+					,activeDate:$('#txtActiveDate').val()
+					,selected:$('#cbxSelected').val()
+			  },
+			success: function(data){			
+				var arrayCatch = data.split('|');
+					if(arrayCatch[0] == 'success'){
+						$.gritter.add({
+						title:	'EXITO!',
+						text: 'Rol adicionado al Usuario',
+						sticky: false,
+						image:'/imexport/img/check.png'
+					});	
+				$('#cbxRoles option[value='+arrayCatch[1]+']').remove();
+				$('input').val('');
+				}else{
+					$.gritter.add({
+					title:	'OCURRIO UN PROBLEMA!',
+					text:	'Vuelva a intentarlo',
+					sticky: false,
+					image:'/imexport/img/error.png'
+				});		
+				}
+			},
+			error:function(data){
+				$.gritter.add({
+					title:	'OCURRIO UN PROBLEMA!',
+					text:	'Vuelva a intentarlo',
+					sticky: false,
+					image:'/imexport/img/error.png'
+				});		
+			}
+		});
+   }
+   
+   function ajax_edit_user_restrictions(){
+	   $.ajax({
+			type:"POST",
+			//async:false, // the key to open new windows when success
+			url:moduleController + "ajax_edit_user_restrictions",
+			data:{
+					 areaId:$('#cbxAreas').val()
+					,userRestrictionId:$('#txtIdUserRestrictionHidden').val()
+					,active:$('#cbxActive').val()
+					,activeDate:$('#txtActiveDate').val()
+				    ,selected:$('#cbxSelected').val()
+					,userId:$('#txtUserIdHidden').val()
+			  },
+			success: function(data){			
+					if(data == 'success'){
+						$.gritter.add({
+						title:	'EXITO!',
+						text: 'Cambios Guardados',
+						sticky: false,
+						image:'/imexport/img/check.png'
+					});	
+				}else{
+					$.gritter.add({
+					title:	'OCURRIO UN PROBLEMA!',
+					text:	'Vuelva a intentarlo',
+					sticky: false,
+					image:'/imexport/img/error.png'
+				});		
+				}
+			},
+			error:function(data){
+				$.gritter.add({
+					title:	'OCURRIO UN PROBLEMA!',
+					text:	'Vuelva a intentarlo',
+					sticky: false,
+					image:'/imexport/img/error.png'
+				});		
+			}
+		});
+   }
+   
+   function ajax_list_roles_areas(){
+	    $.ajax({ 
+            type:"POST",
+            url:moduleController + "ajax_list_roles_areas",			
+            data:{period: $("#cbxPeriods").val(), userId:$("#txtUserIdHidden").val()},
+            //beforeSend: showProcessing,
+            success: function(data){
+				 $("#boxRolesAreas").html(data);
+			},
+			error: function(data){
+				$.gritter.add({
+					title:	'OCURRIO UN PROBLEMA!',
+					text:	'Vuelva a intentarlo',
+					sticky: false,
+					image:'/imexport/img/error.png'
+				});		
+			}
+        });
+   }
+   
+   $('#cbxPeriods').change(function(){
+	  ajax_list_roles_areas();
+	  //alert('hola');
+   });
    
    function open_in_new_tab(url)
 	{

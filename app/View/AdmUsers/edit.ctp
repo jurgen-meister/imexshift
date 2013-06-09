@@ -1,4 +1,4 @@
-<?php echo $this->Html->script('modules/AdmUsers', FALSE);?>
+<?php echo $this->Html->script('modules/AdmUsersAdmin', FALSE);?>
 <?php //echo $this->Html->css('select2');?>
 <?php //echo $this->Html->css('uniform');?>
 

@@ -70,13 +70,140 @@ class AdmUsersController extends AppController {
 			'recursive'=>0,
 			//'fields'=>array('InvMovement.id', 'InvMovement.code', 'InvMovement.document_code', 'InvMovement.date','InvMovement.inv_movement_type_id','InvMovementType.name', 'InvMovement.inv_warehouse_id', 'InvWarehouse.name', 'InvMovement.lc_state'),
 			'order'=> array('AdmUser.id'=>'desc'),
-			'limit' => 15,
+			'limit' => 20,
 		);
 		////////////////////////////END - SETTING PAGINATING VARIABLES//////////////////////////////////////
 		
 		
 		////////////////////////START - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
 		$this->set('admUsers', $this->paginate('AdmUser'));
+	}
+	
+	public function add_user_restriction($id = null){
+		if($id == null){
+			$this->redirect(array('action'=>'index'));
+		}
+		$userInfo = $this->AdmUser->find('all', array(
+			'conditions'=>array('AdmUser.id'=>$id),
+			'fields'=>array('AdmUser.login'),
+			'recursive'=>-1
+		));
+		
+		$this->loadModel('AdmPeriod');
+		$periods = $this->AdmPeriod->find('list', array('fields'=>array('AdmPeriod.name','AdmPeriod.name')));
+		$periodInitial =  key($periods);
+		$areas = $this->AdmUser->AdmUserRestriction->AdmArea->find('list', array('conditions'=>array('AdmArea.period'=>$periodInitial)));
+		$rolesTaken = array();
+		$admUserRestriction = $this->AdmUser->AdmUserRestriction->find('all', array(
+				'conditions'=>array('AdmUserRestriction.adm_user_id'=>$id, 'AdmUserRestriction.period'=>$periodInitial),
+				'fields'=>array('AdmUserRestriction.adm_role_id')
+		));
+		//debug($admUserRestriction);
+		for($i=0; $i < count($admUserRestriction); $i++){
+				$rolesTaken[$admUserRestriction[$i]['AdmUserRestriction']['adm_role_id']] = $admUserRestriction[$i]['AdmUserRestriction']['adm_role_id'];
+		}
+		
+		$roles =$this->AdmUser->AdmUserRestriction->AdmRole->find('list',array(
+			'conditions'=>array('NOT'=>array('AdmRole.id'=>$rolesTaken))
+		));
+		
+		$this->set('username', $userInfo[0]['AdmUser']['login']);
+		$this->set('userId', $id);
+		$this->set('areas', $areas);
+		$this->set('roles',$roles);
+		$this->set('periods',$periods);
+	}
+	
+	
+	public function edit_user_restriction(){
+		
+		if(!isset($this->passedArgs['idUserRestriction'])){
+			$this->redirect(array('action'=>'index'));
+		}
+		 
+		//$id = $this->passedArgs['id'];
+		$idUserRestriction = $this->passedArgs['idUserRestriction'];
+		
+		$AdmUserRestriction = $this->AdmUser->AdmUserRestriction->find('all', array(
+			'conditions'=>array('AdmUserRestriction.id'=>$idUserRestriction),
+			'fields'=>array('AdmUserRestriction.selected','AdmUser.id','AdmUser.login','AdmUserRestriction.active_date','AdmUserRestriction.active','AdmUserRestriction.adm_role_id', 'AdmUserRestriction.adm_area_id', 'AdmUserRestriction.period'),
+		));
+		
+		$this->loadModel('AdmPeriod');
+		$periods = $this->AdmPeriod->find('list', array('fields'=>array('AdmPeriod.name','AdmPeriod.name')));
+		$roles =$this->AdmUser->AdmUserRestriction->AdmRole->find('list');
+		$areas = $this->AdmUser->AdmUserRestriction->AdmArea->find('list', array(
+			'conditions'=>array('AdmArea.period'=>$AdmUserRestriction[0]['AdmUserRestriction']['period'])
+		));
+		
+		$periodId = $AdmUserRestriction[0]['AdmUserRestriction']['period'];
+		$roleId = $AdmUserRestriction[0]['AdmUserRestriction']['adm_role_id'];
+		$areaId = $AdmUserRestriction[0]['AdmUserRestriction']['adm_area_id'];
+		$active = $AdmUserRestriction[0]['AdmUserRestriction']['active'];
+		$activeDate = date("d/m/Y", strtotime($AdmUserRestriction[0]['AdmUserRestriction']['active_date']));
+		$selected = $AdmUserRestriction[0]['AdmUserRestriction']['selected'];
+		
+		$this->set('username', $AdmUserRestriction[0]['AdmUser']['login']);
+		$this->set('userId', $AdmUserRestriction[0]['AdmUser']['id']);
+		$this->set('areas', $areas);
+		$this->set('roles',$roles);
+		$this->set('periods',$periods);
+		$this->set(compact('periodId', 'roleId', 'areaId', 'active', 'activeDate', 'idUserRestriction', 'selected'));
+	}
+	
+	public function ajax_list_roles_areas(){
+		if($this->RequestHandler->isAjax()){
+			////////////////////////////////////////////START AJAX/////////////////////////////////////////////
+			$period= $this->request->data['period'];
+			$userId= $this->request->data['userId'];
+			$rolesTaken = array();
+			
+			$areas = $this->AdmUser->AdmUserRestriction->AdmArea->find('list', array('conditions'=>array('AdmArea.period'=>$period)));
+			
+			$admUserRestriction = $this->AdmUser->AdmUserRestriction->find('all', array(
+				'conditions'=>array('AdmUserRestriction.adm_user_id'=>$userId, 'AdmUserRestriction.period'=>$period),
+				'fields'=>array('AdmUserRestriction.adm_role_id')
+			));
+			
+			for($i=0; $i < count($admUserRestriction); $i++){
+				$rolesTaken[$admUserRestriction[$i]['AdmUserRestriction']['adm_role_id']] = $admUserRestriction[$i]['AdmUserRestriction']['adm_role_id'];
+			}
+			
+			$roles =$this->AdmUser->AdmUserRestriction->AdmRole->find('list',array(
+				'conditions'=>array('NOT'=>array('AdmRole.id'=>$rolesTaken))
+			));
+			
+			$this->set('roles', $roles);
+			$this->set('areas', $areas);
+		}
+		////////////////////////////////////////////END AJAX///////////////////////////////////////////////
+	}
+	
+	public function index_user_restriction($id = null){
+		
+		if($id == null){
+			$this->redirect(array('action'=>'index'));
+		}
+		
+		$filters = array('AdmUserRestriction.adm_user_id'=>$id);
+		$this->paginate = array(
+			'conditions'=>array(
+				$filters
+			 ),
+			'recursive'=>0,
+			//'fields'=>array('InvMovement.id', 'InvMovement.code', 'InvMovement.document_code', 'InvMovement.date','InvMovement.inv_movement_type_id','InvMovementType.name', 'InvMovement.inv_warehouse_id', 'InvWarehouse.name', 'InvMovement.lc_state'),
+			'order'=> array('AdmUserRestriction.id'=>'desc'),
+			'limit' => 15,
+		);
+		//debug($this->paginate('AdmUserRestriction'));
+		$userInfo = $this->AdmUser->find('all', array(
+			'conditions'=>array('AdmUser.id'=>$id),
+			'fields'=>array('AdmUser.login'),
+			'recursive'=>-1
+		));
+		$this->set('userId', $id);
+		$this->set('username', $userInfo[0]['AdmUser']['login']);
+		$this->set('admUsers', $this->paginate('AdmUserRestriction'));
 	}
 	
 	public function login() {
@@ -530,9 +657,56 @@ class AdmUsersController extends AppController {
 			//debug(reset($username));
 			$this->Session->write('Temp.username', reset($username));
 			$this->Session->write('Temp.password', $password);
+			echo 'success';
 		}
 	}
 	
+	public function ajax_add_user_restrictions(){
+		if($this->RequestHandler->isAjax()){
+			$AdmUserRestriction['adm_role_id'] = $this->request->data['roleId'];
+			$AdmUserRestriction['adm_area_id'] = $this->request->data['areaId'];
+			$AdmUserRestriction['adm_user_id'] = $this->request->data['userId'];
+			$AdmUserRestriction['period'] = $this->request->data['period'];
+			$AdmUserRestriction['active'] = $this->request->data['active'];
+			$AdmUserRestriction['active_date'] = $this->request->data['activeDate'];
+			$AdmUserRestriction['creator'] = $this->Session->read('UserRestriction.id');
+			$selected = $this->request->data['selected'];;
+			if($selected == 0){
+				$AdmUserRestriction['selected'] = 0;
+			}else{
+				$this->AdmUser->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected'=>0), array('AdmUserRestriction.adm_user_id'=>$this->request->data['userId']));
+				$AdmUserRestriction['selected'] = 1;
+			}
+			 
+			if($this->AdmUser->AdmUserRestriction->save($AdmUserRestriction)){
+				echo 'success|'.$this->request->data['roleId'];
+			}
+		}
+	}
+
+	public function ajax_edit_user_restrictions(){
+		if($this->RequestHandler->isAjax()){
+			$AdmUserRestriction['id'] = $this->request->data['userRestrictionId'];
+			$AdmUserRestriction['adm_area_id'] = $this->request->data['areaId'];
+			$AdmUserRestriction['active'] = $this->request->data['active'];
+			$AdmUserRestriction['active_date'] = $this->request->data['activeDate'];
+			$AdmUserRestriction['modifier'] = $this->Session->read('UserRestriction.id');
+			$AdmUserRestriction['lc_transaction'] = 'MODIFY';
+			
+			$selected = $this->request->data['selected'];;
+			if($selected == 0){
+				$AdmUserRestriction['selected'] = 0;
+			}else{
+				$this->AdmUser->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected'=>0), array('AdmUserRestriction.adm_user_id'=>$this->request->data['userId']));
+				$AdmUserRestriction['selected'] = 1;
+			}
+			
+			if($this->AdmUser->AdmUserRestriction->save($AdmUserRestriction)){
+				echo 'success';
+			}
+		}
+	}
+
 	public function ajax_add_user_profile(){
 		if($this->RequestHandler->isAjax()){
 			////////////////////////////////////////////START AJAX///////////////////////////////////////////////
@@ -606,7 +780,7 @@ class AdmUsersController extends AppController {
 				$AdmProfile['phone'] = $this->request->data['txtPhone'];
 			}
 			$AdmProfile['modifier'] = $this->Session->read('UserRestriction.id');
-			$AdmProfile['lc_state'] = 'MODIFY';
+			$AdmProfile['lc_transaction'] = 'MODIFY';
 			
 			$cont=0;
 			if($this->AdmUser->save($AdmUser)){
@@ -683,7 +857,7 @@ class AdmUsersController extends AppController {
 		}*/
 		if ($this->AdmUser->AdmUserRestriction->find('count') > 0){
 			$this->Session->setFlash(
-				'No se puede eliminar este usuario, ya que tiene roles asignados!',
+				'No se puede eliminar este Usuario, ya que tiene Roles asignados!',
 				'alert',
 				array(
 					'plugin' => 'TwitterBootstrap',

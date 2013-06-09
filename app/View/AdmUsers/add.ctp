@@ -1,4 +1,4 @@
-<?php echo $this->Html->script('modules/AdmUsers', FALSE);?>
+<?php echo $this->Html->script('modules/AdmUsersAdmin', FALSE);?>
 <?php //echo $this->Html->css('select2');?>
 <?php //echo $this->Html->css('uniform');?>
 
@@ -35,6 +35,7 @@
 					'required' => 'required',
 					'label' => '* Expedido:',
 					'id'=>'txtDiPlace',
+					'autocomplete'=>'off',
 					'data-provide'=>'typeahead',
 					'data-items'=>4,
 					'data-source'=>'["La Paz", "Cochabamba", "Santa Cruz", "Oruro", "Tarija", "Pando", "Beni", "Potosi", "Chuquisaca"]',
