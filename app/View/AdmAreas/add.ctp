@@ -1,52 +1,50 @@
-<div class="row-fluid">
-	<div class="span9">
+<?php echo $this->Html->script('modules/AdmAreas', FALSE);?>
+<!-- ************************************************************************************************************************ -->
+<div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
+<!-- ************************************************************************************************************************ -->
+<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 1/2 *************************************** -->
+<div class="widget-box">
+	<div class="widget-title">
+		<span class="icon">
+			<i class="icon-edit"></i>								
+		</span>
+		<h5>Crear area de la empresa</h5>
+	</div>
+	<div class="widget-content nopadding">
 		<?php echo $this->BootstrapForm->create('AdmArea', array('class' => 'form-horizontal'));?>
-			<fieldset>
-				<legend><?php echo __('Add %s', __('Adm Area')); ?></legend>
 				<?php
+				echo $this->BootstrapForm->input('adm_period_id', array(
+					'required' => 'required',
+					'name'=>'AdmArea[period]',
+					'label'=>'* Periodo:',
+					'id'=>'cbxPeriods'
+				));
 				echo $this->BootstrapForm->input('name', array(
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('parent_node', array(
+					'label'=>'* Nombre:'
+				));
+				echo'<div id="boxParentAreas">';
+				echo $this->BootstrapForm->input('parent_area_id', array(
+					'name'=>'AdmArea[parent_area]',
+					'id'=>'cbxParent',
+					'label'=>'* Padre:',
+					'default'=>0,
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('period', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('lc_state', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('lc_transaction', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('creator', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('date_created', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('modifier');
-				echo $this->BootstrapForm->input('date_modified');
+				));				
+				echo '</div>';
 				?>
-				<?php echo $this->BootstrapForm->submit(__('Submit'));?>
-			</fieldset>
-		<?php echo $this->BootstrapForm->end();?>
-	</div>
-	<div class="span3">
-		<div class="well" style="padding: 8px 0; margin-top:8px;">
-		<ul class="nav nav-list">
-			<li class="nav-header"><?php echo __('Actions'); ?></li>
-			<li><?php echo $this->Html->link(__('List %s', __('Adm Areas')), array('action' => 'index'));?></li>
-			<li><?php echo $this->Html->link(__('List %s', __('Adm User Restrictions')), array('controller' => 'adm_user_restrictions', 'action' => 'index')); ?></li>
-			<li><?php echo $this->Html->link(__('New %s', __('Adm User Restriction')), array('controller' => 'adm_user_restrictions', 'action' => 'add')); ?></li>
-		</ul>
+		<div class="form-actions" style="text-align: center">
+				<?php echo $this->BootstrapForm->submit(__('Crear nueva area'), array('div'=>false, 'class'=>'btn-primary'));?>
+				<?php echo ' '.$this->Html->link('Cancelar', array_merge(array('action'=>'index')), array('class'=>'btn') );?>
 		</div>
-	</div>
+		<?php	echo $this->BootstrapForm->end();?>
+<!-- //******************************** END - #UNICORN  WRAP FORM BOX PART 1/2 *************************************** -->	
+	
+	
+
+<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
+	</div> <!-- Belongs to: <div class="widget-content nopadding"> -->
+</div> <!-- Belongs to: <div class="widget-box"> -->
+<!-- //******************************** END - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
 </div>
+
