@@ -19,7 +19,7 @@
 				echo $this->BootstrapForm->input('userId', array(
 					//'required' => 'required',
 					'label'=>'idUser:',
-					'type'=>'text',
+					'type'=>'hidden',
 					'id'=>'txtUserIdHidden',
 					'name'=>'txtUserIdHidden',
 					'value'=>$userId

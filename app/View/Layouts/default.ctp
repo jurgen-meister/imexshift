@@ -75,7 +75,7 @@
 				if($this->Session->flash('auth') <> ''){?>
 					<div class="alert alert-error">
 							<button class="close" data-dismiss="alert">×</button>
-							<strong>NO TIENE PERMISO!</strong> Comuniquese con su administrador
+							<strong>ACCESO DENEGADO!</strong> No tiene permiso.
 					</div>
 				<?php }
 				echo $this->Session->flash();  //to show setFlash messages

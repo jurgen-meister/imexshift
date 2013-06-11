@@ -1,42 +1,52 @@
-<div class="row-fluid">
-	<div class="span9">
+<?php echo $this->Html->script('modules/AdmPeriods', FALSE);?>
+<!-- ************************************************************************************************************************ -->
+<div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
+<!-- ************************************************************************************************************************ -->
+<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 1/2 *************************************** -->
+<div class="widget-box">
+	<div class="widget-title">
+		<span class="icon">
+			<i class="icon-edit"></i>								
+		</span>
+		<h5>Registro de Usuario</h5>
+	</div>
+	<div class="widget-content nopadding">
 		<?php echo $this->BootstrapForm->create('AdmPeriod', array('class' => 'form-horizontal'));?>
-			<fieldset>
-				<legend><?php echo __('Add %s', __('Adm Period')); ?></legend>
 				<?php
-				echo $this->BootstrapForm->input('lc_state', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('lc_transaction', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('creator', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('date_created', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('modifier');
-				echo $this->BootstrapForm->input('date_modified');
 				echo $this->BootstrapForm->input('name', array(
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
+					'label'=>'Gestión',
+					'value'=>$newPeriod,
+					'id'=>'txtPeriod',
+					'readonly'=>'readonly',
+				));
 				?>
-				<?php echo $this->BootstrapForm->submit(__('Submit'));?>
-			</fieldset>
-		<?php echo $this->BootstrapForm->end();?>
-	</div>
-	<div class="span3">
-		<div class="well" style="padding: 8px 0; margin-top:8px;">
-		<ul class="nav nav-list">
-			<li class="nav-header"><?php echo __('Actions'); ?></li>
-			<li><?php echo $this->Html->link(__('List %s', __('Adm Periods')), array('action' => 'index'));?></li>
-		</ul>
+		<div class="form-actions" style="text-align: center">
+				<a href="#myAlert" data-toggle="modal" class="btn btn-primary">Crear nueva gestión</a>
+				<?php echo ' '.$this->Html->link('Cancelar', array_merge(array('action'=>'index')), array('class'=>'btn') );?>
 		</div>
+		<?php	echo $this->BootstrapForm->end();?>
+<!-- //******************************** END - #UNICORN  WRAP FORM BOX PART 1/2 *************************************** -->	
+	
+	
+
+<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
+	</div> <!-- Belongs to: <div class="widget-content nopadding"> -->
+</div> <!-- Belongs to: <div class="widget-box"> -->
+<!-- //******************************** END - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
+</div>
+
+<!-- ****************************************************** Modal Alert**************************************************************** -->
+<div id="myAlert" class="modal hide">
+	<div class="modal-header">
+		<button data-dismiss="modal" class="close" type="button">×</button>
+		<h3>Crear nueva gestión</h3>
+	</div>
+	<div class="modal-body">
+		<p>Se creará la gestión <span id="spaPeriod"><?php echo $newPeriod;?></span>, una vez creada no se podra eliminar ¿está seguro?</p>
+	</div>
+	<div class="modal-footer">
+		<a data-dismiss="modal" class="btn btn-primary" id="btnYes" href="#">SI</a>
+		<a data-dismiss="modal" class="btn" href="#">NO</a>
 	</div>
 </div>

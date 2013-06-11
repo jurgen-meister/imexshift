@@ -30,4 +30,54 @@ class AdmPeriod extends AppModel {
 			),
 		),
 	);
+	
+	
+	
+	public function saveNewPeriod($lastPeriod, $newPeriod, $creator){
+		$dataSource = $this->getDataSource();
+		$dataSource->begin();
+		////////////////////////////////////////////////
+		$error = 0;
+		if($this->save(array('name'=>$newPeriod, 'creator'=> $creator))){
+			ClassRegistry::init('AdmArea');
+			$AdmArea = new AdmArea();
+			$dataAreaUserRestriction = $AdmArea->find('all', array(
+				'conditions'=>array('AdmArea.period'=>$lastPeriod),
+				'fields'=>array('AdmArea.name', 'AdmArea.parent_node', 'AdmArea.period')
+			));
+			for($i=0; $i < count($dataAreaUserRestriction); $i++){
+				unset($dataAreaUserRestriction[$i]['AdmArea']['id']);
+				$dataAreaUserRestriction[$i]['AdmArea']['creator']=$creator;
+				$dataAreaUserRestriction[$i]['AdmArea']['period']=$newPeriod;
+				for($j=0; $j < count($dataAreaUserRestriction[$i]['AdmUserRestriction']); $j++){
+					unset($dataAreaUserRestriction[$i]['AdmUserRestriction'][$j]['id']);
+					unset($dataAreaUserRestriction[$i]['AdmUserRestriction'][$j]['adm_area_id']);
+					unset($dataAreaUserRestriction[$i]['AdmUserRestriction'][$j]['period']);
+					unset($dataAreaUserRestriction[$i]['AdmUserRestriction'][$j]['lc_state']);
+					unset($dataAreaUserRestriction[$i]['AdmUserRestriction'][$j]['lc_transaction']);
+					unset($dataAreaUserRestriction[$i]['AdmUserRestriction'][$j]['creator']);//
+					unset($dataAreaUserRestriction[$i]['AdmUserRestriction'][$j]['date_created']);
+					unset($dataAreaUserRestriction[$i]['AdmUserRestriction'][$j]['modifier']);
+					unset($dataAreaUserRestriction[$i]['AdmUserRestriction'][$j]['date_modified']);
+					$dataAreaUserRestriction[$i]['AdmUserRestriction'][$j]['creator'] = $creator;
+					$dataAreaUserRestriction[$i]['AdmUserRestriction'][$j]['selected'] = 0;
+					$dataAreaUserRestriction[$i]['AdmUserRestriction'][$j]['active_date'] = $newPeriod.'-12-30 00:00:00';
+					$dataAreaUserRestriction[$i]['AdmUserRestriction'][$j]['period'] = $newPeriod;
+				}
+				if(!$AdmArea->saveAssociated($dataAreaUserRestriction[$i], array('deep' => true, 'atomic'=>false))){//it works without specifying deep and atomic, but I put it anyway, just in case
+					$error++;
+				}
+			}
+			
+			if($error == 0){
+				$dataSource->commit();
+			}
+		}
+		///////////////////////////////////////////////
+		$dataSource->rollback();
+	}
+	
+	
+	
+//END MODEL	
 }

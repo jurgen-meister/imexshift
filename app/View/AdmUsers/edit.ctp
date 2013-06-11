@@ -194,7 +194,7 @@
 </div> <!-- Belongs to: <div class="widget-box"> -->
 <!-- //******************************** END - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
 
-
+<!-- ****************************************************** Modal Alert**************************************************************** -->
 <div id="myAlert" class="modal hide">
 	<div class="modal-header">
 		<button data-dismiss="modal" class="close" type="button">×</button>

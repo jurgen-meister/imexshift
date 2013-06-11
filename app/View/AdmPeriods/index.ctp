@@ -1,50 +1,42 @@
-<div class="row-fluid">
-	<div class="span9">
-		<h2><?php echo __('List %s', __('Adm Periods'));?></h2>
+<!-- ************************************************************************************************************************ -->
+<div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
+<!-- ************************************************************************************************************************ -->
+<h3>
+<?php
+echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' => 'add'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo')); 
+?>
+<?php echo __(' Gestiones');?></h3>
 
-		<p>
-			<?php echo $this->BootstrapPaginator->counter(array('format' => __('Page {:page} of {:pages}, showing {:current} records out of {:count} total, starting on record {:start}, ending on {:end}')));?>
-		</p>
-
-		<table class="table">
+		<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
+		<div class="widget-box">
+			<div class="widget-title">
+				<span class="icon">
+					<i class="icon-th"></i>
+				</span>
+				<h5><?php echo $this->BootstrapPaginator->counter(array('format' => __('Página {:page} de {:pages}, mostrando {:current} de un total de {:count} registros')));?></h5>
+			</div>
+			<div class="widget-content nopadding">
+		<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
+		
+		<?php $cont = $this->BootstrapPaginator->counter('{:start}');?>
+		<table class="table table-striped table-bordered table-hover">
 			<tr>
-				<th><?php echo $this->BootstrapPaginator->sort('id');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('lc_state');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('lc_transaction');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('creator');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('date_created');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('modifier');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('date_modified');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('name');?></th>
-				<th class="actions"><?php echo __('Actions');?></th>
+				<th><?php echo '#';?></th>
+				<th><?php echo 'Gestión';?></th>
 			</tr>
 		<?php foreach ($admPeriods as $admPeriod): ?>
 			<tr>
-				<td><?php echo h($admPeriod['AdmPeriod']['id']); ?>&nbsp;</td>
-				<td><?php echo h($admPeriod['AdmPeriod']['lc_state']); ?>&nbsp;</td>
-				<td><?php echo h($admPeriod['AdmPeriod']['lc_transaction']); ?>&nbsp;</td>
-				<td><?php echo h($admPeriod['AdmPeriod']['creator']); ?>&nbsp;</td>
-				<td><?php echo h($admPeriod['AdmPeriod']['date_created']); ?>&nbsp;</td>
-				<td><?php echo h($admPeriod['AdmPeriod']['modifier']); ?>&nbsp;</td>
-				<td><?php echo h($admPeriod['AdmPeriod']['date_modified']); ?>&nbsp;</td>
-				<td><?php echo h($admPeriod['AdmPeriod']['name']); ?>&nbsp;</td>
-				<td class="actions">
-					<?php echo $this->Html->link(__('View'), array('action' => 'view', $admPeriod['AdmPeriod']['id'])); ?>
-					<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $admPeriod['AdmPeriod']['id'])); ?>
-					<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $admPeriod['AdmPeriod']['id']), null, __('Are you sure you want to delete # %s?', $admPeriod['AdmPeriod']['id'])); ?>
-				</td>
+				<td style="text-align: center"><?php echo $cont++; ?>&nbsp;</td>
+				<td style="text-align: center"><?php echo h($admPeriod['AdmPeriod']['name']); ?>&nbsp;</td>
 			</tr>
 		<?php endforeach; ?>
 		</table>
 
-		<?php echo $this->BootstrapPaginator->pagination(); ?>
-	</div>
-	<div class="span3">
-		<div class="well" style="padding: 8px 0; margin-top:8px;">
-		<ul class="nav nav-list">
-			<li class="nav-header"><?php echo __('Actions'); ?></li>
-			<li><?php echo $this->Html->link(__('New %s', __('Adm Period')), array('action' => 'add')); ?></li>
-		</ul>
+		<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
 		</div>
 	</div>
-</div>
+	<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
+		<?php echo $this->BootstrapPaginator->pagination(); ?>
+<!-- ************************************************************************************************************************ -->
+</div><!-- FIN CONTAINER FLUID/ROW FLUID/SPAN12 - Del Template Principal #UNICORN
+<!-- ************************************************************************************************************************ -->
