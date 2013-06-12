@@ -26,11 +26,11 @@ class AdmModulesController extends AppController {
  * @var array
  */
 //	public $components = array('Session');
-
+/*
 	public  function isAuthorized($user){
 		return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
 	}
-	
+*/	
 /**
  * index method
  *

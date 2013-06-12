@@ -14,7 +14,7 @@ function ajax_add_period(){
             success: function(data){			
 				var arrayCatch = data.split('|');
 				if(arrayCatch[0] == 'success'){
-						$.gritter.add({
+					$.gritter.add({
 						title:	'EXITO!',
 						text: 'Nueva gestión creada',
 						sticky: false,
@@ -28,7 +28,7 @@ function ajax_add_period(){
 					text:	'Vuelva a intentarlo',
 					sticky: false,
 					image:'/imexport/img/error.png'
-				});		
+					});		
 				}
 			},
 			error:function(data){

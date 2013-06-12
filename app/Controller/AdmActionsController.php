@@ -28,16 +28,16 @@ class AdmActionsController extends AppController {
 //	public $components = array('RequestHandler','Session');
 	
 	
-	public  function isAuthorized($user){
+	//public  function isAuthorized($user){
 		/*
 		if(!$this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name))){
 			$this->redirect($this->Auth->logout());
 		}
 		return true;
 		 */
-		return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
+	//	return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
 
-	}
+//	}
 	
 	
 	

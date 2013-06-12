@@ -27,11 +27,11 @@ class AdmControllersController extends AppController {
  * @var array
  */
 	//public $components = array('RequestHandler','Session');  // lo puse en appController para que lo usen todos
-
+/*
 	public  function isAuthorized($user){
 		return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
 	}
-	
+*/	
 /**
  * index method
  *

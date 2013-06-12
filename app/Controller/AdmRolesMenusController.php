@@ -36,10 +36,11 @@ class AdmRolesMenusController extends AppController {
  * @var array
  */
 //	public $components = array('Session');
-	
+	/*
 	public  function isAuthorized($user){
 		return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
 	}
+	 */
 /**
  * index method
  *
@@ -320,6 +321,7 @@ class AdmRolesMenusController extends AppController {
 					foreach($insert as $var){
 						$miData[$cont]['adm_role_id'] = $role;
 						$miData[$cont]['adm_menu_id'] = $var;
+						//$miData[$cont]['creator'] = $this->Session->read('UserRestriction.id');
 						$cont++;
 					}
 					//debug($miData);
@@ -368,7 +370,7 @@ class AdmRolesMenusController extends AppController {
 				foreach ($menus as $key2 => $value2) {
 					if(count($value2['AdmMenu']) > 0){
 						if($value2['AdmMenu'][0]['inside'] == 1){
-							$menusCheckBoxes[$key1][$value2['AdmMenu'][0]['id']]=$value2['AdmMenu'][0]['name'];
+							$menusCheckBoxes[$key1][$value2['AdmMenu'][0]['id']]=$value2['AdmAction']['name']; //$value2['AdmMenu'][0]['name']
 							$auxMenus[$cont] = $value2['AdmMenu'][0]['id'];
 						}
 						$cont++;

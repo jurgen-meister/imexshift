@@ -18,6 +18,9 @@ class PermissionComponent extends Component{
 				}
 			}
 		}
+		if(count($normalActions) == 0){
+			return false;
+		}
 		$allowed = array_unique(array_merge($normalActions, $ajaxActions));
 		
 		//To always allow login actions, otherwise it won't work

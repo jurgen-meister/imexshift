@@ -8,7 +8,7 @@
 		<span class="icon">
 			<i class="icon-edit"></i>								
 		</span>
-		<h5>Registro de Usuario</h5>
+		<h5>Crear nuevo periodo</h5>
 	</div>
 	<div class="widget-content nopadding">
 		<?php echo $this->BootstrapForm->create('AdmPeriod', array('class' => 'form-horizontal'));?>

@@ -38,7 +38,7 @@ echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' =>
 					$url['action'] = 'edit';
 					//$parameters['id']=$admArea['AdmArea']['id'];
 					echo $this->Html->link('<i class="icon-pencil icon-white"></i>'.__(''),  array_merge($url,array($admArea['AdmArea']['id'])), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Editar')); 
-					echo ' '.$this->Form->postLink('<i class="icon-trash icon-white"></i>', array('action' => 'delete', $admArea['AdmArea']['id']), array('class'=>'btn btn-danger', 'escape'=>false, 'title'=>'Eliminar'), __('¿Esta seguro de borrar este usuario?', $admArea['AdmArea']['id']));
+					echo ' '.$this->Form->postLink('<i class="icon-trash icon-white"></i>', array('action' => 'delete', $admArea['AdmArea']['id']), array('class'=>'btn btn-danger', 'escape'=>false, 'title'=>'Eliminar'), __('¿Esta seguro de borrar esta area', $admArea['AdmArea']['id']));
 					?>
 				</td>
 			</tr>

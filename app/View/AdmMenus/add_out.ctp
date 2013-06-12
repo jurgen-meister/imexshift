@@ -1,3 +1,4 @@
+<?php echo $this->Html->script('modules/AdmMenus', FALSE); ?>
 <!-- ************************************************************************************************************************ -->
 <div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
 <!-- ************************************************************************************************************************ -->
@@ -7,42 +8,36 @@
 		<span class="icon">
 			<i class="icon-edit"></i>								
 		</span>
-		<h5>Editar menu/permiso interno</h5>
+		<h5>Crear menu/permiso externo</h5>
 	</div>
 	<div class="widget-content nopadding">
 		<?php echo $this->BootstrapForm->create('AdmMenu', array('class' => 'form-horizontal'));?>
 			<fieldset>
 				<?php
 				echo $this->BootstrapForm->input('adm_module_id', array(
-					'label'=>'Modulo'
+					'label'=>'* Modulo'
 					,'id'=>'modules'
-					,'disabled'=>'true'
-				));
-				echo $this->BootstrapForm->input('adm_action_id', array(
-					'label'=>'Control->Acción'
-					,'disabled'=>'true'
 				));
 				echo $this->BootstrapForm->input('name', array(
-					'label'=>'Nombre menu',
+					'label'=>'* Nombre menu',
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;'
 				));
-				echo $this->BootstrapForm->hidden('id');
-				echo $this->BootstrapForm->input( 'module', array( 
-					'value' => $module  , 'name'=>'AdmMenu[adm_module_id]'
-					,'type' => 'hidden'
-					) 
-					
-				);
-				echo $this->BootstrapForm->input( 'action', array( 
-					'value' => $action  , 'name'=>'AdmMenu[adm_action_id]'
-					,'type' => 'hidden'
-					) 
-				);
+				echo $this->BootstrapForm->input('order_menu', array(
+					'label'=>'* Orden menu',
+					'default'=>0,
+					'required' => 'required',
+				));
+				echo '<div id="boxActions">';
+				echo $this->BootstrapForm->input('adm_action_id', array('default'=>0, 'label'=>'* Control->Acción'
+				));
+				echo $this->BootstrapForm->input('adm_menu_id', array('label'=>'* Padre', 'default'=>0
+				,'name'=>'AdmMenu[parent_node]'	
+				));
+				echo '</div>';
 				?>
 				<div class="form-actions" style="text-align: center">
-					<?php echo $this->BootstrapForm->submit(__('Guardar cambios'), array('div'=>false, 'class'=>'btn-primary'));?>
-					<?php echo ' '.$this->Html->link('Cancelar', array('action'=>'index_inside'), array('class'=>'btn') );?>
+					<?php echo $this->BootstrapForm->submit(__('Crear menu'), array('div'=>false, 'class'=>'btn-primary'));?>
+					<?php echo ' '.$this->Html->link('Cancelar', array('action'=>'index_out'), array('class'=>'btn') );?>
 				</div>
 			</fieldset>
 		<?php echo $this->BootstrapForm->end();?>

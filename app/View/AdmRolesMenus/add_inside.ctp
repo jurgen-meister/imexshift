@@ -1,11 +1,22 @@
 <?php  
 //use this old version for compatibility "add action" older version array set even empty, new version not set if empty. Share action save
-echo $this->Html->script('checkboxtree/jquery-1.4.4', FALSE);
+//echo $this->Html->script('checkboxtree/jquery-1.4.4', FALSE);
 ?>
 <?php echo $this->Html->script('modules/AdmRolesMenus', FALSE); ?>
-<div class="row-fluid">
-	<div class="span9">
-		<h2><?php echo __('Asignar roles menus internos');?></h2>
+<!-- ************************************************************************************************************************ -->
+<div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
+<!-- ************************************************************************************************************************ -->
+<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 1/2 *************************************** -->
+<div class="widget-box">
+	<div class="widget-title">
+		<span class="icon">
+			<i class="icon-edit"></i>								
+		</span>
+		<h5>Asignar Roles Menus/Permisos Internos</h5>
+	</div>
+	<div class="widget-content nopadding">
+		<?php echo $this->BootstrapForm->create('AdmRolesMenu', array('class' => 'form-horizontal'));?>
+			<fieldset>
 		<?php
 		echo $this->BootstrapForm->input('adm_role_id', array(
 					'id'=>'roles_inside'
@@ -18,7 +29,8 @@ echo $this->Html->script('checkboxtree/jquery-1.4.4', FALSE);
 			//'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;'
 		));
 		?>
-		<button type="submit" class="btn" id="saveButton">Guardar</button>
+					</fieldset>
+		<?php echo $this->BootstrapForm->end();?>
 		<div id="message" style="text-align: center;"></div>
 		<div id="processing" style="text-align: center;"></div>
 
@@ -29,15 +41,15 @@ echo $this->Html->script('checkboxtree/jquery-1.4.4', FALSE);
 					<tr>
 						<th>#</th>
 						<th>Controlador</th>
-						<th>Menus internos</th>
+						<th>Menus/Permisos Internos</th>
 					</tr>
 			<?php foreach ($controllers as $key => $controller): ?>
 				<tr>
-					<td width="5%"><?php echo $cont;?></td>
-					<td width="25%"><?php echo $controller; ?>&nbsp;</td>
-					<td width="70%">
+					<td><?php echo $cont;?></td>
+					<td><?php echo $controller; ?>&nbsp;</td>
+					<td>
 						<?php 				
-						echo $this->Form->input('nose]', array(
+						echo $this->BootstrapForm->input('chkMenus', array(
 							'label' => '',
 							'type' => 'select',
 							'multiple' => 'checkbox inline',
@@ -52,9 +64,14 @@ echo $this->Html->script('checkboxtree/jquery-1.4.4', FALSE);
 			
 		</div>
 		</table>
-		
-	</div>
+		</div>
+	
+		<div class="form-actions" style="text-align: center">
+		<button type="submit" class="btn btn-primary" id="saveButton">Guardar Cambios</button>
+		</div>
+			<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
+	</div> <!-- Belongs to: <div class="widget-content nopadding"> -->
+</div> <!-- Belongs to: <div class="widget-box"> -->
+<!-- //******************************** END - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
 </div>
-
-
 
