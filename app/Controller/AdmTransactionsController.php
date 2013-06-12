@@ -12,7 +12,7 @@ class AdmTransactionsController extends AppController {
  *
  * @var string
  */
-	public $layout = 'default';
+//	public $layout = 'default';
 
 /**
  * Helpers
@@ -26,9 +26,11 @@ class AdmTransactionsController extends AppController {
  * @var array
  */
 	//public $components = array('Session');
+	/*
 	public  function isAuthorized($user){
 		return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
 	}
+	 */
 /**
  * index method
  *
@@ -37,20 +39,6 @@ class AdmTransactionsController extends AppController {
 	public function index() {
 		$this->AdmTransaction->recursive = 0;
 		$this->set('admTransactions', $this->paginate());
-	}
-
-/**
- * view method
- *
- * @param string $id
- * @return void
- */
-	public function view($id = null) {
-		$this->AdmTransaction->id = $id;
-		if (!$this->AdmTransaction->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm transaction')));
-		}
-		$this->set('admTransaction', $this->AdmTransaction->read(null, $id));
 	}
 
 /**

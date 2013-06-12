@@ -12,15 +12,7 @@
 	<div class="widget-content nopadding">
 		<?php echo $this->BootstrapForm->create('AdmController', array('class' => 'form-horizontal'));?>
 			<fieldset>
-				<legend><?php echo __('Edit %s', __('Adm Controller')); ?></legend>
 				<?php
-				/*
-				echo $this->BootstrapForm->input('adm_module_id', array(
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
-				);
-				 * 
-				 */
 				echo $this->BootstrapForm->input('name', array('disabled'=>'disabled'
 				));
 				echo $this->BootstrapForm->input('initials', array(

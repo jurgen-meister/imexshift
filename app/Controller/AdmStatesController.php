@@ -12,7 +12,7 @@ class AdmStatesController extends AppController {
  *
  * @var string
  */
-	public $layout = 'default';
+//	public $layout = 'default';
 
 /**
  * Helpers
@@ -39,20 +39,6 @@ class AdmStatesController extends AppController {
 	public function index() {
 		$this->AdmState->recursive = 0;
 		$this->set('admStates', $this->paginate());
-	}
-
-/**
- * view method
- *
- * @param string $id
- * @return void
- */
-	public function view($id = null) {
-		$this->AdmState->id = $id;
-		if (!$this->AdmState->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm state')));
-		}
-		$this->set('admState', $this->AdmState->read(null, $id));
 	}
 
 /**

@@ -42,19 +42,7 @@ class AdmModulesController extends AppController {
 	}
 
 	
-/**
- * view method
- *
- * @param string $id
- * @return void
- */
-	public function view($id = null) {
-		$this->AdmModule->id = $id;
-		if (!$this->AdmModule->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm module')));
-		}
-		$this->set('admModule', $this->AdmModule->read(null, $id));
-	}
+
 
 /**
  * add method

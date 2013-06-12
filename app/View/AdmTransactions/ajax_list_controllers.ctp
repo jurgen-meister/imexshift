@@ -4,5 +4,4 @@ echo $this->BootstrapForm->input('adm_controller_id', array('id'=>'controllers',
 					,'required' => 'required'
 					,'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
 					);
-echo '<br>';
 ?>

@@ -1,52 +1,64 @@
-<div class="row-fluid">
-	<div class="span9">
-		<h2><?php echo __('List %s', __('Adm Transitions'));?></h2>
+<!-- ************************************************************************************************************************ -->
+<div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
+<!-- ************************************************************************************************************************ -->
+<h3>
+<?php //debug($admTransitions);
+echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' => 'add'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo')); 
+?>
+<?php echo __(' Transiciones');?></h3>
 
-		<p>
-			<?php echo $this->BootstrapPaginator->counter(array('format' => __('Page {:page} of {:pages}, showing {:current} records out of {:count} total, starting on record {:start}, ending on {:end}')));?>
-		</p>
-
-		<table class="table">
+		<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
+		<div class="widget-box">
+			<div class="widget-title">
+				<span class="icon">
+					<i class="icon-th"></i>
+				</span>
+				<h5><?php echo $this->BootstrapPaginator->counter(array('format' => __('Página {:page} de {:pages}, mostrando {:current} de un total de {:count} registros')));?></h5>
+			</div>
+			<div class="widget-content nopadding">
+		<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
+		
+		<?php $cont = $this->BootstrapPaginator->counter('{:start}');?>
+		<table class="table table-striped table-bordered table-hover">
 			<tr>
-				<th><?php echo $this->BootstrapPaginator->sort('id');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('adm_state_id');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('adm_transaction_id');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('adm_final_state_id');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('lc_state');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('lc_transaction');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('creator');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('date_created');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('modifier');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('date_modified');?></th>
-				<th class="actions"><?php echo __('Actions');?></th>
+				<th><?php echo '#';?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('AdmController.id','Controlador');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('adm_state_id', 'Estado Incial');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('adm_transaction_id', 'Transacción');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('adm_final_state_id', 'Estado Final');?></th>
+				<th></th>
 			</tr>
 		<?php foreach ($admTransitions as $admTransition): ?>
 			<tr>
-				<td><?php echo h($admTransition['AdmTransition']['id']); ?>&nbsp;</td>
+				<td><?php echo $cont++; ?>&nbsp;</td>
 				<td>
-					<?php echo $this->Html->link($admTransition['AdmState']['name'], array('controller' => 'adm_states', 'action' => 'view', $admTransition['AdmState']['id'])); ?>
+					<?php echo $admTransition['AdmController']['name']; ?>
 				</td>
 				<td>
-					<?php echo $this->Html->link($admTransition['AdmAction']['name'], array('controller' => 'adm_actions', 'action' => 'view', $admTransition['AdmAction']['id'])); ?>
+					<?php echo $admTransition['AdmState']['name']; ?>
 				</td>
 				<td>
-					<?php echo $this->Html->link($admTransition['AdmFinalState']['name'], array('controller' => 'adm_states', 'action' => 'view', $admTransition['AdmFinalState']['id'])); ?>
+					<?php echo $admTransition['AdmTransaction']['name']; ?>
 				</td>
-				<td><?php echo h($admTransition['AdmTransition']['lc_state']); ?>&nbsp;</td>
-				<td><?php echo h($admTransition['AdmTransition']['lc_transaction']); ?>&nbsp;</td>
-				<td><?php echo h($admTransition['AdmTransition']['creator']); ?>&nbsp;</td>
-				<td><?php echo h($admTransition['AdmTransition']['date_created']); ?>&nbsp;</td>
-				<td><?php echo h($admTransition['AdmTransition']['modifier']); ?>&nbsp;</td>
-				<td><?php echo h($admTransition['AdmTransition']['date_modified']); ?>&nbsp;</td>
-				<td class="actions">
-					<?php echo $this->Html->link(__('View'), array('action' => 'view', $admTransition['AdmTransition']['id'])); ?>
-					<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $admTransition['AdmTransition']['id'])); ?>
-					<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $admTransition['AdmTransition']['id']), null, __('Are you sure you want to delete # %s?', $admTransition['AdmTransition']['id'])); ?>
+				<td>
+					<?php echo $admTransition['AdmFinalState']['name']; ?>
+				</td>
+				<td>
+					<?php 
+					$url['action'] = 'edit';
+					echo $this->Html->link('<i class="icon-pencil icon-white"></i>'.__(''),  array_merge($url,array($admTransition['AdmTransition']['id'])), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Editar')); 
+					echo ' '.$this->Form->postLink('<i class="icon-trash icon-white"></i>', array('action' => 'delete', $admTransition['AdmTransition']['id']), array('class'=>'btn btn-danger', 'escape'=>false, 'title'=>'Eliminar'), __('¿Esta seguro de borrar?', $admTransition['AdmTransition']['id']));
+					?>
 				</td>
 			</tr>
 		<?php endforeach; ?>
 		</table>
 
-		<?php echo $this->BootstrapPaginator->pagination(); ?>
+	<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
+		</div>
 	</div>
-</div>
+	<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
+		<?php echo $this->BootstrapPaginator->pagination(); ?>
+<!-- ************************************************************************************************************************ -->
+</div><!-- FIN CONTAINER FLUID/ROW FLUID/SPAN12 - Del Template Principal #UNICORN
+<!-- ************************************************************************************************************************ --></div></div>

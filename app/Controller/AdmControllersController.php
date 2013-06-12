@@ -12,7 +12,7 @@ class AdmControllersController extends AppController {
  *
  * @var string
  */
-	public $layout = 'default'; 
+//	public $layout = 'default'; 
 
 /**
  * Helpers
@@ -40,20 +40,6 @@ class AdmControllersController extends AppController {
 	public function index() {
 		$this->AdmController->recursive = 0;
 		$this->set('admControllers', $this->paginate());
-	}
-
-/**
- * view method
- *
- * @param string $id
- * @return void
- */
-	public function view($id = null) {
-		$this->AdmController->id = $id;
-		if (!$this->AdmController->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm controller')));
-		}
-		$this->set('admController', $this->AdmController->read(null, $id));
 	}
 
 /**

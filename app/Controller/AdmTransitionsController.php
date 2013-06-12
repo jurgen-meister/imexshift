@@ -12,7 +12,7 @@ class AdmTransitionsController extends AppController {
  *
  * @var string
  */
-	public $layout = 'default';
+//	public $layout = 'default';
 
 /**
  * Helpers
@@ -26,33 +26,31 @@ class AdmTransitionsController extends AppController {
  * @var array
  */
 //	public $components = array('Session');
-
+/*
 	public  function isAuthorized($user){
 		return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
 	}
-
+*/
 /**
  * index method
  *
  * @return void
  */
 	public function index() {
+		$this->AdmTransition->bindModel(array(
+			'hasOne'=>array(
+				'AdmController'=> array(
+					'foreignKey' => false,
+					'conditions' => array('AdmTransaction.adm_controller_id = AdmController.id')
+				)
+			)
+		));
+		$this->paginate = array(
+			'order'=>array('AdmController.name'=>'ASC'),
+			'limit' => 20,
+		);
 		$this->AdmTransition->recursive = 0;
-		$this->set('admTransitions', $this->paginate());
-	}
-
-/**
- * view method
- *
- * @param string $id
- * @return void
- */
-	public function view($id = null) {
-		$this->AdmTransition->id = $id;
-		if (!$this->AdmTransition->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm transition')));
-		}
-		$this->set('admTransition', $this->AdmTransition->read(null, $id));
+		$this->set('admTransitions', $this->paginate('AdmTransition'));
 	}
 
 /**
@@ -116,13 +114,41 @@ class AdmTransitionsController extends AppController {
 				);
 			}
 		}
-		$admStates = $this->AdmTransition->AdmState->find('list');
-		$admTransactions = $this->AdmTransition->AdmTransaction->find('list');
-        $admFinalStates = $this->AdmTransition->AdmState->find('list');
+		$admStates = $this->_createComposeStatesList();//$this->AdmTransition->AdmState->find('list');
+		$admTransactions = $this->_createComposeTransactionList();//$this->AdmTransition->AdmTransaction->find('list');
+        $admFinalStates = $this->_createComposeStatesList();//$this->AdmTransition->AdmState->find('list');
 		$this->set(compact('admStates', 'admTransactions', 'admFinalStates'));
+		//debug($this->_createComposeStatesList());
+		//debug($this->_createComposeTransactionList());
 	}
 
-/**
+	
+	private function _createComposeStatesList(){
+		$admStates = $this->AdmTransition->AdmState->find('all', array(
+			'fields'=>array('AdmState.id', 'AdmState.name', 'AdmController.name'),
+			'order'=>array('AdmController.name'=>'ASC'),
+			'recursive'=>0
+		));
+		$array=array();
+		for($i=0; $i<count($admStates); $i++){
+			$array[$admStates[$i]['AdmState']['id']]=$admStates[$i]['AdmController']['name'].'->'.$admStates[$i]['AdmState']['name'];
+		}
+		return $array;
+	}
+	
+	private function _createComposeTransactionList(){
+		$admTransaction = $this->AdmTransition->AdmTransaction->find('all', array(
+			'fields'=>array('AdmTransaction.id', 'AdmTransaction.name', 'AdmController.name'),
+			'order'=>array('AdmController.name'=>'ASC'),
+			'recursive'=>0
+		));
+		$array=array();
+		for($i=0; $i<count($admTransaction); $i++){
+			$array[$admTransaction[$i]['AdmTransaction']['id']]=$admTransaction[$i]['AdmController']['name'].'->'.$admTransaction[$i]['AdmTransaction']['name'];
+		}
+		return $array;
+	}
+	/**
  * edit method
  *
  * @param string $id
@@ -158,9 +184,9 @@ class AdmTransitionsController extends AppController {
 		} else {
 			$this->request->data = $this->AdmTransition->read(null, $id);
 		}
-		$admStates = $this->AdmTransition->AdmState->find('list');
-		$admTransactions = $this->AdmTransition->AdmTransaction->find('list');
-        $admFinalStates = $this->AdmTransition->AdmState->find('list');
+		$admStates = $this->_createComposeStatesList();//$this->AdmTransition->AdmState->find('list');
+		$admTransactions = $this->_createComposeTransactionList();//$this->AdmTransition->AdmTransaction->find('list');
+        $admFinalStates = $this->_createComposeStatesList();//$this->AdmTransition->AdmState->find('list');
 		$this->set(compact('admStates', 'admTransactions', 'admFinalStates'));
 	}
 
