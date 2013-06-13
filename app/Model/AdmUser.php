@@ -60,6 +60,14 @@ class AdmUser extends AppModel {
 	//The Associations below have been created with all possible keys, those that are not needed can be removed
 
 	public function beforeSave($options = array()) {
+		App::import('Model', 'CakeSession');
+		$session = new CakeSession();
+		if(isset($this->data[$this->name]['id'])){
+			$this->data[$this->name]['modifier']=$session->read('UserRestriction.id');
+			$this->data[$this->name]['lc_transaction']='MODIFY';
+		}else{
+			$this->data[$this->name]['creator']=$session->read('UserRestriction.id');
+		}
         if (isset($this->data['AdmUser']['password'])) {
             $this->data['AdmUser']['password'] = AuthComponent::password($this->data['AdmUser']['password']);
         }
@@ -104,6 +112,22 @@ class AdmUser extends AppModel {
 	);
 
 	
+	public function change_user_restriction($idUser, $idUserRestrictionSelected){
+		$dataSource = $this->getDataSource();
+		$dataSource->begin();
+		////////////////////////////////////////////////
+		if($this->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected'=>0), array('AdmUserRestriction.adm_user_id'=>$idUser))){
+			if($this->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected'=>1), array('AdmUserRestriction.id'=>$idUserRestrictionSelected))){
+				$dataSource->commit();
+				//return true;
+			}
+		}
+		///////////////////////////////////////////////
+		$dataSource->rollback();
+		//return false;
+	}
 	
+
+
 ///////////
 }

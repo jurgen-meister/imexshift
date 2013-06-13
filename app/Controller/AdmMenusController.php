@@ -187,7 +187,10 @@ class AdmMenusController extends AppController {
 		
 		$admModules = $this->AdmMenu->AdmModule->find('list');
 		$module = key($admModules);
-		$admControllers = $this->AdmMenu->AdmAction->AdmController->find('list', array('conditions'=>array('AdmController.adm_module_id'=>$module)));
+		$admControllers = $this->AdmMenu->AdmAction->AdmController->find('list', array(
+			'conditions'=>array('AdmController.adm_module_id'=>$module),
+			'order'=>array('AdmController.name'=>'ASC')
+		));
 		$controller = key($admControllers);
 		//$admActions = $this->AdmMenu->AdmAction->find('list', array('conditions'=>array('AdmAction.adm_controller_id'=>$controller)));
 		$admActions = $this->_list_action_inside($controller);		
@@ -262,7 +265,9 @@ class AdmMenusController extends AppController {
 	}
 	
 	private function _list_action_inside($controller){
-		$admActions = $this->AdmMenu->AdmAction->find('list', array('conditions'=>array('AdmAction.adm_controller_id'=>$controller, 'AdmAction.parent'=>null)));
+		$admActions = $this->AdmMenu->AdmAction->find('list', array(
+			'conditions'=>array('AdmAction.adm_controller_id'=>$controller, 'AdmAction.parent'=>null)
+		));
 		$formatedAdmAction = array();
 		//echo "actions guardadas";
 		//debug($admActions);
@@ -299,7 +304,10 @@ class AdmMenusController extends AppController {
 	public function ajax_list_controllers_inside(){
 		if($this->RequestHandler->isAjax()){
 			$module = $this->request->data['module'];
-			$admControllers = $this->AdmMenu->AdmAction->AdmController->find('list', array('conditions'=>array('AdmController.adm_module_id'=>$module)));
+			$admControllers = $this->AdmMenu->AdmAction->AdmController->find('list', array(
+				'conditions'=>array('AdmController.adm_module_id'=>$module),
+				'order'=>array('AdmController.name'=>'ASC')
+			));
 			$controller = key($admControllers);
 			//$admActions = $this->AdmMenu->AdmAction->find('list', array('conditions'=>array('AdmAction.adm_controller_id'=>$controller)));
 			$admActions = $this->_list_action_inside($controller);

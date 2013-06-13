@@ -41,7 +41,7 @@
 				);
 				?>
 				<div class="form-actions" style="text-align: center">
-					<?php echo $this->BootstrapForm->submit(__('Guardar cambios'), array('div'=>false, 'class'=>'btn-primary'));?>
+					<?php echo $this->BootstrapForm->submit(__('Guardar cambios'), array('div'=>false, 'class'=>'btn btn-primary'));?>
 					<?php echo ' '.$this->Html->link('Cancelar', array('action'=>'index_inside'), array('class'=>'btn') );?>
 				</div>
 			</fieldset>

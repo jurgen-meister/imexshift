@@ -48,7 +48,15 @@ echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' =>
 				if($admUser['AdmUserRestriction']['active'] == 0){$lbl='badge-important'; $state='NO';}
 				echo '<span class="badge '.$lbl.'">'.$state.'</span>';
 				?>&nbsp;</td>
-				<td style="text-align: center"><?php echo '<span class="badge badge-success">'.date("d/m/Y", strtotime($admUser['AdmUserRestriction']['active_date'])).'</span>'; ?>&nbsp;</td>
+				<td style="text-align: center">
+					<?php 
+					$badge = 'badge-important';
+					if($admUser['AdmUserRestriction']['token_valide_date'] == 1){
+						$badge = 'badge-success';
+					}
+					echo '<span class="badge '.$badge.'">'.date("d/m/Y", strtotime($admUser['AdmUserRestriction']['active_date'])).'</span>'; 
+					?>&nbsp;
+				</td>
 				<td class="actions">
 					<?php 
 					$url['action'] = 'edit_user_restriction';

@@ -39,6 +39,10 @@ class AdmControllersController extends AppController {
  */
 	public function index() {
 		$this->AdmController->recursive = 0;
+		 $this->paginate = array(
+			'order'=>array('AdmController.name'=>'asc'),
+			'limit' => 20
+		);
 		$this->set('admControllers', $this->paginate());
 	}
 
@@ -109,7 +113,7 @@ class AdmControllersController extends AppController {
 				
 			
 				$this->Session->setFlash(
-					__('The %s has been saved ->', __('adm controller')),
+					__('Se creo el contralador con sus estados, transacciones y transiciones'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -310,6 +314,21 @@ class AdmControllersController extends AppController {
 		if (!$this->AdmController->exists()) {
 			throw new NotFoundException(__('Invalid %s', __('adm controller')));
 		}
+		
+		$actions = $this->AdmController->AdmAction->find('count', array('conditions'=>array('AdmAction.adm_controller_id'=>$id)));
+		
+		if($actions > 0){
+			$this->Session->setFlash(
+				__('No se puede eliminar porque tiene acciones dependientes'),
+				'alert',
+				array(
+					'plugin' => 'TwitterBootstrap',
+					'class' => 'alert-error'
+				)
+			);
+			$this->redirect(array('action' => 'index'));
+		}
+		
 		if ($this->AdmController->delete()) {
 			$this->Session->setFlash(
 				__('The %s deleted', __('adm controller')),

@@ -44,14 +44,56 @@
 	<div id="user-nav" class="navbar navbar-inverse">
 		<?php if($logged_in):?>
 			<ul class="nav btn-group">
-				<li class="btn btn-inverse"><a title="" href="#"><i class="icon icon-user"></i> <span class="text"><?php echo ' Usuario: '.$this->session->read('User.username');?></span></a></li>
-				<li class="btn btn-inverse"><a title="" href="#"><i class="icon icon-briefcase"></i> <span class="text"><?php echo ' Rol: '.$this->Session->read('Role.name');?></span></a></li>
-				<li class="btn btn-inverse"><a title="" href="#"><i class="icon icon-time"></i> <span class="text"><?php echo ' Gestión: '.$this->Session->read('Period.name');?></span></a></li>
+				
+				<li class="btn btn-inverse dropdown" id="user-menu">
+					<a href="#" data-toggle="dropdown" data-target="#user-menu" class="dropdown-toggle">
+						<i class="icon icon-user"></i> 
+						<span class="text"><?php echo ' Usuario: '.$this->session->read('User.username');?></span> 
+						<b class="caret"></b>
+					</a>
+                    <ul class="dropdown-menu">
+                        <li><?php echo $this->Html->link('Cambiar contraseña',array('controller'=>'admUsers', 'action'=>'change_password'));?></li>
+                        <li><?php echo $this->Html->link('Cambiar correo electrónico',array('controller'=>'admUsers', 'action'=>'change_email'));?></li>
+						<li><?php echo $this->Html->link('Datos del usuario',array('controller'=>'admUsers', 'action'=>'view_user_profile'));?></li>
+                    </ul>
+                </li>
+				
+				<li class="btn btn-inverse dropdown" id="role-menu">
+					<a href="#" data-toggle="dropdown" data-target="#role-menu" class="dropdown-toggle">
+						<i class="icon icon-briefcase"></i> 
+						<span class="text"><?php echo ' Rol: '.$this->Session->read('Role.name');?></span> 
+					<?php 
+					$array=$this->Session->read('Avaliable.roles');
+					if(count($array) > 0){?>
+						<b class="caret"></b>
+					<?php } ?>
+					</a>
+					<?php if(count($array) > 0){?>
+                    <ul class="dropdown-menu">
+						<?php foreach ($array as $key => $value) {
+							echo '<li>'.$this->Html->link($value, array('control'=>'AdmUser','action'=>'change_user_restriction', $key)).'</li>';
+						}?>
+                    </ul>
+					<?php  }?>
+                </li>
+				
+				<li class="btn btn-inverse dropdown" id="period-menu">
+					<a href="#" data-toggle="dropdown" data-target="#period-menu" class="dropdown-toggle">
+						<i class="icon icon-time"></i> 
+						<span class="text"><?php
+						echo ' Gestión: '.$this->Session->read('Period.name');
+						?>
+						</span> 
+					</a>
+                </li>
+				
+				
 				<li class="btn btn-inverse">
 					<?php echo $this->Html->link(
 						'<i class="icon icon-share-alt"></i><span class="text">&nbspSalir</span>', 
 						array('controller'=>'admUsers', 'action'=>'logout'),
-						array('escape' => FALSE));?>
+						array('escape' => FALSE));
+					?>
 				</li>
 			</ul>
 		

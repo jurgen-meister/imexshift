@@ -38,6 +38,10 @@ class AdmTransactionsController extends AppController {
  */
 	public function index() {
 		$this->AdmTransaction->recursive = 0;
+		$this->paginate = array(
+			'order'=>array('AdmController.name'=>'asc'),
+			'limit' => 20
+		);
 		$this->set('admTransactions', $this->paginate());
 	}
 

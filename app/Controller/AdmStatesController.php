@@ -38,6 +38,10 @@ class AdmStatesController extends AppController {
  */
 	public function index() {
 		$this->AdmState->recursive = 0;
+		 $this->paginate = array(
+			'order'=>array('AdmController.name'=>'asc'),
+			'limit' => 20
+		);
 		$this->set('admStates', $this->paginate());
 	}
 

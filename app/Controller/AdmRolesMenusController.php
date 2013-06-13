@@ -100,7 +100,7 @@ class AdmRolesMenusController extends AppController {
 		}
 		
 		
-		$admRoles = $this->AdmRolesMenu->AdmRole->find('list');
+		$admRoles = $this->AdmRolesMenu->AdmRole->find('list', array('order'=>array('AdmRole.id'=>'ASC')));
 		$admModules = $this->AdmRolesMenu->AdmMenu->AdmModule->find('list');
 		///////////////////////***************************************//////////////////
 		if(count($admRoles) > 0 AND count($admModules) > 0){
@@ -337,7 +337,7 @@ class AdmRolesMenusController extends AppController {
 	
 	public function add_inside(){
 		
-		$admRoles = $this->AdmRolesMenu->AdmRole->find('list');
+		$admRoles = $this->AdmRolesMenu->AdmRole->find('list', array('order'=>array('AdmRole.id'=>'ASC')));
 		$role =key($admRoles);
 		$admModules = $this->AdmRolesMenu->AdmMenu->AdmModule->find('list');
 		$module = key($admModules);
@@ -351,7 +351,7 @@ class AdmRolesMenusController extends AppController {
 		//clave 1
 		$controllers = $this->AdmRolesMenu->AdmMenu->AdmAction->AdmController->find('list', array('conditions'=>array('AdmController.adm_module_id'=>$module)));
 		//clave 1
-
+		//debug($controllers);
 		$this->loadModel('AdmAction');
 
 		$menusCheckBoxes =array();

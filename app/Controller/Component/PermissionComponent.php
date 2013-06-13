@@ -29,6 +29,10 @@ class PermissionComponent extends Component{
 			$allowed['login'] = 'login';
 			$allowed['logout'] = 'logout';
 			$allowed['choose_role'] = 'choose_role';
+			$allowed['change_password'] = 'change_password';
+			$allowed['change_user_restriction'] = 'change_user_restriction';
+			$allowed['change_email'] = 'change_email';
+			$allowed['view_user_profile'] = 'view_user_profile';
 		}
 		//debug($allowed);
 		

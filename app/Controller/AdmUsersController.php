@@ -27,7 +27,7 @@ class AdmUsersController extends AppController {
  */
 	//public $components = array('Session');
 	
-	public  function isAuthorized($user){
+	//public  function isAuthorized($user){
 		/*
 		$array=$this->Session->read('Permission.'.$this->name);
 		$array['welcome'] = 'welcome';
@@ -46,8 +46,8 @@ class AdmUsersController extends AppController {
 		
 		
 		//return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
-		return true;
-	}
+	//	return true;
+	//}
 	/*
 	public  function isAuthorized($user){
 		return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
@@ -73,10 +73,22 @@ class AdmUsersController extends AppController {
 			'limit' => 20,
 		);
 		////////////////////////////END - SETTING PAGINATING VARIABLES//////////////////////////////////////
-		
-		
+		$array = $this->_paintUserActiveDateField($this->paginate('AdmUser'));
+		//debug($array);
 		////////////////////////START - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
-		$this->set('admUsers', $this->paginate('AdmUser'));
+		$this->set('admUsers', $array);
+	}
+	
+	private function _paintUserActiveDateField($array){
+		for($i=0; $i <count($array); $i++){
+			$res = $this->AdmUser->find('count', array(
+				'conditions'=>array(
+					'AdmUser.active_date > now()',
+					'AdmUser.id'=>$array[$i]['AdmUser']['id'])
+			));
+			$array[$i]['AdmUser']['token_valide_date'] = $res;
+		}
+		return $array;
 	}
 	
 	public function add_user_restriction($id = null){
@@ -201,9 +213,23 @@ class AdmUsersController extends AppController {
 			'fields'=>array('AdmUser.login'),
 			'recursive'=>-1
 		));
+		$array = $this->_paintUserRestrictionActiveDateField($this->paginate('AdmUserRestriction'));
+		//debug($array);
 		$this->set('userId', $id);
 		$this->set('username', $userInfo[0]['AdmUser']['login']);
-		$this->set('admUsers', $this->paginate('AdmUserRestriction'));
+		$this->set('admUsers', $array);
+	}
+	
+	private function _paintUserRestrictionActiveDateField($array){
+		for($i=0; $i <count($array); $i++){
+			$res = $this->AdmUser->AdmUserRestriction->find('count', array(
+				'conditions'=>array(
+					'AdmUserRestriction.active_date > now()'/* => date('Y-m-d H:i:s')*/,
+					'AdmUserRestriction.id'=>$array[$i]['AdmUserRestriction']['id'])
+			));
+			$array[$i]['AdmUserRestriction']['token_valide_date'] = $res;
+		}
+		return $array;
 	}
 	
 	public function login() {
@@ -214,10 +240,10 @@ class AdmUsersController extends AppController {
 			/////////////////////////////////////////////BEGIN OF VALIDATION///////////////////////////////////////////////////
 				$userInfo = $this->Auth->user();
 				$active=$userInfo['active'];
-				$activeDate = $this->AdmUser->find('count', array('conditions'=>array('AdmUser.active_date >' => date('Y-m-d H:i:s'), 'AdmUser.id'=>$userInfo['id']))); //The DB does the comparition between dates, it's simpler than creating a php function for this
+				$activeDate = $this->AdmUser->find('count', array('conditions'=>array('AdmUser.active_date > now()', 'AdmUser.id'=>$userInfo['id']))); //The DB does the comparition between dates, it's simpler than creating a php function for this
 				$role = $this->AdmUser->AdmUserRestriction->find('count', array('conditions'=> array('AdmUserRestriction.adm_user_id'=>$userInfo['id'])));
 				$roleActive = $this->AdmUser->AdmUserRestriction->find('count', array('conditions'=> array('AdmUserRestriction.adm_user_id'=>$userInfo['id'], 'AdmUserRestriction.active'=>1, 'AdmUserRestriction.selected'=>1)));
-				$roleActiveDate = $this->AdmUser->AdmUserRestriction->find('count', array('conditions'=> array('AdmUserRestriction.adm_user_id'=>$userInfo['id'], 'AdmUserRestriction.active_date >'=>date('Y-m-d H:i:s'), 'AdmUserRestriction.selected'=>1)));;
+				$roleActiveDate = $this->AdmUser->AdmUserRestriction->find('count', array('conditions'=> array('AdmUserRestriction.adm_user_id'=>$userInfo['id'], 'AdmUserRestriction.active_date > now()', 'AdmUserRestriction.selected'=>1)));;
 				$error=0;
 				
 				//User active
@@ -243,7 +269,7 @@ class AdmUsersController extends AppController {
 					if($roleActive == 0 OR $roleActiveDate == 0){
 						$otherRoles = $this->AdmUser->AdmUserRestriction->find('all', array(
 							'conditions'=> array('AdmUserRestriction.adm_user_id'=>$userInfo['id'],
-								'AdmUserRestriction.active_date >'=>date('Y-m-d H:i:s'),
+								'AdmUserRestriction.active_date > now()',
 								'AdmUserRestriction.active'=>1),
 							'fields'=>array('AdmUser.id', 'AdmUser.login', 'AdmRole.name', 'AdmUserRestriction.period', 'AdmUserRestriction.id'),
 							'order'=>array('AdmUserRestriction.adm_role_id', 'AdmUserRestriction.period')
@@ -282,7 +308,7 @@ class AdmUsersController extends AppController {
 			
 			//////////////////////////////////////////////START - LOGIN /////////////////////////////////////////////////////////
 				if($error == 0){//if there is no error
-					$this->_createUserAccountSession($userInfo['id'], $userInfo['login']);
+					$this->_createUserAccountSession($userInfo['id']);
 				} 
 			//////////////////////////////////////////////END - LOGIN /////////////////////////////////////////////////////////		
 			} else {
@@ -291,15 +317,15 @@ class AdmUsersController extends AppController {
 		}
 	}
 	
-	
-	private function _createUserAccountSession($userId, $userName, $tipo = 'login'){
+	private function _createUserAccountSession($userId, $tipo = 'login'){
 		////////Fill of sessions distinct to auth component users table
 		$infoRole = $this->AdmUser->AdmUserRestriction->find('all', array(
-			'fields'=>array('AdmRole.name','AdmRole.id', 'AdmUserRestriction.period', 'AdmUserRestriction.id'),
+			'fields'=>array('AdmUser.login','AdmRole.name','AdmRole.id', 'AdmUserRestriction.period', 'AdmUserRestriction.id'),
 			'conditions'=>array('AdmUserRestriction.adm_user_id'=>$userId, 'AdmUserRestriction.active'=>1, 'AdmUserRestriction.selected'=>1)
 		));
+		
 		$this->Session->write('UserRestriction.id', $infoRole[0]['AdmUserRestriction']['id']);  //in case there is no trigger postgres user integration, it will help
-		$this->Session->write('User.username', $userName);
+		$this->Session->write('User.username', $infoRole[0]['AdmUser']['login']);
 		$this->Session->write('User.id', $userId);
 		$this->Session->write('Role.name', $infoRole[0]['AdmRole']['name']);
 		$this->Session->write('Role.id', $infoRole[0]['AdmRole']['id']);
@@ -308,11 +334,28 @@ class AdmUsersController extends AppController {
 		$this->Session->delete('Message.auth');//to avoid bug showing auth messages when you are kickout and do login again
 		$this->_createPermissions($this->Session->read('Role.id'));
 		//////////////////////////////////////////////////////////////////////////
-		$this->loadModel('AdmUserLog');
 		
+		/////////////////////////////Create USER,ROLE,PERIOD Session Buttons///////////////////////////////////////////
+		$avaliableRoles = $this->_listAvaliableRoles($userId, $infoRole[0]['AdmUserRestriction']['id']);
+		$this->Session->write('Avaliable.roles', $avaliableRoles);
+		/////////////////////////////Create USER,ROLE,PERIOD Session Buttons///////////////////////////////////////////
+		
+		//////////////////////////////////////////////////////////////////////////
+		$this->loadModel('AdmUserLog');
 		try{
 			$this->AdmUserLog->save(array('tipo'=>$tipo,'creator'=>$infoRole[0]['AdmUserRestriction']['id']));
-			$this->redirect($this->Auth->redirect());
+			if($tipo == 'cambio rol'){
+				$this->Session->setFlash(
+					'<strong>Se cambio el rol a "'.$infoRole[0]['AdmRole']['name'].'" y a la gestión "'.$infoRole[0]['AdmUserRestriction']['period'].'"!</strong> Todos los cambios que haga este usuario se registraran con este rol y esta gestión',
+					'alert',
+					array(
+						'plugin' => 'TwitterBootstrap',
+						'class' => 'alert-success'
+					)
+				);
+			}
+				$this->redirect($this->Auth->redirect());
+			
 		}catch (Exception $e){
 			$this->_createMessage('Ocurrio un problema vuelva a intentarlo');
 			$this->redirect($this->Auth->logout());
@@ -321,6 +364,58 @@ class AdmUsersController extends AppController {
 	}
 
 	
+	public function change_password(){
+	}
+	
+	public function ajax_change_password(){
+		if($this->RequestHandler->isAjax()){
+			$password = $this->request->data['password'];
+			$idUser = $this->Session->read('User.id');
+			if($this->AdmUser->save(array('id'=>$idUser,'password'=>$password))){
+				echo 'success';
+			}
+		}
+	}
+
+	
+	public function change_email(){
+	}
+	
+	public function ajax_change_email(){
+		if($this->RequestHandler->isAjax()){
+			$email = $this->request->data['email'];
+			$idUser = $this->Session->read('User.id');
+			$idProfile =$this->AdmUser->AdmProfile->find('list', array(
+				'conditions'=>array('AdmProfile.adm_user_id'=>$idUser),
+				'fields'=>array('AdmProfile.id', 'AdmProfile.id')
+			));
+			if($this->AdmUser->AdmProfile->save(array('id'=>key($idProfile),'email'=>$email))){
+				echo 'success';
+			}
+			
+		}
+	}
+
+
+	public function change_user_restriction($idUserRestrictionSelected){
+		$idUser = $this->Session->read('User.id');
+		try{
+				$this->AdmUser->change_user_restriction($idUser, $idUserRestrictionSelected);
+				$this->_createUserAccountSession($idUser, 'cambio rol');
+		}catch(Exception $e){
+			$this->Session->setFlash(
+					'Ocurrio un problema, vuelva a intentarlo',
+					'alert',
+					array(
+						'plugin' => 'TwitterBootstrap',
+						'class' => 'alert-error'
+					)
+				);
+			$this->redirect(array('action'=>'welcome'));
+		}
+		 
+	}
+	
 	public function choose_role(){
 		//echo "Aqui va para elegir roles con fecha activa en caso de que un rol este inactivo y tenga otros roles";
 		if ($this->request->is('post')) {
@@ -328,17 +423,17 @@ class AdmUsersController extends AppController {
 			$data = explode('-', $this->request->data['AdmUser']['userAccountSession']);
 			//debug($data[1]);
 			//debug($data[2]);
-			$this->_selectOtherRole($data[0], $data[1], $data[2]);
+			$this->_selectOtherRole($data[0], $data[1]);
 		}
 	}
 	
-	private function _selectOtherRole($userRestrictionId, $userId, $userName){
+	private function _selectOtherRole($userRestrictionId, $userId){
 		try{
 			$this->AdmUser->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected'=>0), array('AdmUserRestriction.adm_user_id'=>$userId));
 			try{
 				$this->AdmUser->AdmUserRestriction->save(array('id'=>$userRestrictionId, 'selected'=>1));
 				try{
-					$this->_createUserAccountSession($userId, $userName, 'login escogiendo rol');
+					$this->_createUserAccountSession($userId, 'login escogiendo rol');
 				}catch(Exception $e){
 					$this->_createMessage('Ocurrio un error, comuniquese con su administrador para habilitar su cuenta');
 					$this->redirect($this->Auth->logout());
@@ -569,10 +664,30 @@ class AdmUsersController extends AppController {
 	
 
 	public function welcome(){
-		
+		//$avaliableRoles = $this->_listAvaliableRoles(1, 1);
+		//$avaliableRoles[1]=2020;
+		//debug($avaliableRoles);
+		//debug(max($avaliableRoles[0]));
 	}
 	
-
+	private function _listAvaliableRoles($userId, $userRestrictionId){
+		$avaliableRoles = $this->AdmUser->AdmUserRestriction->find('all',array(
+			'conditions'=>array(
+				'AdmUserRestriction.adm_user_id'=>$userId, 
+				'AdmUserRestriction.selected'=>0, 
+				'AdmUserRestriction.active'=>1, 
+				'AdmUserRestriction.active_date > now()',
+				//'AdmUserRestriction.adm_role_id !='=>$roleId, 
+				'AdmUserRestriction.id !='=>$userRestrictionId, 
+			)
+		));
+		$array=array();
+		for($i=0; $i < count($avaliableRoles); $i++){
+			$array[$avaliableRoles[$i]['AdmUserRestriction']['id']]=  $avaliableRoles[$i]['AdmRole']['name'].' | '.$avaliableRoles[$i]['AdmUserRestriction']['period'];
+		}
+		return $array;
+	}
+	
 	public function logout() {
 		$this->Session->destroy();
 		$this->_createMessage('La sesión termino!', 'info');
@@ -827,8 +942,15 @@ class AdmUsersController extends AppController {
 		$this->request->data = $this->AdmUser->read(null, $id);
 		$this->set('data', $this->request->data);
 	}
+	
+	public function view_user_profile(){
+		$id = $this->Session->read('User.id');;
+		$this->AdmUser->id = $id;
+		$this->request->data = $this->AdmUser->read(null, $id);
+		$this->set('data', $this->request->data);
+	}
 
-/**
+	/**
  * delete method
  *
  * @param string $id

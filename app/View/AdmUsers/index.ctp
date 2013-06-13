@@ -36,16 +36,20 @@ echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' =>
 				<td><?php echo h($admUser['AdmUser']['login']); ?>&nbsp;</td>
 				<td><?php echo h($admUser['AdmProfile']['first_name'].' '.$admUser['AdmProfile']['last_name1'].' '.$admUser['AdmProfile']['last_name2']); ?>&nbsp;</td>
 				<td style="text-align: center"><?php 
-				//$img='on.png';
-				//$state = 'activo';
-				//if($admUser['AdmUser']['active'] == 0){$img='off.png'; $state='inactivo';}
-				//echo $this->Html->image($img, array('title'=>$state)); 
 				$lbl='badge-success';
 				$state = 'SI';
 				if($admUser['AdmUser']['active'] == 0){$lbl='badge-important'; $state='NO';}
 				echo '<span class="badge '.$lbl.'">'.$state.'</span>';
 				?>&nbsp;</td>
-				<td style="text-align: center"><?php echo '<span class="badge badge-success">'.date("d/m/Y", strtotime($admUser['AdmUser']['active_date'])).'</span>'; ?>&nbsp;</td>
+				<td style="text-align: center">					
+					<?php
+					$badge = 'badge-important';
+					if($admUser['AdmUser']['token_valide_date'] == 1){
+						$badge = 'badge-success';
+					}
+					echo '<span class="badge '.$badge.'">'.date("d/m/Y", strtotime($admUser['AdmUser']['active_date'])).'</span>'; 
+					?>&nbsp;
+				</td>
 				<td class="actions">
 					<?php 
 					$url['action'] = 'edit';

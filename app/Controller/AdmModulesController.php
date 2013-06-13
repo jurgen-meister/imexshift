@@ -127,6 +127,21 @@ class AdmModulesController extends AppController {
 		if (!$this->AdmModule->exists()) {
 			throw new NotFoundException(__('Invalid %s', __('adm module')));
 		}
+		
+		$controllers = $this->AdmModule->AdmController->find('count', array('conditions'=>array('AdmController.adm_module_id'=>$id)));
+		
+		if($controllers > 0){
+			$this->Session->setFlash(
+				__('No se puede eliminar porque tiene controladores dependientes'),
+				'alert',
+				array(
+					'plugin' => 'TwitterBootstrap',
+					'class' => 'alert-error'
+				)
+			);
+			$this->redirect(array('action' => 'index'));
+		}
+		
 		if ($this->AdmModule->delete()) {
 			$this->Session->setFlash(
 				__('The %s deleted', __('adm module')),

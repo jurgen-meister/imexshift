@@ -49,8 +49,8 @@ class AdmActionsController extends AppController {
 	public function index() {
 		$this->AdmAction->recursive = 0;
 		 $this->paginate = array(
-			'order'=>array('AdmAction.adm_controller_id'=>'asc', 'AdmAction.parent'=>'desc'),
-			'limit' => 25
+			'order'=>array('AdmController.name'=>'asc'),
+			'limit' => 20
 		);
 		 
 		 $array =$this->paginate();
@@ -102,7 +102,7 @@ class AdmActionsController extends AppController {
 			///
 			if ($this->AdmAction->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('adm action')),
+					__('Acción creada con exito'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -112,7 +112,7 @@ class AdmActionsController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('adm action')),
+					__('Ocurrio un problema, intentelo de nuevo'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -125,7 +125,10 @@ class AdmActionsController extends AppController {
 		//////////////////////////////////////////////////////////////
 		$admModules = $this->AdmAction->AdmController->AdmModule->find('list', array('order'=>'AdmModule.id'));
 		$initialModule =  key($admModules);
-		$admControllers = $this->AdmAction->AdmController->find('list', array('conditions'=>array('AdmController.adm_module_id'=>$initialModule)));
+		$admControllers = $this->AdmAction->AdmController->find('list', array(
+			'conditions'=>array('AdmController.adm_module_id'=>$initialModule),
+			'order'=>array('AdmController.name'=>'ASC')
+		));
 		
 		//$initialController = Inflector::camelize(reset($admControllers));
 		//$idController = key($admControllers);
@@ -168,7 +171,12 @@ class AdmActionsController extends AppController {
 		}
 
 		//DB
-		$dbActions = $this->AdmAction->find('all', array('recursive'=>0, 'fields'=>array('AdmAction.name'), 'conditions'=>array('AdmAction.adm_controller_id'=>$idController)));
+		$dbActions = $this->AdmAction->find('all', array(
+			'recursive'=>0, 
+			'fields'=>array('AdmAction.name'), 
+			'conditions'=>array('AdmAction.adm_controller_id'=>$idController),
+			'order'=>array('AdmAction.name'=>'ASC')
+		));
 		$formatDbActions = array();
 		foreach ($dbActions as $key => $value) {
 			$formatDbActions[$key] = strtolower($value['AdmAction']['name']);
@@ -210,7 +218,10 @@ class AdmActionsController extends AppController {
 		if($this->RequestHandler->isAjax()){
 			//debug($this->request->data);
 			$initialModule =  $this->request->data['module'];
-			$admControllers = $this->AdmAction->AdmController->find('list', array('conditions'=>array('AdmController.adm_module_id'=>$initialModule)));
+			$admControllers = $this->AdmAction->AdmController->find('list', array(
+				'conditions'=>array('AdmController.adm_module_id'=>$initialModule),
+				'order'=>array('AdmController.name'=>'ASC')
+			));
 			//debug($admControllers);
 			if(count($admControllers) == 0){
 				$admControllers[""]="--- Vacio ---";
