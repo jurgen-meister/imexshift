@@ -1,49 +1,55 @@
-<?php echo $this->Html->script('checkboxtree/jquery-1.4.4', FALSE); ?>
-<?php echo $this->Html->script('checkboxtree/jquery-ui-1.8.12.custom.min', FALSE); ?>
+<?php //echo $this->Html->script('checkboxtree/jquery-1.4.4', FALSE); ?>
+<?php //echo $this->Html->script('checkboxtree/jquery-ui-1.8.12.custom.min', FALSE); ?>
 <?php echo $this->Html->script('checkboxtree/jquery.checkboxtree', FALSE); ?>
 <?php echo $this->Html->css('jquery.checkboxtree');?>
 <?php echo $this->Html->script('modules/AdmRolesMenus', FALSE); ?>
 
-<div class="row-fluid">
-	<div class="span9">
-		<?php echo $this->BootstrapForm->create('AdmRolesMenu');?>
+<!-- ************************************************************************************************************************ -->
+<div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
+<!-- ************************************************************************************************************************ -->
+<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 1/2 *************************************** -->
+<div class="widget-box">
+	<div class="widget-title">
+		<span class="icon">
+			<i class="icon-edit"></i>								
+		</span>
+		<h5>Asignar Roles Menus/Permisos Externos</h5>
+	</div>
+	<div class="widget-content nopadding">
+		<?php echo $this->BootstrapForm->create('AdmRolesMenu', array('class' => 'form-horizontal'));?>
 			<fieldset>
-				<legend><?php echo __('Add %s', __('Adm Roles Menu')); ?></legend>
 				<?php
 				echo $this->BootstrapForm->input('adm_role_id', array(
+					'label'=>'Rol:',
 					'id'=>'roles'
 				));
 				echo $this->BootstrapForm->input('adm_module_id', array(
-					'id'=>'modules'
+					'id'=>'modules',
+					'label'=>'Módulo:'
 				));
 		?>		
 		<?php //echo $this->BootstrapForm->submit('Guardar', array('id'=>'saveButton')); ?>		
-		<button type="submit" class="btn" id="saveButton">Guardar</button>
 		<div id="message" style="text-align: center;"></div>
 		<div id="processing" style="text-align: center;"></div>
-		<?php	echo '<br>';
-				echo '<div id="boxChkTree">';
+		
+		<div class="control-group">
+			<label for="AdmRolesMenuAdmRoleId" class="control-label">Menus:</label>
+			<div class="controls" id="boxChkTree">
+		<?php	//echo '<br>';
+				//echo '<div id="boxChkTree">';
 				echo $chkTree;
-				echo '</div>';
+				//echo '</div>';
 				?>
+			</div>
+		</div>
+		<div class="form-actions" style="text-align: center">
+		<button type="submit" class="btn btn-primary" id="saveButton">Guardar Cambios</button>
+		</div>
 			</fieldset>
 		<?php echo $this->BootstrapForm->end();?>
-		<!--
-		<ul id="tree1">
-			<li><input type="checkbox" name="chkN1[]" id="chkN1" value="1"  checked = "checked" > 1
-				<ul>
-					<li><input type="checkbox" name="chkN1[]" id="chkN1" value="1"  checked = "checked" > 1.1</li>
-					<li><input type="checkbox" name="chkN1[]" id="chkN1" value="1"  checked = "checked" > 1.2
-						<ul>
-							<li><input type="checkbox" name="chkN1[]" id="chkN1" value="1"  checked = "checked" > 1.2.1</li>
-						</ul>
-					</li>
-				</ul>
-			</li>
-			<li><input type="checkbox" name="chkN1[]" id="chkN1" value="1"  checked = "checked" > 2</li>
-			<li><input type="checkbox" name="chkN1[]" id="chkN1" value="1"  checked = "checked" > 3</li>
-		</ul>
-		-->
-	</div>
+			<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
+	</div> <!-- Belongs to: <div class="widget-content nopadding"> -->
+</div> <!-- Belongs to: <div class="widget-box"> -->
+<!-- //******************************** END - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
 </div>
 

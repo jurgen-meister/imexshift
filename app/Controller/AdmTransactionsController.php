@@ -12,7 +12,7 @@ class AdmTransactionsController extends AppController {
  *
  * @var string
  */
-	public $layout = 'default';
+//	public $layout = 'default';
 
 /**
  * Helpers
@@ -26,9 +26,11 @@ class AdmTransactionsController extends AppController {
  * @var array
  */
 	//public $components = array('Session');
+	/*
 	public  function isAuthorized($user){
 		return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
 	}
+	 */
 /**
  * index method
  *
@@ -36,21 +38,11 @@ class AdmTransactionsController extends AppController {
  */
 	public function index() {
 		$this->AdmTransaction->recursive = 0;
+		$this->paginate = array(
+			'order'=>array('AdmController.name'=>'asc'),
+			'limit' => 20
+		);
 		$this->set('admTransactions', $this->paginate());
-	}
-
-/**
- * view method
- *
- * @param string $id
- * @return void
- */
-	public function view($id = null) {
-		$this->AdmTransaction->id = $id;
-		if (!$this->AdmTransaction->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm transaction')));
-		}
-		$this->set('admTransaction', $this->AdmTransaction->read(null, $id));
 	}
 
 /**
@@ -181,6 +173,24 @@ class AdmTransactionsController extends AppController {
 		if (!$this->AdmTransaction->exists()) {
 			throw new NotFoundException(__('Invalid %s', __('adm transaction')));
 		}
+		
+		//verify if exist child
+		$transitions = $this->AdmTransaction->AdmTransition->find('count', array('conditions'=>array("AdmTransition.adm_transaction_id"=>$id)));
+		$rolesTransactions = $this->AdmTransaction->AdmRolesTransaction->find('count', array('conditions'=>array("AdmRolesTransaction.adm_transaction_id"=>$id)));
+		$child = $transitions + $rolesTransactions;
+		if($child > 0){
+			$this->Session->setFlash(
+				__('Tiene hijos no se puede eliminar'),
+				'alert',
+				array(
+					'plugin' => 'TwitterBootstrap',
+					'class' => 'alert-error'
+				)
+			);
+			$this->redirect(array('action' => 'index'));
+		}
+		///////////////
+		
 		if ($this->AdmTransaction->delete()) {
 			$this->Session->setFlash(
 				__('The %s deleted', __('adm transaction')),

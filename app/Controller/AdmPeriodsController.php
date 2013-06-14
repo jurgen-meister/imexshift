@@ -12,23 +12,20 @@ class AdmPeriodsController extends AppController {
  *
  * @var string
  */
-	public $layout = 'default';
+//	public $layout = 'bootstrap';
 
 /**
  * Helpers
  *
  * @var array
  */
-	//public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
+//	public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
 /**
  * Components
  *
  * @var array
  */
-	//public $components = array('Session');
-	public  function isAuthorized($user){
-		return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
-	}
+//	public $components = array('Session');
 /**
  * index method
  *
@@ -37,20 +34,6 @@ class AdmPeriodsController extends AppController {
 	public function index() {
 		$this->AdmPeriod->recursive = 0;
 		$this->set('admPeriods', $this->paginate());
-	}
-
-/**
- * view method
- *
- * @param string $id
- * @return void
- */
-	public function view($id = null) {
-		$this->AdmPeriod->id = $id;
-		if (!$this->AdmPeriod->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm period')));
-		}
-		$this->set('admPeriod', $this->AdmPeriod->read(null, $id));
 	}
 
 /**
@@ -82,79 +65,30 @@ class AdmPeriodsController extends AppController {
 				);
 			}
 		}
+		$lastPeriod = $this->AdmPeriod->find('first', array(
+			'order'=>array('AdmPeriod.id'=>'desc'),
+			'fields'=>array('AdmPeriod.name')
+		));
+		$this->set('newPeriod', $lastPeriod['AdmPeriod']['name'] + 1);
+		
+		
+		//$lastPeriod = $newPeriod - 1;
+		//$this->_generate_new_period_data(2014, 2015);
 	}
 
-/**
- * edit method
- *
- * @param string $id
- * @return void
- */
-	public function edit($id = null) {
-		$this->AdmPeriod->id = $id;
-		if (!$this->AdmPeriod->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm period')));
-		}
-		if ($this->request->is('post') || $this->request->is('put')) {
-			$this->request->data['AdmPeriod']['lc_transaction']='MODIFY';
-			if ($this->AdmPeriod->save($this->request->data)) {
-				$this->Session->setFlash(
-					__('The %s has been saved', __('adm period')),
-					'alert',
-					array(
-						'plugin' => 'TwitterBootstrap',
-						'class' => 'alert-success'
-					)
-				);
-				$this->redirect(array('action' => 'index'));
-			} else {
-				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('adm period')),
-					'alert',
-					array(
-						'plugin' => 'TwitterBootstrap',
-						'class' => 'alert-error'
-					)
-				);
+	public function ajax_add_period(){
+		if($this->RequestHandler->isAjax()){
+			$newPeriod = $this->request->data['period'];
+			$lastPeriod = $newPeriod - 1;
+			$creator = $this->Session->read('UserRestriction.id');
+			try{
+				$this->AdmPeriod->saveNewPeriod($lastPeriod, $newPeriod, $creator);//My own transac function, is in the model
+				echo 'success|'.($newPeriod+1);
+			}catch(Exception $e){
+				echo 'error';
 			}
-		} else {
-			$this->request->data = $this->AdmPeriod->read(null, $id);
 		}
 	}
 
-/**
- * delete method
- *
- * @param string $id
- * @return void
- */
-	public function delete($id = null) {
-		if (!$this->request->is('post')) {
-			throw new MethodNotAllowedException();
-		}
-		$this->AdmPeriod->id = $id;
-		if (!$this->AdmPeriod->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm period')));
-		}
-		if ($this->AdmPeriod->delete()) {
-			$this->Session->setFlash(
-				__('The %s deleted', __('adm period')),
-				'alert',
-				array(
-					'plugin' => 'TwitterBootstrap',
-					'class' => 'alert-success'
-				)
-			);
-			$this->redirect(array('action' => 'index'));
-		}
-		$this->Session->setFlash(
-			__('The %s was not deleted', __('adm period')),
-			'alert',
-			array(
-				'plugin' => 'TwitterBootstrap',
-				'class' => 'alert-error'
-			)
-		);
-		$this->redirect(array('action' => 'index'));
-	}
+//END CONTROLLER
 }

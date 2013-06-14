@@ -12,7 +12,7 @@ class AdmControllersController extends AppController {
  *
  * @var string
  */
-	public $layout = 'default'; 
+//	public $layout = 'default'; 
 
 /**
  * Helpers
@@ -27,11 +27,11 @@ class AdmControllersController extends AppController {
  * @var array
  */
 	//public $components = array('RequestHandler','Session');  // lo puse en appController para que lo usen todos
-
+/*
 	public  function isAuthorized($user){
 		return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
 	}
-	
+*/	
 /**
  * index method
  *
@@ -39,21 +39,11 @@ class AdmControllersController extends AppController {
  */
 	public function index() {
 		$this->AdmController->recursive = 0;
+		 $this->paginate = array(
+			'order'=>array('AdmController.name'=>'asc'),
+			'limit' => 20
+		);
 		$this->set('admControllers', $this->paginate());
-	}
-
-/**
- * view method
- *
- * @param string $id
- * @return void
- */
-	public function view($id = null) {
-		$this->AdmController->id = $id;
-		if (!$this->AdmController->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm controller')));
-		}
-		$this->set('admController', $this->AdmController->read(null, $id));
 	}
 
 /**
@@ -64,83 +54,31 @@ class AdmControllersController extends AppController {
 	public function add() {
 		
 		if ($this->request->is('post')) {
-			$this->AdmController->create();
-			///////////////
-			$initials = $this->request->data['AdmController']['adm_module_id'];
-			//busco el id por las initials, ya que de esa forma llamo los controllers de la app Ej:Adm
-			$numericModuleId=$this->AdmController->AdmModule->find('all', array('fields'=>'id','recursive'=>-1, 'conditions'=>array('AdmModule.initials'=>  strtolower($initials))));
-			//Coloco el id int en la data enviada para que no haya error	
-			$this->request->data['AdmController']['adm_module_id'] = $numericModuleId[0]['AdmModule']['id'];
-			///////////////
-
-			//Save controller
-			
-			$this->AdmController->save($this->request->data);
-			$idController = $this->AdmController->getInsertID();
-			
-			
-			$admTransactions =array(
-					array("adm_controller_id"=>$idController, "name"=>"CREATE", "description"=>"Record Creation", "sentence"=>"ADD"),
-					array("adm_controller_id"=>$idController, "name"=>"MODIFY", "description"=>"Record Modification", "sentence"=>"EDIT"),
-					array("adm_controller_id"=>$idController, "name"=>"ELIMINATE", "description"=>"Record Elimination", "sentence"=>"DELETE")
-			);
-			$this->AdmController->AdmTransaction->saveMany($admTransactions);
-			
-			$admStates =array(
-					array("adm_controller_id"=>$idController, "name"=>"INITIAL", "description"=>"Initial state (Non-existent)"),
-					array("adm_controller_id"=>$idController, "name"=>"ELABORATED", "description"=>"Elaborated state"),
-					array("adm_controller_id"=>$idController, "name"=>"FINAL", "description"=>"Final state (Non-existent)")
-			);
-			$this->AdmController->AdmState->saveMany($admStates);
-			
-			
-			$vector = $this->AdmController->AdmState->find('all', array("recursive"=>-1, "conditions"=>array("adm_controller_id"=>$idController), "fields"=>"id"));
-			foreach ($vector as $key => $val){
-				echo $val['AdmState']['id'];
-				$vState[$key] = $val['AdmState']['id'];
-			}
-			//debug($vector);
-			
-			$vector2 = $this->AdmController->AdmTransaction->find('all', array("recursive"=>-1, "conditions"=>array("adm_controller_id"=>$idController), "fields"=>"id"));
-			foreach ($vector2 as $key => $val){
-				echo $val['AdmTransaction']['id'];
-				$vTransaction[$key] = $val['AdmTransaction']['id'];
-			}
-			//debug($vector2);
-			//debug($vTransaction);
-			
-			
-			$admTransitions =array(
-					array("adm_state_id"=>$vState[0], "adm_transaction_id"=>$vTransaction[0], "adm_final_state_id"=>$vState[1]),
-					array("adm_state_id"=>$vState[1], "adm_transaction_id"=>$vTransaction[1], "adm_final_state_id"=>$vState[1]),
-					array("adm_state_id"=>$vState[1], "adm_transaction_id"=>$vTransaction[2], "adm_final_state_id"=>$vState[2])
-					
-			);
-			//$comprobado = $this->AdmController->AdmState->AdmTransition->saveMany($admTransitions);
-			
-			if ($this->AdmController->AdmState->AdmTransition->saveMany($admTransitions)) {
-				//$idController = $this->AdmController->getInsertID();
-				
-			
+			//$this->AdmController->create();
+			if($this->AdmController->createControlAndLifeCycles($this->request->data)){
 				$this->Session->setFlash(
-					__('The %s has been saved ->', __('adm controller')),
+					'Se creo el Controlador y sus Ciclos de Vida predeterminados(Estados, Transacciones y Transiciones).',
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
 						'class' => 'alert-success'
 					)
 				);
-				$this->redirect(array('action' => 'index'));
-			} else {
+				$this->redirect(array('action' => 'add'));
+			}else{
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('adm controller')),
+					'<strong>OCURRIO UN PROBLEMA!</strong> No se pudo crear el Controlador y sus Ciclos de Vida predeterminados(Estados, Transacciones y Transiciones).',
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
 						'class' => 'alert-error'
 					)
 				);
+				$this->redirect(array('action' => 'add'));
 			}
+			
+			//$this->redirect(array('action' => 'index'));
+			
 			////////////////////
 	  }
 		
@@ -216,61 +154,7 @@ class AdmControllersController extends AppController {
 		//return $controllers;
 	}
 
-	
-	public function ajax_save(){
-		//en este caso no sirve porque se debe ingresar otros datos mas
-		/*
-		if($this->RequestHandler->isAjax()){
-			
-			if(isset($this->request->data['controller'])){
-					$new = $this->request->data['controller']; 
-				}else{
-					$new = array();
-			}
-			
-			debug($new);
-			
-			
-			
-			$initialModule = strtolower($this->request->data['module']);
-			$catchCheckedControllers = $this->AdmController->find('all', array('recursive'=>0,'fields'=>array('AdmController.name'), 'conditions'=>array('AdmModule.initials'=>$initialModule)));
-			$old = array();
-			foreach ($catchCheckedControllers as $key => $value) {
-				$old[$key] = $value['AdmController']['name'];
-			}
-			debug($old);
-			
-			if(count($new) == 0 AND count($old) == 0){                   
-					echo 'missing'; // envia al data del js de jquery
-                }else{
-					$insert=array_diff($new,$old);
-                    $delete=array_diff($old,$new);
-					
-					//Aqui se elimina los antiguos valores
-                    if(count($delete)>0){
-                    $this->AdmController->deleteAll(array('adm_role_id'=>$role, 'adm_action_id' => $delete));
-                    }
-                    //Aqui se guarda los nuevos valores
-                    if(count($insert)>0){
-                        //Para Insertar, se debe formatear el vector para que reconozca ORM de cake
-                        $miData = array();
-                        $cont = 0;
-                        foreach($insert as $var){
-                            $miData[$cont]['adm_role_id'] = $role;
-                            $miData[$cont]['adm_action_id'] = $var;
-                            $cont++;
-                        }
-                        //debug($miData);
-                        $this->AdmController->saveMany($miData);
-                    }
-					echo 'success'; // envia al data del js de jquery
-			}
-			
-		}
-		*/		
-	}
-
-			/**
+/**
  * edit method
  *
  * @param string $id
@@ -324,6 +208,25 @@ class AdmControllersController extends AppController {
 		if (!$this->AdmController->exists()) {
 			throw new NotFoundException(__('Invalid %s', __('adm controller')));
 		}
+		
+		$actions = $this->AdmController->AdmAction->find('count', array('conditions'=>array('AdmAction.adm_controller_id'=>$id)));
+		$transactions = $this->AdmController->AdmTransaction->find('count', array('conditions'=>array('AdmTransaction.adm_controller_id'=>$id)));
+		$states = $this->AdmController->AdmState->find('count', array('conditions'=>array('AdmState.adm_controller_id'=>$id)));
+		
+		$error = $actions + $transactions + $states;
+		
+		if($error > 0){
+			$this->Session->setFlash(
+				__('No se puede eliminar porque tiene hijos'),
+				'alert',
+				array(
+					'plugin' => 'TwitterBootstrap',
+					'class' => 'alert-error'
+				)
+			);
+			$this->redirect(array('action' => 'index'));
+		}
+		
 		if ($this->AdmController->delete()) {
 			$this->Session->setFlash(
 				__('The %s deleted', __('adm controller')),

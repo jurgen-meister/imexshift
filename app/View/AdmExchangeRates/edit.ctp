@@ -1,32 +1,38 @@
-<div class="row-fluid">
-	<div class="span9">
+<!-- ************************************************************************************************************************ -->
+<div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
+<!-- ************************************************************************************************************************ -->
+<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 1/2 *************************************** -->
+<div class="widget-box">
+	<div class="widget-title">
+		<span class="icon">
+			<i class="icon-edit"></i>								
+		</span>
+		<h5>Editar Tipo de Cambio </h5>
+	</div>
+	<div class="widget-content nopadding">
 		<?php echo $this->BootstrapForm->create('AdmExchangeRate', array('class' => 'form-horizontal'));?>
 			<fieldset>
-				<legend><?php echo __('Editar %s', __('Tipo de Cambio')); ?></legend>
 				<?php
 				echo $this->BootstrapForm->input('currency', array(
 					'label' => 'Moneda:',
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
+					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
 				);
 				echo $this->BootstrapForm->input('value', array(
 					'label' => 'Monto:',
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
+					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
 				);				
 				echo $this->BootstrapForm->hidden('id');
 				?>
-				<?php echo $this->BootstrapForm->submit(__('Submit'));?>
+				<div class="form-actions" style="text-align: center">
+				<?php echo $this->BootstrapForm->submit(__('Guardar Cambios'), array('div'=>false, 'class'=>'btn-primary'));?>
+				<?php echo ' '.$this->Html->link('Cancelar', array_merge(array('action'=>'index')), array('class'=>'btn') );?>
+			</div>
 			</fieldset>
 		<?php echo $this->BootstrapForm->end();?>
-	</div>
-<!--	<div class="span3">
-		<div class="well" style="padding: 8px 0; margin-top:8px;">
-		<ul class="nav nav-list">
-			<li class="nav-header"><?php echo __('Actions'); ?></li>
-			<li><?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $this->Form->value('AdmExchangeRate.id')), null, __('Are you sure you want to delete # %s?', $this->Form->value('AdmExchangeRate.id'))); ?></li>
-			<li><?php echo $this->Html->link(__('List %s', __('Adm Exchange Rates')), array('action' => 'index'));?></li>
-		</ul>
-		</div>
-	</div>-->
+	<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
+	</div> <!-- Belongs to: <div class="widget-content nopadding"> -->
+</div> <!-- Belongs to: <div class="widget-box"> -->
+<!-- //******************************** END - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
 </div>

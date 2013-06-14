@@ -24,7 +24,7 @@ class AdmTransition extends AppModel {
 			'fields' => '',
 			'order' => ''
 		),
-		'AdmAction' => array(
+		'AdmTransaction' => array(
 			'className' => 'AdmTransaction',
 			'foreignKey' => 'adm_transaction_id',
 			'conditions' => '',

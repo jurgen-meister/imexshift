@@ -26,11 +26,11 @@ class AdmModulesController extends AppController {
  * @var array
  */
 //	public $components = array('Session');
-
+/*
 	public  function isAuthorized($user){
 		return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
 	}
-	
+*/	
 /**
  * index method
  *
@@ -42,19 +42,7 @@ class AdmModulesController extends AppController {
 	}
 
 	
-/**
- * view method
- *
- * @param string $id
- * @return void
- */
-	public function view($id = null) {
-		$this->AdmModule->id = $id;
-		if (!$this->AdmModule->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm module')));
-		}
-		$this->set('admModule', $this->AdmModule->read(null, $id));
-	}
+
 
 /**
  * add method
@@ -139,6 +127,21 @@ class AdmModulesController extends AppController {
 		if (!$this->AdmModule->exists()) {
 			throw new NotFoundException(__('Invalid %s', __('adm module')));
 		}
+		
+		$controllers = $this->AdmModule->AdmController->find('count', array('conditions'=>array('AdmController.adm_module_id'=>$id)));
+		
+		if($controllers > 0){
+			$this->Session->setFlash(
+				__('No se puede eliminar porque tiene controladores dependientes'),
+				'alert',
+				array(
+					'plugin' => 'TwitterBootstrap',
+					'class' => 'alert-error'
+				)
+			);
+			$this->redirect(array('action' => 'index'));
+		}
+		
 		if ($this->AdmModule->delete()) {
 			$this->Session->setFlash(
 				__('The %s deleted', __('adm module')),

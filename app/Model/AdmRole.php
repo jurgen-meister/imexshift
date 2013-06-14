@@ -70,8 +70,8 @@ class AdmRole extends AppModel {
  * @var array
  */
 	public $hasMany = array(
-		'AdmNodesRolesUser' => array(
-			'className' => 'AdmNodesRolesUser',
+		'AdmUserRestriction' => array(
+			'className' => 'AdmUserRestriction',
 			'foreignKey' => 'adm_role_id',
 			'dependent' => false,
 			'conditions' => '',

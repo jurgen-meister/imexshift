@@ -28,7 +28,7 @@
 			<?php 
 			//////////////////////// START - Message not authorized, when there is no permission///////////
 			//Is used authError from AppController 'authError'=>'Auth Error', but I don't use the message only the string not empty
-			if($this->Session->flash('auth') <> ''){ echo '<span style="font-weight:bold;">La sesión termino!</span>';}
+			//if($this->Session->flash('auth') <> ''){ echo '<span style="font-weight:bold;">La sesión termino!</span>';}
 			///////////////////////// END - Message not authorized, when there is no permission////////////
 			?>	
 		</span>
@@ -40,3 +40,5 @@
 		</span>
 	</div>
 </div>
+<br>
+<?php  echo $this->Session->flash();  //to show setFlash messages ?>

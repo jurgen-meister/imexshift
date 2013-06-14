@@ -67,7 +67,15 @@ $(document).ready(function(){
             url:moduleController + "ajax_save",
             data:{role: $("#roles").val(), controller: $("#controllers").val(), transaction: captureCheckbox() },
             beforeSend:showProcessing,
-            success:showSave
+            success:showSave,
+			error:function(data){
+				$.gritter.add({
+					title:	'OCURRIO UN PROBLEMA!',
+					text:	'Vuelva a intentarlo',
+					sticky: false,
+					image:'/imexport/img/error.png'
+				});		
+			}
         });
 	}
 	
@@ -92,10 +100,18 @@ $(document).ready(function(){
 			$("#message").html(send);
 		}
 		if(data == 'success'){
-		send = '<div style="background-color: #90ee90;">Guardado con exito</div>';
+			/*
+			send = '<div style="background-color: #90ee90;">Guardado con exito</div>';
 			$("#message").fadeIn();
 			$("#message").html(send);
 			$("#message").delay(1500).fadeOut(1000);
+			*/
+		   $.gritter.add({
+			title:	'EXITO!',
+			text: 'Cambios guardados',
+			sticky: false,
+			image:'/imexport/img/check.png'
+			});	
 		}
 	}
 	

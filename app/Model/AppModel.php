@@ -31,4 +31,19 @@ App::uses('Model', 'Model');
  * @package       app.Model
  */
 class AppModel extends Model {
+	
+	public function beforeSave($options = array()) {
+		App::import('Model', 'CakeSession');
+		$session = new CakeSession();
+		if(isset($this->data[$this->name]['id'])){
+			$this->data[$this->name]['modifier']=$session->read('UserRestriction.id');
+			$this->data[$this->name]['lc_transaction']='MODIFY';
+		}else{
+			$this->data[$this->name]['creator']=$session->read('UserRestriction.id');
+		}
+        return true;
+    }
+	
+	
+	
 }

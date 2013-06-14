@@ -75,13 +75,21 @@ $(document).ready(function(){
             url:moduleController +"ajax_save",
             data:{role: roleGeneric, module: moduleGeneric, menu: menuGeneric, type: type },
             beforeSend:showProcessing,
-            success:showSave
+            success:showSave,
+			error:function(data){
+				$.gritter.add({
+					title:	'OCURRIO UN PROBLEMA!',
+					text:	'Vuelva a intentarlo',
+					sticky: false,
+					image:'/imexport/img/error.png'
+				});		
+			}
         });
 	}
 	
 	function showSave(data){
-		$("#processing").text("");
 		//$("#message").html(data);
+		/*
 		var send = "";
 		if(data == 'missing'){
 			send = '<div class="alert alert-error">*Debe marcar un menu</div>';
@@ -94,6 +102,14 @@ $(document).ready(function(){
 			$("#message").html(send);
 			$("#message").delay(1500).fadeOut(1000);
 		}
+		*/
+	   $.gritter.add({
+			title:	'EXITO!',
+			text: 'Cambios guardados',
+			sticky: false,
+			image:'/imexport/img/check.png'
+		});	
+	   $("#processing").text("");
 	}
 	
 	function captureCheckbox(){

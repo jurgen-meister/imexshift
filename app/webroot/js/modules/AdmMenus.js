@@ -6,7 +6,7 @@ $(document).ready(function(){
 	
 	//Initialize AJAX
     $('#modules').change(function(){
-        ajax_list_actions();		
+        ajax_list_actions_out();		
     });
 	
 	$('#modules_inside').change(function(){
@@ -17,10 +17,14 @@ $(document).ready(function(){
         ajax_list_actions_inside();		
     });
 	
-	function ajax_list_actions(){
+	$('#cbxSearchModules').change(function(){
+		$('#formAdmMenuIndexOut').submit();
+	});
+	
+	function ajax_list_actions_out(){
         $.ajax({
             type:"POST",
-            url:moduleController + "ajax_list_actions",			
+            url:moduleController + "ajax_list_actions_out",			
             data:{module: $("#modules").val()},
             beforeSend: showProcessing,
             success: showActions

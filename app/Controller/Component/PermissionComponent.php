@@ -18,11 +18,24 @@ class PermissionComponent extends Component{
 				}
 			}
 		}
+		if(count($normalActions) == 0){
+			return false;
+		}
 		$allowed = array_unique(array_merge($normalActions, $ajaxActions));
 		
-		//here must add login default action if it is controller AdmUsers, tomorrow
+		//To always allow login actions, otherwise it won't work
+		if($controllerName == 'AdmUsers'){
+			$allowed['welcome'] = 'welcome';
+			$allowed['login'] = 'login';
+			$allowed['logout'] = 'logout';
+			$allowed['choose_role'] = 'choose_role';
+			$allowed['change_password'] = 'change_password';
+			$allowed['change_user_restriction'] = 'change_user_restriction';
+			$allowed['change_email'] = 'change_email';
+			$allowed['view_user_profile'] = 'view_user_profile';
+		}
 		//debug($allowed);
-
+		
 		if(count($allowed)>0){
 			if(in_array($actionName, $allowed)){
 				return true;

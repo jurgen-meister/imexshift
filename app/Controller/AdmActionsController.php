@@ -28,16 +28,16 @@ class AdmActionsController extends AppController {
 //	public $components = array('RequestHandler','Session');
 	
 	
-	public  function isAuthorized($user){
+	//public  function isAuthorized($user){
 		/*
 		if(!$this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name))){
 			$this->redirect($this->Auth->logout());
 		}
 		return true;
 		 */
-		return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
+	//	return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
 
-	}
+//	}
 	
 	
 	
@@ -49,14 +49,15 @@ class AdmActionsController extends AppController {
 	public function index() {
 		$this->AdmAction->recursive = 0;
 		 $this->paginate = array(
-			'order'=>array('AdmAction.adm_controller_id'=>'asc', 'AdmAction.parent'=>'desc'),
-			'limit' => 25
+			'order'=>array('AdmController.name'=>'asc'),
+			'limit' => 20
 		);
 		 
 		 $array =$this->paginate();
 		 //debug($array);
 		 
 		 //I loop in the called query, and modify each field which has a parent. There must be a better solution with subquery I think
+		 /*
 		 foreach ($array as $key => $value) {
 			 //$value['AdmAction']['parent2'] = "vacio";
 			 $parentId = $value['AdmAction']['parent'];
@@ -69,23 +70,10 @@ class AdmActionsController extends AppController {
 				 $array[$key]['AdmAction']['parent'] = $parentName[0]['AdmController']['name'].'->'.$parentName[0]['AdmAction']['name'];
 			 }
 		 }
+		 */
 		 //$array[0]['AdmAction']['orco'] = '333333';
 		// debug($array);
 		$this->set('admActions', $array);
-	}
-
-/**
- * view method
- *
- * @param string $id
- * @return void
- */
-	public function view($id = null) {
-		$this->AdmAction->id = $id;
-		if (!$this->AdmAction->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm action')));
-		}
-		$this->set('admAction', $this->AdmAction->read(null, $id));
 	}
 
 /**
@@ -102,30 +90,35 @@ class AdmActionsController extends AppController {
 			///
 			if ($this->AdmAction->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('adm action')),
+					__('Acción creada con exito'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
 						'class' => 'alert-success'
 					)
 				);
-				$this->redirect(array('action' => 'index'));
+				$this->redirect(array('action' => 'add'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('adm action')),
+					__('Ocurrio un problema, intentelo de nuevo'),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
 						'class' => 'alert-error'
 					)
 				);
+				$this->redirect(array('action' => 'add'));
 			}
+			
 			/////
 		}
 		//////////////////////////////////////////////////////////////
 		$admModules = $this->AdmAction->AdmController->AdmModule->find('list', array('order'=>'AdmModule.id'));
 		$initialModule =  key($admModules);
-		$admControllers = $this->AdmAction->AdmController->find('list', array('conditions'=>array('AdmController.adm_module_id'=>$initialModule)));
+		$admControllers = $this->AdmAction->AdmController->find('list', array(
+			'conditions'=>array('AdmController.adm_module_id'=>$initialModule),
+			'order'=>array('AdmController.name'=>'ASC')
+		));
 		
 		//$initialController = Inflector::camelize(reset($admControllers));
 		//$idController = key($admControllers);
@@ -168,7 +161,12 @@ class AdmActionsController extends AppController {
 		}
 
 		//DB
-		$dbActions = $this->AdmAction->find('all', array('recursive'=>0, 'fields'=>array('AdmAction.name'), 'conditions'=>array('AdmAction.adm_controller_id'=>$idController)));
+		$dbActions = $this->AdmAction->find('all', array(
+			'recursive'=>0, 
+			'fields'=>array('AdmAction.name'), 
+			'conditions'=>array('AdmAction.adm_controller_id'=>$idController),
+			'order'=>array('AdmAction.name'=>'ASC')
+		));
 		$formatDbActions = array();
 		foreach ($dbActions as $key => $value) {
 			$formatDbActions[$key] = strtolower($value['AdmAction']['name']);
@@ -210,7 +208,10 @@ class AdmActionsController extends AppController {
 		if($this->RequestHandler->isAjax()){
 			//debug($this->request->data);
 			$initialModule =  $this->request->data['module'];
-			$admControllers = $this->AdmAction->AdmController->find('list', array('conditions'=>array('AdmController.adm_module_id'=>$initialModule)));
+			$admControllers = $this->AdmAction->AdmController->find('list', array(
+				'conditions'=>array('AdmController.adm_module_id'=>$initialModule),
+				'order'=>array('AdmController.name'=>'ASC')
+			));
 			//debug($admControllers);
 			if(count($admControllers) == 0){
 				$admControllers[""]="--- Vacio ---";
@@ -304,10 +305,11 @@ class AdmActionsController extends AppController {
 		}
 		
 		//verify if exist child
-		$child = $this->AdmAction->find('count', array('conditions'=>array("AdmAction.parent"=>$id)));
+		//$child = $this->AdmAction->find('count', array('conditions'=>array("AdmAction.parent"=>$id)));
+		$child = $this->AdmAction->AdmMenu->find('count', array('conditions'=>array("AdmMenu.adm_action_id"=>$id)));
 		if($child > 0){
 			$this->Session->setFlash(
-				__('Tiene hijos no se puede eliminar', __('adm action')),
+				__('Tiene hijos no se puede eliminar'),
 				'alert',
 				array(
 					'plugin' => 'TwitterBootstrap',

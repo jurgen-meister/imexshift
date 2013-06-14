@@ -12,7 +12,7 @@ class AdmRolesController extends AppController {
  *
  * @var string
  */
-	public $layout = 'default';
+//	public $layout = 'default';
 
 /**
  * Helpers
@@ -26,11 +26,11 @@ class AdmRolesController extends AppController {
  * @var array
  */
 	//public $components = array('Session');
-	
+	/*
 	public  function isAuthorized($user){
 		return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
 	}
-	
+	*/
 /**
  * index method
  *
@@ -41,19 +41,6 @@ class AdmRolesController extends AppController {
 		$this->set('admRoles', $this->paginate());
 	}
 
-/**
- * view method
- *
- * @param string $id
- * @return void
- */
-	public function view($id = null) {
-		$this->AdmRole->id = $id;
-		if (!$this->AdmRole->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm role')));
-		}
-		$this->set('admRole', $this->AdmRole->read(null, $id));
-	}
 
 /**
  * add method

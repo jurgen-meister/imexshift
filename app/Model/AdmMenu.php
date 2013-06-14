@@ -124,5 +124,13 @@ class AdmMenu extends AppModel {
 			'counterQuery' => ''
 		)
 	);
-
+	
+	/*
+	public function beforeSave($options = array()) {
+		$this->data[$this->name]['creator']=3;
+        return true;
+    }
+	*/
+	
+///////
 }

@@ -48,7 +48,9 @@
 	<!-- contenido  -->
 	<div class="row-fluid">
 		<div class="span4 offset4">
-			<?php echo $this->fetch('content'); ?>
+			<?php 
+			echo $this->fetch('content'); 
+			?>
 		</div>
 	</div>
 	<!-- page specific scripts -->

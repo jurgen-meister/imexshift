@@ -27,9 +27,7 @@ class AdmParametersController extends AppController {
  */
 	//public $components = array('Session');
 	
-	public  function isAuthorized($user){
-		return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
-	}
+
 /**
  * index method
  *
@@ -46,13 +44,6 @@ class AdmParametersController extends AppController {
  * @param string $id
  * @return void
  */
-	public function view($id = null) {
-		$this->AdmParameter->id = $id;
-		if (!$this->AdmParameter->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm parameter')));
-		}
-		$this->set('admParameter', $this->AdmParameter->read(null, $id));
-	}
 
 /**
  * add method

@@ -8,15 +8,15 @@ else:
 			<tr>
 				<th>#</th>
 				<th>Controlador</th>
-				<th>Menus internos</th>
+				<th>Menus/Permisos Internos</th>
 			</tr>
 	<?php foreach ($controllers as $key => $controller): ?>
 		<tr>
-			<td width="5%"><?php echo $cont;?></td>
-			<td width="25%"><?php echo $controller; ?>&nbsp;</td>
-			<td width="70%">
+			<td><?php echo $cont;?></td>
+			<td><?php echo $controller; ?>&nbsp;</td>
+			<td>
 				<?php 				
-				echo $this->Form->input('nose]', array(
+				echo $this->Form->input('chkMenus', array(
 					'label' => '',
 					'type' => 'select',
 					'multiple' => 'checkbox inline',

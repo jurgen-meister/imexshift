@@ -392,7 +392,7 @@ class InvMovementsController extends AppController {
 		}
 		$invWarehouses = $this->InvMovement->InvWarehouse->find('list');
 		$invMovementTypes = $this->InvMovement->InvMovementType->find('list', array(
-			'conditions'=>array('InvMovementType.status'=>'entrada', 'InvMovementType.document'=>0)//0 'cause don't have system document
+			'conditions'=>array('InvMovementType.status'=>'entrada', 'InvMovementType.document'=>0, 'InvMovementType.id !='=>4)//0 'cause don't have system document
 		));
 		
 		$this->InvMovement->recursive = -1;
@@ -416,7 +416,7 @@ class InvMovementsController extends AppController {
 		}
 		$invWarehouses = $this->InvMovement->InvWarehouse->find('list');
 		$invMovementTypes = $this->InvMovement->InvMovementType->find('list', array(
-			'conditions'=>array('InvMovementType.status'=>'salida', 'InvMovementType.document'=>0)//0 'cause don't have system document
+			'conditions'=>array('InvMovementType.status'=>'salida', 'InvMovementType.document'=>0, 'InvMovementType.id !='=>3)//0 'cause don't have system document
 		));
 		
 		$this->InvMovement->recursive = -1;

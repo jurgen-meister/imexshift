@@ -36,10 +36,11 @@ class AdmRolesMenusController extends AppController {
  * @var array
  */
 //	public $components = array('Session');
-	
+	/*
 	public  function isAuthorized($user){
 		return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
 	}
+	 */
 /**
  * index method
  *
@@ -99,7 +100,7 @@ class AdmRolesMenusController extends AppController {
 		}
 		
 		
-		$admRoles = $this->AdmRolesMenu->AdmRole->find('list');
+		$admRoles = $this->AdmRolesMenu->AdmRole->find('list', array('order'=>array('AdmRole.id'=>'ASC')));
 		$admModules = $this->AdmRolesMenu->AdmMenu->AdmModule->find('list');
 		///////////////////////***************************************//////////////////
 		if(count($admRoles) > 0 AND count($admModules) > 0){
@@ -320,6 +321,7 @@ class AdmRolesMenusController extends AppController {
 					foreach($insert as $var){
 						$miData[$cont]['adm_role_id'] = $role;
 						$miData[$cont]['adm_menu_id'] = $var;
+						//$miData[$cont]['creator'] = $this->Session->read('UserRestriction.id');
 						$cont++;
 					}
 					//debug($miData);
@@ -335,7 +337,7 @@ class AdmRolesMenusController extends AppController {
 	
 	public function add_inside(){
 		
-		$admRoles = $this->AdmRolesMenu->AdmRole->find('list');
+		$admRoles = $this->AdmRolesMenu->AdmRole->find('list', array('order'=>array('AdmRole.id'=>'ASC')));
 		$role =key($admRoles);
 		$admModules = $this->AdmRolesMenu->AdmMenu->AdmModule->find('list');
 		$module = key($admModules);
@@ -349,7 +351,7 @@ class AdmRolesMenusController extends AppController {
 		//clave 1
 		$controllers = $this->AdmRolesMenu->AdmMenu->AdmAction->AdmController->find('list', array('conditions'=>array('AdmController.adm_module_id'=>$module)));
 		//clave 1
-
+		//debug($controllers);
 		$this->loadModel('AdmAction');
 
 		$menusCheckBoxes =array();
@@ -368,7 +370,7 @@ class AdmRolesMenusController extends AppController {
 				foreach ($menus as $key2 => $value2) {
 					if(count($value2['AdmMenu']) > 0){
 						if($value2['AdmMenu'][0]['inside'] == 1){
-							$menusCheckBoxes[$key1][$value2['AdmMenu'][0]['id']]=$value2['AdmMenu'][0]['name'];
+							$menusCheckBoxes[$key1][$value2['AdmMenu'][0]['id']]=$value2['AdmAction']['name']; //$value2['AdmMenu'][0]['name']
 							$auxMenus[$cont] = $value2['AdmMenu'][0]['id'];
 						}
 						$cont++;
