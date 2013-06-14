@@ -12,20 +12,20 @@ class AdmUserLogsController extends AppController {
  *
  * @var string
  */
-	public $layout = 'bootstrap';
+//	public $layout = 'bootstrap';
 
 /**
  * Helpers
  *
  * @var array
  */
-	public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
+//	public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
 /**
  * Components
  *
  * @var array
  */
-	public $components = array('Session');
+//	public $components = array('Session');
 /**
  * index method
  *
@@ -36,19 +36,7 @@ class AdmUserLogsController extends AppController {
 		$this->set('admUserLogs', $this->paginate());
 	}
 
-/**
- * view method
- *
- * @param string $id
- * @return void
- */
-	public function view($id = null) {
-		$this->AdmUserLog->id = $id;
-		if (!$this->AdmUserLog->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm user log')));
-		}
-		$this->set('admUserLog', $this->AdmUserLog->read(null, $id));
-	}
+
 
 /**
  * add method

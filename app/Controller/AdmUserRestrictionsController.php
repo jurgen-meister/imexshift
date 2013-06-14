@@ -12,20 +12,20 @@ class AdmUserRestrictionsController extends AppController {
  *
  * @var string
  */
-	public $layout = 'bootstrap';
+//	public $layout = 'bootstrap';
 
 /**
  * Helpers
  *
  * @var array
  */
-	public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
+//	public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
 /**
  * Components
  *
  * @var array
  */
-	public $components = array('Session');
+//	public $components = array('Session');
 /**
  * index method
  *
@@ -34,20 +34,6 @@ class AdmUserRestrictionsController extends AppController {
 	public function index() {
 		$this->AdmUserRestriction->recursive = 0;
 		$this->set('admUserRestrictions', $this->paginate());
-	}
-
-/**
- * view method
- *
- * @param string $id
- * @return void
- */
-	public function view($id = null) {
-		$this->AdmUserRestriction->id = $id;
-		if (!$this->AdmUserRestriction->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm user restriction')));
-		}
-		$this->set('admUserRestriction', $this->AdmUserRestriction->read(null, $id));
 	}
 
 /**

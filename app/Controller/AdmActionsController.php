@@ -57,6 +57,7 @@ class AdmActionsController extends AppController {
 		 //debug($array);
 		 
 		 //I loop in the called query, and modify each field which has a parent. There must be a better solution with subquery I think
+		 /*
 		 foreach ($array as $key => $value) {
 			 //$value['AdmAction']['parent2'] = "vacio";
 			 $parentId = $value['AdmAction']['parent'];
@@ -69,23 +70,10 @@ class AdmActionsController extends AppController {
 				 $array[$key]['AdmAction']['parent'] = $parentName[0]['AdmController']['name'].'->'.$parentName[0]['AdmAction']['name'];
 			 }
 		 }
+		 */
 		 //$array[0]['AdmAction']['orco'] = '333333';
 		// debug($array);
 		$this->set('admActions', $array);
-	}
-
-/**
- * view method
- *
- * @param string $id
- * @return void
- */
-	public function view($id = null) {
-		$this->AdmAction->id = $id;
-		if (!$this->AdmAction->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm action')));
-		}
-		$this->set('admAction', $this->AdmAction->read(null, $id));
 	}
 
 /**
@@ -109,7 +97,7 @@ class AdmActionsController extends AppController {
 						'class' => 'alert-success'
 					)
 				);
-				$this->redirect(array('action' => 'index'));
+				$this->redirect(array('action' => 'add'));
 			} else {
 				$this->Session->setFlash(
 					__('Ocurrio un problema, intentelo de nuevo'),
@@ -119,7 +107,9 @@ class AdmActionsController extends AppController {
 						'class' => 'alert-error'
 					)
 				);
+				$this->redirect(array('action' => 'add'));
 			}
+			
 			/////
 		}
 		//////////////////////////////////////////////////////////////
@@ -315,10 +305,11 @@ class AdmActionsController extends AppController {
 		}
 		
 		//verify if exist child
-		$child = $this->AdmAction->find('count', array('conditions'=>array("AdmAction.parent"=>$id)));
+		//$child = $this->AdmAction->find('count', array('conditions'=>array("AdmAction.parent"=>$id)));
+		$child = $this->AdmAction->AdmMenu->find('count', array('conditions'=>array("AdmMenu.adm_action_id"=>$id)));
 		if($child > 0){
 			$this->Session->setFlash(
-				__('Tiene hijos no se puede eliminar', __('adm action')),
+				__('Tiene hijos no se puede eliminar'),
 				'alert',
 				array(
 					'plugin' => 'TwitterBootstrap',

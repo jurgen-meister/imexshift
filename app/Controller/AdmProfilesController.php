@@ -28,9 +28,7 @@ class AdmProfilesController extends AppController {
 //	public $components = array('Session');
 	
 
-	public  function isAuthorized($user){
-		return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
-	}
+
 /**
  * index method
  *
@@ -41,19 +39,6 @@ class AdmProfilesController extends AppController {
 		$this->set('admProfiles', $this->paginate());
 	}
 
-/**
- * view method
- *
- * @param string $id
- * @return void
- */
-	public function view($id = null) {
-		$this->AdmProfile->id = $id;
-		if (!$this->AdmProfile->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm profile')));
-		}
-		$this->set('admProfile', $this->AdmProfile->read(null, $id));
-	}
 
 /**
  * add method

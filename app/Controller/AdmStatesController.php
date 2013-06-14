@@ -173,6 +173,22 @@ class AdmStatesController extends AppController {
 		if (!$this->AdmState->exists()) {
 			throw new NotFoundException(__('Invalid %s', __('adm state')));
 		}
+		
+		//verify if exist child
+		$child = $this->AdmState->AdmTransition->find('count', array('conditions'=>array("AdmTransition.adm_state_id"=>$id)));
+		if($child > 0){
+			$this->Session->setFlash(
+				__('Tiene hijos no se puede eliminar'),
+				'alert',
+				array(
+					'plugin' => 'TwitterBootstrap',
+					'class' => 'alert-error'
+				)
+			);
+			$this->redirect(array('action' => 'index'));
+		}
+		///////////////
+		
 		if ($this->AdmState->delete()) {
 			$this->Session->setFlash(
 				__('The %s deleted', __('adm state')),
