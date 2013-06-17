@@ -360,6 +360,99 @@
 				</div> -->
 			<!-- ////////////////////////////////// FIN COSTO /////////////////////////////////////// -->
 				
+			<!-- ////////////////////////////////// INICIO - PAGO /////////////////////////////////////// -->
+	<!--			<ul class="nav nav-tabs">
+					<li class="active">
+						<a href="#">Costos Adicionales de Importación</a>
+					</li>
+				</ul>-->
+				
+
+				<div class="row-fluid">
+					
+			<!--		<div class="span1"></div>
+					
+					<div id="boxTable" class="span8">-->
+						
+						<?php if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){ ?>
+						<a class="btn btn-primary" href='#' id="btnAddPay" title="Adicionar Pago"><i class="icon-plus icon-white"></i></a>
+						<?php } ?>
+						<p></p>
+						
+						<table class="table table-bordered table-condensed table-striped table-hover" id="tablaPays">
+							<thead>
+								<tr>
+									<th>Pago</th>
+									<th>Fecha Pago</th>
+									<th>Fecha Limite</th>
+									<th>Monto</th>
+									<th>Deuda</th>
+									<th>Descripcion</th>
+									<th>Estado</th>
+									<?php if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){ ?>
+									<th class="columnPaysButtons"></th>
+									<?php }?>
+								</tr>
+							</thead>
+							<tbody>
+								<?php
+								$total = 0;
+								$debtAmount = 0;
+								for($i=0; $i<count($purPayments); $i++){
+								//	$subtotal = ($purPrices[$i]['cantidad'])*($purPrices[$i]['price']);
+									echo '<tr>';
+										echo '<td><span id="spaPayName'.$purPayments[$i]['payId'].'">'.$purPayments[$i]['pay'].'</span><input type="hidden" value="'.$purPayments[$i]['payId'].'" id="txtPayId" ></td>';
+										echo '<td><span id="spaDate'.$purPayments[$i]['payId'].'">'.$purPayments[$i]['date'].'</span></td>';
+										echo '<td><span id="spaDueDate'.$purPayments[$i]['payId'].'">'.$purPayments[$i]['dueDate'].'</span></td>';
+										echo '<td><span id="spaPaidAmount'.$purPayments[$i]['payId'].'">'.$purPayments[$i]['paidAmount'].'</span></td>';
+/*calculado ---> */						echo '<td><span id="spaDebtAmount'.$purPayments[$i]['payId'].'">'.$debtAmount.'</span></td>';
+										echo '<td><span id="spaDescription'.$purPayments[$i]['payId'].'">'.$purPayments[$i]['description'].'</span></td>';
+										echo '<td><span id="spaState'.$purPayments[$i]['payId'].'">'.$purPayments[$i]['state'].'</span></td>';
+										
+										if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){
+											echo '<td class="columnPaysButtons">';
+											echo '<a class="btn btn-primary" href="#" id="btnEditPay'.$purPayments[$i]['payId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
+												
+												<a class="btn btn-danger" href="#" id="btnDeletePay'.$purPayments[$i]['payId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
+											echo '</td>';
+										}
+									echo '</tr>';	
+									$total += $subtotal;
+								}
+//								echo '<tr>';
+//										echo '<th></th>';
+//										echo '<th></th>';
+//										echo '<th>Total:</th>';
+//										echo '<th>'.$xxxtotal.'</th>';
+//									echo '</tr>';
+								?>
+<!--								<tr>
+									<th></th>
+									<th></th>
+									<th></th>
+									<th></th>
+								</tr>-->
+							</tbody>
+							
+						</table>
+		<!--			<table class="table table-condensed table-striped table-hover">
+						<thead>
+								<tr>
+									<th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+									<th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
+									<th>Total:</th>
+									<th><?php echo $total; ?></th>
+								</tr>
+							</thead>
+					</table>
+						
+					</div>
+					
+					<div class="span3"></div>
+					
+				</div> -->
+			<!-- ////////////////////////////////// FIN PAGO /////////////////////////////////////// -->
+			
 			<!-- ////////////////////////////////// INICIO BOTONES /////////////////////////////////////// -->
 			<!--<div class="form-actions">--><!-- no sirve se desconfigura los botones en modo tablet -->
 			<div class="row-fluid"> <!-- INICIO - row fluid para alinear los botones -->
@@ -508,7 +601,7 @@
 
 
 
-<!-- ////////////////////////////////// INICIO MODAL (Esta fuera del span9 pero sigue pertenciendo al template principal CONTAINER FLUID/ROW FLUID) ////////////////////////////// -->
+<!-- ////////////////////////////////// INICIO MODAL COSTS (Esta fuera del span9 pero sigue pertenciendo al template principal CONTAINER FLUID/ROW FLUID) ////////////////////////////// -->
 			<div id="modalAddCost" class="modal hide fade ">
 				  
 				  <div class="modal-header">
@@ -522,8 +615,8 @@
 					echo '<div id="boxModalInitiateCost">';
 						//////////////////////////////////////
 
-						echo $this->BootstrapForm->input('items_id', array(				
-						'label' => 'Item:',
+						echo $this->BootstrapForm->input('costs_id', array(				
+						'label' => 'Costo:',
 						'id'=>'cbxModalCosts',
 						'class'=>'input-xlarge',
 						'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
@@ -567,4 +660,135 @@
 				  </div>
 					
 			</div>
-<!-- ////////////////////////////////// FIN MODAL (Esta fuera del span9 pero sigue pertenciendo al template principal CONTAINER FLUID/ROW FLUID) ////////////////////////////// -->
+<!-- ////////////////////////////////// FIN MODAL COSTS(Esta fuera del span9 pero sigue pertenciendo al template principal CONTAINER FLUID/ROW FLUID) ////////////////////////////// -->
+
+<!-- ////////////////////////////////// INICIO MODAL PAYS(Esta fuera del span9 pero sigue pertenciendo al template principal CONTAINER FLUID/ROW FLUID) ////////////////////////////// -->
+			<div id="modalAddPay" class="modal hide fade ">
+				  
+				  <div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+					<h3 id="myModalLabel">Pagos</h3>
+				  </div>
+				  
+				  <div class="modal-body form-horizontal">
+					<!--<p>One fine body…</p>-->
+					<?php
+					echo '<div id="boxModalInitiatePay">';
+						//////////////////////////////////////
+
+						echo $this->BootstrapForm->input('pays_id', array(				
+						'label' => 'Pagos:',
+						'id'=>'cbxModalPays',
+						'class'=>'input-xlarge',
+						'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+						));
+						echo '<br>';
+//						$amount='';
+//						echo '<div id="boxModalAmount">';
+							
+
+//						echo '</div>';		
+//						echo '<br>';
+
+						//////////////////////////////////////
+//						echo $this->BootstrapForm->input('date_in', array(
+//					'required' => 'required',
+//					'label' => 'Fecha:',
+//					'id'=>'txtDate',
+//					'value'=>$date,
+//					'disabled'=>$disable,
+//					'maxlength'=>'0',
+////					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+//				));
+						
+					echo '</div>';
+					echo $this->BootstrapForm->input('date', array(		
+					'required' => 'required',
+				//	'disabled'=>'disable',
+					'maxlength'=>'0',
+					'label' => 'Fecha Pagssssso:',
+					'id'=>'txtModalDate',
+					//'value'=>$date
+					//		'style'=>'background-color:#EEEEEE',
+					//		'class'=>'input-small',
+					//		'maxlength'=>'15'
+							));
+					echo '<br>';
+					
+//					echo '</div>';
+					echo $this->BootstrapForm->input('due_date', array(				
+							'label' => 'Fecha Limite:',
+							'id'=>'txtModalDueDate',
+						//	'value'=>$amount,
+							'style'=>'background-color:#EEEEEE',
+							'class'=>'input-small',
+							'maxlength'=>'15'
+							));
+					echo '<br>';
+					
+//					echo '</div>';
+//					echo $this->BootstrapForm->input('debt_amount', array(				
+//							'label' => 'Deuda:',
+//							'id'=>'txtModalDebtAmount',
+//						//	'value'=>$amount,
+//							'style'=>'background-color:#EEEEEE',
+//							'class'=>'input-small',
+//							'maxlength'=>'15'
+//							));
+//					echo '<br>';
+					
+//					echo '</div>';
+					echo $this->BootstrapForm->input('amount', array(				
+							'label' => 'Monto Pagado:',
+							'id'=>'txtModalPaidAmount',
+						//	'value'=>$amount,
+							'style'=>'background-color:#EEEEEE',
+							'class'=>'input-small',
+							'maxlength'=>'15'
+							));
+					echo '<br>';
+					
+//					echo '</div>';
+					echo $this->BootstrapForm->input('description', array(				
+							'label' => 'Descripcion:',
+							'id'=>'txtModalDescription',
+						//	'value'=>$amount,
+							'style'=>'background-color:#EEEEEE',
+							'class'=>'input-small',
+							'maxlength'=>'15'
+							));
+					echo '<br>';
+					
+//					echo '</div>';
+					echo $this->BootstrapForm->input('state', array(				
+							'label' => 'Estado:',
+							'id'=>'txtModalState',
+						//	'value'=>$amount,
+							'style'=>'background-color:#EEEEEE',
+							'class'=>'input-small',
+							'maxlength'=>'15'
+							));
+					echo '<br>';
+
+//					echo $this->BootstrapForm->input('quantity', array(				
+//					'label' => 'Cantidad:',
+//					'id'=>'txtModalQuantity',
+//					'class'=>'input-small',
+//					//'value'=>'6',
+//					'maxlength'=>'10',
+//					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+//					));
+					?>
+					  <div id="boxModalValidatePay" class="alert-error"></div> 
+				  </div>
+				  
+				  <div class="modal-footer">
+					 <!-- Ztep 0 Save button from modal triggers btnModalAddItem -->
+					<a href='#' class="btn btn-primary" id="btnModalAddPay">Guardar add cost</a>
+					<a href='#' class="btn btn-primary" id="btnModalEditPay">Guardar edit cost</a>
+					<button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+					
+				  </div>
+					
+			</div>
+<!-- ////////////////////////////////// FIN MODAL PAYS (Esta fuera del span9 pero sigue pertenciendo al template principal CONTAINER FLUID/ROW FLUID) ////////////////////////////// -->

@@ -83,6 +83,7 @@ class PurPurchasesController extends AppController {
 			$date = date("d/m/Y", strtotime($this->request->data['PurPurchase']['date']));//$this->request->data['InvMovement']['date'];
 			$purDetails = $this->_get_movements_details($id);
 			$purPrices = $this->_get_costs_details($id);
+			$purPayments = $this->_get_pays_details($id);
 			$documentState =$this->request->data['PurPurchase']['lc_state'];
 			$genericCode = $this->request->data['PurPurchase']['code'];
 			//buscar el codigo del documento origen
@@ -96,7 +97,7 @@ class PurPurchasesController extends AppController {
 		}
 		
 			
-		$this->set(compact('invSuppliers', 'id', 'date', 'purDetails', 'purPrices', 'documentState', 'genericCode', 'originCode'));
+		$this->set(compact('invSuppliers', 'id', 'date', 'purDetails', 'purPrices', 'purPayments', 'documentState', 'genericCode', 'originCode'));
 //debug($this->request->data);
 	}
 	//START - AJAX START - AJAX START - AJAX START - AJAX START - AJAX START - AJAX START - AJAX
@@ -209,6 +210,67 @@ class PurPurchasesController extends AppController {
 		}
 	}
 	
+	//Hace un find en la BD de los elementos que se mostraran en el combobox 
+	public function ajax_initiate_modal_add_pay(){
+		if($this->RequestHandler->isAjax()){
+		//				$cost = $this->request->data['cost'];
+			$paysAlreadySaved = $this->request->data['paysAlreadySaved'];
+//			$warehouse = $this->request->data['warehouse'];
+		//	$supplier = $this->request->data['supplier'];
+//	//		$itemsBySupplier = $this->PurPurchase->InvSupplier->InvItemsSupplier->find('list', array(
+//				'fields'=>array('InvItemsSupplier.inv_item_id'),
+//				'conditions'=>array(
+//					'InvItemsSupplier.inv_supplier_id'=>$supplier
+//				),
+//				'recursive'=>-1
+//			)); 
+//debug($itemsBySupplier);			
+			$pays = $this->PurPurchase->PurPayment->PurPaymentType->find('list', array(
+					'fields'=>array('PurPaymentType.name'),
+					'conditions'=>array(
+//						'NOT'=>array('InvPriceType.id'=>$paysAlreadySaved) /*aca se hace la discriminacion de items seleccionados*/
+				),
+				
+				'recursive'=>-1
+				//'fields'=>array('InvItem.id', 'CONCAT(InvItem.code, '-', InvItem.name)')
+			));
+//debug($supplier);			
+//debug($items);
+//debug($this->request->data);
+		// gets the first price in the list of the item prices
+//		$firstItemListed = key($items);
+//		$priceDirty = $this->PurPurchase->PurDetail->InvItem->InvPrice->find('first', array(
+//			'fields'=>array('InvPrice.price'),
+//			'order' => array('InvPrice.date_created' => 'desc'),
+//			'conditions'=>array(
+//				'InvPrice.inv_item_id'=>$firstItemListed
+//				)
+//		));
+////debug($priceDirty);
+//		if($priceDirty==array()){
+//			$price = 0;
+//		}  else {
+//			
+//			$price = $priceDirty['InvPrice']['price'];
+//		}
+//			$amountDirty = $this->PurPurchase->PurPrice->find('first', array(
+//			'fields'=>array('PurPrice.amount'),
+//	//		'order' => array('rice.date_created' => 'desc'),
+//			'conditions'=>array(
+//				'PurPrice.inv_price_type_id'=>$costsAlreadySaved
+//				)
+//			));
+//			if($amountDirty==array()){
+//			$amount = 0;
+//		}  else {
+//			
+//			$amount = $amountDirty['PurPrice']['amount'];
+//		}
+				
+			$this->set(compact('pays'/*, 'amount'*/));
+		}
+	}
+	
 	public function ajax_update_stock_modal(){
 		if($this->RequestHandler->isAjax()){
 			$item = $this->request->data['item'];
@@ -238,6 +300,7 @@ class PurPurchasesController extends AppController {
 		}
 	}
 	
+	//no se utiliza pq no tiene que mostrar ningun valos en otro campo a partir del elemento elegido en el combobox
 	public function ajax_update_amount(){
 		if($this->RequestHandler->isAjax()){
 			$cost = $this->request->data['cost'];
@@ -266,6 +329,25 @@ class PurPurchasesController extends AppController {
 			$this->set(compact('amount'));
 		}
 	}
+	
+	//aca tendria que poder calcular el pago adeudado en base a los pagos guardados
+//	public function ajax_update_pay(){
+//		if($this->RequestHandler->isAjax()){
+//			$pay = $this->request->data['pay'];
+//			$amountDirty = $this->PurPurchase->PurPrice->find('first', array(
+//			'fields'=>array('PurPrice.amount'),
+//			'conditions'=>array(
+//				'PurPrice.inv_price_type_id'=>$cost
+//				)
+//			));
+//			if($amountDirty==array()){
+//			$amount = 0;
+//		}  else {
+//			$amount = $amountDirty['PurPrice']['amount'];
+//		}
+//			$this->set(compact('amount'));
+//		}
+//	}
 	
 	
 	public function ajax_save_movement_in(){
@@ -338,6 +420,7 @@ class PurPurchasesController extends AppController {
 			////////////////////////////////////////////INICIO-CAPTURAR AJAX////////////////////////////////////////////////////////
 			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];	
 			$arrayCostsDetails = $this->request->data['arrayCostsDetails'];
+			$arrayPaysDetails = $this->request->data['arrayPaysDetails'];
 			$purchaseId = $this->request->data['purchaseId'];
 //			$warehouse = $this->request->data['warehouse'];
 
@@ -351,7 +434,7 @@ class PurPurchasesController extends AppController {
 			
 			
 			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
-			$arrayMovement = array('date'=>$date, 'supplier'=>$supplier,/*'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType,*/ 'description'=>$description);
+			$arrayMovement = array('date'=>$date, 'supplier'=>$supplier, 'description'=>$description);
 			
 //			$arrayMovement['document_code']=$documentCode;
 			
@@ -371,38 +454,62 @@ class PurPurchasesController extends AppController {
 	$arrayMovement['inv_supplier_id'] = $supplier;
 			}
 			
-			//data sin costos
+			//data sin costos ni pagos
 			$data = array('PurPurchase'=>$arrayMovement, 'PurDetail'=>$arrayItemsDetails);
 			//data con costos
 			$data2 = array('PurPurchase'=>$arrayMovement, 'PurDetail'=>$arrayItemsDetails, 'PurPrice'=>$arrayCostsDetails);
-			
+			//data con pagos
+			$data3 = array('PurPurchase'=>$arrayMovement, 'PurDetail'=>$arrayItemsDetails, 'PurPayment'=>$arrayPaysDetails);
+			//data con pagos y costos
+			$data4 = array('PurPurchase'=>$arrayMovement, 'PurDetail'=>$arrayItemsDetails, 'PurPrice'=>$arrayCostsDetails, 'PurPayment'=>$arrayPaysDetails);
 			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
-//			print_r([0]);
+			print_r($data4);
 
 			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////
 			if($purchaseId <> ''){//update
-				if($arrayCostsDetails <> [0]){	
-					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId))) ){
-						if($this->PurPurchase->saveAssociated($data2)){
-							echo 'modificado| cost d&&d';
+//				if($arrayCostsDetails <> array()){	
+//					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId))) ){
+//						if($this->PurPurchase->saveAssociated($data2)){
+//							echo 'modificado| cost d&&d';
+//						}
+//					}
+//				}else{
+//					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId))) ){
+//						if($this->PurPurchase->saveAssociated($data)){
+//							echo 'modificado|d&&d';
+//						}
+//					}
+//				}	
+				if(($arrayCostsDetails <> array(0)) && ($arrayPaysDetails <> array(0)) ){
+					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPayment->deleteAll(array('PurPayment.pur_purchase_id'=>$purchaseId))) ){
+						print_r($data4);
+						if($this->PurPurchase->saveAssociated($data4)){
+							echo 'modificado| cost pay d&&d&&d';
 						}
-					}/*else{
+					}
+				}elseif ($arrayCostsDetails <> array(0)) {
+					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPayment->deleteAll(array('PurPayment.pur_purchase_id'=>$purchaseId))) ){
+						print_r($data2);
 						if($this->PurPurchase->saveAssociated($data2)){
-							echo 'modificado| cost d';
+							echo 'modificado| cost d&&d&&d';
 						}
-					}*/
+					}
+				}elseif ($arrayPaysDetails <> array(0)) {
+					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPayment->deleteAll(array('PurPayment.pur_purchase_id'=>$purchaseId))) ){
+						print_r($data3);
+						if($this->PurPurchase->saveAssociated($data3)){
+							echo 'modificado| pay d&&d&&d';
+						}
+					}
 				}else{
-					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId))) ){
-
+					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPayment->deleteAll(array('PurPayment.pur_purchase_id'=>$purchaseId))) ){
+						print_r($data);
 						if($this->PurPurchase->saveAssociated($data)){
-							echo 'modificado|d&&d';
+							echo 'modificado| d&&d&&d';
 						}
-					}/*else{
-						if($this->PurPurchase->saveAssociated($data)){
-							echo 'modificado|d';
-						}
-					}*/
-				}	
+					}
+				}
+				
 			}else{//insert
 				if($this->PurPurchase->saveAssociated($data2)){
 //					$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $supplier);
@@ -530,7 +637,7 @@ class PurPurchasesController extends AppController {
 //			print_r($dataInv);
 			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////
 			if($purchaseId <> ''){//update
-				if($arrayCostsDetails <> [0]){	
+				if($arrayCostsDetails <> array()){	
 					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId))) ){
 						if($this->PurPurchase->saveAssociated($data2)){
 							echo 'aprobado| cost d&&d';
@@ -620,6 +727,7 @@ class PurPurchasesController extends AppController {
 	
 	
 	private function _generate_code(){
+//		$period = $this->Session->read('Period.name');
 		$period = $this->Session->read('Period.year');
 //		$movementType = '';
 //		if($keyword == 'ENT'){$movementType = 'entrada';}
@@ -632,7 +740,7 @@ class PurPurchasesController extends AppController {
 	}
 	
 	private function _generate_doc_code($keyword){
-		
+//		$period = $this->Session->read('Period.name');
 		$period = $this->Session->read('Period.year');
 		$movements = $this->PurPurchase->find('count', array('conditions'=>array('PurPurchase.lc_state'=>array('ORDER_PENDANT','ORDER_APPROVED','ORDER_CANCELLED')))); // there are duplicates :S, unless there is no movement delete
 		$quantity = $movements + 1; 
@@ -695,7 +803,41 @@ class PurPurchasesController extends AppController {
 			$formatedMovementDetails[$key] = array(
 				'costId'=>$value['InvPriceType']['id'],
 				'cost'=>$value['InvPriceType']['name'],
-				'amount'=>$value['PurPrice']['amount'],//llamar precio
+				'amount'=>$value['PurPrice']['amount']//llamar precio
+				);
+		}
+//debug($formatedMovementDetails);		
+		return $formatedMovementDetails;
+	}
+	
+	public function _get_pays_details($idMovement){
+		$movementDetails = $this->PurPurchase->PurPayment->find('all', array(
+			'conditions'=>array(
+				'PurPayment.pur_purchase_id'=>$idMovement
+				),
+			'fields'=>array('PurPaymentType.name', 'PurPayment.date', 'PurPayment.due_date', 'PurPayment.amount', 'PurPayment.description', 'PurPayment.lc_state', 'PurPaymentType.id')
+			));
+		
+		$formatedMovementDetails = array();
+		foreach ($movementDetails as $key => $value) {
+			// gets the first price in the list of the item prices
+//			$priceDirty = $this->PurPurchase->PurDetail->InvItem->InvPrice->find('first', array(
+//					'fields'=>array('InvPrice.price'),
+//					'order' => array('InvPrice.date_created' => 'desc'),
+//					'conditions'=>array(
+//						'InvPrice.inv_item_id'=>$value['InvItem']['id']
+//						)
+//				));
+				//$price = $priceDirty['InvPrice']['price'];
+			
+			$formatedMovementDetails[$key] = array(
+				'payId'=>$value['PurPaymentType']['id'],
+				'pay'=>$value['PurPaymentType']['name'],
+				'date'=>$value['PurPayment']['date'],
+				'dueDate'=>$value['PurPayment']['due_date'],
+				'paidAmount'=>$value['PurPayment']['amount'], //paidAmount ?
+				'description'=>$value['PurPayment']['description'],
+				'state'=>$value['PurPayment']['lc_state']
 				);
 		}
 //debug($formatedMovementDetails);		
