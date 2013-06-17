@@ -32,7 +32,8 @@
 				null,
 				array('class' => 'skin-color'));
 		echo $this->Html->css('datepicker');//just for this project I gonna put the calendar here
-		echo $this->Html->css('jquery.gritter');
+		echo $this->Html->css('jquery.gritter');//growl-like notifications
+		echo $this->Html->css('select2'); //enhanced selects
 	?>
 </head>
 <body>
@@ -146,6 +147,7 @@
 	echo $this->Html->script('unicorn');
 	echo $this->Html->script('bootstrap-datepicker'); //just for this project I gonna put the calendar here
 	echo $this->Html->script('jquery.gritter.min'); //growl-like notifications
+	echo $this->Html->script('select2.min', FALSE); //enhanced selects
 	?>
 	<?php echo $this->fetch('script'); //maybe not necessary?>
 	

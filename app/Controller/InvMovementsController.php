@@ -1429,7 +1429,7 @@ class InvMovementsController extends AppController {
 	}
 	
 	private function _generate_code($keyword){
-		$period = $this->Session->read('Period.year');
+		$period = $this->Session->read('Period.name');
 		$movementType = '';
 		if($keyword == 'ENT'){$movementType = 'entrada';}
 		if($keyword == 'SAL'){$movementType = 'salida';}
