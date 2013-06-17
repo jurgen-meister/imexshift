@@ -463,7 +463,7 @@ class PurPurchasesController extends AppController {
 			//data con pagos y costos
 			$data4 = array('PurPurchase'=>$arrayMovement, 'PurDetail'=>$arrayItemsDetails, 'PurPrice'=>$arrayCostsDetails, 'PurPayment'=>$arrayPaysDetails);
 			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
-			print_r($data4);
+			//print_r($data4);
 
 			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////
 			if($purchaseId <> ''){//update
@@ -482,28 +482,28 @@ class PurPurchasesController extends AppController {
 //				}	
 				if(($arrayCostsDetails <> array(0)) && ($arrayPaysDetails <> array(0)) ){
 					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPayment->deleteAll(array('PurPayment.pur_purchase_id'=>$purchaseId))) ){
-						print_r($data4);
+				//		print_r($data4);
 						if($this->PurPurchase->saveAssociated($data4)){
 							echo 'modificado| cost pay d&&d&&d';
 						}
 					}
 				}elseif ($arrayCostsDetails <> array(0)) {
 					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPayment->deleteAll(array('PurPayment.pur_purchase_id'=>$purchaseId))) ){
-						print_r($data2);
+				//		print_r($data2);
 						if($this->PurPurchase->saveAssociated($data2)){
 							echo 'modificado| cost d&&d&&d';
 						}
 					}
 				}elseif ($arrayPaysDetails <> array(0)) {
 					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPayment->deleteAll(array('PurPayment.pur_purchase_id'=>$purchaseId))) ){
-						print_r($data3);
+				//		print_r($data3);
 						if($this->PurPurchase->saveAssociated($data3)){
 							echo 'modificado| pay d&&d&&d';
 						}
 					}
 				}else{
 					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPayment->deleteAll(array('PurPayment.pur_purchase_id'=>$purchaseId))) ){
-						print_r($data);
+				//		print_r($data);
 						if($this->PurPurchase->saveAssociated($data)){
 							echo 'modificado| d&&d&&d';
 						}
@@ -598,6 +598,8 @@ class PurPurchasesController extends AppController {
 			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
 			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];	
 			$arrayCostsDetails = $this->request->data['arrayCostsDetails'];
+			$arrayPaysDetails = $this->request->data['arrayPaysDetails'];
+
 			$purchaseId = $this->request->data['purchaseId'];
 			$supplier = $this->request->data['supplier'];
 
@@ -625,39 +627,48 @@ class PurPurchasesController extends AppController {
 //				$arrayMovement['document_code']=$documentCode;
 //			}
 			
-			//data sin costos
+			//data sin costos ni pagos
 			$data = array('PurPurchase'=>$arrayMovement, 'PurDetail'=>$arrayItemsDetails);
 			//data con costos
 			$data2 = array('PurPurchase'=>$arrayMovement, 'PurDetail'=>$arrayItemsDetails, 'PurPrice'=>$arrayCostsDetails);
-			
-	//		$dataInv = array('PurPurchase'=>$arrayInvoice, 'PurDetail'=>$arrayItemsDetails);
+			//data con pagos
+			$data3 = array('PurPurchase'=>$arrayMovement, 'PurDetail'=>$arrayItemsDetails, 'PurPayment'=>$arrayPaysDetails);
+			//data con pagos y costos
+			$data4 = array('PurPurchase'=>$arrayMovement, 'PurDetail'=>$arrayItemsDetails, 'PurPrice'=>$arrayCostsDetails, 'PurPayment'=>$arrayPaysDetails);
 			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
 			//print_r($code);
 //			print_r($data);
 //			print_r($dataInv);
 			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////
 			if($purchaseId <> ''){//update
-				if($arrayCostsDetails <> array()){	
-					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId))) ){
-						if($this->PurPurchase->saveAssociated($data2)){
-							echo 'aprobado| cost d&&d';
+				if(($arrayCostsDetails <> array(0)) && ($arrayPaysDetails <> array(0)) ){
+					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPayment->deleteAll(array('PurPayment.pur_purchase_id'=>$purchaseId))) ){
+				//		print_r($data4);
+						if($this->PurPurchase->saveAssociated($data4)){
+							echo 'aprobado| cost pay d&&d&&d';
 						}
-					}/*else{
+					}
+				}elseif ($arrayCostsDetails <> array(0)) {
+					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPayment->deleteAll(array('PurPayment.pur_purchase_id'=>$purchaseId))) ){
+				//		print_r($data2);
 						if($this->PurPurchase->saveAssociated($data2)){
-							echo 'modificado| cost d';
+							echo 'aprobado| cost d&&d&&d';
 						}
-					}*/
+					}
+				}elseif ($arrayPaysDetails <> array(0)) {
+					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPayment->deleteAll(array('PurPayment.pur_purchase_id'=>$purchaseId))) ){
+				//		print_r($data3);
+						if($this->PurPurchase->saveAssociated($data3)){
+							echo 'aprobado| pay d&&d&&d';
+						}
+					}
 				}else{
-					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId))) ){
-
+					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPayment->deleteAll(array('PurPayment.pur_purchase_id'=>$purchaseId))) ){
+				//		print_r($data);
 						if($this->PurPurchase->saveAssociated($data)){
-							echo 'aprobado|d&&d';
+							echo 'aprobado| d&&d&&d';
 						}
-					}/*else{
-						if($this->PurPurchase->saveAssociated($data)){
-							echo 'modificado|d';
-						}
-					}*/
+					}
 				}	
 			}
 			////////////////////////////////////////////FIN-SAVE////////////////////////////////////////////////////////
@@ -676,6 +687,29 @@ class PurPurchasesController extends AppController {
 //			$error=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouse);
 //			if($error['error'] == 0){
 				$data = array('id'=>$purchaseId, 'lc_state'=>'ORDER_CANCELLED');
+				if($this->PurPurchase->save($data)){
+//					$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
+					echo 'cancelado|'/*.$strItemsStock*/;
+				}
+//			}else{
+//				echo 'error|'.$error['itemsStocks'];
+//			}
+						
+		}
+	}
+	
+	public function ajax_change_state_cancelled_invoice(){
+		if($this->RequestHandler->isAjax()){
+			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
+			$purchaseId = $this->request->data['purchaseId'];
+//			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
+			//$warehouse = $this->request->data['warehouse']; //combobox is disabled doesn't send nothing
+//			$warehouse = $this->InvMovement->field('InvMovement.inv_warehouse_id', array('InvMovement.id'=>$movementId));
+			//debug($warehouse);
+			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
+//			$error=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouse);
+//			if($error['error'] == 0){
+				$data = array('id'=>$purchaseId, 'lc_state'=>'INVOICE_CANCELLED');
 				if($this->PurPurchase->save($data)){
 //					$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
 					echo 'cancelado|'/*.$strItemsStock*/;

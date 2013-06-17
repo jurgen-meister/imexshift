@@ -677,11 +677,11 @@
 						//////////////////////////////////////
 
 						echo $this->BootstrapForm->input('pays_id', array(				
-						'label' => 'Pagos:',
-						'id'=>'cbxModalPays',
-						'class'=>'input-xlarge',
-						'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
-						));
+							'label' => 'Pagos:',
+							'id'=>'cbxModalPays',
+							'class'=>'input-xlarge',
+							'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+							));
 						echo '<br>';
 //						$amount='';
 //						echo '<div id="boxModalAmount">';
@@ -703,15 +703,9 @@
 						
 					echo '</div>';
 					echo $this->BootstrapForm->input('date', array(		
-					'required' => 'required',
-				//	'disabled'=>'disable',
-					'maxlength'=>'0',
-					'label' => 'Fecha Pagssssso:',
-					'id'=>'txtModalDate',
-					//'value'=>$date
-					//		'style'=>'background-color:#EEEEEE',
-					//		'class'=>'input-small',
-					//		'maxlength'=>'15'
+					//		'required' => 'required',
+							'label' => 'Fecha Pago:',
+							'id'=>'txtModalDate',
 							));
 					echo '<br>';
 					
@@ -719,10 +713,6 @@
 					echo $this->BootstrapForm->input('due_date', array(				
 							'label' => 'Fecha Limite:',
 							'id'=>'txtModalDueDate',
-						//	'value'=>$amount,
-							'style'=>'background-color:#EEEEEE',
-							'class'=>'input-small',
-							'maxlength'=>'15'
 							));
 					echo '<br>';
 					
