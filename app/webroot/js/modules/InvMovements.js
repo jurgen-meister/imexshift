@@ -17,7 +17,7 @@ $(document).ready(function(){
 	}
 	*/
 	/////////////FINISH - Token Status//////////////
-	$('#cbxWarehouses').select2(); // to create advanced select or combobox
+	//$('#cbxWarehouses').select2(); // to create advanced select or combobox
 	
 	clearFieldsForFirefox();
 
@@ -1044,7 +1044,9 @@ $(document).ready(function(){
 					$('#txtModalStock2').keypress(function(){return false;});	
 				}
 				//}
-				//$('#cbxModalItems').select2();
+				
+				$('#cbxModalItems').select2();
+				//$('#cbxModalItems').css('z-index', '9999999');
 
 			},
 			error:function(data){
