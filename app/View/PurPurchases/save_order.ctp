@@ -225,7 +225,7 @@
 //										echo '<th></th>';
 //										echo '<th></th>';
 //										echo '<th>Total:</th>';
-//										echo '<th>'.$xxxtotal.'</th>';
+//										echo '<th>'.$total.'</th>';
 //									echo '</tr>';
 								?>
 <!--								<tr>

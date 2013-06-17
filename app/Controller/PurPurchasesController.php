@@ -744,6 +744,29 @@ class PurPurchasesController extends AppController {
 		}
 	}
 	
+	public function ajax_change_state_logic_deleted_invoice(){
+		if($this->RequestHandler->isAjax()){
+			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
+			$purchaseId = $this->request->data['purchaseId'];
+//			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
+			//$warehouse = $this->request->data['warehouse']; //combobox is disabled doesn't send nothing
+//			$warehouse = $this->InvMovement->field('InvMovement.inv_warehouse_id', array('InvMovement.id'=>$movementId));
+			//debug($warehouse);
+			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
+//			$error=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouse);
+//			if($error['error'] == 0){
+				$data = array('id'=>$purchaseId, 'lc_state'=>'INVOICE_LOGIC_DELETED');
+				if($this->PurPurchase->save($data)){
+//					$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
+					echo 'borradologico|'/*.$strItemsStock*/;
+				}
+//			}else{
+//				echo 'error|'.$error['itemsStocks'];
+//			}
+						
+		}
+	}
+	
 	// END - AJAX END - AJAX END - AJAX END - AJAX END - AJAX END - AJAX END - AJAX END - AJAX END - AJAX
 	
 	// START - PRIVATE START - PRIVATE START - PRIVATE START - PRIVATE START - PRIVATE START - PRIVATE
@@ -898,7 +921,7 @@ class PurPurchasesController extends AppController {
 	public function index_invoice(){
 		$this->paginate = array(
 			'conditions' => array(
-				'PurPurchase.lc_state !='=>'LOGIC_DELETE',
+				'PurPurchase.lc_state !='=>'INVOICE_LOGIC_DELETED',
 				'PurPurchase.lc_state LIKE'=> '%INVOICE%',
 			),
 			'order' => array('PurPurchase.id' => 'desc'),

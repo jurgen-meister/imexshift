@@ -790,12 +790,16 @@ if( error == ''){
 			//$('#cbxWarehouses').removeAttr('disabled');
 			var arrayItemsDetails = [];
 			arrayItemsDetails = getItemsDetails();
+			var arrayCostsDetails = [];
+			arrayCostsDetails = getCostsDetails();
+			var arrayPaysDetails = [];
+			arrayPaysDetails = getPaysDetails();
 			if(arr[3] == 'save_order' /*|| arr[3] == 'save_purchase_in'*/){
 				ajax_change_state_logic_deleted_movement_in(arrayItemsDetails);
 			}
-//			if(arr[3]=='save_out'){
-//				ajax_change_state_cancelled_movement_out(arrayItemsDetails);
-//			}
+			if(arr[3]=='save_invoice'){
+				ajax_change_state_logic_deleted_invoice(arrayItemsDetails, arrayCostsDetails, arrayPaysDetails);
+			}
 //			if(arr[3] == 'save_warehouses_transfer'){
 //				ajax_change_state_cancelled_warehouses_transfer(arrayItemsDetails);
 //			}
@@ -1263,6 +1267,51 @@ changeLabelDocumentState('ORDER_CANCELLED'); //#UNICORN
 //self.location = moduleController + "index_order";
 setTimeout(function() {
   self.location = moduleController + "index_order";
+}, 2000);
+//window.location = moduleController + "index_order";
+//window.location.href = moduleController + "index_order";
+					$('#boxMessage').html('<div class="alert alert-success">\n\
+					<button type="button" class="close" data-dismiss="alert">&times;</button>Orden Cancelada con exito<div>');
+
+				}
+// REVISAR SI ES NECESARIO COMPROBAR LO DEL STOCK EN EL REMITO CON CANCELAR LA ORDEN				
+//				if(arrayCatch[0] == 'error'){
+//					var error = validateBeforeMoveOut(arrayItemsStocks, 'spaStock');
+//					$('#boxMessage').html('<div class="alert alert-error">\n\
+//					<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo "Cancelar" la entrada debido a falta de stock:</p><ul>//'+error+'</ul><div>');
+//				}
+//				$('#processing').text('');
+			},
+			error:function(data){
+				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				$('#processing').text('');
+			}
+        });
+	}
+	
+	function ajax_change_state_logic_deleted_invoice(arrayItemsDetails, arrayCostsDetails, arrayPaysDetails){
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_change_state_logic_deleted_invoice",			
+            data:{arrayItemsDetails: arrayItemsDetails 
+				,arrayCostsDetails: arrayCostsDetails
+				,arrayPaysDetails: arrayPaysDetails
+				  ,purchaseId:$('#txtPurchaseIdHidden').val()
+			  },
+            beforeSend:showProcessing(),
+            success: function(data){
+				var arrayCatch = data.split('|');
+//				var arrayItemsStocks = arrayCatch[1].split(',');
+				if(arrayCatch[0] == 'borradologico'){
+//					updateMultipleStocks(arrayItemsStocks, 'spaStock');
+//					$('#columnStatePurchase').css('background-color','#BD362F');
+//					$('#columnStatePurchase').text('Orden Cancelada');
+
+//changeLabelDocumentState('ORDER_LOGIC_DELETED'); //#UNICORN
+//					$('#btnLogicDeleteState').hide();
+//self.location = moduleController + "index_order";
+setTimeout(function() {
+  self.location = moduleController + "index_invoice";
 }, 2000);
 //window.location = moduleController + "index_order";
 //window.location.href = moduleController + "index_order";

@@ -481,18 +481,22 @@
 											case '':
 												$displayApproved = 'none';
 												$displayCancelled = 'none';
+												$displayLogicDelete = 'none';
 												break;
 											case 'INVOICE_PENDANT':
 												$displayApproved = 'inline';
 												$displayCancelled = 'none';
+												$displayLogicDelete = 'inline';
 												break;
 											case 'INVOICE_APPROVED':
 												$displayApproved = 'none';
 												$displayCancelled = 'inline';
+												$displayLogicDelete = 'none';
 												break;
 											case 'INVOICE_CANCELLED':
 												$displayApproved = 'none';
 												$displayCancelled = 'none';
+												$displayLogicDelete = 'none';
 												break;
 										}
 							?>
@@ -506,6 +510,7 @@
 							?>
 							<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Factura de Compra</a>
 							<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Factura de Compra</a>
+							<a href="#" id="btnLogicDeleteState" class="btn btn-danger" style="display:<?php echo $displayLogicDelete;?>"> Logic Delete</a>
 					</div> <!-- FIN - toolbar para dejar espacio entre botones -->
 				</div> <!-- FIN - span 6 -->
 				<div class="span4"></div> <!-- INICIO Y FIN - ESPACIO A LA DERECHA PARA NO DEJAR HUECOS -->
