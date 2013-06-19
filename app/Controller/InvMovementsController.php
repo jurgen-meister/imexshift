@@ -1159,14 +1159,14 @@ class InvMovementsController extends AppController {
 			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
 			
 			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
-			$arrayMovement = array('date'=>$date, 'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType, 'description'=>$description);
-			$arrayMovement['lc_state'] = 'APPROVED';
-			$arrayMovement['id'] = $movementId;
+			$arrayRemit = array('date'=>$date, 'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType, 'description'=>$description);
+			$arrayRemit['lc_state'] = 'APPROVED';
+			$arrayRemit['id'] = $movementId;
 			if($documentCode <> ''){
-				$arrayMovement['document_code']=$documentCode;
+				$arrayRemit['document_code']=$documentCode;
 			}
 			
-			$data = array('InvMovement'=>$arrayMovement, 'InvMovementDetail'=>$arrayItemsDetails);
+			$data = array('InvMovement'=>$arrayRemit, 'InvMovementDetail'=>$arrayItemsDetails);
 			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
 			
 			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////

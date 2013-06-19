@@ -130,6 +130,8 @@
 					}else{
 						$url['action'] = 'save_in';
 						$parameters['id']=$invMovement['InvMovement']['id'];
+			//			debug($url);
+			//			debug($parameters);
 					}
 					////////////END - SETTING URL AND PARAMETERS//////////////
 					echo $this->Html->link('<i class="icon-pencil icon-white"></i>'.__(' '.$stateName),  array_merge($url,$parameters), array('class'=>'btn '.$stateColor, 'escape'=>false, 'title'=>'Editar')); 
