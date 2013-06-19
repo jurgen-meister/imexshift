@@ -286,7 +286,7 @@
 					<h3 id="myModalLabel">Cantidad Item</h3>
 				  </div>
 				  
-				  <div class="modal-body form-horizontal">
+				  <div class="modal-body">
 					<!--<p>One fine body…</p>-->
 					<?php
 					echo '<div id="boxModalIntiateItemStock">';

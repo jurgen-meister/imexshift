@@ -3,7 +3,7 @@
 		echo $this->BootstrapForm->input('items_id', array(				
 		'label' => 'Item:',
 		'id'=>'cbxModalItems',
-		'class'=>'input-xlarge',
+		'class'=>'span12',
 		'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 		));
 		echo '<br>';

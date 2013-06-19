@@ -17,7 +17,8 @@ $(document).ready(function(){
 	}
 	*/
 	/////////////FINISH - Token Status//////////////
-
+	//$('#cbxWarehouses').select2(); // to create advanced select or combobox
+	
 	clearFieldsForFirefox();
 
 	//************************************************************************//
@@ -332,7 +333,34 @@ $(document).ready(function(){
 	function showProcessing(){
         $('#processing').text("Procesando...");
     }
-
+	
+	function showGrowlMessage(type, text, sticky){
+		if(typeof(sticky)==='undefined') sticky = false;
+		
+		var title;
+		var image;
+		switch(type){
+			case 'ok':
+				title = 'EXITO!';
+				image= '/imexport/img/check.png';
+				break;
+			case 'error':
+				title = 'OCURRIO UN PROBLEMA!';
+				image= '/imexport/img/error.png';
+				break;
+			case 'warning':
+				title = 'PRECAUCIÓN!';
+				image= '/imexport/img/warning.png';
+				break;
+		}
+		$.gritter.add({
+			title:	title,
+			text: text,
+			sticky: sticky,
+			image: image
+		});	
+	}
+	
 	function saveAll(){
 		var arrayItemsDetails = [];
 		arrayItemsDetails = getItemsDetails();
@@ -365,15 +393,21 @@ $(document).ready(function(){
 		if(confirm('Al APROBAR este documento ya no se podra hacer mas modificaciones. Esta seguro?')){
 			var arrayItemsDetails = [];
 			arrayItemsDetails = getItemsDetails();
-			if(arr[3] == 'save_in' || arr[3] == 'save_purchase_in'){
-				ajax_change_state_approved_movement_in(arrayItemsDetails);
+			var error = validateBeforeSaveAll(arrayItemsDetails);
+			if( error == ''){
+				if(arr[3] == 'save_in' || arr[3] == 'save_purchase_in'){
+					ajax_change_state_approved_movement_in(arrayItemsDetails);
+				}
+				if(arr[3]=='save_out' || arr[3] == 'save_sale_out'){
+					ajax_change_state_approved_movement_out(arrayItemsDetails);
+				}
+				if(arr[3] == 'save_warehouses_transfer'){
+					ajax_change_state_approved_warehouses_transfer(arrayItemsDetails);
+				}
+			}else{
+				$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
 			}
-			if(arr[3]=='save_out' || arr[3] == 'save_sale_out'){
-				ajax_change_state_approved_movement_out(arrayItemsDetails);
-			}
-			if(arr[3] == 'save_warehouses_transfer'){
-				ajax_change_state_approved_warehouses_transfer(arrayItemsDetails);
-			}
+			
 		}
 	}
 
@@ -538,12 +572,14 @@ $(document).ready(function(){
 				var arrayItemsStocks = arrayCatch[1].split(',');
 				updateMultipleStocks(arrayItemsStocks, 'spaStock');
 				$('#btnPrint').show();
-				$('#boxMessage').html('<div class="alert alert-success">\n\
-				<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
+				showGrowlMessage('ok', 'Cambios guardados.');
+				//$('#boxMessage').html('<div class="alert alert-success">\n\
+				//<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
 				$('#processing').text('');
 			},
 			error:function(data){
-				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				//$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
 				$('#processing').text('');
 			}
         });
@@ -590,18 +626,20 @@ $(document).ready(function(){
 				updateMultipleStocks(arrayItemsStocks, 'spaStock');
 
 				$('#btnPrint').show();	
-				$('#boxMessage').html('<div class="alert alert-success">\n\
-				<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
+				//$('#boxMessage').html('<div class="alert alert-success">\n\
+				//<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
+				showGrowlMessage('ok', 'Cambios guardados.');
 				$('#processing').text('');
 			},
 			error:function(data){
-				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				//$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
 				$('#processing').text('');
 			}
         });
 	}
 
-	//Save movement IN
+	//Save movement Warehouse transfer
 	function ajax_save_warehouses_transfer(arrayItemsDetails){
 			$.ajax({
             type:"POST",
@@ -641,13 +679,15 @@ $(document).ready(function(){
 					updateMultipleStocks(arrayItemsStocks, 'spaStock2-');
 				}
 				$('#btnPrint').show();
-				$('#boxMessage').html('<div class="alert alert-success">\n\
-				<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
+				//$('#boxMessage').html('<div class="alert alert-success">\n\
+				//<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
+				showGrowlMessage('ok', 'Cambios guardados.');
 				$('#processing').text('');
 
 			},
 			error:function(data){
-				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				//$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
 				$('#processing').text('');
 			}
         });
@@ -699,21 +739,24 @@ $(document).ready(function(){
 					$('#txtDescription').attr('disabled','disabled');
 
 					//$('#processing').text('');
-					$('#boxMessage').html('<div class="alert alert-success">\n\
-					<button type="button" class="close" data-dismiss="alert">&times;</button>Aprobado con exito<div>');
+					//$('#boxMessage').html('<div class="alert alert-success">\n\
+					//<button type="button" class="close" data-dismiss="alert">&times;</button>Aprobado con exito<div>');
+					showGrowlMessage('ok', 'Transferencia aprobada.');
 				}
 				if(arrayCatch[0] == 'error'){
 					var error = validateBeforeMoveOut(arrayItemsStocks, 'spaStock');
 					arrayItemsStocks = arrayCatch[2].split(',')
 					updateMultipleStocks(arrayItemsStocks, 'spaStock2-');
-					$('#boxMessage').html('<div class="alert alert-error">\n\
-					<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo Aprobar el traspaso porque falta "Stock" para la "Salida" del "Almacen Origen":</p><ul>'+error+'</ul><div>');
+					//$('#boxMessage').html('<div class="alert alert-error">\n\
+					//<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo Aprobar el traspaso porque falta "Stock" para la "Salida" del "Almacen Origen":</p><ul>'+error+'</ul><div>');
+					showGrowlMessage('error', '<p>No se pudo Aprobar el traspaso porque falta "Stock" para la "Salida" del "Almacen Origen":</p><ul>'+error+'</ul>', true);
 				}
 				$('#processing').text('');
 
 			},
 			error:function(data){
-				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				//$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
 				$('#processing').text('');
 			}
         });
@@ -741,21 +784,24 @@ $(document).ready(function(){
 					changeLabelDocumentState('CANCELLED');//#UNICORN
 					
 					$('#btnCancellState').hide();
-					$('#boxMessage').html('<div class="alert alert-success">\n\
-					<button type="button" class="close" data-dismiss="alert">&times;</button>Cancelado con exito<div>');
+					//$('#boxMessage').html('<div class="alert alert-success">\n\
+					//<button type="button" class="close" data-dismiss="alert">&times;</button>Cancelado con exito<div>');
+					showGrowlMessage('ok', 'Transferencia cancelada.');
 				}
 				if(arrayCatch[0] == 'error'){
 					var error = validateBeforeMoveOut(arrayItemsStocks, 'spaStock2-');//in, destino
 					arrayItemsStocks = arrayCatch[2].split(',')//out, origen
 					updateMultipleStocks(arrayItemsStocks, 'spaStock');
-					$('#boxMessage').html('<div class="alert alert-error">\n\
-					<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo Cancelar el traspaso porque falta "Stock" para la "Salida" del "Almacen Destino":</p><ul>'+error+'</ul><div>');
+					//$('#boxMessage').html('<div class="alert alert-error">\n\
+					//<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo Cancelar el traspaso porque falta "Stock" para la "Salida" del "Almacen Destino":</p><ul>'+error+'</ul><div>');
+					showGrowlMessage('error', '<p>No se pudo Cancelar el traspaso porque falta "Stock" para la "Salida" del "Almacen Destino":</p><ul>'+error+'</ul>', true);
 				}
 				$('#processing').text('');
 
 			},
 			error:function(data){
-				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				//$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
 				$('#processing').text('');
 			}
         });
@@ -810,13 +856,15 @@ $(document).ready(function(){
 						$('#cbxMovementTypes').attr('disabled','disabled');
 					}
 					$('#txtDescription').attr('disabled','disabled');
-					$('#boxMessage').html('<div class="alert alert-success">\n\
-					<button type="button" class="close" data-dismiss="alert">&times;</button>Aprobado con exito<div>');
+					//$('#boxMessage').html('<div class="alert alert-success">\n\
+					//<button type="button" class="close" data-dismiss="alert">&times;</button>Aprobado con exito<div>');
+					showGrowlMessage('ok', 'Entrada aprobada.');
 				}
 				$('#processing').text('');
 			},
 			error:function(data){
-				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				//$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
 				$('#processing').text('');
 			}
         });
@@ -873,19 +921,22 @@ $(document).ready(function(){
 					$('#txtDescription').attr('disabled','disabled');
 
 					$('#processing').text('');
-					$('#boxMessage').html('<div class="alert alert-success">\n\
-					<button type="button" class="close" data-dismiss="alert">&times;</button>Aprobado con exito<div>');
+					//$('#boxMessage').html('<div class="alert alert-success">\n\
+					//<button type="button" class="close" data-dismiss="alert">&times;</button>Aprobado con exito<div>');
+					showGrowlMessage('ok', 'Salida aprobada.');
 				}
 				if(arrayCatch[0] == 'error'){
 					var error = validateBeforeMoveOut(arrayItemsStocks, 'spaStock');
-					$('#boxMessage').html('<div class="alert alert-error">\n\
-					<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo "Aprobar" la salida debido a falta de stock:</p><ul>'+error+'</ul><div>');
+					//$('#boxMessage').html('<div class="alert alert-error">\n\
+					//<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo "Aprobar" la salida debido a falta de stock:</p><ul>'+error+'</ul><div>');
+					showGrowlMessage('error', '<p>No se pudo "Aprobar" la salida debido a falta de stock:</p><ul>'+error+'</ul>', true);
 				}
 				$('#processing').text('');
 
 			},
 			error:function(data){
-				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				//$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
 				$('#processing').text('');
 			}
         });
@@ -910,18 +961,21 @@ $(document).ready(function(){
 					changeLabelDocumentState('CANCELLED');//#UNICORN
 					
 					$('#btnCancellState').hide();
-					$('#boxMessage').html('<div class="alert alert-success">\n\
-					<button type="button" class="close" data-dismiss="alert">&times;</button>Cancelado con exito<div>');
+					//$('#boxMessage').html('<div class="alert alert-success">\n\
+					//<button type="button" class="close" data-dismiss="alert">&times;</button>Cancelado con exito<div>');
+					showGrowlMessage('ok', 'Entrada cancelada.');
 				}
 				if(arrayCatch[0] == 'error'){
 					var error = validateBeforeMoveOut(arrayItemsStocks, 'spaStock');
-					$('#boxMessage').html('<div class="alert alert-error">\n\
-					<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo "Cancelar" la entrada debido a falta de stock:</p><ul>'+error+'</ul><div>');
+					//$('#boxMessage').html('<div class="alert alert-error">\n\
+					//<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo "Cancelar" la entrada debido a falta de stock:</p><ul>'+error+'</ul><div>');
+					showGrowlMessage('error', '<p>No se pudo "Cancelar" la entrada debido a falta de stock:</p><ul>'+error+'</ul>', true);
 				}
 				$('#processing').text('');
 			},
 			error:function(data){
-				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				//$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
 				$('#processing').text('');
 			}
         });
@@ -945,13 +999,15 @@ $(document).ready(function(){
 					changeLabelDocumentState('CANCELLED');//#UNICORN
 					
 					$('#btnCancellState').hide();
-					$('#boxMessage').html('<div class="alert alert-success">\n\
-					<button type="button" class="close" data-dismiss="alert">&times;</button>Cancelado con exito<div>');
+					//$('#boxMessage').html('<div class="alert alert-success">\n\
+					//<button type="button" class="close" data-dismiss="alert">&times;</button>Cancelado con exito<div>');
+					showGrowlMessage('ok', 'Salida cancelada.');
 				}
 				$('#processing').text('');
 			},
 			error:function(data){
-				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				//$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
 				$('#processing').text('');
 			}
         });
@@ -976,16 +1032,21 @@ $(document).ready(function(){
 				//$('#itemSaveError').text('');
 				$('#boxModalIntiateItemStock').html(data);
 				$('#txtModalQuantity').val('');  
-				initiateModal()
+				initiateModal();
 				//if($('#txtModalStock').length > 0){
+				
 				$('#cbxModalItems').bind("change",function(){ //must be binded 'cause dropbox is loaded by a previous ajax'
 					ajax_update_stock_modal();
 				});
+				
 				$('#txtModalStock').keypress(function(){return false;});
 				if($('#cbxWarehouses2').length > 0){
 					$('#txtModalStock2').keypress(function(){return false;});	
 				}
 				//}
+				
+				$('#cbxModalItems').select2();
+				//$('#cbxModalItems').css('z-index', '9999999');
 
 			},
 			error:function(data){
