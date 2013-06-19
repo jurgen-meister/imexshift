@@ -15,8 +15,8 @@ class SalDetail extends AppModel {
  */
 	public $validate = array(
 		'sal_sale_id' => array(
-			'numeric' => array(
-				'rule' => array('numeric'),
+			'notempty' => array(
+				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
 				//'allowEmpty' => false,
 				//'required' => false,
@@ -25,8 +25,8 @@ class SalDetail extends AppModel {
 			),
 		),
 		'inv_item_id' => array(
-			'numeric' => array(
-				'rule' => array('numeric'),
+			'notempty' => array(
+				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
 				//'allowEmpty' => false,
 				//'required' => false,
@@ -35,16 +35,6 @@ class SalDetail extends AppModel {
 			),
 		),
 		'quantity' => array(
-			'numeric' => array(
-				'rule' => array('numeric'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
-			),
-		),
-		'lc_state' => array(
 			'notempty' => array(
 				'rule' => array('notempty'),
 				//'message' => 'Your custom message here',
@@ -53,17 +43,27 @@ class SalDetail extends AppModel {
 				//'last' => false, // Stop validation after this rule
 				//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
-		),
-		'lc_transaction' => array(
-			'notempty' => array(
-				'rule' => array('notempty'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
-			),
-		),
+		)
+//		'lc_state' => array(
+//			'notempty' => array(
+//				'rule' => array('notempty'),
+//				//'message' => 'Your custom message here',
+//				//'allowEmpty' => false,
+//				//'required' => false,
+//				//'last' => false, // Stop validation after this rule
+//				//'on' => 'create', // Limit validation to 'create' or 'update' operations
+//			),
+//		),
+//		'lc_transaction' => array(
+//			'notempty' => array(
+//				'rule' => array('notempty'),
+//				//'message' => 'Your custom message here',
+//				//'allowEmpty' => false,
+//				//'required' => false,
+//				//'last' => false, // Stop validation after this rule
+//				//'on' => 'create', // Limit validation to 'create' or 'update' operations
+//			),
+//		),
 	);
 
 	//The Associations below have been created with all possible keys, those that are not needed can be removed
@@ -84,6 +84,13 @@ class SalDetail extends AppModel {
 		'InvItem' => array(
 			'className' => 'InvItem',
 			'foreignKey' => 'inv_item_id',
+			'conditions' => '',
+			'fields' => '',
+			'order' => ''
+		),
+		'InvWarehouse' => array(
+			'className' => 'InvWarehouse',
+			'foreignKey' => 'inv_warehouse_id',
 			'conditions' => '',
 			'fields' => '',
 			'order' => ''
