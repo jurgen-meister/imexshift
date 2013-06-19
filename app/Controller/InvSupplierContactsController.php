@@ -12,20 +12,20 @@ class InvSupplierContactsController extends AppController {
  *
  * @var string
  */
-	public $layout = 'bootstrap';
+	public $layout = 'default';
 
 /**
  * Helpers
  *
  * @var array
  */
-	public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
+	//public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
 /**
  * Components
  *
  * @var array
  */
-	public $components = array('Session');
+	//public $components = array('Session');
 /**
  * index method
  *
@@ -95,6 +95,7 @@ class InvSupplierContactsController extends AppController {
 			throw new NotFoundException(__('Invalid %s', __('inv supplier contact')));
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
+			$this->request->data['InvSupplierContact']['lc_transaction']='MODIFY';
 			if ($this->InvSupplierContact->save($this->request->data)) {
 				$this->Session->setFlash(
 					__('The %s has been saved', __('inv supplier contact')),

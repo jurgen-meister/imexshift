@@ -12,7 +12,7 @@ class InvBrandsController extends AppController {
  *
  * @var string
  */
-//	public $layout = 'bootstrap';
+	public $layout = 'default';
 
 /**
  * Helpers
@@ -68,6 +68,7 @@ class InvBrandsController extends AppController {
 					)
 				);
 				$this->redirect(array('action' => 'index'));
+				//$this->redirect(array('action' => 'edit', $this->InvBrand->id));
 			} else {
 				$this->Session->setFlash(
 					__('No se pudo guardar, intente de nuevo'),

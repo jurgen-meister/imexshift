@@ -12,7 +12,7 @@
 					echo $this->BootstrapForm->input('inv_brand_id', array(
 //						'after' => $this->BootstrapForm->input('Crear Marca',array(
 //							'type' => 'button',
-//							'href' => '#myModal', 
+//							'href' => '#modalAddBrand', 
 //							'role' => 'button', 
 //							'class' => 'btn btn-info', 						
 //							'data-toggle' =>'modal',
@@ -28,7 +28,7 @@
 					echo $this->BootstrapForm->input('inv_category_id', array(
 //						'after' => $this->BootstrapForm->input('Crear Categoría', array(
 //							'type' => 'button',
-//							'href' => '#myModal', 
+//							'href' => '#modalAddCategorie', 
 //							'role' => 'button', 
 //							'class' => 'btn btn-info', 						
 //							'data-toggle' =>'modal',
@@ -62,8 +62,8 @@
 					echo $this->BootstrapForm->input('picture', array(
 						)
 					);				
-					?>		
-				
+					?>
+					
 				<div class="row-fluid">
 					<div class="span2"></div>
 					<div class="span6">
@@ -78,17 +78,52 @@
 			</fieldset>
 		<?php echo $this->BootstrapForm->end();?>
 	</div>
-	<!-- Modal -->
-<div id="myModal" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+	<!-- Brands Modal -->
+<div id="modalAddBrand" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3 id="myModalLabel">Modal header</h3>
+    <h3 id="myModalLabel">Nueva Marca</h3>
   </div>
-  <div class="modal-body">
-    <p>One fine body…</p>
+  <div class="modal-body form-horizontal">
+    <?php	echo'<div id="boxModalAddBrand">';
+			echo $this->BootstrapForm->input('name', array(
+				'rows' => 3,				
+				'label' => 'Nombre',
+				'required' => 'required',
+				'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
+			);
+			echo $this->BootstrapForm->input('description', array(
+				'rows' => 5,
+				//'style'=>'width:300px',
+				'label' => 'Descripcion',
+				'required' => 'required',
+				'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
+			);
+			echo $this->BootstrapForm->input('country_source', array(
+				'label' => 'Pais de Origen',
+				'required' => 'required',
+				'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
+			);
+			echo '</div>';
+			?>	
   </div>
   <div class="modal-footer">
-    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-    <button class="btn btn-primary">Save changes</button>
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+    <button class="btn btn-primary" id="btnModalAddBrand">Guardar</button>
+  </div>
+</div>
+
+	<!-- Categories Modal -->
+<div id="modalAddCategorie" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-header">
+    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+    <h3 id="myModalLabel">Nueva Categoria</h3>
+  </div>
+  <div class="modal-body form-horizontal">
+    
+  </div>
+  <div class="modal-footer">
+    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
+    <button class="btn btn-primary" id="btnModalAddCategorie">Guardar</button>
   </div>
 </div>
