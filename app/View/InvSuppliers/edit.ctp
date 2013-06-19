@@ -1,50 +1,51 @@
-<div class="row-fluid">
-	<div class="span9">
-		<?php echo $this->BootstrapForm->create('InvSupplier', array('class' => 'form-horizontal'));?>
-			<fieldset>
-				<legend><?php echo __('Modifcar %s', __('Proveedor')); ?></legend>
-				<?php
-				echo $this->BootstrapForm->input('code', array(
-					'label' => 'Código:',
-					'disabled' => true,
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('name', array(
-					'label' => 'Nombre:',
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('location', array(
-					'label' => 'Locacion:',
-					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
-				);
-				echo $this->BootstrapForm->input('adress', array(
-					'label' => 'Dirección:',
-					)
-				);
-				echo $this->BootstrapForm->input('phone', array(
-					'label' => 'Teléfono:',					
-					)
-				);				
-				echo $this->BootstrapForm->hidden('id');
-				?>
-				<?php echo $this->BootstrapForm->submit(__('Submit'));?>
-			</fieldset>
-		<?php echo $this->BootstrapForm->end();?>
+<div class="span9">
+	<div class="widget-box">
+	<div class="widget-title">
+		<span class="icon">
+			<i class="icon-edit"></i>								
+		</span>
+		<h5>Editar Proveedor</h5>			
 	</div>
-<!--	<div class="span3">
-		<div class="well" style="padding: 8px 0; margin-top:8px;">
-		<ul class="nav nav-list">
-			<li class="nav-header"><?php echo __('Actions'); ?></li>
-			<li><?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $this->Form->value('InvSupplier.id')), null, __('Are you sure you want to delete # %s?', $this->Form->value('InvSupplier.id'))); ?></li>
-			<li><?php echo $this->Html->link(__('List %s', __('Inv Suppliers')), array('action' => 'index'));?></li>
-			<li><?php echo $this->Html->link(__('List %s', __('Inv Supplier Contacts')), array('controller' => 'inv_supplier_contacts', 'action' => 'index')); ?></li>
-			<li><?php echo $this->Html->link(__('New %s', __('Inv Supplier Contact')), array('controller' => 'inv_supplier_contacts', 'action' => 'add')); ?></li>
-			<li><?php echo $this->Html->link(__('List %s', __('Inv Items Suppliers')), array('controller' => 'inv_items_suppliers', 'action' => 'index')); ?></li>
-			<li><?php echo $this->Html->link(__('New %s', __('Inv Items Supplier')), array('controller' => 'inv_items_suppliers', 'action' => 'add')); ?></li>
-		</ul>
-		</div>
-	</div>-->
+	<div class="widget-content nopadding">
+	<?php echo $this->BootstrapForm->create('InvSupplier', array('class' => 'form-horizontal'));?>
+		<fieldset>			
+			<?php				
+			echo $this->BootstrapForm->input('name', array(
+				'style' => 'width:400px',
+				'label' => 'Nombre:',
+				'required' => 'required',
+				'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
+			);
+			echo $this->BootstrapForm->input('location', array(
+				'label' => 'Locacion:',
+				'required' => 'required',
+				'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
+			);
+			echo $this->BootstrapForm->input('adress', array(
+				'label' => 'Dirección:',
+				'style' => 'width:400px',
+				'rows' => 5,
+				)
+			);
+			echo $this->BootstrapForm->input('phone', array(
+				'label' => 'Teléfono:',					
+				)
+			);				
+			echo $this->BootstrapForm->hidden('id');
+			?>
+			<div class="row-fluid">
+			<div class="span2"></div>
+			<div class="span6">
+			<div class="btn-toolbar">
+			<?php echo $this->BootstrapForm->submit('Guardar', array('id'=>'saveButton', 'class' => 'btn btn-primary', 'div' => false));
+				   echo $this->Html->link('Cancelar', array('action' => 'index'), array('class'=>'btn') );
+			?>
+			</div>				
+			</div>
+			<div class="span4"></div>
+		</div>	
+		</fieldset>
+	<?php echo $this->BootstrapForm->end();?>
+	</div>
+	</div>
 </div>

@@ -72,20 +72,7 @@ class InvWarehouse extends AppModel {
 			'exclusive' => '',
 			'finderQuery' => '',
 			'counterQuery' => ''
-		),
-		'SalDetail' => array(
-			'className' => 'SalDetail',
-			'foreignKey' => 'inv_warehouse_id',
-			'dependent' => false,
-			'conditions' => '',
-			'fields' => '',
-			'order' => '',
-			'limit' => '',
-			'offset' => '',
-			'exclusive' => '',
-			'finderQuery' => '',
-			'counterQuery' => ''
 		)
 	);
-	
+
 }

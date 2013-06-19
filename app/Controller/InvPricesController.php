@@ -57,7 +57,7 @@ class InvPricesController extends AppController {
  */
 	public function add() {
 		if ($this->request->is('post')) {
-			$this->InvPrice->create();
+			$this->InvPrice->create();			
 			if ($this->InvPrice->save($this->request->data)) {
 				$this->Session->setFlash(
 					__('El precio se guardo exitosamente'),

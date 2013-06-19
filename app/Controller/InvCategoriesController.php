@@ -12,7 +12,7 @@ class InvCategoriesController extends AppController {
  *
  * @var string
  */
-//	public $layout = 'default';
+	public $layout = 'default';
 
 /**
  * Helpers
