@@ -4,7 +4,7 @@
 <div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
 <!-- ************************************************************************************************************************ -->
 <h3>	<!-- <?php echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' => 'save_invoice'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo')); ?> -->
-			<?php echo __('Facturas de %s', __('Compra'));?></h3>
+			<?php echo __('Facturas de %s', __('Venta'));?></h3>
 
 <!-- *********************************************** #UNICORN SEARCH WRAP ********************************************-->
 		<div class="widget-box">
@@ -59,24 +59,26 @@
 			<?php $cont = $this->BootstrapPaginator->counter('{:start}'); ?>
 		<table class="table table-striped table-bordered table-hover">
 			<tr>
-				<th><?php echo $this->BootstrapPaginator->sort('#');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('Proveedor');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('Código');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('Fecha');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('Descripccion');?></th>				
-				<th><?php echo $this->BootstrapPaginator->sort('lc_state', 'Estado Documento');?></th>				
+				<th><?php echo '#';?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('doc_code', 'Código');?></th>
+		<!--	<th><?php echo $this->BootstrapPaginator->sort('doc_code', 'Código Origen');?></th>	-->
+				<th><?php echo $this->BootstrapPaginator->sort('note_code','Código de Factura de Compra');?></th>
+		<!--	<th><?php echo $this->BootstrapPaginator->sort('note_code', 'Código de Proforma');?></th>	-->
+				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('SalEmployee.name','Cliente');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('lc_state', 'Estado Documento');?></th>					
 			</tr>
-		<?php foreach ($purPurchases as $purPurchase): ?>
+		<?php foreach ($salSales as $salSale): ?>
 			<tr>
 				<td><?php echo $cont++;?></td>				
-				<td>
-					<?php echo $this->Html->link($purPurchase['InvSupplier']['name'], array('controller' => 'inv_suppliers', 'action' => 'view', $purPurchase['InvSupplier']['id'])); ?>
-				</td>
-				<td><?php echo h($purPurchase['PurPurchase']['doc_code']); ?>&nbsp;</td>
-				<td><?php echo h($purPurchase['PurPurchase']['date']); ?>&nbsp;</td>
-				<td><?php echo h($purPurchase['PurPurchase']['description']); ?>&nbsp;</td>				
+				<td><?php echo h($salSale['SalSale']['doc_code']); ?>&nbsp;</td>
+		<!--	<td><?php echo h($salSale['SalSale']['doc_code']); ?>&nbsp;</td>		-->
+				<td><?php echo h($salSale['SalSale']['note_code']); ?>&nbsp;</td>
+		<!--	<td><?php echo h($salSale['SalSale']['note_code']); ?>&nbsp;</td>		-->
+				<td><?php echo date("d/m/Y", strtotime($salSale['SalSale']['date'])); ?>&nbsp;</td>
+				<td><?php echo h($salSale['SalEmployee']['name']); ?>&nbsp;</td>	
 				<td><?php 
-						$documentState = $purPurchase['PurPurchase']['lc_state'];
+						$documentState = $salSale['SalSale']['lc_state'];
 						switch ($documentState){
 							case 'INVOICE_PENDANT':
 								$stateColor = 'btn-warning';
@@ -95,7 +97,7 @@
 					$url = array();
 					$parameters = $this->passedArgs;
 						$url['action'] = 'save_invoice';
-						$parameters['id']=$purPurchase['PurPurchase']['id'];
+						$parameters['id']=$salSale['SalSale']['id'];
 						
 					////////////END - SETTING URL AND PARAMETERS//////////////
 						

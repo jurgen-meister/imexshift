@@ -4,6 +4,7 @@ $(document).ready(function(){
 	var arr = path.split('/');
 	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 
+	var globalPeriod = $('#globalPeriod').text(); // this value is obtained from the main template.
 	var arrayItemsAlreadySaved = []; 
 	startEventsWhenExistsItems();
 	
@@ -13,7 +14,7 @@ $(document).ready(function(){
 	var arrayPaysAlreadySaved = []; 
 	startEventsWhenExistsPays();
 	
-	clearFieldsForFirefox();
+	//clearFieldsForFirefox();
 
 
 	
@@ -24,17 +25,17 @@ $(document).ready(function(){
 	//////////////////////////////////BEGIN-FUNCTIONS////////////////
 	//************************************************************************//
 	//firefox doesn't clear by himself the fields when there is a refresh in a new form
-	function clearFieldsForFirefox(){
-/*ch*/		var urlController = ['save_order', 'save_invoice'];
-		for(var i=0;i < urlController.length; i++ ){
-			if(arr[3] == urlController[i]){
-				if(arr[4] == null){
-					$('input').val('');//empty all inputs including hidden thks jquery 
-					$('textarea').val('');
-				}
-			}
-		}
-	}
+//	function clearFieldsForFirefox(){
+///*ch*/		var urlController = ['save_order', 'save_invoice'];
+//		for(var i=0;i < urlController.length; i++ ){
+//			if(arr[3] == urlController[i]){
+//				if(arr[4] == null){
+//					$('input').val('');//empty all inputs including hidden thks jquery 
+//					$('textarea').val('');
+//				}
+//			}
+//		}
+//	}
 	
 	//When exist items, it starts its events and fills arrayItemsAlreadySaved
 	function startEventsWhenExistsItems(){
@@ -103,13 +104,13 @@ $(document).ready(function(){
 		
 		if(price == ''){
 			error+='<li>El campo "P/U" no puede estar vacio</li>'; 
-		}else{
+		}/*else{
 //o si puede ser cero el precio?			
 			if(parseFloat(price).toFixed(2) == 0){
 				
 				error+='<li>El campo "P/U" no puede ser cero</li>'; 
 			}
-		}
+		}*/
 		
 		if(item == ''){error+='<li>El campo "Item" no puede estar vacio</li>';}
 		
@@ -183,7 +184,9 @@ $(document).ready(function(){
 	function validateBeforeSaveAll(arrayItemsDetails){
 		var error = '';
 		var date = $('#txtDate').val();
+		var dateYear = date.split('/');
 		if(date == ''){	error+='<li> El campo "Fecha" no puede estar vacio </li>'; }
+		if(dateYear[2] !== globalPeriod){	error+='<li> El año '+dateYear[2]+' de la fecha del documento no es valida, ya que se encuentra en la gestión '+ globalPeriod +'.</li>'; }
 		if(arrayItemsDetails[0] == 0){error+='<li> Debe existir al menos 1 "Item" </li>';}
 //		if(arr[3] == 'save_invoice'){
 //				if(arrayCostsDetails[0] == 0){error+='<li> Debe existir al menos 1 "Costo" </li>';}
@@ -303,12 +306,18 @@ $(document).ready(function(){
 	}
 	
 	function initiateModalEditItem(objectTableRowSelected){
-		var itemIdForEdit = objectTableRowSelected.find('#txtItemId').val();  //
+		  //
 		$('#btnModalAddItem').hide();
 		$('#btnModalEditItem').show();
 		$('#boxModalValidateItem').html('');//clear error message
-		$('#txtModalQuantity').val(objectTableRowSelected.find('#spaQuantity'+itemIdForEdit).text());
-		$('#txtModalPrice').val(objectTableRowSelected.find('#spaPrice'+itemIdForEdit).text());
+		
+		
+		ajax_initiate_modal_edit_item_in(objectTableRowSelected);
+		
+		
+		
+		
+//		$('#cbxModalWarehouses').val(objectTableRowSelected.find('#spaPrice'+itemIdForEdit).text());
 //		$('#txtModalPrice').keypress(function(){return false;});
 /*		if ($('#txtModalQuantityDocument').length > 0){//existe
 			$('#txtModalQuantityDocument').val(objectTableRowSelected.find('#spaQuantityDocument'+itemIdForEdit).text());
@@ -318,9 +327,7 @@ $(document).ready(function(){
 			$('#txtModalStock2').val(objectTableRowSelected.find('#spaStock2-'+itemIdForEdit).text());
 			$('#txtModalStock2').keypress(function(){return false;});
 		}*/
-		$('#cbxModalItems').empty();
-		$('#cbxModalItems').append('<option value="'+itemIdForEdit+'">'+objectTableRowSelected.find('td:first').text()+'</option>');
-		initiateModal();
+		
 	}
 	
 	function initiateModalEditCost(objectTableRowSelected){
@@ -475,7 +482,7 @@ $(document).ready(function(){
 		row +='<td><span id="spaItemName'+itemId+'">'+itemCodeName+'</span><input type="hidden" value="'+itemId+'" id="txtItemId" ></td>';
 		row +='<td><span id="spaPrice'+itemId+'">'+price+'</span></td>';
 		row +='<td><span id="spaQuantity'+itemId+'">'+quantity+'</span></td>';
-row +='<td><span id="spaWarehouse'+itemId+'">'+warehouse+'</span><input  value="'+warehouseId+'" id="txtWarehouseId" ></td>';
+row +='<td><span id="spaWarehouse'+itemId+'">'+warehouse+'</span><input type="hidden" value="'+warehouseId+'" id="txtWarehouseId'+itemId+'" ></td>';
 row +='<td><span id="spaStock'+itemId+'">'+stock+'</span></td>';
 		row +='<td><span id="spaSubtotal'+itemId+'">'+subtotal+'</span></td>';
 		row +='<td class="columnItemsButtons">';
@@ -546,11 +553,21 @@ var stock = $('#txtModalStock').val();
 		var quantity = $('#txtModalQuantity').val();
 		var itemCodeName = $('#cbxModalItems option:selected').text();
 var price = $('#txtModalPrice').val();
+
+var warehouseId = $('#cbxModalWarehouses').val();		
+var warehouse = $('#cbxModalWarehouses option:selected').text();
+var stock = $('#txtModalStock').val();
+
 var subtotal = ((quantity) * (price));
 		var error = validateItem(itemCodeName, quantity, parseFloat(price).toFixed(2)/*, ''*/); 
 		if(error == ''){
 			$('#spaQuantity'+itemId).text(parseInt(quantity,10));
 			$('#spaPrice'+itemId).text(parseFloat(price).toFixed(2));
+			
+			$('#spaWarehouse'+itemId).text(warehouse);
+			$('#txtWarehouseId'+itemId).val(warehouseId); ////////////////
+			$('#spaStock'+itemId).text(stock);
+			
 			$('#spaSubtotal'+itemId).text(parseFloat(subtotal).toFixed(2));
 			$('#modalAddItem').modal('hide');
 		}else{
@@ -626,17 +643,20 @@ var amount = $('#txtModalAmount').val();
 		var itemQuantity = '';
 		var itemWarehouse = '';
 //		var itemQuantityDocument = '';
+var exRate = $('#txtExRate').val();
+	
+		var itemExPrice = '';
 		
 		$('#tablaItems tbody tr').each(function(){		
 			itemId = $(this).find('#txtItemId').val();
 			itemPrice = $(this).find('#spaPrice'+itemId).text();
 			itemQuantity = $(this).find('#spaQuantity'+itemId).text();
-			itemWarehouse = $(this).find('#txtWarehouseId').val();
+			itemWarehouse = $(this).find('#txtWarehouseId'+itemId).val();
 /*			if ($('#spaQuantityDocument'+itemId).length > 0){//exists
 				itemQuantityDocument = $(this).find('#spaQuantityDocument'+itemId).text();
 			}
-*/			
-			arrayItemsDetails.push({'inv_item_id':itemId, 'price':itemPrice, 'quantity':itemQuantity, 'inv_warehouse_id':itemWarehouse/*, 'quantity_document':itemQuantityDocument*//*, 'stock2':itemStock2*/});
+*/			itemExPrice = itemPrice * exRate;
+			arrayItemsDetails.push({'inv_item_id':itemId, 'price':itemPrice, 'quantity':itemQuantity, 'inv_warehouse_id':itemWarehouse, 'ex_price':parseFloat(itemExPrice).toFixed(2)/*, 'quantity_document':itemQuantityDocument*//*, 'stock2':itemStock2*/});
 			
 		});
 		
@@ -926,6 +946,8 @@ if( error == ''){
 		return false;
 	});
 	
+	$('#cbxCustomers').select2();
+	
 	$('#cbxSuppliers').data('pre', $(this).val());
 	$('#cbxSuppliers').change(function(){
 	var supplier = $(this).data('pre');
@@ -996,7 +1018,10 @@ if( error == ''){
 				  ,customer:$('#cbxCustomers').val()
 				  ,employee:$('#cbxEmployees').val()
 				  ,taxNumber:$('#cbxTaxNumbers').val()
+				  ,salesman:$('#cbxSalesman').val()
+				  ,note_code:$('#txtNoteCode').val()
 				  ,description:$('#txtDescription').val()
+				  ,exRate:$('#txtExRate').val()
 //				  ,documentCode:documentCode
 			  },
             beforeSend: showProcessing(),
@@ -1013,6 +1038,7 @@ $('#btnLogicDeleteState').show();
 					$('#txtPurchaseIdHidden').val(arrayCatch[2]);
 					$('#txtGenericCode').val(arrayCatch[3]);
 		//			$('#cbxSuppliers').attr('disabled','disabled');
+		$('#txtExRate').removeAttr('disabled');
 				}
 		
 				//update items stocks
@@ -1100,8 +1126,13 @@ changeLabelDocumentState('INVOICE_PENDANT'); //#UNICORN
             data:{arrayItemsDetails: arrayItemsDetails 
 				  ,purchaseId:$('#txtPurchaseIdHidden').val()
 				  ,date:$('#txtDate').val()
-				  ,supplier:$('#cbxSuppliers').val()	
+				  ,customer:$('#cbxCustomers').val()
+				  ,employee:$('#cbxEmployees').val()
+				  ,taxNumber:$('#cbxTaxNumbers').val()
+				  ,salesman:$('#cbxSalesman').val()	
 				  ,description:$('#txtDescription').val()
+				  ,exRate:$('#txtExRate').val()
+				  ,note_code:$('#txtNoteCode').val()
 				  ,genericCode:$('#txtGenericCode').val()
 //				  ,documentCode:documentCode
 			  },
@@ -1386,7 +1417,60 @@ setTimeout(function() {
 				$('#cbxModalItems').bind("change",function(){ //must be binded 'cause dropbox is loaded by a previous ajax'
 					//este es para el precio
 					ajax_update_stock_modal();
+					//este es para el stock
+					ajax_update_stock_modal_1();
 				});
+				$('#cbxModalWarehouses').bind("change",function(){ //must be binded 'cause dropbox is loaded by a previous ajax'
+					//este es para el stock
+					ajax_update_stock_modal_1();
+				});
+//				$('#txtModalPrice').keypress(function(){return false;});
+				$('#cbxModalItems').select2();
+			},
+			error:function(data){
+				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				$('#processing').text('');
+			}
+        });
+	}
+	
+	
+		function ajax_initiate_modal_edit_item_in(objectTableRowSelected){
+		var itemIdForEdit = objectTableRowSelected.find('#txtItemId').val();
+		var warehouseIdForEdit = objectTableRowSelected.find('#txtWarehouseId'+itemIdForEdit).val();
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_initiate_modal_edit_item_in",			
+  /*data*/  data:{//itemsAlreadySaved: itemsAlreadySaved
+				/*, customer: $('#cbxCustomers').val()
+				, employee: $('#cbxEmployees').val()
+				, taxNumber: $('#cbxTaxNumbers').val()*/
+				warehouse: warehouseIdForEdit	
+				, item: itemIdForEdit},				
+            beforeSend: showProcessing(),
+            success: function(data){
+			$('#processing').text('');
+		$('#boxModalInitiateItemPrice').html(data);///////////////////////////////////////////////
+		
+		$('#txtModalQuantity').val(objectTableRowSelected.find('#spaQuantity'+itemIdForEdit).text());
+		$('#txtModalPrice').val(objectTableRowSelected.find('#spaPrice'+itemIdForEdit).text());
+		
+		$('#cbxModalItems').empty();
+		$('#cbxModalItems').append('<option value="'+itemIdForEdit+'">'+objectTableRowSelected.find('td:first').text()+'</option>');
+		initiateModal()//;		
+				
+				
+				
+				
+			//	$('#boxModalInitiateItemPrice').html(data);
+			//	$('#txtModalQuantity').val('');  
+			//	initiateModal()
+//				$('#cbxModalItems').bind("change",function(){ //must be binded 'cause dropbox is loaded by a previous ajax'
+//					//este es para el precio
+//					ajax_update_stock_modal();
+//					//este es para el stock
+//					ajax_update_stock_modal_1();
+//				});
 				$('#cbxModalWarehouses').bind("change",function(){ //must be binded 'cause dropbox is loaded by a previous ajax'
 					//este es para el stock
 					ajax_update_stock_modal_1();

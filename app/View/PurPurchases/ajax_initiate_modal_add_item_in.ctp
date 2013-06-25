@@ -4,16 +4,16 @@
 		'label' => 'Item:',
 		'id'=>'cbxModalItems',
 		'class'=>'input-xlarge',
-		'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+	//	'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 		));
 		echo '<br>';
 		
 		echo '<div id="boxModalPrice">';
 			echo $this->BootstrapForm->input('price', array(				
-			'label' => 'P/U i_m_a_i_i:',
+			'label' => 'Precio Unitario:',
 			'id'=>'txtModalPrice',
 			'value'=>$price,
-			'style'=>'background-color:#EEEEEE',
+		//	'style'=>'background-color:#EEEEEE',
 			'class'=>'input-small',
 			'maxlength'=>'15'
 			));

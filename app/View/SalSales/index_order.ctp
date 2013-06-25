@@ -57,30 +57,20 @@
 			<?php $cont = $this->BootstrapPaginator->counter('{:start}'); ?>
 		<table class="table table-striped table-bordered table-hover">
 			<tr>
-				<th><?php echo $this->BootstrapPaginator->sort('#');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('Cliente'/*'Proveedor'*/);?></th>
-<!--<th><?php echo $this->BootstrapPaginator->sort('NIT'/*'Proveedor'*/);?></th>
-<th><?php echo $this->BootstrapPaginator->sort('Vendedor'/*'Proveedor'*/);?></th>-->
-				<th><?php echo $this->BootstrapPaginator->sort('Código');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('Fecha');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('Descripccion');?></th>				
+				<th><?php echo '#';?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('doc_code','Código');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('note_code','Código de Nota de Venta');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('SalEmployee.name','Cliente');?></th>			
 				<th><?php echo $this->BootstrapPaginator->sort('lc_state', 'Estado Documento');?></th>				
 			</tr>
 		<?php foreach ($salSales as $salSale): ?>
 			<tr>
 				<td><?php echo $cont++;?></td>				
-				<td>
-					<?php echo $this->Html->link($salSale['SalEmployee']['name'], array('controller' => 'sal_employees', 'action' => 'view', $salSale['SalEmployee']['id'])); ?>
-				</td>
-			<!--	<td>
-					<?php echo $this->Html->link($salSale['SalTaxNumber']['nit']/*, array('controller' => 'inv_suppliers', 'action' => 'view', $purPurchase['InvSupplier']['id'])*/); ?>
-				</td>
-				<td>
-					<?php echo $this->Html->link($salSale['AdmUser']['name']/*, array('controller' => 'inv_suppliers', 'action' => 'view', $purPurchase['InvSupplier']['id'])*/); ?>
-				</td>-->
 				<td><?php echo h($salSale['SalSale']['doc_code']); ?>&nbsp;</td>
-				<td><?php echo h($salSale['SalSale']['date']); ?>&nbsp;</td>
-				<td><?php echo h($salSale['SalSale']['description']); ?>&nbsp;</td>				
+				<td><?php echo h($salSale['SalSale']['note_code']); ?>&nbsp;</td>
+				<td><?php echo date("d/m/Y", strtotime($salSale['SalSale']['date'])); ?>&nbsp;</td>
+				<td><?php echo h($salSale['SalEmployee']['name']); ?>&nbsp;</td>				
 				<td><?php 
 						$documentState = $salSale['SalSale']['lc_state'];
 						switch ($documentState){

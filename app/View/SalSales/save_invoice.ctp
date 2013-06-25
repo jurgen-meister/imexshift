@@ -1,4 +1,4 @@
-<?php echo $this->Html->script('modules/PurPurchases', FALSE); ?>
+<?php echo $this->Html->script('modules/SalSales', FALSE); ?>
 
 
 <!-- ************************************************************************************************************************ -->
@@ -30,7 +30,7 @@
 			<span class="icon">
 				<i class="icon-edit"></i>								
 			</span>
-			<h5>Factura de Compra</h5>
+			<h5>Factura de Venta</h5>
 			<span id="documentState" class="label <?php echo $documentStateColor;?>"><?php echo $documentStateName;?></span>
 		</div>
 		<div class="widget-content nopadding">
@@ -45,9 +45,9 @@
 	<!-- //******************************** END - #UNICORN  WRAP FORM BOX PART 1/2 *************************************** -->
 
 	<!-- ////////////////////////////////// INICIO - INICIO FORM ///////////////////////////////////// -->
-		<?php echo $this->BootstrapForm->create('PurPurchase', array('class' => 'form-horizontal'));?>
+		<?php echo $this->BootstrapForm->create('SalSale', array('class' => 'form-horizontal'));?>
 		<fieldset>
-	<!--	<legend><?php echo __('Factura de Compra'); ?></legend>-->
+	<!--	<legend><?php echo __('Factura de Venta'); ?></legend>-->
 	<!-- ////////////////////////////////// FIN - INICIO FORM /////////////////////////////////////// -->			
 				
 				
@@ -141,6 +141,14 @@
 					//'data-placement'=>'top',
 				));
 				
+				echo $this->BootstrapForm->input('note_code', array(
+			'id'=>'txtNoteCode',
+	//		'value'=>$noteCode,
+			'label' => 'No. Nota de Remision:',
+			//'type'=>'hidden'
+
+		));
+				
 				echo $this->BootstrapForm->input('generic_code', array(
 					'id'=>'txtGenericCode',
 					'value'=>$genericCode,
@@ -160,22 +168,49 @@
 				
 				
 				
-				echo $this->BootstrapForm->input('inv_supplier_id', array(
+				echo $this->BootstrapForm->input('sal_customer_id', array(
 					'required' => 'required',
-					'label' => 'Proveedor:',
-/*js*/				'id'=>'cbxSuppliers',
+					'label' => 'Cliente:',
+/*js*/				'id'=>'cbxCustomers',
 					//'value'=>$invWarehouses,
-					'disabled'=>$disable2,
-	//				'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+					'selected' => $customerId,
+					
+					'disabled'=>$disable
+		//			'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+				));
+				
+			echo '<div id="boxControllers">';
+				echo $this->BootstrapForm->input('sal_employee_id', array(
+					'required' => 'required',
+					'label' => 'Encargado:',
+/*js*/				'id'=>'cbxEmployees'
+				//	'selected' => 207
+					//'value'=>$invWarehouses,
+//					'disabled'=>$disable,
+		//			'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+				));
+			
+
+				echo $this->BootstrapForm->input('sal_tax_number_id', array(
+					'required' => 'required',
+					'label' => 'NIT - Nombre:',
+/*js*/				'id'=>'cbxTaxNumbers',
+					//'value'=>$invWarehouses,
+					'disabled'=>$disable,
+		//			'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+				));
+			echo '</div>';
+			
+				echo $this->BootstrapForm->input('sal_adm_user_id', array(
+					'required' => 'required',
+					'label' => 'Vendedor:',
+/*js*/				'id'=>'cbxSalesman',
+					//'value'=>$invWarehouses,
+					'selected' => $admUserId,
+					'disabled'=>$disable
+		//			'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 				));
 
-//				echo $this->BootstrapForm->input('inv_movement_type_id', array(
-//					'label' => 'Tipo Movimiento:',
-//					'id'=>'cbxMovementTypes',
-//					'disabled'=>$disable,
-//					'required' => 'required',
-//					'helpInline' => /*$btnAddMovementType.*/'<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;')
-//				);
 				
 				echo $this->BootstrapForm->input('description', array(
 					'rows' => 2,
@@ -217,6 +252,8 @@
 <!--									<th>Stock</th>-->
 									<th>Precio Unitario</th>
 									<th>Cantidad</th>
+									<th>Almacen</th>
+									<th>Stock</th>
 									<th>Subtotal</th>
 									<?php if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){ ?>
 									<th class="columnItemsButtons"></th>
@@ -226,18 +263,20 @@
 							<tbody>
 								<?php
 								$total = 0;
-								for($i=0; $i<count($purDetails); $i++){
-									$subtotal = ($purDetails[$i]['cantidad'])*($purDetails[$i]['price']);
-									echo '<tr>';
-										echo '<td><span id="spaItemName'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['item'].'</span><input type="hidden" value="'.$purDetails[$i]['itemId'].'" id="txtItemId" ></td>';
-										echo '<td><span id="spaPrice'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['price'].'</span></td>';
-										echo '<td><span id="spaQuantity'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['cantidad'].'</span></td>';
-										echo '<td><span id="spaSubtotal'.$purDetails[$i]['itemId'].'">'.$subtotal.'</span></td>';
+								for($i=0; $i<count($salDetails); $i++){
+									$subtotal = ($salDetails[$i]['cantidad'])*($salDetails[$i]['price']);
+									echo '<tr>';																							//type="hidden" txtWarehouseId
+										echo '<td><span id="spaItemName'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['item'].'</span><input type="hidden" value="'.$salDetails[$i]['itemId'].'" id="txtItemId" ></td>';
+										echo '<td><span id="spaPrice'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['price'].'</span></td>';
+										echo '<td><span id="spaQuantity'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['cantidad'].'</span></td>';
+								echo '<td><span id="spaWarehouse'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['warehouse'].'</span><input type="hidden" value="'.$salDetails[$i]['warehouseId'].'" id="txtWarehouseId'.$salDetails[$i]['itemId'].'" ></td>';
+								echo '<td><span id="spaStock'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['stock'].'</span></td>';
+										echo '<td><span id="spaSubtotal'.$salDetails[$i]['itemId'].'">'.$subtotal.'</span></td>';
 										if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){
 											echo '<td class="columnItemsButtons">';
-											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$purDetails[$i]['itemId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
+											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$salDetails[$i]['itemId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
 												
-												<a class="btn btn-danger" href="#" id="btnDeleteItem'.$purDetails[$i]['itemId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
+												<a class="btn btn-danger" href="#" id="btnDeleteItem'.$salDetails[$i]['itemId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
 											echo '</td>';
 										}
 									echo '</tr>';	
@@ -247,7 +286,7 @@
 //										echo '<th></th>';
 //										echo '<th></th>';
 //										echo '<th>Total:</th>';
-//										echo '<th>'.$xxxtotal.'</th>';
+//										echo '<th>'.$total.'</th>';
 //									echo '</tr>';
 								?>
 <!--								<tr>
@@ -273,93 +312,11 @@
 					</div>
 					
 					<div class="span3"></div>
-					
-				</div>-->
+					-->
+				</div>
 			<!-- ////////////////////////////////// FIN ITEMS /////////////////////////////////////// -->
-<p></p>	
-<!-- ////////////////////////////////// INICIO - COSTO /////////////////////////////////////// -->
-	<!--			<ul class="nav nav-tabs">
-					<li class="active">
-						<a href="#">Costos Adicionales de Importación</a>
-					</li>
-				</ul>-->
-				
 
-				<div class="row-fluid">
-					
-			<!--		<div class="span1"></div>
-					
-					<div id="boxTable" class="span8">-->
-						
-						<?php if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){ ?>
-						<a class="btn btn-primary" href='#' id="btnAddCost" title="Adicionar Costo"><i class="icon-plus icon-white"></i></a>
-						<?php } ?>
-						<p></p>
-						
-						<table class="table table-bordered table-condensed table-striped table-hover" id="tablaCosts">
-							<thead>
-								<tr>
-									<th>Costos Adicionales de Importación</th>
-<!--									<th>Stock</th>-->
-									<th>Momto</th>
-									
-									<?php if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){ ?>
-									<th class="columnCostsButtons"></th>
-									<?php }?>
-								</tr>
-							</thead>
-							<tbody>
-								<?php
-								$total = 0;
-								for($i=0; $i<count($purPrices); $i++){
-								//	$subtotal = ($purPrices[$i]['cantidad'])*($purPrices[$i]['price']);
-									echo '<tr>';
-										echo '<td><span id="spaCostName'.$purPrices[$i]['costId'].'">'.$purPrices[$i]['cost'].'</span><input type="hidden" value="'.$purPrices[$i]['costId'].'" id="txtCostId" ></td>';
-										echo '<td><span id="spaAmount'.$purPrices[$i]['costId'].'">'.$purPrices[$i]['amount'].'</span></td>';
-										if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){
-											echo '<td class="columnCostsButtons">';
-											echo '<a class="btn btn-primary" href="#" id="btnEditCost'.$purPrices[$i]['costId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
-												
-												<a class="btn btn-danger" href="#" id="btnDeleteCost'.$purPrices[$i]['costId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
-											echo '</td>';
-										}
-									echo '</tr>';	
-									$total += $subtotal;
-								}
-//								echo '<tr>';
-//										echo '<th></th>';
-//										echo '<th></th>';
-//										echo '<th>Total:</th>';
-//										echo '<th>'.$xxxtotal.'</th>';
-//									echo '</tr>';
-								?>
-<!--								<tr>
-									<th></th>
-									<th></th>
-									<th></th>
-									<th></th>
-								</tr>-->
-							</tbody>
-							
-						</table>
-		<!--			<table class="table table-condensed table-striped table-hover">
-						<thead>
-								<tr>
-									<th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
-									<th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
-									<th>Total:</th>
-									<th><?php echo $total; ?></th>
-								</tr>
-							</thead>
-					</table>
-						
-					</div>
-					
-					<div class="span3"></div>
-					
-				</div> -->
-			<!-- ////////////////////////////////// FIN COSTO /////////////////////////////////////// -->
-				
+		
 			<!-- ////////////////////////////////// INICIO - PAGO /////////////////////////////////////// -->
 	<!--			<ul class="nav nav-tabs">
 					<li class="active">
@@ -398,22 +355,22 @@
 								<?php
 								$total = 0;
 								$debtAmount = 0;
-								for($i=0; $i<count($purPayments); $i++){
+								for($i=0; $i<count($salPayments); $i++){
 								//	$subtotal = ($purPrices[$i]['cantidad'])*($purPrices[$i]['price']);
 									echo '<tr>';
-										echo '<td><span id="spaPayName'.$purPayments[$i]['payId'].'">'.$purPayments[$i]['pay'].'</span><input type="hidden" value="'.$purPayments[$i]['payId'].'" id="txtPayId" ></td>';
-										echo '<td><span id="spaDate'.$purPayments[$i]['payId'].'">'.$purPayments[$i]['date'].'</span></td>';
-										echo '<td><span id="spaDueDate'.$purPayments[$i]['payId'].'">'.$purPayments[$i]['dueDate'].'</span></td>';
-										echo '<td><span id="spaPaidAmount'.$purPayments[$i]['payId'].'">'.$purPayments[$i]['paidAmount'].'</span></td>';
-/*calculado ---> */						echo '<td><span id="spaDebtAmount'.$purPayments[$i]['payId'].'">'.$debtAmount.'</span></td>';
-										echo '<td><span id="spaDescription'.$purPayments[$i]['payId'].'">'.$purPayments[$i]['description'].'</span></td>';
-										echo '<td><span id="spaState'.$purPayments[$i]['payId'].'">'.$purPayments[$i]['state'].'</span></td>';
+										echo '<td><span id="spaPayName'.$salPayments[$i]['payId'].'">'.$salPayments[$i]['pay'].'</span><input type="hidden" value="'.$salPayments[$i]['payId'].'" id="txtPayId" ></td>';
+										echo '<td><span id="spaDate'.$salPayments[$i]['payId'].'">'.$salPayments[$i]['date'].'</span></td>';
+										echo '<td><span id="spaDueDate'.$salPayments[$i]['payId'].'">'.$salPayments[$i]['dueDate'].'</span></td>';
+										echo '<td><span id="spaPaidAmount'.$salPayments[$i]['payId'].'">'.$salPayments[$i]['paidAmount'].'</span></td>';
+/*calculado ---> */						echo '<td><span id="spaDebtAmount'.$salPayments[$i]['payId'].'">'.$debtAmount.'</span></td>';
+										echo '<td><span id="spaDescription'.$salPayments[$i]['payId'].'">'.$salPayments[$i]['description'].'</span></td>';
+										echo '<td><span id="spaState'.$salPayments[$i]['payId'].'">'.$salPayments[$i]['state'].'</span></td>';
 										
 										if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){
 											echo '<td class="columnPaysButtons">';
-											echo '<a class="btn btn-primary" href="#" id="btnEditPay'.$purPayments[$i]['payId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
+											echo '<a class="btn btn-primary" href="#" id="btnEditPay'.$salPayments[$i]['payId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
 												
-												<a class="btn btn-danger" href="#" id="btnDeletePay'.$purPayments[$i]['payId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
+												<a class="btn btn-danger" href="#" id="btnDeletePay'.$salPayments[$i]['payId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
 											echo '</td>';
 										}
 									echo '</tr>';	
@@ -449,8 +406,8 @@
 					</div>
 					
 					<div class="span3"></div>
-					
-				</div> -->
+					 -->
+				</div>
 			<!-- ////////////////////////////////// FIN PAGO /////////////////////////////////////// -->
 			
 			<!-- ////////////////////////////////// INICIO BOTONES /////////////////////////////////////// -->
@@ -508,8 +465,8 @@
 								echo $this->Html->link('<i class="icon-print icon-white"></i> Imprimir', array('action' => 'view_document_movement_pdf', $id.'.pdf'), array('class'=>'btn btn-primary','style'=>'display:'.$displayPrint, 'escape'=>false, 'title'=>'Nuevo', 'id'=>'btnPrint', 'target'=>'_blank')); 
 								
 							?>
-							<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Factura de Compra</a>
-							<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Factura de Compra</a>
+							<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Factura de Venta</a>
+							<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Factura de Venta</a>
 							<a href="#" id="btnLogicDeleteState" class="btn btn-danger" style="display:<?php echo $displayLogicDelete;?>"> Logic Delete</a>
 					</div> <!-- FIN - toolbar para dejar espacio entre botones -->
 				</div> <!-- FIN - span 6 -->
@@ -602,70 +559,6 @@
 					
 			</div>
 <!-- ////////////////////////////////// FIN MODAL (Esta fuera del span9 pero sigue pertenciendo al template principal CONTAINER FLUID/ROW FLUID) ////////////////////////////// -->
-
-
-
-
-<!-- ////////////////////////////////// INICIO MODAL COSTS (Esta fuera del span9 pero sigue pertenciendo al template principal CONTAINER FLUID/ROW FLUID) ////////////////////////////// -->
-			<div id="modalAddCost" class="modal hide fade ">
-				  
-				  <div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
-					<h3 id="myModalLabel">Montos</h3>
-				  </div>
-				  
-				  <div class="modal-body form-horizontal">
-					<!--<p>One fine body…</p>-->
-					<?php
-					echo '<div id="boxModalInitiateCost">';
-						//////////////////////////////////////
-
-						echo $this->BootstrapForm->input('costs_id', array(				
-						'label' => 'Costo:',
-						'id'=>'cbxModalCosts',
-						'class'=>'input-xlarge',
-						'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
-						));
-						echo '<br>';
-//						$amount='';
-//						echo '<div id="boxModalAmount">';
-							
-
-//						echo '</div>';		
-//						echo '<br>';
-
-						//////////////////////////////////////
-					echo '</div>';
-					echo $this->BootstrapForm->input('amount', array(				
-							'label' => 'Montito:',
-							'id'=>'txtModalAmount',
-						//	'value'=>$amount,
-							'style'=>'background-color:#EEEEEE',
-							'class'=>'input-small',
-							'maxlength'=>'15'
-							));
-//					echo $this->BootstrapForm->input('quantity', array(				
-//					'label' => 'Cantidad:',
-//					'id'=>'txtModalQuantity',
-//					'class'=>'input-small',
-//					//'value'=>'6',
-//					'maxlength'=>'10',
-//					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
-//					));
-					?>
-					  <div id="boxModalValidateCost" class="alert-error"></div> 
-				  </div>
-				  
-				  <div class="modal-footer">
-					 <!-- Ztep 0 Save button from modal triggers btnModalAddItem -->
-					<a href='#' class="btn btn-primary" id="btnModalAddCost">Guardar add cost</a>
-					<a href='#' class="btn btn-primary" id="btnModalEditCost">Guardar edit cost</a>
-					<button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
-					
-				  </div>
-					
-			</div>
-<!-- ////////////////////////////////// FIN MODAL COSTS(Esta fuera del span9 pero sigue pertenciendo al template principal CONTAINER FLUID/ROW FLUID) ////////////////////////////// -->
 
 <!-- ////////////////////////////////// INICIO MODAL PAYS(Esta fuera del span9 pero sigue pertenciendo al template principal CONTAINER FLUID/ROW FLUID) ////////////////////////////// -->
 			<div id="modalAddPay" class="modal hide fade ">

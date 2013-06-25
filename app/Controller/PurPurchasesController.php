@@ -45,18 +45,21 @@ class PurPurchasesController extends AppController {
 		
 		$this->PurPurchase->recursive = -1;
 		$this->request->data = $this->PurPurchase->read(null, $id);
-		$date='';
+	//	$date='';
 		$genericCode ='';
 		//debug($this->request->data);
 		$purDetails = array();
 		$documentState = '';
+		$date=date('d/m/Y');
+		$exRate = '8.00';
 		if($id <> null){
 			$date = date("d/m/Y", strtotime($this->request->data['PurPurchase']['date']));//$this->request->data['InvMovement']['date'];
 			$purDetails = $this->_get_movements_details($id);
 			$documentState =$this->request->data['PurPurchase']['lc_state'];
 			$genericCode = $this->request->data['PurPurchase']['code'];
+			$exRate = $this->request->data['PurPurchase']['ex_rate'];
 		}
-		$this->set(compact('invSuppliers', 'id', 'date', 'purDetails', 'documentState', 'genericCode'));
+		$this->set(compact('invSuppliers', 'id', 'date', 'purDetails', 'documentState', 'genericCode', 'exRate'));
 //debug($this->request->data);
 	}
 	
@@ -78,6 +81,7 @@ class PurPurchasesController extends AppController {
 		//debug($this->request->data);
 		$purDetails = array();
 		$purPrices = array();
+		$purPayments = array();
 		$documentState = '';
 		if($id <> null){
 			$date = date("d/m/Y", strtotime($this->request->data['PurPurchase']['date']));//$this->request->data['InvMovement']['date'];
@@ -97,7 +101,7 @@ class PurPurchasesController extends AppController {
 		}
 		
 			
-		$this->set(compact('invSuppliers', 'id', 'date', 'purDetails', 'purPrices', 'purPayments', 'documentState', 'genericCode', 'originCode'));
+		$this->set(compact('invSuppliers', 'id', 'date', 'purDetails', 'purPrices', 'purPayments', 'documentState', 'genericCode', 'originCode'/*, 'exRate'*/));
 //debug($this->request->data);
 	}
 	//START - AJAX START - AJAX START - AJAX START - AJAX START - AJAX START - AJAX START - AJAX
@@ -167,13 +171,13 @@ class PurPurchasesController extends AppController {
 			$costs = $this->PurPurchase->PurPrice->InvPriceType->find('list', array(
 					'fields'=>array('InvPriceType.name'),
 					'conditions'=>array(
-						'NOT'=>array('InvPriceType.id'=>$costsAlreadySaved)
+						'NOT'=>array('InvPriceType.id'=>$costsAlreadySaved,'InvPriceType.name'=>array('VENTA','FOB','CIF'))
 				),
 				
 				'recursive'=>-1
 				//'fields'=>array('InvItem.id', 'CONCAT(InvItem.code, '-', InvItem.name)')
 			));
-//debug($supplier);			
+//debug($costs);			
 //debug($items);
 //debug($this->request->data);
 		// gets the first price in the list of the item prices
@@ -361,14 +365,15 @@ class PurPurchasesController extends AppController {
 			$date = $this->request->data['date'];
 			$supplier = $this->request->data['supplier'];
 			$description = $this->request->data['description'];
+			$exRate = $this->request->data['exRate'];
 //			$movementType = $this->request->data['movementType'];
 //			$documentCode = $this->request->data['documentCode'];
-			
+			$note_code = $this->request->data['note_code'];
 			////////////////////////////////////////////FIN-CAPTURAR AJAX////////////////////////////////////////////////////////
 			
 			
 			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
-			$arrayMovement = array('date'=>$date, 'supplier'=>$supplier,/*'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType,*/ 'description'=>$description);
+			$arrayMovement = array('date'=>$date, 'supplier'=>$supplier,/*'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType,*/'ex_rate'=>$exRate, 'description'=>$description,'note_code'=>$note_code);
 			
 //			$arrayMovement['document_code']=$documentCode;
 			
@@ -429,12 +434,12 @@ class PurPurchasesController extends AppController {
 			$description = $this->request->data['description'];
 //			$movementType = $this->request->data['movementType'];
 //			$documentCode = $this->request->data['documentCode'];
-			
+			$note_code = $this->request->data['note_code'];
 			////////////////////////////////////////////FIN-CAPTURAR AJAX////////////////////////////////////////////////////////
 			
 			
 			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
-			$arrayMovement = array('date'=>$date, 'supplier'=>$supplier, 'description'=>$description);
+			$arrayMovement = array('date'=>$date, 'supplier'=>$supplier, 'description'=>$description,'note_code'=>$note_code);
 			
 //			$arrayMovement['document_code']=$documentCode;
 			
@@ -444,7 +449,7 @@ class PurPurchasesController extends AppController {
 			$movementDocCode = '';
 			if($purchaseId <> ''){//update
 				$arrayMovement['id'] = $purchaseId;
-			}else{//insert
+			}/*else{//insert
 				$movementCode = $this->_generate_code('COM');
 				$movementDocCode = $this->_generate_doc_code('FAC');
 				$arrayMovement['lc_state'] = 'INVOICE_PENDANT';
@@ -452,7 +457,7 @@ class PurPurchasesController extends AppController {
 				$arrayMovement['code'] = $movementCode;
 	$arrayMovement['doc_code'] = $movementDocCode;
 	$arrayMovement['inv_supplier_id'] = $supplier;
-			}
+			}*/
 			
 			//data sin costos ni pagos
 			$data = array('PurPurchase'=>$arrayMovement, 'PurDetail'=>$arrayItemsDetails);
@@ -532,24 +537,26 @@ class PurPurchasesController extends AppController {
 
 			$date = $this->request->data['date'];
 			$description = $this->request->data['description'];
+			$exRate = $this->request->data['exRate'];
+			$note_code = $this->request->data['note_code'];
 	$generalCode = $this->request->data['genericCode'];
 //			$movementType = $this->request->data['movementType'];
 //			$documentCode = $this->request->data['documentCode'];
 			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
 			
 			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
-			$arrayMovement = array('date'=>$date, 'inv_supplier_id'=>$supplier, 'description'=>$description);
+			$arrayMovement = array('date'=>$date, 'inv_supplier_id'=>$supplier, 'description'=>$description,'note_code'=>$note_code, 'ex_rate'=>$exRate);
 			$arrayMovement['lc_state'] = 'ORDER_APPROVED';
 			$arrayMovement['id'] = $purchaseId;
 			
-			$arrayInvoice = array('date'=>$date, 'inv_supplier_id'=>$supplier, 'description'=>$description/*, 'code'=>$code*/);
+			$arrayInvoice = array('date'=>$date, 'inv_supplier_id'=>$supplier, 'description'=>$description,'note_code'=>$note_code/*, 'code'=>$code*/);
 	/*X*/		
 			$movementDocCode = $this->_generate_doc_code('FAC');
 			$arrayInvoice['lc_state'] = 'INVOICE_PENDANT';
 			$arrayInvoice['lc_transaction'] = 'CREATE';
 			$arrayInvoice['code'] = $generalCode;
 	$arrayInvoice['doc_code'] = $movementDocCode;
-	$arrayInvoice['inv_supplier_id'] = $supplier;
+	$arrayInvoice['inv_supplier_id'] = $supplier;	//<--- creo q no es necesario
 //			if($documentCode <> ''){
 //				$arrayMovement['document_code']=$documentCode;
 //			}
@@ -569,7 +576,7 @@ class PurPurchasesController extends AppController {
 			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
 			
 			//print_r($code);
-//			print_r($data);
+			//print_r($arrayItemsDetails);
 //			print_r($dataInv);
 			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////
 			if($purchaseId <> ''){//update
@@ -605,13 +612,15 @@ class PurPurchasesController extends AppController {
 
 			$date = $this->request->data['date'];
 			$description = $this->request->data['description'];
+			
+			$note_code = $this->request->data['note_code'];
 //	$generalCode = $this->request->data['genericCode'];
 //			$movementType = $this->request->data['movementType'];
 //			$documentCode = $this->request->data['documentCode'];
 			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
 			
 			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
-			$arrayMovement = array('date'=>$date, 'inv_supplier_id'=>$supplier, 'description'=>$description);
+			$arrayMovement = array('date'=>$date, 'inv_supplier_id'=>$supplier, 'description'=>$description, 'note_code'=>$note_code);
 			$arrayMovement['lc_state'] = 'INVOICE_APPROVED';
 			$arrayMovement['id'] = $purchaseId;
 			
@@ -784,8 +793,8 @@ class PurPurchasesController extends AppController {
 	
 	
 	private function _generate_code(){
-//		$period = $this->Session->read('Period.name');
-		$period = $this->Session->read('Period.year');
+		$period = $this->Session->read('Period.name');
+//		$period = $this->Session->read('Period.year');
 //		$movementType = '';
 //		if($keyword == 'ENT'){$movementType = 'entrada';}
 //		if($keyword == 'SAL'){$movementType = 'salida';}
@@ -797,11 +806,16 @@ class PurPurchasesController extends AppController {
 	}
 	
 	private function _generate_doc_code($keyword){
-//		$period = $this->Session->read('Period.name');
-		$period = $this->Session->read('Period.year');
-		$movements = $this->PurPurchase->find('count', array('conditions'=>array('PurPurchase.lc_state'=>array('ORDER_PENDANT','ORDER_APPROVED','ORDER_CANCELLED')))); // there are duplicates :S, unless there is no movement delete
+		$period = $this->Session->read('Period.name');
+
+		if ($keyword == 'ORD'){
+			$movements = $this->PurPurchase->find('count', array('conditions'=>array('PurPurchase.lc_state'=>array('ORDER_PENDANT','ORDER_APPROVED','ORDER_CANCELLED')))); // there are duplicates :S, unless there is no movement delete
+			
+		}elseif ($keyword == 'FAC'){
+			$movements = $this->PurPurchase->find('count', array('conditions'=>array('PurPurchase.lc_state'=>array('INVOICE_PENDANT','INVOICE_APPROVED','INVOICE_CANCELLED')))); // there are duplicates :S, unless there is no movement delete
+			
+		}
 		$quantity = $movements + 1; 
-		//$quantity = $this->InvMovement->getLastInsertID(); //hmm..
 		$docCode = $keyword.'-'.$period.'-'.$quantity;
 		return $docCode;
 	}

@@ -1,9 +1,9 @@
 <?php
 			echo $this->BootstrapForm->input('price', array(				
-			'label' => 'P/U u_s_m:',
+			'label' => 'Precio Unitario:',
 			'id'=>'txtModalPrice',
 			'value'=>$price,
-			'style'=>'background-color:#EEEEEE',
+		//	'style'=>'background-color:#EEEEEE',
 			'class'=>'input-small',
 			'maxlength'=>'15'
 			));
