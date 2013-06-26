@@ -35,12 +35,49 @@ class InvItemsController extends AppController {
  * @return void
  */
 	public function index() {
+		$filters = array();
+		$code = '';
+		////////////////////////////START - WHEN SEARCH IS SEND THROUGH POST//////////////////////////////////////
+		if($this->request->is("post")) {
+			$url = array('action'=>'index');
+			$parameters = array();
+			$empty=0;
+			if(isset($this->request->data['InvItem']['code']) && $this->request->data['InvItem']['code']){
+				$parameters['code'] = trim(strip_tags($this->request->data['InvItem']['code']));
+			}else{
+				$empty++;
+			}
+			
+			if($empty == 1){
+				$parameters['search']='empty';
+			}else{
+				$parameters['search']='yes';
+			}
+			$this->redirect(array_merge($url,$parameters));
+		}
+		////////////////////////////END - WHEN SEARCH IS SEND THROUGH POST//////////////////////////////////////
+		
+		////////////////////////////START - SETTING URL FILTERS//////////////////////////////////////
+		if(isset($this->passedArgs['code'])){
+			$filters['InvItem.code LIKE'] = '%'.strtoupper($this->passedArgs['code']).'%';
+			$code = $this->passedArgs['code'];
+		}		
+		////////////////////////////END - SETTING URL FILTERS//////////////////////////////////////
+		
+		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////	
+		
 		$this->paginate = array(
+			'conditions' => array($filters),
 			'order' => array('InvItem.id' => 'asc'),
 			'limit' => 15
 		);
+		////////////////////////////END - SETTING PAGINATING VARIABLES//////////////////////////////////////
 		$this->InvItem->recursive = 0;
-		$this->set('invItems', $this->paginate());
+		
+		////////////////////////START - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
+		$this->set('invItems', $this->paginate('InvItem'));
+		$this->set('code', $code);
+		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
 	}
 
 /**
@@ -63,10 +100,10 @@ class InvItemsController extends AppController {
  * @return void
  */	
 	public function save_item($id = null){
-//		$id = '';
-//		if(isset($this->passedArgs['id'])){
-//			$id = $this->passedArgs['id'];
-//		}
+		$id = '';
+		if(isset($this->passedArgs['id'])){
+			$id = $this->passedArgs['id'];
+		}
 		
 		$invSuppliers = $this->InvItem->invItemsSupplier->InvSupplier->find('list', array('order' => 'InvSupplier.name'));
 		if(count($invSuppliers) == 0)
