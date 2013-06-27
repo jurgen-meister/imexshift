@@ -19,12 +19,13 @@ $(document).ready(function(){
 	/////////////FINISH - Token Status//////////////
 	//$('#cbxWarehouses').select2(); // to create advanced select or combobox
 	
-	clearFieldsForFirefox();
+	//clearFieldsForFirefox();
 
 	//************************************************************************//
 	//////////////////////////////////BEGIN-FUNCTIONS////////////////
 	//************************************************************************//
 	//firefox doesn't clear by himself the fields when there is a refresh in a new form
+	/*
 	function clearFieldsForFirefox(){
 		var urlController = ['save_in', 'save_out', 'save_warehouses_transfer'];
 		for(var i=0;i < urlController.length; i++ ){
@@ -36,7 +37,8 @@ $(document).ready(function(){
 			}
 		}
 	}
-
+	*/
+   
 	//When exist items, it starts its events and fills arrayItemsAlreadySaved
 	function startEventsWhenExistsItems(){
 		var arrayAux = [];

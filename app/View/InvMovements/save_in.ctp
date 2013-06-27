@@ -47,55 +47,11 @@
 	<!-- ////////////////////////////////// START - FORM STARTS ///////////////////////////////////// -->
 		<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-horizontal'));?>
 		<fieldset>
-		<!--<legend><?php// echo __('Entrada al Almacén'); //COMMENTED DUE #UNICORN ?></legend>-->
 	<!-- ////////////////////////////////// END - FORM ENDS /////////////////////////////////////// -->			
-				
-				
-				<!-- ////////////////////////////////// START - TABLE STATE DOCUMENT PROCESS -> COMMENTED DUE #UNICORN/////////////////////////////////////// -->
-				<!--
-				<div class="row-fluid">
-					<div class="span7">
-						
-					</div>
-					<div class="span2" >
-						Estado Documento:
-						<?php/*
-							switch ($documentState){
-								case '':
-									$stateColor = '#BBBBBB';
-									$stateName = 'Sin estado';
-									break;
-								case 'PENDANT':
-									$stateColor = '#F99C17';
-									$stateName = 'Pendiente';
-									break;
-								case 'APPROVED':
-									$stateColor = '#54AA54';
-									$stateName = 'Aprobado';
-									break;
-								case 'CANCELLED':
-									$stateColor = '#BD362F';
-									$stateName = 'Cancelado';
-									break;
-							}*/
-						?>
-						<table id="tableProcessState" class="table table-bordered table-condensed">
-							<tr>
-								<td id="columnStateMovementIn" style="background-color:<?php //echo $stateColor; ?>; color: white"><?php //echo $stateName;?></td>
-							</tr>
-						</table>
-						
-					</div>
-					<div class="span3"></div>
-				</div>
-				-->
-				<!-- ////////////////////////////////// END - TABLE STATE DOCUMENT PROCESS  -> COMMENTED DUE #UNICORN /////////////////////////////////////// -->
-				
 				
 				
 				<!-- ////////////////////////////////// START FORM MOVEMENT FIELDS  /////////////////////////////////////// -->
 				<?php
-				
 				//////////////////////////////////START - block when APPROVED or CANCELLED///////////////////////////////////////////////////
 				$disable = 'disabled';
 				//$btnAddMovementType = '';
@@ -131,7 +87,7 @@
 					//'data-toggle'=>'tooltip',
 					//'data-placement'=>'top',
 				));
-								
+				
 				echo $this->BootstrapForm->input('date_in', array(
 					'required' => 'required',
 					'label' => 'Fecha:',

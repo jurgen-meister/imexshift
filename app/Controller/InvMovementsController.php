@@ -397,7 +397,7 @@ class InvMovementsController extends AppController {
 		
 		$this->InvMovement->recursive = -1;
 		$this->request->data = $this->InvMovement->read(null, $id);
-		$date='';
+		$date=date('d/m/Y');
 		//debug($this->request->data);
 		$invMovementDetails = array();
 		$documentState = '';
@@ -421,7 +421,7 @@ class InvMovementsController extends AppController {
 		
 		$this->InvMovement->recursive = -1;
 		$this->request->data = $this->InvMovement->read(null, $id);
-		$date='';
+		$date=date('d/m/Y');
 
 		$invMovementDetails = array();
 		$documentState = '';
@@ -468,7 +468,7 @@ class InvMovementsController extends AppController {
 		$invMovementDetails = array();
 		$documentState = '';
 		$id='';
-		$date = '';
+		$date=date('d/m/Y');
 		////////////////////////////////FIN - DECLARAR VARIABLES///////////////////////////////////
 		
 		
@@ -556,7 +556,7 @@ class InvMovementsController extends AppController {
 		$invMovementDetails = array();
 		$documentState = '';
 		$id='';
-		$date = '';
+		$date=date('d/m/Y');
 		////////////////////////////////FIN - DECLARAR VARIABLES///////////////////////////////////
 		
 		
@@ -612,7 +612,7 @@ class InvMovementsController extends AppController {
 		$warehouseOut ='';
 		$movementIdIn = '';
 		$movementIdOut = '';
-		$date = '';
+		$date=date('d/m/Y');
 		$invMovementDetailsOut = array();
 		$invMovementDetailsIn = array();
 		$documentCode = '';
