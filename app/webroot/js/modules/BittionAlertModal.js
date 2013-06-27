@@ -4,15 +4,16 @@
 	//************************START - BITTION ALERT MODAL************************//
 	//***************************************************************************//
 	//alert('cargo');
-	function bittionAlertModal(arg){
+	var html ='';
+	function showBittionAlertModal(arg){
 		if(arg === undefined){
 			//alert('No hay objeto definido');
 			//return false;
 			var arg = {
 			title:'Mensaje',
 			content: '¿Esta seguro?',
-			btnYes:'Aceptar',
-			btnNo:'Cancelar',
+			btnYes:'Si',
+			btnNo:'No',
 			btnOptional:''
 			};
 		}else{
@@ -23,23 +24,36 @@
 				arg.content ='¿Esta seguro?';
 			}
 			if(arg.btnYes === undefined){
-				arg.btnYes ='Aceptar';
+				arg.btnYes ='Si';
 			}
 			if(arg.btnNo === undefined){
-				arg.btnNo ='Cancelar';
+				arg.btnNo ='No';
 			}
 			if(arg.btnOptional === undefined){
 				arg.btnOptional ='';
 			}
 		}
 
-		if($('#bittionAlertModal').length === 0){
-			$('#content').append(createAlertModal(arg));
+		$('#content').append(createAlertModal(arg));
+		if($('#bittionBtnNo').length > 0){
+			$('#bittionBtnNo').bind("click",function(){ 
+						hideBittionAlertModal();
+			});
 		}
-
+		$('#bittionAlertModal').modal({
+					show: 'true',
+					backdrop:'static'
+		});
+		
+		
 	}
-
-	var html ='';
+	
+	function hideBittionAlertModal(){
+		$('#bittionAlertModal').modal('hide');
+		$('#bittionAlertModal').remove();
+	}
+	
+	
 	function createAlertModal(arg){
 		html = '<div id="bittionAlertModal" class="modal hide">';
 		html += createHeader(arg.title);
@@ -51,7 +65,7 @@
 
 	function createHeader(title){
 		html =  '<div class="modal-header">';
-		html += '<button data-dismiss="modal" class="close" type="button">×</button>';
+		//html += '<button data-dismiss="modal" class="close" type="button">×</button>'; //not using it 'cause will need to call hideBittionAlertModal()
 		html += '<h3>'+title+'</h3>';
 		html += '</div>';
 		return html;

@@ -235,14 +235,15 @@ $(document).ready(function(){
 	}
 
 	function deleteItem(objectTableRowSelected){
-		if(confirm('Esta seguro de Eliminar el item?')){	
-
+		showBittionAlertModal({content:'¿Está seguro de eliminar este item?'});
+		$('#bittionBtnYes').click(function(){
 			var itemIdForDelete = objectTableRowSelected.find('#txtItemId').val();  //
 			arrayItemsAlreadySaved = jQuery.grep(arrayItemsAlreadySaved, function(value){
 				return value != itemIdForDelete;
 			});
 			objectTableRowSelected.remove();
-		}
+			hideBittionAlertModal();
+		});
 	}
 
 	function createRowItemTable(itemId, itemCodeName, stock, quantity, stock2){
@@ -390,7 +391,8 @@ $(document).ready(function(){
 	}
 
 	function changeStateApproved(){
-		if(confirm('Al APROBAR este documento ya no se podra hacer mas modificaciones. Esta seguro?')){
+		showBittionAlertModal({content:'Al APROBAR este documento ya no se podrá hacer más modificaciones. ¿Está seguro?'});
+		$('#bittionBtnYes').click(function(){
 			var arrayItemsDetails = [];
 			arrayItemsDetails = getItemsDetails();
 			var error = validateBeforeSaveAll(arrayItemsDetails);
@@ -407,13 +409,13 @@ $(document).ready(function(){
 			}else{
 				$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
 			}
-			
-		}
+			hideBittionAlertModal();
+		});
 	}
 
 	function changeStateCancelled(){
-		if(confirm('Al CANCELAR este documento ya no sera valido y no habra marcha atras. Esta seguro?')){
-			//$('#cbxWarehouses').removeAttr('disabled');
+		showBittionAlertModal({content:'Al CANCELAR este documento ya no será válido y no habrá marcha atrás. ¿Está seguro?'});
+		$('#bittionBtnYes').click(function(){
 			var arrayItemsDetails = [];
 			arrayItemsDetails = getItemsDetails();
 			if(arr[3] == 'save_in' || arr[3] == 'save_purchase_in'){
@@ -425,7 +427,8 @@ $(document).ready(function(){
 			if(arr[3] == 'save_warehouses_transfer'){
 				ajax_change_state_cancelled_warehouses_transfer(arrayItemsDetails);
 			}
-		}
+			hideBittionAlertModal();
+		});
 	}
 
 	//************************************************************************//
@@ -442,25 +445,8 @@ $(document).ready(function(){
 	$('#txtModalQuantity').keydown(function(event) {
 			validateOnlyNumbers(event);			
 	});
+
 	//Calendar script
-	/*
-	$('#txtDate').glDatePicker(
-	{
-		cssName: 'flatwhite',		
-		onClick: function(target, cell, date, data) {
-			var correctMonth = date.getMonth() + 1;
-			target.val(date.getDate() + ' / ' +
-						correctMonth + ' / ' +
-						date.getFullYear());
-
-			if(data != null) {
-				alert(data.message + '\n' + date);
-			}
-
-		}
-	});
-	*/
-  
    $("#txtDate").datepicker({
 	  showButtonPanel: true
    });
@@ -1089,12 +1075,12 @@ $(document).ready(function(){
             type:"POST",
             url:moduleController + "ajax_update_multiple_stocks",			
             data:{warehouse: warehouse, arrayItemsDetails: arrayItemsDetails},
-            beforeSend: showAlertModal(),
+            beforeSend: showBittionAlertModal({content:'Actualizando stocks...', btnYes:'', btnNo:''}),
             success: function(data){
 				var arrayItemsStocks = data.split(',');
 				updateMultipleStocks(arrayItemsStocks, controlName);
 				$('#processing').text('');
-				$('#bittionAlertModal').modal('hide');
+				hideBittionAlertModal();
 			},
 			error:function(data){
 				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
@@ -1104,14 +1090,7 @@ $(document).ready(function(){
 	}
 
 	
-	function showAlertModal(){
-		bittionAlertModal({content:'Actualizando stocks...', btnYes:'', btnNo:''}); //this function is called from Bittion.js
-		$('#bittionAlertModal').modal({
-					show: 'true',
-					backdrop:'static'
-		});
-		
-	}
+	
 
 
 
