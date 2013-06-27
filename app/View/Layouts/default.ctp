@@ -144,14 +144,16 @@
 	<!-- page specific scripts -->
 	
 	<?php 
-	echo $this->Html->script('Bittion');
+	
 	echo $this->Html->script('jquery.min');
 	echo $this->Html->script('jquery.ui.custom');
 	echo $this->Html->script('bootstrap.min');
 	echo $this->Html->script('unicorn');
+	echo $this->Html->script('modules/BittionAlertModal');
 	echo $this->Html->script('bootstrap-datepicker'); //just for this project I gonna put the calendar here
 	echo $this->Html->script('jquery.gritter.min'); //growl-like notifications
 	echo $this->Html->script('select2.min', FALSE); //enhanced selects
+	
 	?>
 	<?php echo $this->fetch('script'); //maybe not necessary?>
 	

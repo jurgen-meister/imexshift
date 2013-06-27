@@ -784,7 +784,7 @@ class AdmUsersController extends AppController {
 			$AdmUserRestriction['period'] = $this->request->data['period'];
 			$AdmUserRestriction['active'] = $this->request->data['active'];
 			$AdmUserRestriction['active_date'] = $this->request->data['activeDate'];
-			$AdmUserRestriction['creator'] = $this->Session->read('UserRestriction.id');
+			//$AdmUserRestriction['creator'] = $this->Session->read('UserRestriction.id');
 			$selected = $this->request->data['selected'];;
 			if($selected == 0){
 				$AdmUserRestriction['selected'] = 0;
@@ -834,7 +834,7 @@ class AdmUsersController extends AppController {
 			$AdmUser['password'] = $password;
 			$AdmUser['active'] = $this->request->data['cbxActive'];
 			$AdmUser['active_date'] = $this->request->data['txtActiveDate'];
-			$AdmUser['creator'] = $this->Session->read('UserRestriction.id');
+			//$AdmUser['creator'] = $this->Session->read('UserRestriction.id');
 			
 			
 			$AdmProfile['di_number'] = $this->request->data['txtDiNumber'];
@@ -852,7 +852,7 @@ class AdmUsersController extends AppController {
 			if($this->request->data['txtPhone'] <> ''){
 				$AdmProfile['phone'] = $this->request->data['txtPhone'];
 			}
-			$AdmProfile['creator'] = $this->Session->read('UserRestriction.id');
+			//$AdmProfile['creator'] = $this->Session->read('UserRestriction.id');
 
 			
 			$data = array('AdmUser'=>$AdmUser, 'AdmProfile'=>$AdmProfile);
@@ -877,7 +877,7 @@ class AdmUsersController extends AppController {
 			
 			$AdmUser['active'] = $this->request->data['cbxActive'];
 			$AdmUser['active_date'] = $this->request->data['txtActiveDate'];
-			$AdmUser['creator'] = $this->Session->read('UserRestriction.id');
+			//$AdmUser['creator'] = $this->Session->read('UserRestriction.id');
 			
 			$AdmProfile['di_number'] = $this->request->data['txtDiNumber'];
 			$AdmProfile['di_place'] = $this->request->data['txtDiPlace'];

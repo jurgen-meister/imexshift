@@ -1,11 +1,9 @@
-/* 
- * Bittion default scripts, june 2013
- */
-//$(document).ready(function(){
+//$(document).ready(function(){ // with this doesn't work
 //START SCRIPT	
 	//***************************************************************************//
 	//************************START - BITTION ALERT MODAL************************//
 	//***************************************************************************//
+	//alert('cargo');
 	function bittionAlertModal(arg){
 		if(arg === undefined){
 			//alert('No hay objeto definido');
@@ -16,7 +14,7 @@
 			btnYes:'Aceptar',
 			btnNo:'Cancelar',
 			btnOptional:''
-			}
+			};
 		}else{
 			if(arg.title === undefined){
 				arg.title ='Mensaje';
@@ -65,18 +63,24 @@
 		return html;
 	}
 	function createFooter(btnYes, btnNo, btnOptional){
-		html = '<div class="modal-footer">';
-		if(btnYes !== ''){
-			html += '<a class="btn btn-primary" id="bittionBtnYes" href="#">'+btnYes+'</a>';
+		
+		if(btnYes === '' && btnNo === '' && btnOptional === ''){
+			return '';
+		}else{
+			html = '<div class="modal-footer">';
+			if(btnYes !== ''){
+				html += '<a class="btn btn-primary" id="bittionBtnYes" href="#">'+btnYes+'</a>';
+			}
+			if(btnNo !== ''){
+				html += '<a class="btn" id="bittionBtnNo" href="#">'+btnNo+'</a>';
+			}
+			if(btnOptional !== ''){
+				html += '<a class="btn btn-primary" id="bittionBtnOptional" href="#">'+btnOptional+'</a>';
+			}
+			html +='</div>';
+			return html;
 		}
-		if(btnNo !== ''){
-			html += '<a class="btn" id="bittionBtnNo" href="#">'+btnNo+'</a>';
-		}
-		if(btnOptional !== ''){
-			html += '<a class="btn btn-primary" id="bittionBtnOptional" href="#">'+btnOptional+'</a>';
-		}
-		html +='</div>';
-		return html;
+		
 	}
 	//***************************************************************************//
 	//************************FINISH - BITTION ALERT MODAL************************//

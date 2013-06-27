@@ -1094,7 +1094,7 @@ $(document).ready(function(){
 				var arrayItemsStocks = data.split(',');
 				updateMultipleStocks(arrayItemsStocks, controlName);
 				$('#processing').text('');
-				//$('#bittionAlertModal').modal('hide');
+				$('#bittionAlertModal').modal('hide');
 			},
 			error:function(data){
 				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
@@ -1105,10 +1105,7 @@ $(document).ready(function(){
 
 	
 	function showAlertModal(){
-		//$('.modal-footer').hide();
-		//$('#alertModalContent').text('Actualizando los Stocks...');
-		//var bittion : Bittion;
-		bittionAlertModal({content:'Actualizando stocks...', btnYes:'', btnNo:''});
+		bittionAlertModal({content:'Actualizando stocks...', btnYes:'', btnNo:''}); //this function is called from Bittion.js
 		$('#bittionAlertModal').modal({
 					show: 'true',
 					backdrop:'static'
