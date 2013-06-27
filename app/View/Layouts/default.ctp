@@ -128,6 +128,23 @@
 				<!-- ////////////////////////// START - VIEWS CONTENT(CORE) //////////////////-->
 				<?php echo $this->fetch('content'); ?>			
 				<!-- ////////////////////////// END - VIEWS CONTENT(CORE) //////////////////-->
+				
+				<!-- /////////////////////////// START - GENERIC ALERT MODAL ///////////////////////-->
+				<div id="alertModal" class="modal hide">
+					<div class="modal-header">
+						<button data-dismiss="modal" class="close" type="button">×</button>
+						<h3><span id="alertModalTitle">Mensaje</span></h3>
+					</div>
+					<div class="modal-body">
+						<p><span id="alertModalContent">¿Esta seguro?</span></p>
+					</div>
+					<div class="modal-footer">
+						<a class="btn btn-primary" id="alertModalBtnYes" href="#">Si</a>
+						<a data-dismiss="modal" class="btn" id="alertModalBtnNo" href="#">No</a>
+						<a class="btn btn-primary" id="alertModalBtnOptional" href="#">Otra opción</a>
+					</div>
+				</div>
+				<!-- //////////////////////////// END - GENERIC ALERT MODAL ///////////////////////-->
 			</div>
 			<div class="row-fluid">
 				<div id="footer" class="span12">

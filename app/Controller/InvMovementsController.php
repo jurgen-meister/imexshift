@@ -1441,7 +1441,7 @@ class InvMovementsController extends AppController {
 	}
 	
 	private function _generate_document_code_transfer($keyword){
-		$period = $this->Session->read('Period.year');
+		$period = $this->Session->read('Period.name');
 		if($keyword == 'TRA-ALM'){$idMovementType = 3;}
 		$transfers = $this->InvMovement->find('count', array('conditions'=>array('InvMovement.inv_movement_type_id'=>$idMovementType))); 
 		$quantity = $transfers + 1; 

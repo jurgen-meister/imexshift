@@ -160,7 +160,7 @@ $(document).ready(function(){
 
 		if(arrayItemsDetails[0] != 0){
 			ajax_update_multiple_stocks(arrayItemsDetails, warehouse, controlName);
-			alert('Se cambio de "Almacen", se actualizara los "Stocks" de los "Items"');
+			//alert('Se cambio de "Almacen", se actualizara los "Stocks" de los "Items"');
 		}
 	}
 
@@ -1089,11 +1089,12 @@ $(document).ready(function(){
             type:"POST",
             url:moduleController + "ajax_update_multiple_stocks",			
             data:{warehouse: warehouse, arrayItemsDetails: arrayItemsDetails},
-            beforeSend: showProcessing(),
+            beforeSend: showAlertModal(),
             success: function(data){
 				var arrayItemsStocks = data.split(',');
 				updateMultipleStocks(arrayItemsStocks, controlName);
 				$('#processing').text('');
+				$('#alertModal').modal('hide');
 			},
 			error:function(data){
 				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
@@ -1102,7 +1103,16 @@ $(document).ready(function(){
         });
 	}
 
-
+	
+	function showAlertModal(){
+		$('.modal-footer').hide();
+		$('#alertModalContent').text('Actualizando los Stocks...');
+		$('#alertModal').modal({
+					show: 'true',
+					backdrop:'static'
+		});
+		
+	}
 
 
 
