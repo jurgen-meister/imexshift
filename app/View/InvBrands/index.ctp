@@ -28,9 +28,9 @@
 			<td><?php echo h($invBrand['InvBrand']['description']); ?>&nbsp;</td>
 			<td><?php echo h($invBrand['InvBrand']['country_source']); ?>&nbsp;</td>
 			<td class="actions">
-				<?php echo $this->Html->link(__('Ver'), array('action' => 'view', $invBrand['InvBrand']['id'])); ?>
-				<?php echo $this->Html->link(__('Editar'), array('action' => 'edit', $invBrand['InvBrand']['id'])); ?>
-				<?php echo $this->Form->postLink(__('Eliminar'), array('action' => 'delete', $invBrand['InvBrand']['id']), null, __('Esta seguro de eliminar?', $invBrand['InvBrand']['id'])); ?>
+				<?php //echo $this->Html->link(__('Ver'), array('action' => 'view', $invBrand['InvBrand']['id'])); ?>
+				<?php echo $this->Html->link('<i class= "icon-pencil icon-white"></i>', array('action' => 'edit', $invBrand['InvBrand']['id']),array('class' => 'btn btn-primary', 'escape'=>false, 'title'=>'Editar')); ?>
+				<?php echo $this->Form->postLink('<i class= "icon-trash icon-white"></i>', array('action' => 'delete', $invBrand['InvBrand']['id']), array('class'=>'btn btn-danger', 'escape'=>false, 'title' => 'Eliminar'), __('Esta seguro de eliminar?', $invBrand['InvBrand']['id'])); ?>
 			</td>
 		</tr>
 	<?php endforeach; ?>

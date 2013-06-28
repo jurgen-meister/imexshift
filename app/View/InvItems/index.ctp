@@ -1,8 +1,37 @@
-<?php // echo  $this->BootstrapPaginator->options(array('url' => $this->passedArgs));?>	
+<?php  echo  $this->BootstrapPaginator->options(array('url' => $this->passedArgs));?>	
 <div class="span12">
 		<h3><?php echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' => 'save_item'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo'));?>
 			<?php echo __('Lista de %s', __('Items'));?>
 		</h3>
+	
+	<div class="widget-box">
+			<div class="widget-title">
+				<span class="icon">
+					<i class="icon-search"></i>
+				</span>
+				<h5>Filtro</h5>
+			</div>
+			<div class="widget-content nopadding">
+			<!-- ////////////////////////////////////////INCIO - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
+			<?php echo $this->BootstrapForm->create('InvItem', array('class' => 'form-search', 'novalidate' => true));?>
+			<fieldset>
+						<?php
+						echo $this->BootstrapForm->input('code', array(											
+										'id'=>'txtCode',
+										'value'=>$code,
+										'placeholder'=>'Codigo Item'
+										));
+						?>				
+
+					<?php
+						echo $this->BootstrapForm->submit('<i class="icon-search icon-white"></i>',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSearch', 'title'=>'Buscar'));
+					?>
+
+			</fieldset>
+			<?php echo $this->BootstrapForm->end();?>
+			<!-- ////////////////////////////////////////FIN - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->		
+			</div>
+		</div>
 		
 		<div class="widget-box">
 		<div class="widget-title">
@@ -38,17 +67,17 @@
 				<td><?php echo h($invItem['InvItem']['name']); ?>&nbsp;</td>
 				<td><?php echo h($invItem['InvItem']['description']); ?>&nbsp;</td>
 <!--				<td><?php echo h($invItem['InvItem']['stock']); ?>&nbsp;</td>-->
-				<td class="actions">
-					<?php echo $this->Html->link(__('View'), array('action' => 'view', $invItem['InvItem']['id'])); ?>
+				<td class="actions" style="width: 84px">
+					<?php //echo $this->Html->link(__('View'), array('action' => 'view', $invItem['InvItem']['id'])); ?>
 					<?php 
-//							$url = array();
-//							$parameters = $this->passedArgs;
+							$url = array();
+							$parameters = $this->passedArgs;
+						
 							
-							
-//							$url['action'] = 'save_item';
-//							$parameters['id'] = $invItem['InvItem']['id'];
-							echo $this->Html->link(__('Edit'), array('action' => 'save_item', $invItem['InvItem']['id'])); //array_merge($url,$parameters)); ?>
-					<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $invItem['InvItem']['id']), null, __('Are you sure you want to delete # %s?', $invItem['InvItem']['id'])); ?>
+							$url['action'] = 'save_item';
+							$parameters['id'] = $invItem['InvItem']['id'];
+							echo $this->Html->link('<i class= "icon-pencil icon-white"></i>',array_merge($url,$parameters),array('class' => 'btn btn-primary', 'escape'=>false, 'title'=>'Editar')); //array('action' => 'save_item', $invItem['InvItem']['id']));  ?>
+					<?php echo $this->Form->postLink('<i class= "icon-trash icon-white"></i>', array('action' => 'delete', $invItem['InvItem']['id']), array('class'=>'btn btn-danger', 'escape'=>false, 'title' => 'Eliminar'), __('Are you sure you want to delete # %s?', $invItem['InvItem']['id'])); ?>
 				</td>
 			</tr>
 		<?php endforeach; ?>

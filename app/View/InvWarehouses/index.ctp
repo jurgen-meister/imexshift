@@ -28,9 +28,9 @@
 			<td><?php echo h($invWarehouse['InvWarehouse']['location']); ?>&nbsp;</td>
 			<td><?php echo h($invWarehouse['InvWarehouse']['address']); ?>&nbsp;</td>
 			<td class="actions">
-				<?php echo $this->Html->link(__('Ver'), array('action' => 'view', $invWarehouse['InvWarehouse']['id'])); ?>
-				<?php echo $this->Html->link(__('Editar'), array('action' => 'edit', $invWarehouse['InvWarehouse']['id'])); ?>
-				<?php echo $this->Form->postLink(__('Eliminar'), array('action' => 'delete', $invWarehouse['InvWarehouse']['id']), null, __('Are you sure you want to delete # %s?', $invWarehouse['InvWarehouse']['id'])); ?>
+				<?php //echo $this->Html->link(__('Ver'), array('action' => 'view', $invWarehouse['InvWarehouse']['id'])); ?>
+				<?php echo $this->Html->link('<i class= "icon-pencil icon-white"></i>', array('action' => 'edit', $invWarehouse['InvWarehouse']['id']),array('class' => 'btn btn-primary', 'escape'=>false, 'title'=>'Editar')); ?>
+				<?php echo $this->Form->postLink('<i class= "icon-trash icon-white"></i>', array('action' => 'delete', $invWarehouse['InvWarehouse']['id']),array('class'=>'btn btn-danger', 'escape'=>false, 'title' => 'Eliminar') , __('Are you sure you want to delete # %s?', $invWarehouse['InvWarehouse']['id'])); ?>
 			</td>
 		</tr>
 	<?php endforeach; ?>

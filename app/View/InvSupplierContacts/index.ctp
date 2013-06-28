@@ -32,9 +32,9 @@
 			<td><?php echo h($invSupplierContact['InvSupplierContact']['phone']); ?>&nbsp;</td>
 			<td><?php echo h($invSupplierContact['InvSupplierContact']['job_title']); ?>&nbsp;</td>			
 			<td class="actions">
-				<?php echo $this->Html->link(__('View'), array('action' => 'view', $invSupplierContact['InvSupplierContact']['id'])); ?>
-				<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $invSupplierContact['InvSupplierContact']['id'])); ?>
-				<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $invSupplierContact['InvSupplierContact']['id']), null, __('Are you sure you want to delete # %s?', $invSupplierContact['InvSupplierContact']['id'])); ?>
+				<?php //echo $this->Html->link(__('View'), array('action' => 'view', $invSupplierContact['InvSupplierContact']['id'])); ?>
+				<?php echo $this->Html->link('<i class= "icon-pencil icon-white"></i>', array('action' => 'edit', $invSupplierContact['InvSupplierContact']['id']),array('class' => 'btn btn-primary', 'escape'=>false, 'title'=>'Editar')); ?>
+				<?php echo $this->Form->postLink('<i class= "icon-trash icon-white"></i>', array('action' => 'delete', $invSupplierContact['InvSupplierContact']['id']),array('class'=>'btn btn-danger', 'escape'=>false, 'title' => 'Eliminar') , __('Are you sure you want to delete # %s?', $invSupplierContact['InvSupplierContact']['id'])); ?>
 			</td>
 		</tr>
 	<?php endforeach; ?>
