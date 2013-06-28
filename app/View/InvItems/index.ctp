@@ -67,8 +67,8 @@
 				<td><?php echo h($invItem['InvItem']['name']); ?>&nbsp;</td>
 				<td><?php echo h($invItem['InvItem']['description']); ?>&nbsp;</td>
 <!--				<td><?php echo h($invItem['InvItem']['stock']); ?>&nbsp;</td>-->
-				<td class="actions">
-					<?php echo $this->Html->link(__('View'), array('action' => 'view', $invItem['InvItem']['id'])); ?>
+				<td class="actions" style="width: 84px">
+					<?php //echo $this->Html->link(__('View'), array('action' => 'view', $invItem['InvItem']['id'])); ?>
 					<?php 
 							$url = array();
 							$parameters = $this->passedArgs;
@@ -76,8 +76,8 @@
 							
 							$url['action'] = 'save_item';
 							$parameters['id'] = $invItem['InvItem']['id'];
-							echo $this->Html->link(__('Edit'),array_merge($url,$parameters)); //array('action' => 'save_item', $invItem['InvItem']['id']));  ?>
-					<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $invItem['InvItem']['id']), null, __('Are you sure you want to delete # %s?', $invItem['InvItem']['id'])); ?>
+							echo $this->Html->link('<i class= "icon-pencil icon-white"></i>',array_merge($url,$parameters),array('class' => 'btn btn-primary', 'escape'=>false, 'title'=>'Editar')); //array('action' => 'save_item', $invItem['InvItem']['id']));  ?>
+					<?php echo $this->Form->postLink('<i class= "icon-trash icon-white"></i>', array('action' => 'delete', $invItem['InvItem']['id']), array('class'=>'btn btn-danger', 'escape'=>false, 'title' => 'Eliminar'), __('Are you sure you want to delete # %s?', $invItem['InvItem']['id'])); ?>
 				</td>
 			</tr>
 		<?php endforeach; ?>

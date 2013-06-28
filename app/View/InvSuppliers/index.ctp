@@ -31,9 +31,9 @@
 			<td><?php echo h($invSupplier['InvSupplier']['adress']); ?>&nbsp;</td>
 			<td><?php echo h($invSupplier['InvSupplier']['phone']); ?>&nbsp;</td>				
 			<td class="actions">
-				<?php echo $this->Html->link(__('View'), array('action' => 'view', $invSupplier['InvSupplier']['id'])); ?>
-				<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $invSupplier['InvSupplier']['id'])); ?>
-				<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $invSupplier['InvSupplier']['id']), null, __('Are you sure you want to delete # %s?', $invSupplier['InvSupplier']['id'])); ?>
+				<?php //echo $this->Html->link(__('View'), array('action' => 'view', $invSupplier['InvSupplier']['id'])); ?>
+				<?php echo $this->Html->link('<i class= "icon-pencil icon-white"></i>', array('action' => 'edit', $invSupplier['InvSupplier']['id']),array('class' => 'btn btn-primary', 'escape'=>false, 'title'=>'Editar')); ?>
+				<?php echo $this->Form->postLink('<i class= "icon-trash icon-white"></i>', array('action' => 'delete', $invSupplier['InvSupplier']['id']), array('class'=>'btn btn-danger', 'escape'=>false, 'title' => 'Eliminar'), __('Are you sure you want to delete # %s?', $invSupplier['InvSupplier']['id'])); ?>
 			</td>
 		</tr>
 	<?php endforeach; ?>

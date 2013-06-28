@@ -35,9 +35,9 @@
 			}
 			?>&nbsp;</td>
 			<td class="actions">
-				<?php echo $this->Html->link(__('Ver'), array('action' => 'view', $invMovementType['InvMovementType']['id'])); ?>
-				<?php echo $this->Html->link(__('Editar'), array('action' => 'edit', $invMovementType['InvMovementType']['id'])); ?>
-				<?php echo $this->Form->postLink(__('Eliminar'), array('action' => 'delete', $invMovementType['InvMovementType']['id']), null, __('Are you sure you want to delete # %s?', $invMovementType['InvMovementType']['id'])); ?>
+				<?php //echo $this->Html->link(__('Ver'), array('action' => 'view', $invMovementType['InvMovementType']['id'])); ?>
+				<?php echo $this->Html->link('<i class= "icon-pencil icon-white"></i>', array('action' => 'edit', $invMovementType['InvMovementType']['id']),array('class' => 'btn btn-primary', 'escape'=>false, 'title'=>'Editar')); ?>
+				<?php echo $this->Form->postLink('<i class= "icon-trash icon-white"></i>', array('action' => 'delete', $invMovementType['InvMovementType']['id']), array('class'=>'btn btn-danger', 'escape'=>false, 'title' => 'Eliminar'), __('Are you sure you want to delete # %s?', $invMovementType['InvMovementType']['id'])); ?>
 			</td>
 		</tr>
 	<?php endforeach; ?>
