@@ -560,6 +560,8 @@ $(document).ready(function(){
 				var arrayItemsStocks = arrayCatch[1].split(',');
 				updateMultipleStocks(arrayItemsStocks, 'spaStock');
 				$('#btnPrint').show();
+				$('#btnLogicDelete').show();
+				$('#boxMessage').html('');
 				showGrowlMessage('ok', 'Cambios guardados.');
 				//$('#boxMessage').html('<div class="alert alert-success">\n\
 				//<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
@@ -606,6 +608,7 @@ $(document).ready(function(){
 					changeLabelDocumentState('PENDANT');//#UNICORN
 					
 					$('#btnApproveState').show();
+					$('#btnLogicDelete').show();
 					$('#txtMovementIdHidden').val(arrayCatch[3]);
 				}
 
@@ -616,6 +619,7 @@ $(document).ready(function(){
 				$('#btnPrint').show();	
 				//$('#boxMessage').html('<div class="alert alert-success">\n\
 				//<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
+				$('#boxMessage').html('');
 				showGrowlMessage('ok', 'Cambios guardados.');
 				$('#processing').text('');
 			},
@@ -651,6 +655,7 @@ $(document).ready(function(){
 					changeLabelDocumentState('PENDANT');//#UNICORN
 					
 					$('#btnApproveState').show();
+					$('#btnLogicDelete').show();
 					$('#txtMovementIdHidden').val(arrayCatch[3]);
 					//update items stocks when transfer
 					arrayItemsStocks = arrayCatch[4].split(',');
@@ -669,6 +674,7 @@ $(document).ready(function(){
 				$('#btnPrint').show();
 				//$('#boxMessage').html('<div class="alert alert-success">\n\
 				//<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
+				$('#boxMessage').html('');
 				showGrowlMessage('ok', 'Cambios guardados.');
 				$('#processing').text('');
 
@@ -707,6 +713,7 @@ $(document).ready(function(){
 					changeLabelDocumentState('APPROVED');//#UNICORN
 					
 					$('#btnApproveState').hide();
+					$('#btnLogicDelete').hide();
 					$('#btnCancellState').show();
 					$('#btnSaveAll').hide();
 					//$('#btnAddMovementType').hide();
@@ -729,6 +736,7 @@ $(document).ready(function(){
 					//$('#processing').text('');
 					//$('#boxMessage').html('<div class="alert alert-success">\n\
 					//<button type="button" class="close" data-dismiss="alert">&times;</button>Aprobado con exito<div>');
+					$('#boxMessage').html('');
 					showGrowlMessage('ok', 'Transferencia aprobada.');
 				}
 				if(arrayCatch[0] == 'error'){
@@ -774,6 +782,7 @@ $(document).ready(function(){
 					$('#btnCancellState').hide();
 					//$('#boxMessage').html('<div class="alert alert-success">\n\
 					//<button type="button" class="close" data-dismiss="alert">&times;</button>Cancelado con exito<div>');
+					$('#boxMessage').html('');
 					showGrowlMessage('ok', 'Transferencia cancelada.');
 				}
 				if(arrayCatch[0] == 'error'){
@@ -826,6 +835,7 @@ $(document).ready(function(){
 					changeLabelDocumentState('APPROVED');//#UNICORN
 					
 					$('#btnApproveState').hide();
+					$('#btnLogicDelete').hide();
 					$('#btnCancellState').show();
 					$('#btnSaveAll').hide();
 					$('#btnAddMovementType').hide();
@@ -846,6 +856,7 @@ $(document).ready(function(){
 					$('#txtDescription').attr('disabled','disabled');
 					//$('#boxMessage').html('<div class="alert alert-success">\n\
 					//<button type="button" class="close" data-dismiss="alert">&times;</button>Aprobado con exito<div>');
+					$('#boxMessage').html('');
 					showGrowlMessage('ok', 'Entrada aprobada.');
 				}
 				$('#processing').text('');
@@ -889,6 +900,7 @@ $(document).ready(function(){
 					changeLabelDocumentState('APPROVED');//#UNICORN
 					
 					$('#btnApproveState').hide();
+					$('#btnLogicDelete').hide();
 					$('#btnCancellState').show();
 					$('#btnSaveAll').hide();
 					$('#btnAddMovementType').hide();
@@ -911,6 +923,7 @@ $(document).ready(function(){
 					$('#processing').text('');
 					//$('#boxMessage').html('<div class="alert alert-success">\n\
 					//<button type="button" class="close" data-dismiss="alert">&times;</button>Aprobado con exito<div>');
+					$('#boxMessage').html('');
 					showGrowlMessage('ok', 'Salida aprobada.');
 				}
 				if(arrayCatch[0] == 'error'){
@@ -957,6 +970,7 @@ $(document).ready(function(){
 					var error = validateBeforeMoveOut(arrayItemsStocks, 'spaStock');
 					//$('#boxMessage').html('<div class="alert alert-error">\n\
 					//<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo "Cancelar" la entrada debido a falta de stock:</p><ul>'+error+'</ul><div>');
+					$('#boxMessage').html('');
 					showGrowlMessage('error', '<p>No se pudo "Cancelar" la entrada debido a falta de stock:</p><ul>'+error+'</ul>', true);
 				}
 				$('#processing').text('');
@@ -989,6 +1003,7 @@ $(document).ready(function(){
 					$('#btnCancellState').hide();
 					//$('#boxMessage').html('<div class="alert alert-success">\n\
 					//<button type="button" class="close" data-dismiss="alert">&times;</button>Cancelado con exito<div>');
+					$('#boxMessage').html('');
 					showGrowlMessage('ok', 'Salida cancelada.');
 				}
 				$('#processing').text('');

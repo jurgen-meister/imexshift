@@ -25,6 +25,92 @@
 				break;
 		}
 	?>
+	
+<!-- //////////////////////////// Start - buttons /////////////////////////////////-->
+	<div class="widget-box">
+		<div class="widget-content nopadding">
+			<?php 
+			
+			
+			
+			/////////////////START - SETTINGS BUTTON CANCEL /////////////////
+								
+					$parameters = $this->passedArgs;
+					$url=array();
+					if($idMovement == ''){
+						$url=array('action'=>'index_purchase_in');
+						if(!isset($parameters['search'])){
+							unset($parameters['document_code']);
+						}else{
+							if($parameters['search'] == 'empty'){
+								unset($parameters['document_code']);
+							}
+						}
+					}else{
+						$url['action']='index_in';
+						if(!isset($parameters['search'])){//no search
+							unset($parameters['document_code']);
+							unset($parameters['code']);
+						}else{//yes search
+							if($parameters['search']=='yes'){
+								if(isset($parameters['document_code']) && isset($parameters['code'])){
+									unset($parameters['document_code']);
+								}
+								if(isset($parameters['document_code'])){
+									unset($parameters['code']);
+								}
+							}
+							if($parameters['search']=='empty'){
+								unset($parameters['document_code']);
+							}
+						}
+					}
+				unset($parameters['id']);
+				echo $this->Html->link('<i class=" icon-arrow-left"></i> Volver', array_merge($url,$parameters), array('class'=>'btn', 'escape'=>false)).' ';
+				//////////////////END - SETTINGS BUTTON CANCEL /////////////////
+			?>
+
+			<?php 
+				switch ($documentState){
+							case '':
+								$displayApproved = 'none';
+								$displayCancelled = 'none';
+								break;
+							case 'PENDANT':
+								$displayApproved = 'inline';
+								$displayCancelled = 'none';
+								break;
+							case 'APPROVED':
+								$displayApproved = 'none';
+								$displayCancelled = 'inline';
+								break;
+							case 'CANCELLED':
+								$displayApproved = 'none';
+								$displayCancelled = 'none';
+								break;
+						}
+			?>
+			<?php
+				$displayPrint = 'none';
+				if($id <> ''){
+					$displayPrint = 'inline';
+				}
+				echo $this->Html->link('<i class="icon-print icon-white"></i> Imprimir', array('action' => 'view_document_movement_pdf', $id.'.pdf'), array('class'=>'btn btn-primary','style'=>'display:'.$displayPrint, 'escape'=>false, 'title'=>'Nuevo', 'id'=>'btnPrint', 'target'=>'_blank')); 
+
+			?>
+			<a href="#" id="btnLogicDelete" class="btn btn-danger" style="display:<?php echo $displayApproved;?>"><i class=" icon-trash icon-white"></i> Eliminar</a>
+			<?php
+			if($documentState == 'PENDANT' OR $documentState == ''){
+				echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));	
+			}
+			?>
+			<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Entrada Almacen</a>
+			<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Entrada Almacen</a>
+			
+		</div>
+	</div>
+	<!-- //////////////////////////// End - buttons /////////////////////////////////-->
+
 	<div class="widget-box">
 		<div class="widget-title">
 			<span class="icon">
@@ -172,90 +258,6 @@
 				</div>
 			<!-- ////////////////////////////////// FIN ITEMS /////////////////////////////////////// -->
 
-				
-			<!-- ////////////////////////////////// INICIO BOTONES /////////////////////////////////////// -->
-			<!--<div class="form-actions">--><!-- no sirve se desconfigura los botones en modo tablet -->
-			<div class="row-fluid"> <!-- INICIO - row fluid para alinear los botones -->
-				<div class="span2"></div> <!-- INICIO Y FIN - ESPACIO A LA IZQUIERDA -->
-				<div class="span10">	<!-- INICIO - span 6 -->
-					<div class="btn-toolbar"> <!-- INICIO - toolbar para dejar espacio entre botones -->
-							<?php 
-								if($documentState == 'PENDANT' OR $documentState == ''){
-									echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));	
-
-								}
-								/////////////////START - SETTINGS BUTTON CANCEL /////////////////
-								
-								$parameters = $this->passedArgs;
-								$url=array();
-								if($idMovement == ''){
-									$url=array('action'=>'index_purchase_in');
-									if(!isset($parameters['search'])){
-										unset($parameters['document_code']);
-									}else{
-										if($parameters['search'] == 'empty'){
-											unset($parameters['document_code']);
-										}
-									}
-								}else{
-									$url['action']='index_in';
-									if(!isset($parameters['search'])){//no search
-										unset($parameters['document_code']);
-										unset($parameters['code']);
-									}else{//yes search
-										if($parameters['search']=='yes'){
-											if(isset($parameters['document_code']) && isset($parameters['code'])){
-												unset($parameters['document_code']);
-											}
-											if(isset($parameters['document_code'])){
-												unset($parameters['code']);
-											}
-										}
-										if($parameters['search']=='empty'){
-											unset($parameters['document_code']);
-										}
-									}
-								}
-								unset($parameters['id']);
-								
-								echo $this->Html->link('Cancelar', array_merge($url,$parameters), array('class'=>'btn') );
-								//////////////////END - SETTINGS BUTTON CANCEL /////////////////
-							?>
-
-							<?php 
-								switch ($documentState){
-											case '':
-												$displayApproved = 'none';
-												$displayCancelled = 'none';
-												break;
-											case 'PENDANT':
-												$displayApproved = 'inline';
-												$displayCancelled = 'none';
-												break;
-											case 'APPROVED':
-												$displayApproved = 'none';
-												$displayCancelled = 'inline';
-												break;
-											case 'CANCELLED':
-												$displayApproved = 'none';
-												$displayCancelled = 'none';
-												break;
-										}
-							?>
-							<?php
-								$displayPrint = 'none';
-								if($id <> ''){
-									$displayPrint = 'inline';
-								}
-								echo $this->Html->link('<i class="icon-print icon-white"></i> Imprimir', array('action' => 'view_document_movement_pdf', $id.'.pdf'), array('class'=>'btn btn-primary','style'=>'display:'.$displayPrint, 'escape'=>false, 'title'=>'Nuevo', 'id'=>'btnPrint', 'target'=>'_blank')); 
-							?>
-							<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Entrada Almacen</a>
-							<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Entrada Almacen</a>
-					</div> <!-- FIN - toolbar para dejar espacio entre botones -->
-				</div> <!-- FIN - span 10 -->
-			</div> <!-- FIN - row fluid para alinear los botones -->
-			<!--</div>--><!-- no sirve se desconfigura los botones en modo tablet class="form-actions" -->
-			<!-- ////////////////////////////////// FIN BOTONES /////////////////////////////////////// -->
 
 	<!-- ////////////////////////////////// INICIO - FIN FORM ///////////////////////////////////// -->		
 	</fieldset>
@@ -298,7 +300,7 @@
 						echo $this->BootstrapForm->input('items_id', array(				
 						'label' => 'Item:',
 						'id'=>'cbxModalItems',
-						'class'=>'input-xlarge',
+						'class'=>'span12',
 						'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 						));
 						//echo '<br>';
