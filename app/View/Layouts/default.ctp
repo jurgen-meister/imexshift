@@ -82,7 +82,7 @@
 					<a href="#" data-toggle="dropdown" data-target="#period-menu" class="dropdown-toggle">
 						<i class="icon icon-time"></i> 
 						<span class="text"><?php
-						echo ' Gestión: '.$this->Session->read('Period.name');
+						echo ' Gestión: <span id="globalPeriod">'.$this->Session->read('Period.name').'</span>';
 						?>
 						</span> 
 					</a>

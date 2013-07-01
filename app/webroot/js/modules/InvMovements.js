@@ -3,10 +3,12 @@ $(document).ready(function(){
 	var path = window.location.pathname;
 	var arr = path.split('/');
 	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
-
+	
+	var globalPeriod = $('#globalPeriod').text(); // this value is obtained from the main template.
 	var arrayItemsAlreadySaved = []; 
 	startEventsWhenExistsItems();
-
+	
+	
 	/////////////START - Token Status///////////////
 	/*
 	var tokenStatus = '';
@@ -43,7 +45,7 @@ $(document).ready(function(){
 	function startEventsWhenExistsItems(){
 		var arrayAux = [];
 		arrayAux = getItemsDetails();
-		if(arrayAux[0] != 0){
+		if(arrayAux[0] !== 0){
 			for(var i=0; i< arrayAux.length; i++){
 				 arrayItemsAlreadySaved[i] = arrayAux[i]['inv_item_id'];
 				 createEventClickEditItemButton(arrayAux[i]['inv_item_id']);
@@ -58,23 +60,15 @@ $(document).ready(function(){
 	//validates before add item quantity
 	function validateItem(item, quantity, documentQuantity){
 		var error = '';
-		if(quantity == ''){
+		if(quantity === ''){
 			error+='<li>El campo "Cantidad" no puede estar vacio</li>'; 
 		}else{
-			if(parseInt(quantity, 10) == 0){
+			if(parseInt(quantity, 10) === 0){
 
 				error+='<li>El campo "Cantidad" no puede ser cero</li>'; 
 			}
-			//That was used to validate item quantity is greater than the quantity send in Purchase IN
-			/*
-			if ($('#txtModalQuantityDocument').length > 0){//existe
-				if(parseInt(quantity, 10) > $('#txtModalQuantityDocument').val()){
-					error+='<li>La "Cantidad" de entrada no puede ser mayor a la "Compra"</li>'; 
-				}
-			}
-			*/
 		}
-		if(item == ''){error+='<li>El campo "Item" no puede estar vacio</li>';}
+		if(item === ''){error+='<li>El campo "Item" no puede estar vacio</li>';}
 
 		return error;
 	}
@@ -82,21 +76,24 @@ $(document).ready(function(){
 	function validateBeforeSaveAll(arrayItemsDetails){
 		var error = '';
 		var date = $('#txtDate').val();
+		var dateYear = date.split('/');
 		var warehouses = $('#cbxWarehouses').text();
 		if ($('#cbxMovementTypes').length > 0){//existe
 			var movementTypes = $('#cbxMovementTypes').text();
-			if(movementTypes == ''){	error+='<li> El campo "Tipo Movimiento" no puede estar vacio </li>'; }
+			if(movementTypes === ''){	error+='<li> El campo "Tipo Movimiento" no puede estar vacio </li>'; }
 		}
-		if(date == ''){	error+='<li> El campo "Fecha" no puede estar vacio </li>'; }
-		if(warehouses == ''){	error+='<li> El campo "Almacen" no puede estar vacio </li>'; }
+		if(date === ''){	error+='<li> El campo "Fecha" no puede estar vacio </li>'; }
+		
+		if(dateYear[2] !== globalPeriod){	error+='<li> El año '+dateYear[2]+' de la fecha del documento no es valida, ya que se encuentra en la gestión '+ globalPeriod +'.</li>'; }
+		if(warehouses === ''){	error+='<li> El campo "Almacen" no puede estar vacio </li>'; }
 
 		if ($('#cbxWarehouses2').length > 0){//existe
-			if($('#cbxWarehouses').val() == $('#cbxWarehouses2').val()){
+			if($('#cbxWarehouses').val() === $('#cbxWarehouses2').val()){
 				error+='<li> No se puede hacer una transferencia al mismo almacen </li>';
 			}
 		}
 
-		if(arrayItemsDetails[0] == 0){error+='<li> Debe existir al menos 1 "Item" </li>';}
+		if(arrayItemsDetails[0] === 0){error+='<li> Debe existir al menos 1 "Item" </li>';}
 
 		var itemZero = findIfOneItemHasQuantityZero(arrayItemsDetails);
 		if(itemZero > 0){error+='<li> Se encontraron '+ itemZero +' "Items" con "Cantidad" 0, no puede existir ninguno </li>';}
@@ -107,7 +104,7 @@ $(document).ready(function(){
 	function findIfOneItemHasQuantityZero(arrayItemsDetails){
 		var cont = 0;
 		for(var i = 0; i < arrayItemsDetails.length; i++){
-			if(parseInt(arrayItemsDetails[i]['quantity'],10) == 0){
+			if(parseInt(arrayItemsDetails[i]['quantity'],10) === 0){
 				cont++;
 			}
 		}
@@ -143,7 +140,7 @@ $(document).ready(function(){
 
 	function validateOnlyNumbers(event){
 		// Allow only backspace and delete
-		if (event.keyCode == 8 || event.keyCode == 9 ) {
+		if (event.keyCode === 8 || event.keyCode === 9 ) {
 			// let it happen, don't do anything
 		}
 		else {
@@ -160,7 +157,7 @@ $(document).ready(function(){
 		var arrayItemsDetails = [];
 		arrayItemsDetails = getItemsDetails();
 
-		if(arrayItemsDetails[0] != 0){
+		if(arrayItemsDetails[0] !== 0){
 			ajax_update_multiple_stocks(arrayItemsDetails, warehouse, controlName);
 			//alert('Se cambio de "Almacen", se actualizara los "Stocks" de los "Items"');
 		}
@@ -176,11 +173,11 @@ $(document).ready(function(){
 		for(var i=0; i<arrayItemsStocksErrors.length; i++){
 			arrItemsStatusStock = arrayItemsStocksErrors[i].split('=>');//  item=>status:stock
 			itemId = arrItemsStatusStock[0];
-			if(itemId != ''){//if exist itemId in the array splited because a,b,'' because last field is empty
+			if(itemId !== ''){//if exist itemId in the array splited because a,b,'' because last field is empty
 				arrStatusStock = arrItemsStatusStock[1].split(':');//status:stock
 				status = arrStatusStock[0];
 				stock = arrStatusStock[1];
-				if(status == 'error'){ 
+				if(status === 'error'){ 
 						error+='<li>'+$('#spaItemName'+itemId).text()+': la "Cantidad = '+$('#spaQuantity'+itemId).text()+'" es mayor su "Stock = '+stock+'" </li>';	
 				}
 				$('#'+controlName+itemId).text(stock);
@@ -190,8 +187,8 @@ $(document).ready(function(){
 	}
 
 	function initiateModalAddItem(){
-		if(arrayItemsAlreadySaved.length == 0){  //For fix undefined index
-			arrayItemsAlreadySaved = [0] //if there isn't any row, the array must have at least one field 0 otherwise it sends null
+		if(arrayItemsAlreadySaved.length === 0){  //For fix undefined index
+			arrayItemsAlreadySaved = [0]; //if there isn't any row, the array must have at least one field 0 otherwise it sends null
 		}
 		$('#btnModalAddItem').show();
 		$('#btnModalEditItem').hide();
@@ -241,7 +238,7 @@ $(document).ready(function(){
 		$('#bittionBtnYes').click(function(){
 			var itemIdForDelete = objectTableRowSelected.find('#txtItemId').val();  //
 			arrayItemsAlreadySaved = jQuery.grep(arrayItemsAlreadySaved, function(value){
-				return value != itemIdForDelete;
+				return value !== itemIdForDelete;
 			});
 			objectTableRowSelected.remove();
 			hideBittionAlertModal();
@@ -252,7 +249,7 @@ $(document).ready(function(){
 		var row = '<tr>';
 		row +='<td><span id="spaItemName'+itemId+'">'+itemCodeName+'</span><input type="hidden" value="'+itemId+'" id="txtItemId" ></td>';
 		row +='<td><span id="spaStock'+itemId+'">'+stock+'</span></td>';
-		if(stock2 != ''){
+		if(stock2 !== ''){
 			row +='<td><span id="spaStock2-'+itemId+'">'+stock2+'</span></td>';
 		}
 		row +='<td><span id="spaQuantity'+itemId+'">'+quantity+'</span></td>';
@@ -260,7 +257,7 @@ $(document).ready(function(){
 		row +='<a class="btn btn-primary" href="#" id="btnEditItem'+itemId+'" title="Editar"><i class="icon-pencil icon-white"></i></a> ';
 		row +='<a class="btn btn-danger" href="#" id="btnDeleteItem'+itemId+'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
 		row +='</td>';
-		row +='</tr>'
+		row +='</tr>';
 		$('#tablaItems > tbody:last').append(row);
 	}
 
@@ -269,7 +266,7 @@ $(document).ready(function(){
 		var quantity = $('#txtModalQuantity').val();
 		var itemCodeName = $('#cbxModalItems option:selected').text();
 		var error = validateItem(itemCodeName, quantity, ''); 
-		if(error == ''){
+		if(error === ''){
 			$('#spaQuantity'+itemId).text(parseInt(quantity,10));
 			$('#modalAddItem').modal('hide');
 		}else{
@@ -283,11 +280,11 @@ $(document).ready(function(){
 		var itemCodeName = $('#cbxModalItems option:selected').text();
 		var stock = $('#txtModalStock').val();
 		var stock2 = '';
-		if(arr[3] == 'save_warehouses_transfer'){
+		if(arr[3] === 'save_warehouses_transfer'){
 			stock2 = $('#txtModalStock2').val();
 		}
 		var error = validateItem(itemCodeName, quantity, ''); 
-		if(error == ''){
+		if(error === ''){
 			createRowItemTable(itemId, itemCodeName, stock, parseInt(quantity,10), stock2);
 			createEventClickEditItemButton(itemId);
 			createEventClickDeleteItemButton(itemId);
@@ -325,8 +322,8 @@ $(document).ready(function(){
 
 		});
 
-		if(arrayItemsDetails.length == 0){  //For fix undefined index
-			arrayItemsDetails = [0] //if there isn't any row, the array must have at least one field 0 otherwise it sends null
+		if(arrayItemsDetails.length === 0){  //For fix undefined index
+			arrayItemsDetails = [0]; //if there isn't any row, the array must have at least one field 0 otherwise it sends null
 		}
 
 		return arrayItemsDetails; 		
@@ -369,14 +366,14 @@ $(document).ready(function(){
 		arrayItemsDetails = getItemsDetails();
 
 		var error = validateBeforeSaveAll(arrayItemsDetails);
-		if( error == ''){
-			if(arr[3] == 'save_in' || arr[3] == 'save_purchase_in'){
+		if( error === ''){
+			if(arr[3] === 'save_in' || arr[3] === 'save_purchase_in'){
 				ajax_save_movement_in(arrayItemsDetails);
 			}
-			if(arr[3] == 'save_out' || arr[3] == 'save_sale_out'){
+			if(arr[3] === 'save_out' || arr[3] === 'save_sale_out'){
 				ajax_save_movement_out(arrayItemsDetails);
 			}
-			if(arr[3] == 'save_warehouses_transfer'){
+			if(arr[3] === 'save_warehouses_transfer'){
 				ajax_save_warehouses_transfer(arrayItemsDetails);
 			}
 		}else{
@@ -398,14 +395,14 @@ $(document).ready(function(){
 			var arrayItemsDetails = [];
 			arrayItemsDetails = getItemsDetails();
 			var error = validateBeforeSaveAll(arrayItemsDetails);
-			if( error == ''){
-				if(arr[3] == 'save_in' || arr[3] == 'save_purchase_in'){
+			if( error === ''){
+				if(arr[3] === 'save_in' || arr[3] === 'save_purchase_in'){
 					ajax_change_state_approved_movement_in(arrayItemsDetails);
 				}
-				if(arr[3]=='save_out' || arr[3] == 'save_sale_out'){
+				if(arr[3]=== 'save_out' || arr[3] === 'save_sale_out'){
 					ajax_change_state_approved_movement_out(arrayItemsDetails);
 				}
-				if(arr[3] == 'save_warehouses_transfer'){
+				if(arr[3] === 'save_warehouses_transfer'){
 					ajax_change_state_approved_warehouses_transfer(arrayItemsDetails);
 				}
 			}else{
@@ -420,19 +417,49 @@ $(document).ready(function(){
 		$('#bittionBtnYes').click(function(){
 			var arrayItemsDetails = [];
 			arrayItemsDetails = getItemsDetails();
-			if(arr[3] == 'save_in' || arr[3] == 'save_purchase_in'){
+			if(arr[3] === 'save_in' || arr[3] === 'save_purchase_in'){
 				ajax_change_state_cancelled_movement_in(arrayItemsDetails);
 			}
-			if(arr[3]=='save_out' || arr[3] == 'save_sale_out'){
+			if(arr[3]==='save_out' || arr[3] === 'save_sale_out'){
 				ajax_change_state_cancelled_movement_out(arrayItemsDetails);
 			}
-			if(arr[3] == 'save_warehouses_transfer'){
+			if(arr[3] === 'save_warehouses_transfer'){
 				ajax_change_state_cancelled_warehouses_transfer(arrayItemsDetails);
 			}
 			hideBittionAlertModal();
 		});
 	}
-
+	
+	function deleteStatePendant(){
+		showBittionAlertModal({content:'¿Está seguro de eliminar este documento en estado Pendiente?'});
+		$('#bittionBtnYes').click(function(){
+			var code = $('#txtCode').val();
+			var type ='normal';
+			var index;
+			switch(arr[3]){
+				case 'save_in':
+					index = 'index_in';
+					break;	
+				case 'save_out':
+					index = 'index_out';
+					break;	
+				case 'save_purchase_in':
+					index = 'index_purchase_in';
+					break;	
+				case 'save_sale_out':
+					index = 'index_sale_out';
+					break;	
+				case 'save_warehouses_transfer':
+					index = 'index_warehouses_transfer';
+					code = $('#txtDocumentCode').val();
+					type = 'transfer';
+					break;	
+			}
+			ajax_logic_delete(code, type, index);
+			hideBittionAlertModal();
+		});
+	}
+	
 	//************************************************************************//
 	//////////////////////////////////END-FUNCTIONS//////////////////////
 	//************************************************************************//
@@ -453,7 +480,10 @@ $(document).ready(function(){
 	  showButtonPanel: true
    });
    
-  
+   //Logic delete state pendant
+   $('#btnLogicDelete').click(function(){
+	  deleteStatePendant(); 
+   });
    
 	//Call modal
 	$('#btnAddItem').click(function(){
@@ -493,20 +523,20 @@ $(document).ready(function(){
 		//validateWarehouse();
 		var warehouse=$('#cbxWarehouses').val();
 		var controlName ='spaStock';
-		updateItemsWarehouseStocks(warehouse, controlName)
+		updateItemsWarehouseStocks(warehouse, controlName);
 	});
 
 	$('#cbxWarehouses2').change(function(){
 		//validateWarehouse();
 		var warehouse=$('#cbxWarehouses2').val();
 		var controlName ='spaStock2-';
-		updateItemsWarehouseStocks(warehouse, controlName)
+		updateItemsWarehouseStocks(warehouse, controlName);
 	});
 
-	$('#txtDate').keypress(function(){return false;});
-	$('#txtCode').keypress(function(){return false;});
+	$('#txtDate').keydown(function(e){e.preventDefault();});
+	$('#txtCode').keydown(function(e){e.preventDefault();});
 	if ($('#txtDocumentCode').length > 0){//existe
-		$('#txtDocumentCode').keypress(function(){return false;});
+		$('#txtDocumentCode').keydown(function(e){e.preventDefault();});
 	}
 	//************************************************************************//
 	//////////////////////////////////END-CONTROLS EVENTS//////////////////////
@@ -546,7 +576,7 @@ $(document).ready(function(){
             success: function(data){
 				var arrayCatch = data.split('|');
 
-				if(arrayCatch[0] == 'insertado'){ 
+				if(arrayCatch[0] === 'insertado'){ 
 					$('#txtCode').val(arrayCatch[2]);
 					//$('#columnStateMovementIn').css('background-color','#F99C17');
 					//$('#columnStateMovementIn').text('Pendiente');	
@@ -601,7 +631,7 @@ $(document).ready(function(){
 
 				var arrayCatch = data.split('|');
 
-				if(arrayCatch[0] == 'insertado'){ 
+				if(arrayCatch[0] === 'insertado'){ 
 					$('#txtCode').val(arrayCatch[2]);
 					//$('#columnStateMovementIn').css('background-color','#F99C17');
 					//$('#columnStateMovementIn').text('Pendiente');
@@ -648,7 +678,7 @@ $(document).ready(function(){
             success: function(data){
 				var arrayCatch = data.split('|');
 				var arrayItemsStocks = [];
-				if(arrayCatch[0] == 'insertado'){ 
+				if(arrayCatch[0] === 'insertado'){ 
 					$('#txtDocumentCode').val(arrayCatch[2]);
 					//$('#columnStateMovementIn').css('background-color','#F99C17');
 					//$('#columnStateMovementIn').text('Pendiente');
@@ -666,7 +696,7 @@ $(document).ready(function(){
 				arrayItemsStocks = arrayCatch[1].split(',');
 				updateMultipleStocks(arrayItemsStocks, 'spaStock');
 
-				if(arrayCatch[0] == 'modificado'){ 
+				if(arrayCatch[0] === 'modificado'){ 
 					//update items stocks when transfer
 					arrayItemsStocks = arrayCatch[2].split(',');
 					updateMultipleStocks(arrayItemsStocks, 'spaStock2-');
@@ -704,7 +734,7 @@ $(document).ready(function(){
             success: function(data){
 				var arrayCatch = data.split('|');
 				var arrayItemsStocks = arrayCatch[1].split(',');
-				if(arrayCatch[0] == 'aprobado'){
+				if(arrayCatch[0] === 'aprobado'){
 					updateMultipleStocks(arrayItemsStocks, 'spaStock');
 					arrayItemsStocks = arrayCatch[2].split(',')
 					updateMultipleStocks(arrayItemsStocks, 'spaStock2-');
@@ -739,13 +769,13 @@ $(document).ready(function(){
 					$('#boxMessage').html('');
 					showGrowlMessage('ok', 'Transferencia aprobada.');
 				}
-				if(arrayCatch[0] == 'error'){
+				if(arrayCatch[0] === 'error'){
 					var error = validateBeforeMoveOut(arrayItemsStocks, 'spaStock');
-					arrayItemsStocks = arrayCatch[2].split(',')
+					arrayItemsStocks = arrayCatch[2].split(',');
 					updateMultipleStocks(arrayItemsStocks, 'spaStock2-');
-					//$('#boxMessage').html('<div class="alert alert-error">\n\
-					//<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo Aprobar el traspaso porque falta "Stock" para la "Salida" del "Almacen Origen":</p><ul>'+error+'</ul><div>');
-					showGrowlMessage('error', '<p>No se pudo Aprobar el traspaso porque falta "Stock" para la "Salida" del "Almacen Origen":</p><ul>'+error+'</ul>', true);
+					$('#boxMessage').html('<div class="alert alert-error">\n\
+					<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo Aprobar el traspaso porque falta "Stock" para la "Salida" del "Almacen Origen":</p><ul>'+error+'</ul><div>');
+					//showGrowlMessage('error', '<p>No se pudo Aprobar el traspaso porque falta "Stock" para la "Salida" del "Almacen Origen":</p><ul>'+error+'</ul>', true);
 				}
 				$('#processing').text('');
 
@@ -771,7 +801,7 @@ $(document).ready(function(){
             success: function(data){
 				var arrayCatch = data.split('|');
 				var arrayItemsStocks = arrayCatch[1].split(',');//in, destino
-				if(arrayCatch[0] == 'cancelado'){
+				if(arrayCatch[0] === 'cancelado'){
 					updateMultipleStocks(arrayItemsStocks, 'spaStock2-');//in, destino
 					arrayItemsStocks = arrayCatch[2].split(',');
 					updateMultipleStocks(arrayItemsStocks, 'spaStock');//out, origen
@@ -785,13 +815,13 @@ $(document).ready(function(){
 					$('#boxMessage').html('');
 					showGrowlMessage('ok', 'Transferencia cancelada.');
 				}
-				if(arrayCatch[0] == 'error'){
+				if(arrayCatch[0] === 'error'){
 					var error = validateBeforeMoveOut(arrayItemsStocks, 'spaStock2-');//in, destino
-					arrayItemsStocks = arrayCatch[2].split(',')//out, origen
+					arrayItemsStocks = arrayCatch[2].split(',');//out, origen
 					updateMultipleStocks(arrayItemsStocks, 'spaStock');
-					//$('#boxMessage').html('<div class="alert alert-error">\n\
-					//<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo Cancelar el traspaso porque falta "Stock" para la "Salida" del "Almacen Destino":</p><ul>'+error+'</ul><div>');
-					showGrowlMessage('error', '<p>No se pudo Cancelar el traspaso porque falta "Stock" para la "Salida" del "Almacen Destino":</p><ul>'+error+'</ul>', true);
+					$('#boxMessage').html('<div class="alert alert-error">\n\
+					<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo Cancelar el traspaso porque falta "Stock" para la "Salida" del "Almacen Destino":</p><ul>'+error+'</ul><div>');
+					//showGrowlMessage('error', '<p>No se pudo Cancelar el traspaso porque falta "Stock" para la "Salida" del "Almacen Destino":</p><ul>'+error+'</ul>', true);
 				}
 				$('#processing').text('');
 
@@ -828,7 +858,7 @@ $(document).ready(function(){
             success: function(data){			
 				var arrayCatch = data.split('|');
 				var arrayItemsStocks = arrayCatch[1].split(',');
-				if(arrayCatch[0] == 'aprobado'){
+				if(arrayCatch[0] === 'aprobado'){
 					updateMultipleStocks(arrayItemsStocks, 'spaStock');
 					//$('#columnStateMovementIn').css('background-color','#54AA54');
 					//$('#columnStateMovementIn').text('Aprobado');
@@ -893,7 +923,7 @@ $(document).ready(function(){
             success: function(data){
 				var arrayCatch = data.split('|');
 				var arrayItemsStocks = arrayCatch[1].split(',');
-				if(arrayCatch[0] == 'aprobado'){
+				if(arrayCatch[0] === 'aprobado'){
 					updateMultipleStocks(arrayItemsStocks, 'spaStock');
 					//$('#columnStateMovementIn').css('background-color','#54AA54');
 					//$('#columnStateMovementIn').text('Aprobado');
@@ -926,11 +956,11 @@ $(document).ready(function(){
 					$('#boxMessage').html('');
 					showGrowlMessage('ok', 'Salida aprobada.');
 				}
-				if(arrayCatch[0] == 'error'){
+				if(arrayCatch[0] === 'error'){
 					var error = validateBeforeMoveOut(arrayItemsStocks, 'spaStock');
-					//$('#boxMessage').html('<div class="alert alert-error">\n\
-					//<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo "Aprobar" la salida debido a falta de stock:</p><ul>'+error+'</ul><div>');
-					showGrowlMessage('error', '<p>No se pudo "Aprobar" la salida debido a falta de stock:</p><ul>'+error+'</ul>', true);
+					$('#boxMessage').html('<div class="alert alert-error">\n\
+					<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo "Aprobar" la salida debido a falta de stock:</p><ul>'+error+'</ul><div>');
+					//showGrowlMessage('error', '<p>No se pudo "Aprobar" la salida debido a falta de stock:</p><ul>'+error+'</ul>', true);
 				}
 				$('#processing').text('');
 
@@ -955,7 +985,7 @@ $(document).ready(function(){
             success: function(data){
 				var arrayCatch = data.split('|');
 				var arrayItemsStocks = arrayCatch[1].split(',');
-				if(arrayCatch[0] == 'cancelado'){
+				if(arrayCatch[0] === 'cancelado'){
 					updateMultipleStocks(arrayItemsStocks, 'spaStock');
 					//$('#columnStateMovementIn').css('background-color','#BD362F');
 					//$('#columnStateMovementIn').text('Cancelado');
@@ -965,13 +995,13 @@ $(document).ready(function(){
 					//$('#boxMessage').html('<div class="alert alert-success">\n\
 					//<button type="button" class="close" data-dismiss="alert">&times;</button>Cancelado con exito<div>');
 					showGrowlMessage('ok', 'Entrada cancelada.');
-				}
-				if(arrayCatch[0] == 'error'){
-					var error = validateBeforeMoveOut(arrayItemsStocks, 'spaStock');
-					//$('#boxMessage').html('<div class="alert alert-error">\n\
-					//<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo "Cancelar" la entrada debido a falta de stock:</p><ul>'+error+'</ul><div>');
 					$('#boxMessage').html('');
-					showGrowlMessage('error', '<p>No se pudo "Cancelar" la entrada debido a falta de stock:</p><ul>'+error+'</ul>', true);
+				}
+				if(arrayCatch[0] === 'error'){
+					var error = validateBeforeMoveOut(arrayItemsStocks, 'spaStock');
+					$('#boxMessage').html('<div class="alert alert-error">\n\
+					<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo "Cancelar" la entrada debido a falta de stock:</p><ul>'+error+'</ul><div>');
+					//showGrowlMessage('error', '<p>No se pudo "Cancelar" la entrada debido a falta de stock:</p><ul>'+error+'</ul>', true);
 				}
 				$('#processing').text('');
 			},
@@ -994,7 +1024,7 @@ $(document).ready(function(){
             success: function(data){
 				var arrayCatch = data.split('|');
 				var arrayItemsStocks = arrayCatch[1].split(',');
-				if(arrayCatch[0] == 'cancelado'){
+				if(arrayCatch[0] === 'cancelado'){
 					updateMultipleStocks(arrayItemsStocks, 'spaStock');
 					//$('#columnStateMovementIn').css('background-color','#BD362F');
 					//$('#columnStateMovementIn').text('Cancelado');
@@ -1021,7 +1051,7 @@ $(document).ready(function(){
 	function ajax_initiate_modal_add_item_in(itemsAlreadySaved){
 		var transfer = '';
 		var warehouse2 = '';
-		if(arr[3] == 'save_warehouses_transfer'){
+		if(arr[3] === 'save_warehouses_transfer'){
 			transfer = 'warehouses_transfer';
 			warehouse2 = $('#cbxWarehouses2').val();
 		}
@@ -1063,7 +1093,7 @@ $(document).ready(function(){
 	function ajax_update_stock_modal(){
 		var transfer = '';
 		var warehouse2 = '';
-		if(arr[3] == 'save_warehouses_transfer'){
+		if(arr[3] === 'save_warehouses_transfer'){
 			transfer = 'warehouses_transfer';
 			warehouse2 = $('#cbxWarehouses2').val();
 		}
@@ -1106,7 +1136,27 @@ $(document).ready(function(){
         });
 	}
 
-	
+	function ajax_logic_delete(code, type, index){
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_logic_delete",			
+            data:{code: code, type: type},
+            success: function(data){
+				if(data === 'success'){
+					showBittionAlertModal({content:'Se eliminó el documento en estado Pendiente', btnYes:'Aceptar', btnNo:''});
+					$('#bittionBtnYes').click(function(){
+						window.location = moduleController + index;
+					});
+					
+				}else{
+					showGrowlMessage('error', 'Vuelva a intentarlo.');
+				}
+			},
+			error:function(data){
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+			}
+        });
+	}
 	
 
 

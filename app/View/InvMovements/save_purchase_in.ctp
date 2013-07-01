@@ -120,14 +120,6 @@
 			<span id="documentState" class="label <?php echo $documentStateColor;?>"><?php echo $documentStateName;?></span>
 		</div>
 		<div class="widget-content nopadding">
-		<!-- //////////////////////////// START - IF NEEDED BREADCRUMB, SHOW PROCESS STATE //////////////////////// -->
-		<!--
-		<div id="breadcrumb">
-			<a href="#" title="Go to Home" class="tip-bottom">Orden Compra</a>
-			<a href="#" class="current">Remito</a>
-		</div>
-		-->
-		<!-- //////////////////////////// END - IF NEEDED BREADCRUMB, SHOW PROCESS STATE //////////////////////// -->
 	<!-- //******************************** END - #UNICORN  WRAP FORM BOX PART 1/2 *************************************** -->
 
 	<!-- ////////////////////////////////// INICIO - INICIO FORM ///////////////////////////////////// -->
@@ -141,21 +133,12 @@
 				
 				//////////////////////////////////START - block when APPROVED or CANCELLED///////////////////////////////////////////////////
 				$disable = 'disabled';
-				//$btnAddMovementType = '';
 				
 				if($documentState == 'PENDANT' OR $documentState == ''){
 					$disable = 'enabled';	
-					//$btnAddMovementType = '<a class="btn btn-primary" href="#" id="btnAddMovementType" title="Nuevo Tipo Movimiento"><i class="icon-plus icon-white"></i></a>';
 				}
 				
 				//////////////////////////////////END - block when APPROVED or CANCELLED///////////////////////////////////////////////////
-				/*
-				echo $this->BootstrapForm->input('token_status_hidden', array(
-					'id'=>'txtTokenStatusHidden',
-					'value'=>'entrada',
-					'type'=>'hidden'
-				));
-				*/
 				echo $this->BootstrapForm->input('movement_hidden', array(
 					'id'=>'txtMovementIdHidden',
 					'value'=>$id,
@@ -163,19 +146,18 @@
 				));
 				
 				echo $this->BootstrapForm->input('code', array(
-					//'id'=>'code',
 					'id'=>'txtCode',
 					'label'=>'Codigo:',
+					'autocomplete'=>'off',
 					'style'=>'background-color:#EEEEEE',
 					'disabled'=>$disable,
 					'placeholder'=>'El sistema generará el código',
-					//'data-toggle'=>'tooltip',
-					//'data-placement'=>'top',
 				));
 				
 				echo $this->BootstrapForm->input('document_code', array(
 					'id'=>'txtDocumentCode',
 					'label'=>'Codigo Documento Ref:',
+					'autocomplete'=>'off',
 					'style'=>'background-color:#EEEEEE',
 					'disabled'=>$disable,
 					'value'=>$documentCode
@@ -213,7 +195,10 @@
 				?>
 				<!-- ////////////////////////////////// FIN CAMPOS FORMULARIOS MOVIMIENTO /////////////////////////////////////// -->
 				
-				
+				<!-- ////////////////////////////////// START MESSAGES /////////////////////////////////////// -->
+					<div id="boxMessage"></div>
+					<div id="processing"></div>
+					<!-- ////////////////////////////////// END MESSAGES /////////////////////////////////////// -->
 				
 				<!-- ////////////////////////////////// INICIO - ITEMS /////////////////////////////////////// -->
 
@@ -270,10 +255,7 @@
 	<!-- //******************************** END - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
 
 	
-	<!-- ////////////////////////////////// INICIO MENSAJES /////////////////////////////////////// -->
-	<div id="boxMessage"></div>
-	<div id="processing"></div>
-	<!-- ////////////////////////////////// FIN MENSAJES /////////////////////////////////////// -->
+
 	
 	
 <!-- ************************************************************************************************************************ -->
@@ -301,7 +283,6 @@
 						'label' => 'Item:',
 						'id'=>'cbxModalItems',
 						'class'=>'span12',
-						'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 						));
 						//echo '<br>';
 						$stock='';
@@ -336,7 +317,6 @@
 					'class'=>'input-small',
 					//'value'=>'6',
 					'maxlength'=>'10',
-					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 					));
 					?>
 					  <div id="boxModalValidateItem" class="alert-error"></div> 

@@ -104,38 +104,26 @@
 				<?php
 				//////////////////////////////////START - block when APPROVED or CANCELLED///////////////////////////////////////////////////
 				$disable = 'disabled';
-				//$btnAddMovementType = '';
 				
 				if($documentState == 'PENDANT' OR $documentState == ''){
 					$disable = 'enabled';	
-					//$btnAddMovementType = '<a class="btn btn-primary" href="#" id="btnAddMovementType" title="Nuevo Tipo Movimiento"><i class="icon-plus icon-white"></i></a>';
 				}
 				
 				//////////////////////////////////END - block when APPROVED or CANCELLED///////////////////////////////////////////////////
-				/*
-				echo $this->BootstrapForm->input('token_status_hidden', array(
-					'id'=>'txtTokenStatusHidden',
-					'value'=>'entrada',
-					'type'=>'hidden'
-				));
-				*/
+
 				echo $this->BootstrapForm->input('movement_hidden', array(
-					//'id'=>'movement_hidden',
 					'id'=>'txtMovementIdHidden',
 					'value'=>$id,
 					'type'=>'hidden'
 				));
 				
 				echo $this->BootstrapForm->input('code', array(
-					//'id'=>'code',
 					'id'=>'txtCode',
 					'label'=>'Codigo:',
+					'autocomplete'=>'off',
 					'style'=>'background-color:#EEEEEE',
 					'disabled'=>$disable,
 					'placeholder'=>'El sistema generará el código',
-					//'class'=>'controls'
-					//'data-toggle'=>'tooltip',
-					//'data-placement'=>'top',
 				));
 				
 				echo $this->BootstrapForm->input('date_in', array(
@@ -145,7 +133,6 @@
 					'value'=>$date,
 					'disabled'=>$disable,
 					'maxlength'=>'0',
-					//'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 				));
 				
 				
@@ -175,7 +162,10 @@
 				?>
 				<!-- ////////////////////////////////// END FORM MOVEMENT FIELDS /////////////////////////////////////// -->
 				
-				
+					<!-- ////////////////////////////////// START MESSAGES /////////////////////////////////////// -->
+					<div id="boxMessage"></div>
+					<div id="processing"></div>
+					<!-- ////////////////////////////////// END MESSAGES /////////////////////////////////////// -->
 				
 				<!-- ////////////////////////////////// START - MOVEMENT ITEMS DETAILS /////////////////////////////////////// -->
 				
@@ -234,10 +224,7 @@
 
 	
 	
-	<!-- ////////////////////////////////// START MESSAGES /////////////////////////////////////// -->
-	<div id="boxMessage"></div>
-	<div id="processing"></div>
-	<!-- ////////////////////////////////// END MESSAGES /////////////////////////////////////// -->
+
 	
 	
 <!-- ************************************************************************************************************************ -->
