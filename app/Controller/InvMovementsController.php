@@ -75,6 +75,7 @@ class InvMovementsController extends AppController {
 		$filters = array();
 		$code = '';
 		$document_code = '';
+		$period = $this->Session->read('Period.name');
 		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
 		
 		
@@ -119,15 +120,16 @@ class InvMovementsController extends AppController {
 		
 		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
 		$this->paginate = array(
-			'conditions'=>array(
-				'InvMovement.lc_state !='=>'LOGIC_DELETE',
-				'InvMovementType.status'=> 'entrada',
+			"conditions"=>array(
+				"InvMovement.lc_state !="=>"LOGIC_DELETED",
+				"to_char(InvMovement.date,'YYYY')"=> $period,
+				"InvMovementType.status"=> "entrada",
 				$filters
 			 ),
-			'recursive'=>0,
-			'fields'=>array('InvMovement.id', 'InvMovement.code', 'InvMovement.document_code', 'InvMovement.date','InvMovement.inv_movement_type_id','InvMovementType.name', 'InvMovement.inv_warehouse_id', 'InvWarehouse.name', 'InvMovement.lc_state'),
-			'order'=> array('InvMovement.id'=>'desc'),
-			'limit' => 15,
+			"recursive"=>0,
+			"fields"=>array("InvMovement.id", "InvMovement.code", "InvMovement.document_code", "InvMovement.date","InvMovement.inv_movement_type_id","InvMovementType.name", "InvMovement.inv_warehouse_id", "InvWarehouse.name", "InvMovement.lc_state"),
+			"order"=> array("InvMovement.id"=>"desc"),
+			"limit" => 15,
 		);
 		////////////////////////////END - SETTING PAGINATING VARIABLES//////////////////////////////////////
 		
@@ -147,6 +149,7 @@ class InvMovementsController extends AppController {
 		$filters = array();
 		$code = '';
 		$document_code = '';
+		$period = $this->Session->read('Period.name');
 		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
 		
 		
@@ -191,15 +194,16 @@ class InvMovementsController extends AppController {
 		
 		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
 		$this->paginate = array(
-			'conditions'=>array(
-				'InvMovement.lc_state !='=>'LOGIC_DELETE',
-				'InvMovementType.status'=> 'salida',
+			"conditions"=>array(
+				"InvMovement.lc_state !="=>"LOGIC_DELETED",
+				"to_char(InvMovement.date,'YYYY')"=> $period,
+				"InvMovementType.status"=> "salida",
 				$filters
 			 ),
-			'recursive'=>0,
-			'fields'=>array('InvMovement.id', 'InvMovement.code', 'InvMovement.document_code', 'InvMovement.date','InvMovement.inv_movement_type_id','InvMovementType.name', 'InvMovement.inv_warehouse_id', 'InvWarehouse.name', 'InvMovement.lc_state'),
-			'order'=> array('InvMovement.id'=>'desc'),
-			'limit' => 15,
+			"recursive"=>0,
+			"fields"=>array("InvMovement.id", "InvMovement.code", "InvMovement.document_code", "InvMovement.date","InvMovement.inv_movement_type_id","InvMovementType.name", "InvMovement.inv_warehouse_id", "InvWarehouse.name", "InvMovement.lc_state"),
+			"order"=> array("InvMovement.id"=>"desc"),
+			"limit" => 15,
 		);
 		////////////////////////////END - SETTING PAGINATING VARIABLES//////////////////////////////////////
 		
@@ -216,6 +220,7 @@ class InvMovementsController extends AppController {
 		///////////////////////////////////////START - CREATING VARIABLES//////////////////////////////////////
 		$filters = array();
 		$document_code = '';  //seria code de pur_purchases
+		$period = $this->Session->read('Period.name');
 		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
 		
 		
@@ -251,22 +256,11 @@ class InvMovementsController extends AppController {
 		
 		
 		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
-		//Add association, is working but paginate method is not sending or uses its conditions
-		/*
-		$this->PurPurchase->bindModel(array(
-			'hasOne'=>array(
-				'InvMovement'=>array(
-					'foreignKey'=>false,
-					'conditions'=> array('InvMovement.document_code = PurPurchase.code')
-				)
-				
-			)
-		));
-		*/
 		$this->paginate = array(
 			'conditions'=>array(
-				'PurPurchase.lc_state !='=>'LOGIC_DELETE',
-				'PurPurchase.lc_state'=>'ORDER_APPROVED',
+				"PurPurchase.lc_state !="=>"LOGIC_DELETED",
+				"to_char(PurPurchase.date,'YYYY')"=> $period,
+				"PurPurchase.lc_state"=>"ORDER_APPROVED",
 				$filters
 			 ),
 			'fields'=>array('PurPurchase.id', 'PurPurchase.code', 'PurPurchase.date', 'PurPurchase.inv_supplier_id', 'InvSupplier.name'),
@@ -282,7 +276,7 @@ class InvMovementsController extends AppController {
 		}
 		//debug($paginatedCodes);
 		$movements = $this->InvMovement->find('all',array(
-			'conditions'=>array('InvMovement.inv_movement_type_id'=>1, 'InvMovement.document_code'=>$paginatedCodes,'NOT'=>array('InvMovement.lc_state'=>array('LOGIC_DELETE', 'CANCELLED'))),
+			'conditions'=>array('InvMovement.inv_movement_type_id'=>1, 'InvMovement.document_code'=>$paginatedCodes,'NOT'=>array('InvMovement.lc_state'=>array('LOGIC_DELETED', 'CANCELLED'))),
 			'fields'=>array('InvMovement.lc_state', 'InvMovement.document_code'),
 			'recursive'=>-1
 		));
@@ -300,6 +294,7 @@ class InvMovementsController extends AppController {
 		///////////////////////////////////////START - CREATING VARIABLES//////////////////////////////////////
 		$filters = array();
 		$document_code = '';  //seria code de pur_purchases
+		$period = $this->Session->read('Period.name');
 		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
 		
 		
@@ -348,9 +343,9 @@ class InvMovementsController extends AppController {
 		
 		$this->paginate = array(
 			'conditions'=>array(
-				//'PurPurchase.lc_state =' => 'INVOICE_APPROVED',
-				'SalSale.lc_state !='=>'LOGIC_DELETE',
-				'SalSale.lc_state'=>'SALE_NOTE_APPROVED',
+				"SalSale.lc_state !="=>"LOGIC_DELETED",
+				"to_char(SalSale.date,'YYYY')"=> $period,
+				"SalSale.lc_state"=>"SALE_NOTE_APPROVED",
 				$filters
 			 ),
 			'fields'=>array('SalSale.id','SalSale.code', 'SalSale.date', 'SalCustomer.name'),
@@ -366,7 +361,7 @@ class InvMovementsController extends AppController {
 		}
 		//debug($paginatedCodes);
 		$movements = $this->InvMovement->find('all',array(
-			'conditions'=>array('InvMovement.inv_movement_type_id'=>2, 'InvMovement.document_code'=>$paginatedCodes,'NOT'=>array('InvMovement.lc_state'=>array('LOGIC_DELETE', 'CANCELLED'))),
+			'conditions'=>array('InvMovement.inv_movement_type_id'=>2, 'InvMovement.document_code'=>$paginatedCodes,'NOT'=>array('InvMovement.lc_state'=>array('LOGIC_DELETED', 'CANCELLED'))),
 			'fields'=>array('InvMovement.lc_state', 'InvMovement.document_code'),
 			'recursive'=>-1
 		));
@@ -397,7 +392,7 @@ class InvMovementsController extends AppController {
 		
 		$this->InvMovement->recursive = -1;
 		$this->request->data = $this->InvMovement->read(null, $id);
-		$date='';
+		$date=date('d/m/Y');
 		//debug($this->request->data);
 		$invMovementDetails = array();
 		$documentState = '';
@@ -421,7 +416,7 @@ class InvMovementsController extends AppController {
 		
 		$this->InvMovement->recursive = -1;
 		$this->request->data = $this->InvMovement->read(null, $id);
-		$date='';
+		$date=date('d/m/Y');
 
 		$invMovementDetails = array();
 		$documentState = '';
@@ -468,7 +463,7 @@ class InvMovementsController extends AppController {
 		$invMovementDetails = array();
 		$documentState = '';
 		$id='';
-		$date = '';
+		$date=date('d/m/Y');
 		////////////////////////////////FIN - DECLARAR VARIABLES///////////////////////////////////
 		
 		
@@ -556,7 +551,7 @@ class InvMovementsController extends AppController {
 		$invMovementDetails = array();
 		$documentState = '';
 		$id='';
-		$date = '';
+		$date=date('d/m/Y');
 		////////////////////////////////FIN - DECLARAR VARIABLES///////////////////////////////////
 		
 		
@@ -612,7 +607,7 @@ class InvMovementsController extends AppController {
 		$warehouseOut ='';
 		$movementIdIn = '';
 		$movementIdOut = '';
-		$date = '';
+		$date=date('d/m/Y');
 		$invMovementDetailsOut = array();
 		$invMovementDetailsIn = array();
 		$documentCode = '';
@@ -668,6 +663,7 @@ class InvMovementsController extends AppController {
 		///////////////////////////////////////START - CREATING VARIABLES//////////////////////////////////////
 		$filters = array();
 		$document_code = '';
+		$period = $this->Session->read('Period.name');
 		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
 		
 		
@@ -704,11 +700,11 @@ class InvMovementsController extends AppController {
 		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
 		$this->paginate = array(
 			'conditions'=>array(
-				'InvMovement.lc_state !='=>'LOGIC_DELETE',
-				'InvMovement.inv_movement_type_id'=> 3,//out
+				"InvMovement.lc_state !="=>"LOGIC_DELETED",
+				"to_char(InvMovement.date,'YYYY')"=> $period,
+				"InvMovement.inv_movement_type_id"=> 3,//out
 				$filters
 			 ),
-			//'recursive'=>2,
 			'recursive'=>0,
 			'fields'=>array('InvMovement.id', 'InvMovement.document_code', 'InvMovement.date','InvMovement.inv_warehouse_id', 'InvWarehouse.name', 'InvMovement.lc_state'),
 			'order'=> array('InvMovement.id'=>'desc'),
@@ -723,7 +719,7 @@ class InvMovementsController extends AppController {
 		}
 		$warehouseDestination = $this->InvMovement->find('all', array(
 				'conditions'=>array(
-					'InvMovement.lc_state !='=>'LOGIC_DELETE',
+					'InvMovement.lc_state !='=>'LOGIC_DELETED',
 					'InvMovement.document_code'=>$paginatedDocumentCodes,
 					'InvMovement.inv_movement_type_id'=> 4,//in
 					$filters
@@ -1285,6 +1281,22 @@ class InvMovementsController extends AppController {
 			echo $strItemsStock;
 		}
 	}
+	
+	public function ajax_logic_delete(){
+		if($this->RequestHandler->isAjax()){
+			$code = $this->request->data['code'];		
+			$type = $this->request->data['type'];		
+			if($type == 'transfer'){
+				$conditions = array('InvMovement.document_code'=>$code);
+			}else{
+				$conditions = array('InvMovement.code'=>$code);
+			}
+			
+			if($this->InvMovement->updateAll(array('InvMovement.lc_state'=>"'LOGIC_DELETED'"), $conditions)){
+				echo 'success';
+			}
+		}
+	}
 	//////////////////////////////////////////// END - AJAX /////////////////////////////////////////////////
 	
 	
@@ -1441,7 +1453,7 @@ class InvMovementsController extends AppController {
 	}
 	
 	private function _generate_document_code_transfer($keyword){
-		$period = $this->Session->read('Period.year');
+		$period = $this->Session->read('Period.name');
 		if($keyword == 'TRA-ALM'){$idMovementType = 3;}
 		$transfers = $this->InvMovement->find('count', array('conditions'=>array('InvMovement.inv_movement_type_id'=>$idMovementType))); 
 		$quantity = $transfers + 1; 

@@ -4,7 +4,6 @@
 		'label' => 'Item:',
 		'id'=>'cbxModalItems',
 		'class'=>'span12',
-		'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 		));
 		echo '<br>';
 		
@@ -14,6 +13,7 @@
 		}else{
 			$labelStock = 'Stock:';
 		}
+		echo'<br>';
 		echo $this->BootstrapForm->input('stock', array(
 		'label' => $labelStock,
 		'id'=>'txtModalStock',
@@ -22,7 +22,7 @@
 		'class'=>'input-small',
 		'maxlength'=>'15'
 		));
-			
+		
 		if($transfer == 'warehouses_transfer'){
 			echo '<br>';
 			echo $this->BootstrapForm->input('stock2', array(				
@@ -35,7 +35,7 @@
 			));
 		}
 		echo '</div>';	
-		echo '<br>';
+		//echo '<br>';
 		
 			
 	

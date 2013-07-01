@@ -53,7 +53,9 @@ class AdmUsersController extends AppController {
 		return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
 	}
 	*/
-/**
+
+
+   /**
  * index method
  *
  * @return void
@@ -233,6 +235,12 @@ class AdmUsersController extends AppController {
 	}
 	
 	public function login() {
+		//before everything verify if the browser is IE from windows
+		if(eregi("MSIE",getenv("HTTP_USER_AGENT")) || eregi("Internet Explorer",getenv("HTTP_USER_AGENT"))){
+			$this->redirect(array('controller'=>'Pages', 'action'=>'ie_denied'));
+	   }
+		
+		//if is not, then go on
 		$this->layout = 'login';
 		if ($this->request->is('post')) {
 			if ($this->Auth->login()) { //If authentication is valid username and password
@@ -784,7 +792,7 @@ class AdmUsersController extends AppController {
 			$AdmUserRestriction['period'] = $this->request->data['period'];
 			$AdmUserRestriction['active'] = $this->request->data['active'];
 			$AdmUserRestriction['active_date'] = $this->request->data['activeDate'];
-			$AdmUserRestriction['creator'] = $this->Session->read('UserRestriction.id');
+			//$AdmUserRestriction['creator'] = $this->Session->read('UserRestriction.id');
 			$selected = $this->request->data['selected'];;
 			if($selected == 0){
 				$AdmUserRestriction['selected'] = 0;
@@ -834,7 +842,7 @@ class AdmUsersController extends AppController {
 			$AdmUser['password'] = $password;
 			$AdmUser['active'] = $this->request->data['cbxActive'];
 			$AdmUser['active_date'] = $this->request->data['txtActiveDate'];
-			$AdmUser['creator'] = $this->Session->read('UserRestriction.id');
+			//$AdmUser['creator'] = $this->Session->read('UserRestriction.id');
 			
 			
 			$AdmProfile['di_number'] = $this->request->data['txtDiNumber'];
@@ -852,7 +860,7 @@ class AdmUsersController extends AppController {
 			if($this->request->data['txtPhone'] <> ''){
 				$AdmProfile['phone'] = $this->request->data['txtPhone'];
 			}
-			$AdmProfile['creator'] = $this->Session->read('UserRestriction.id');
+			//$AdmProfile['creator'] = $this->Session->read('UserRestriction.id');
 
 			
 			$data = array('AdmUser'=>$AdmUser, 'AdmProfile'=>$AdmProfile);
@@ -877,7 +885,7 @@ class AdmUsersController extends AppController {
 			
 			$AdmUser['active'] = $this->request->data['cbxActive'];
 			$AdmUser['active_date'] = $this->request->data['txtActiveDate'];
-			$AdmUser['creator'] = $this->Session->read('UserRestriction.id');
+			//$AdmUser['creator'] = $this->Session->read('UserRestriction.id');
 			
 			$AdmProfile['di_number'] = $this->request->data['txtDiNumber'];
 			$AdmProfile['di_place'] = $this->request->data['txtDiPlace'];

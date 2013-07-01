@@ -82,7 +82,7 @@
 					<a href="#" data-toggle="dropdown" data-target="#period-menu" class="dropdown-toggle">
 						<i class="icon icon-time"></i> 
 						<span class="text"><?php
-						echo ' Gestión: '.$this->Session->read('Period.name');
+						echo ' Gestión: <span id="globalPeriod">'.$this->Session->read('Period.name').'</span>';
 						?>
 						</span> 
 					</a>
@@ -108,6 +108,7 @@
 		
 	</div>
 	<div id="content">
+		
 		<!-- CONTENT STARTS HERE -->
 		<div class="container-fluid">
 			
@@ -128,6 +129,8 @@
 				<!-- ////////////////////////// START - VIEWS CONTENT(CORE) //////////////////-->
 				<?php echo $this->fetch('content'); ?>			
 				<!-- ////////////////////////// END - VIEWS CONTENT(CORE) //////////////////-->
+				
+				
 			</div>
 			<div class="row-fluid">
 				<div id="footer" class="span12">
@@ -141,13 +144,16 @@
 	<!-- page specific scripts -->
 	
 	<?php 
+	
 	echo $this->Html->script('jquery.min');
 	echo $this->Html->script('jquery.ui.custom');
 	echo $this->Html->script('bootstrap.min');
 	echo $this->Html->script('unicorn');
+	echo $this->Html->script('modules/BittionAlertModal');
 	echo $this->Html->script('bootstrap-datepicker'); //just for this project I gonna put the calendar here
 	echo $this->Html->script('jquery.gritter.min'); //growl-like notifications
 	echo $this->Html->script('select2.min', FALSE); //enhanced selects
+	
 	?>
 	<?php echo $this->fetch('script'); //maybe not necessary?>
 	

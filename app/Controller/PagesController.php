@@ -45,13 +45,31 @@ class PagesController extends AppController {
  */
 	public $uses = array();
 
+	/*
+	public  function isAuthorized($user){
+		return true; //when is true there aren't permissions
+	}
+	*/
+	//public $components = array('session');
 /**
  * Displays a view
  *
  * @param mixed What page to display
  * @return void
  */
+	
+	function beforeFilter() {
+		parent::beforeFilter();
+		$this->Auth->allow('ie_denied');
+	}
+	
+	public function ie_denied(){
+		$this->layout = 'login';
+		//echo 'funciona';
+	}
+	
 	public function display() {
+		
 		$path = func_get_args();
 
 		$count = count($path);
@@ -71,5 +89,8 @@ class PagesController extends AppController {
 		}
 		$this->set(compact('page', 'subpage', 'title_for_layout'));
 		$this->render(implode('/', $path));
+		
 	}
+	
+	
 }
