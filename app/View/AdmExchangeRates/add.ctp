@@ -13,7 +13,7 @@
 		<?php echo $this->BootstrapForm->create('AdmExchangeRate', array('class' => 'form-horizontal'));?>
 			<fieldset>
 				<?php
-				echo $this->BootstrapForm->input('adm_parameter_detail_id', array(
+				echo $this->BootstrapForm->input('adm_parameter_id', array(
 					'label' => 'Moneda:',
 					'required' => 'required',
 					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')

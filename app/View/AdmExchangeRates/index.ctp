@@ -23,6 +23,7 @@ echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' =>
 			<tr>
 				<th><?php echo '#';?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('Moneda');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('Fecha');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('Monto');?></th>				
 				<th></th>
 			</tr>
@@ -30,6 +31,7 @@ echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' =>
 			<tr>
 				<td><?php echo $cont++; ?>&nbsp;</td>
 				<td><?php echo h($admExchangeRate['AdmExchangeRate']['currency']); ?>&nbsp;</td>
+				<td><?php echo h($admExchangeRate['AdmExchangeRate']['date']); ?>&nbsp;</td>				
 				<td><?php echo h($admExchangeRate['AdmExchangeRate']['value']); ?>&nbsp;</td>				
 				<td>
 					<?php 
