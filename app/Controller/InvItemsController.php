@@ -105,7 +105,7 @@ class InvItemsController extends AppController {
 			$id = $this->passedArgs['id'];
 		}
 		
-		$invSuppliers = $this->InvItem->invItemsSupplier->InvSupplier->find('list', array('order' => 'InvSupplier.name'));
+		$invSuppliers = $this->InvItem->InvItemsSupplier->InvSupplier->find('list', array('order' => 'InvSupplier.name'));
 		if(count($invSuppliers) == 0)
 		{
 			$invSuppliers[""] = '--- Vacio ---';
@@ -364,7 +364,7 @@ class InvItemsController extends AppController {
 //			
 //			$data = array('InvItem'=>$arrayItem, 'InvItemsSupplier'=>$arrayItemSupplier);
 //
-//			if($this->InvItem->invItemsSupplier->saveAssociated($data)){
+//			if($this->InvItem->InvItemsSupplier->saveAssociated($data)){
 //					$priceIdInserted = $this->InvItem->InvPrice->id;
 //						echo 'insertado|'.$priceIdInserted;
 //				}

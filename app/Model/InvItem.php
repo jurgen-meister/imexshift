@@ -7,7 +7,7 @@ App::uses('AppModel', 'Model');
  * @property InvCategory $InvCategory
  * @property InvPrice $InvPrice
  * @property InvMovement $InvMovement
- * @property invItemsSupplier $invItemsSupplier
+ * @property InvItemsSupplier $invItemsSupplier
  */
 class InvItem extends AppModel {
 
@@ -133,8 +133,8 @@ class InvItem extends AppModel {
 			'finderQuery' => '',
 			'counterQuery' => ''
 		),
-		'invItemsSupplier' => array(
-			'className' => 'invItemsSupplier',
+		'InvItemsSupplier' => array(
+			'className' => 'InvItemsSupplier',
 			'foreignKey' => 'inv_item_id',
 			'dependent' => false,
 			'conditions' => '',
