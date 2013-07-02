@@ -43,7 +43,7 @@ class AdmPeriod extends AppModel {
 			$AdmArea = new AdmArea();
 			$dataAreaUserRestriction = $AdmArea->find('all', array(
 				'conditions'=>array('AdmArea.period'=>$lastPeriod),
-				'fields'=>array('AdmArea.name', 'AdmArea.parent_node', 'AdmArea.period')
+				'fields'=>array('AdmArea.name', 'AdmArea.parent_area', 'AdmArea.period')
 			));
 			for($i=0; $i < count($dataAreaUserRestriction); $i++){
 				unset($dataAreaUserRestriction[$i]['AdmArea']['id']);
