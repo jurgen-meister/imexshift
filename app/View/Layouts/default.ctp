@@ -72,7 +72,7 @@
 					<?php if(count($array) > 0){?>
                     <ul class="dropdown-menu">
 						<?php foreach ($array as $key => $value) {
-							echo '<li>'.$this->Html->link($value, array('control'=>'AdmUser','action'=>'change_user_restriction', $key)).'</li>';
+							echo '<li>'.$this->Html->link($value, array('controller'=>'AdmUsers','action'=>'change_user_restriction', $key)).'</li>';
 						}?>
                     </ul>
 					<?php  }?>
