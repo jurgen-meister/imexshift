@@ -80,11 +80,13 @@
 				
 				//////////////////////////////////START - block when APPROVED or CANCELLED///////////////////////////////////////////////////
 				$disable = 'disabled';
+				$rate_disable = 'disabled';
 //				$supplier_disable = 'disabled';
 //				$btnAddMovementType = '';
 //				
 				if($documentState == 'ORDER_PENDANT'){
 					$disable = 'enabled';	
+					$rate_disable = 'enabled';
 //					$supplier_disable = 'disabled';
 //					$btnAddMovementType = '<a class="btn btn-primary" href="#" id="btnAddMovementType" title="Nuevo Tipo Movimiento"><i class="icon-plus icon-white"></i></a>';
 				}
@@ -122,9 +124,17 @@
 				echo $this->BootstrapForm->input('generic_code', array(
 					'id'=>'txtGenericCode',
 					'value'=>$genericCode,
-		//			'type'=>'hidden'
+					'type'=>'hidden'
 				
 				));
+				
+		echo $this->BootstrapForm->input('note_code', array(
+			'id'=>'txtNoteCode',
+	//		'value'=>$noteCode,
+			'label' => 'No. Nota de Remision:',
+			//'type'=>'hidden'
+
+		));
 				
 				echo $this->BootstrapForm->input('date_in', array(
 					'required' => 'required',
@@ -143,7 +153,9 @@
 					'label' => 'Cliente:',
 /*js*/				'id'=>'cbxCustomers',
 					//'value'=>$invWarehouses,
-					'disabled'=>$disable,
+					'selected' => $customerId,
+					
+					'disabled'=>$disable
 		//			'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 				));
 				
@@ -151,7 +163,8 @@
 				echo $this->BootstrapForm->input('sal_employee_id', array(
 					'required' => 'required',
 					'label' => 'Encargado:',
-/*js*/				'id'=>'cbxEmployees',
+/*js*/				'id'=>'cbxEmployees'
+				//	'selected' => 207
 					//'value'=>$invWarehouses,
 //					'disabled'=>$disable,
 		//			'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
@@ -168,12 +181,13 @@
 				));
 			echo '</div>';
 			
-				echo $this->BootstrapForm->input('salesman_id', array(
+				echo $this->BootstrapForm->input('sal_adm_user_id', array(
 					'required' => 'required',
 					'label' => 'Vendedor:',
 /*js*/				'id'=>'cbxSalesman',
 					//'value'=>$invWarehouses,
-					'disabled'=>$disable,
+					'selected' => $admUserId,
+					'disabled'=>$disable
 		//			'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 				));
 
@@ -193,6 +207,14 @@
 					'id'=>'txtDescription'
 				));
 				
+				echo $this->BootstrapForm->input('ex_rate', array(
+					'label' => 'Tipo de Cambio:',
+					'value'=>$exRate,
+				//	'placeholder'=>'El sistema generará el código',
+					'disabled'=>$rate_disable,
+				//	'type' => $type,
+					'id'=>'txtExRate'
+				));
 				
 				?>
 				<!-- ////////////////////////////////// FIN CAMPOS FORMULARIOS MOVIMIENTO /////////////////////////////////////// -->
@@ -238,11 +260,11 @@
 								$total = 0;
 								for($i=0; $i<count($salDetails); $i++){
 									$subtotal = ($salDetails[$i]['cantidad'])*($salDetails[$i]['price']);
-									echo '<tr>';
+									echo '<tr>';																							//type="hidden" txtWarehouseId
 										echo '<td><span id="spaItemName'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['item'].'</span><input type="hidden" value="'.$salDetails[$i]['itemId'].'" id="txtItemId" ></td>';
 										echo '<td><span id="spaPrice'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['price'].'</span></td>';
 										echo '<td><span id="spaQuantity'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['cantidad'].'</span></td>';
-								echo '<td><span id="spaWarehouse'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['warehouse'].'</span><input  value="'.$salDetails[$i]['warehouseId'].'" id="txtWarehouseId" ></td>';
+								echo '<td><span id="spaWarehouse'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['warehouse'].'</span><input type="hidden" value="'.$salDetails[$i]['warehouseId'].'" id="txtWarehouseId'.$salDetails[$i]['itemId'].'" ></td>';
 								echo '<td><span id="spaStock'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['stock'].'</span></td>';
 										echo '<td><span id="spaSubtotal'.$salDetails[$i]['itemId'].'">'.$subtotal.'</span></td>';
 										if($documentState == 'ORDER_PENDANT' OR $documentState == ''){
@@ -286,8 +308,8 @@
 					</div>
 					
 					<div class="span3"></div>
-					
-				</div> -->
+					 -->
+				</div>
 			<!-- ////////////////////////////////// FIN ITEMS /////////////////////////////////////// -->
 
 <p></p>	
@@ -347,8 +369,8 @@
 								echo $this->Html->link('<i class="icon-print icon-white"></i> Imprimir', array('action' => 'view_document_movement_pdf', $id.'.pdf'), array('class'=>'btn btn-primary','style'=>'display:'.$displayPrint, 'escape'=>false, 'title'=>'Nuevo', 'id'=>'btnPrint', 'target'=>'_blank')); 
 								
 							?>
-							<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Orden de Compra</a>
-							<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Orden de Compra</a>
+							<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Nota de Venta</a>
+							<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Nota de Venta</a>
 							<a href="#" id="btnLogicDeleteState" class="btn btn-danger" style="display:<?php echo $displayLogicDelete;?>"> Logic Delete</a>
 
 					</div> <!-- FIN - toolbar para dejar espacio entre botones -->
@@ -424,7 +446,7 @@
 						'label' => 'Almacén:',
 						'id'=>'cbxModalWarehouses',
 						'class'=>'input-xlarge',
-						'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+		//				'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 						));
 						echo '<br>';
 						$stock='';
@@ -449,7 +471,7 @@
 					'class'=>'input-small',
 					//'value'=>'6',
 					'maxlength'=>'10',
-					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+		//			'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 					));
 					?>
 					  <div id="boxModalValidateItem" class="alert-error"></div> 

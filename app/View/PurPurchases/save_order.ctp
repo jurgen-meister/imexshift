@@ -81,11 +81,13 @@
 				//////////////////////////////////START - block when APPROVED or CANCELLED///////////////////////////////////////////////////
 				$disable = 'disabled';
 				$supplier_disable = 'disabled';
+				$rate_disable = 'disabled';
 //				$btnAddMovementType = '';
 //				
 				if($documentState == 'ORDER_PENDANT'){
 					$disable = 'enabled';	
 					$supplier_disable = 'disabled';
+					$rate_disable = 'enabled';
 //					$btnAddMovementType = '<a class="btn btn-primary" href="#" id="btnAddMovementType" title="Nuevo Tipo Movimiento"><i class="icon-plus icon-white"></i></a>';
 				}
 				if($documentState == ''){
@@ -122,9 +124,17 @@
 				echo $this->BootstrapForm->input('generic_code', array(
 					'id'=>'txtGenericCode',
 					'value'=>$genericCode,
-		//			'type'=>'hidden'
+					'type'=>'hidden'
 				
 				));
+				
+				echo $this->BootstrapForm->input('note_code', array(
+			'id'=>'txtNoteCode',
+	//		'value'=>$noteCode,
+			'label' => 'No. Factura Proforma:',
+			//'type'=>'hidden'
+
+		));
 				
 				echo $this->BootstrapForm->input('date_in', array(
 					'required' => 'required',
@@ -163,7 +173,14 @@
 					'id'=>'txtDescription'
 				));
 				
-				
+				echo $this->BootstrapForm->input('ex_rate', array(
+					'label' => 'Tipo de Cambio:',
+					'value'=>$exRate,
+				//	'placeholder'=>'El sistema generará el código',
+					'disabled'=>$rate_disable,
+				//	'type' => $type,
+					'id'=>'txtExRate'
+				));
 				?>
 				<!-- ////////////////////////////////// FIN CAMPOS FORMULARIOS MOVIMIENTO /////////////////////////////////////// -->
 				
@@ -252,8 +269,8 @@
 					</div>
 					
 					<div class="span3"></div>
-					
-				</div> -->
+					-->
+				</div> 
 			<!-- ////////////////////////////////// FIN ITEMS /////////////////////////////////////// -->
 
 <p></p>	
@@ -365,16 +382,16 @@
 						'label' => 'Item:',
 						'id'=>'cbxModalItems',
 						'class'=>'input-xlarge',
-						'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+				//		'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 						));
 						echo '<br>';
 						$price='';
 						echo '<div id="boxModalPrice">';
 							echo $this->BootstrapForm->input('price', array(				
-							'label' => 'P/U s_o:',
+							'label' => 'Precio Unitario:',
 							'id'=>'txtModalPrice',
 							'value'=>$price,
-							'style'=>'background-color:#EEEEEE',
+			//				'style'=>'background-color:#EEEEEE',
 							'class'=>'input-small',
 							'maxlength'=>'15'
 							));
@@ -391,7 +408,7 @@
 					'class'=>'input-small',
 					//'value'=>'6',
 					'maxlength'=>'10',
-					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+			//		'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 					));
 					?>
 					  <div id="boxModalValidateItem" class="alert-error"></div> 

@@ -7,6 +7,9 @@ App::uses('AppModel', 'Model');
  */
 class AdmProfile extends AppModel {
 
+	
+	public $virtualFields = array("full_name"=>"CONCAT(AdmProfile.first_name , ' ', AdmProfile.last_name1 , ' ', AdmProfile.last_name2)");
+	public $displayField = 'full_name';
 /**
  * Validation rules
  *

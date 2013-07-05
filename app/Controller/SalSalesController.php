@@ -49,14 +49,14 @@ class SalSalesController extends AppController {
 		if(isset($this->passedArgs['id'])){
 			$id = $this->passedArgs['id'];
 		}
-//		$invSuppliers = $this->PurPurchase->InvSupplier->find('list');
+
+		$this->loadModel('AdmUser');
 		
-		
-		
-	/*	$invMovementTypes = $this->InvMovement->InvMovementType->find('list', array(
-			'conditions'=>array('InvMovementType.status'=>'entrada', 'InvMovementType.document'=>0)//0 'cause don't have system document
-		)); */
-		$salCustomers = $this->SalSale->SalEmployee->SalCustomer->find('list');
+		$salAdmUsers = $this->AdmUser->AdmProfile->find('list');
+	//	debug($salAdmUsers);
+		array_unshift($salAdmUsers,"Sin Vendedor");
+	
+		$salCustomers = $this->SalSale->SalEmployee->SalCustomer->find('list'/*, array('conditions'=>array('SalCustomer.location'=>'COCHABAMBA'))*/);
 		$customer = key($salCustomers);
 		$salEmployees = $this->SalSale->SalEmployee->find('list', array('conditions'=>array('SalEmployee.sal_customer_id'=>$customer)));
 	//	$taxNumber = key($salCustomers);
@@ -64,20 +64,94 @@ class SalSalesController extends AppController {
 			
 		$this->SalSale->recursive = -1;
 		$this->request->data = $this->SalSale->read(null, $id);
-		$date='';
+	//	$date='';
+		$date=date('d/m/Y');
+		$exRate = '8.00';
 		$genericCode ='';
 		//debug($this->request->data);
-	//	debug($salEmployees);
+	//	debug($salAdmUsers);
 		$salDetails = array();
 		$documentState = '';
+		$customerId = '';
+		$admUserId = '';
 		if($id <> null){
-			$date = date("d/m/Y", strtotime($this->request->data['SalSale']['date']));//$this->request->data['InvMovement']['date'];
+			$date = date("d/m/Y", strtotime($this->request->data['SalSale']['date']));
 			$salDetails = $this->_get_movements_details($id);
 			$documentState =$this->request->data['SalSale']['lc_state'];
 			$genericCode = $this->request->data['SalSale']['code'];
+			
+			$employeeId = $this->request->data['SalSale']['sal_employee_id'];
+			$customerId = $this->SalSale->SalEmployee->find('list', array('fields'=>array('SalEmployee.sal_customer_id'),'conditions'=>array('SalEmployee.id'=>$employeeId)));
+			$salEmployees = $this->SalSale->SalEmployee->find('list', array('conditions'=>array('SalEmployee.sal_customer_id'=>$customerId)));
+			$salTaxNumbers = $this->SalSale->SalTaxNumber->find('list', array('conditions'=>array('SalTaxNumber.sal_customer_id'=>$customerId)));		
+			
+			$admProfileId = $this->request->data['SalSale']['salesman_id'];
+			$admUserId = $this->AdmUser->AdmProfile->find('list', array('fields'=>array('AdmProfile.id'),'conditions'=>array('AdmProfile.adm_user_id'=>$admProfileId)));
+		
+			$exRate = $this->request->data['SalSale']['ex_rate'];
 		}
-		$this->set(compact('salCustomers', 'salTaxNumbers', 'salEmployees', 'id', 'date', 'salDetails', 'documentState', 'genericCode'));
-//debug($salDetails);
+		$this->set(compact('salCustomers','customerId', 'salTaxNumbers', 'salEmployees','employeeId', 'salAdmUsers', 'admUserId','id', 'date', 'salDetails', 'documentState', 'genericCode', 'exRate'));
+		//debug($admProfileId);
+	//	debug($salAdmUsers);
+	}
+	
+	public function save_invoice(){
+		$id = '';
+		if(isset($this->passedArgs['id'])){
+			$id = $this->passedArgs['id'];
+		}
+		$this->loadModel('AdmUser');
+		
+		$salAdmUsers = $this->AdmUser->AdmProfile->find('list');
+	//	debug($salAdmUsers);
+		array_unshift($salAdmUsers,"Sin Vendedor");
+	
+		$salCustomers = $this->SalSale->SalEmployee->SalCustomer->find('list');
+		$customer = key($salCustomers);
+		$salEmployees = $this->SalSale->SalEmployee->find('list', array('conditions'=>array('SalEmployee.sal_customer_id'=>$customer)));
+	//	$taxNumber = key($salCustomers);
+		$salTaxNumbers = $this->SalSale->SalTaxNumber->find('list', array('conditions'=>array('SalTaxNumber.sal_customer_id'=>$customer)));
+	
+				
+		$this->SalSale->recursive = -1;
+		$this->request->data = $this->SalSale->read(null, $id);
+		$date='';
+		$genericCode ='';
+		$originCode = '';
+		$customerId = '';
+		$admUserId = '';
+		//debug($this->request->data);
+		$salDetails = array();
+		$salPayments = array();
+//		$purPrices = array();
+		$documentState = '';
+		if($id <> null){
+			$date = date("d/m/Y", strtotime($this->request->data['SalSale']['date']));
+			$salDetails = $this->_get_movements_details($id);
+	//		$purPrices = $this->_get_costs_details($id);
+	//		$salPayments = $this->_get_pays_details($id);
+			$documentState =$this->request->data['SalSale']['lc_state'];
+			$genericCode = $this->request->data['SalSale']['code'];
+			//buscar el codigo del documento origen
+			$originDocCode = $this->SalSale->find('first', array(
+				'fields'=>array('SalSale.doc_code'),
+				'conditions'=>array(
+					'SalSale.code'=>$genericCode
+					)
+			));
+			$originCode = $originDocCode['SalSale']['doc_code'];
+			$employeeId = $this->request->data['SalSale']['sal_employee_id'];
+			$customerId = $this->SalSale->SalEmployee->find('list', array('fields'=>array('SalEmployee.sal_customer_id'),'conditions'=>array('SalEmployee.id'=>$employeeId)));
+			$salEmployees = $this->SalSale->SalEmployee->find('list', array('conditions'=>array('SalEmployee.sal_customer_id'=>$customerId)));
+			$salTaxNumbers = $this->SalSale->SalTaxNumber->find('list', array('conditions'=>array('SalTaxNumber.sal_customer_id'=>$customerId)));		
+			
+			$admProfileId = $this->request->data['SalSale']['salesman_id'];
+			$admUserId = $this->AdmUser->AdmProfile->find('list', array('fields'=>array('AdmProfile.id'),'conditions'=>array('AdmProfile.adm_user_id'=>$admProfileId)));
+		}
+		
+			
+		$this->set(compact('salCustomers','customerId', 'salTaxNumbers', 'salEmployees','employeeId', 'salAdmUsers', 'admUserId','id', 'date', 'salDetails', 'salPayments', 'documentState', 'genericCode', 'originCode'));
+//debug($this->request->data);
 	}
 	
 	public function _get_movements_details($idMovement){
@@ -168,7 +242,8 @@ class SalSalesController extends AppController {
 			
 //debug($items);
 //debug($invWarehouses);
-////debug($this->request->data);
+//debug($firstItemListed);
+//debug($warehouse);
 		// gets the first price in the list of the item prices
 		//$firstItemListed = key($items);
 		$priceDirty = $this->SalSale->SalDetail->InvItem->InvPrice->find('first', array(
@@ -187,6 +262,69 @@ class SalSalesController extends AppController {
 		}
 				
 			$this->set(compact('items', 'price', 'invWarehouses', 'stock', 'warehouse'));
+		}
+	}
+	
+	public function ajax_initiate_modal_edit_item_in(){
+		if($this->RequestHandler->isAjax()){
+						
+		//	$itemsAlreadySaved = $this->request->data['itemsAlreadySaved'];
+//			$warehouse = $this->request->data['warehouse'];
+			$item = $this->request->data['item'];
+			$warehouse = $this->request->data['warehouse'];
+//			$supplier = $this->request->data['supplier'];
+//			$itemsBySupplier = $this->PurPurchase->InvSupplier->InvItemsSupplier->find('list', array(
+//				'fields'=>array('InvItemsSupplier.inv_item_id'),
+//				'conditions'=>array(
+//					'InvItemsSupplier.inv_supplier_id'=>$supplier
+//				),
+//				'recursive'=>-1
+//			)); 
+//debug($itemsBySupplier);			
+//			$items = $this->SalSale->SalDetail->InvItem->find('list', array(
+//				'conditions'=>array(
+//					'NOT'=>array('InvItem.id'=>$itemsAlreadySaved)
+//					
+//					/*,'InvItem.id'=>$itemsBySupplier*/
+//				),
+//				'recursive'=>-1
+//				//'fields'=>array('InvItem.id', 'CONCAT(InvItem.code, '-', InvItem.name)')
+//			));
+			
+			$invWarehouses = $this->SalSale->SalDetail->InvItem->InvMovementDetail->InvMovement->InvWarehouse->find('list');
+			
+			
+	//		$firstItemListed = key($items);
+			
+		//	$warehouse = key($invWarehouses);
+			
+			$stock = $this->_find_stock($item/*$firstItemListed*/, $warehouse);
+			
+
+//debug($invWarehouses);
+//debug($item);
+//debug($warehouse);
+//debug($stock);
+//debug($invWarehouses);
+////debug($this->request->data);
+		// gets the first price in the list of the item prices
+		//$firstItemListed = key($items);
+		$priceDirty = $this->SalSale->SalDetail->InvItem->InvPrice->find('first', array(
+			'fields'=>array('InvPrice.price'),
+			'order' => array('InvPrice.date_created' => 'desc'),
+			'conditions'=>array(
+				'InvPrice.inv_item_id'=>/*$firstItemListed*/$item
+				)
+		));
+////debug($priceDirty);
+		if($priceDirty==array()){
+			$price = 0;
+		}  else {
+			
+			$price = $priceDirty['InvPrice']['price'];
+		}
+				
+			$this->set(compact(/*'item', */'price','invWarehouses', 'stock', 'warehouse'));
 		}
 	}
 	
@@ -266,23 +404,43 @@ class SalSalesController extends AppController {
 			$purchaseId = $this->request->data['purchaseId'];
 //			$warehouse = $this->request->data['warehouse'];
 
+			$this->loadModel('AdmUser');
+			
 			$date = $this->request->data['date'];
 		//	$supplier = $this->request->data['supplier'];
 			$employee = $this->request->data['employee'];
 			$taxNumber = $this->request->data['taxNumber'];
+			$admProfileId = $this->request->data['salesman'];
 			$description = $this->request->data['description'];
-//			$movementType = $this->request->data['movementType'];
-//			$documentCode = $this->request->data['documentCode'];
+			$exRate = $this->request->data['exRate'];
+			$note_code = $this->request->data['note_code'];
+		//	$movementType = $this->request->data['movementType'];
+		//	$documentCode = $this->request->data['documentCode'];
+			$admUserId = $this->AdmUser->AdmProfile->find('list', array(
+			'fields'=>array('AdmProfile.adm_user_id'),
+			'conditions'=>array('AdmProfile.id'=>$admProfileId)
+			));
 			
+			$salesman = key($this->AdmUser->find('list', array(
+			'conditions'=>array('AdmUser.id'=>$admUserId)
+			)));
+			
+			//$salesman = $this->request->data['salesman'];
+//			$salesman = key($this->SalSale->AdmUser->find('list', array(
+//			//'fields'=>array('AdmProfile.adm_user_id'),
+//			'conditions'=>array('AdmUser.id'=>$salesman2)
+//			)));
 			////////////////////////////////////////////FIN-CAPTURAR AJAX////////////////////////////////////////////////////////
 			
 			
 			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
-			$arrayMovement = array('date'=>$date, 'employee'=>$employee,'taxNumber'=>$taxNumber,/*'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType,*/ 'description'=>$description);
+			$arrayMovement = array('date'=>$date, 'sal_employee_id'=>$employee,'sal_tax_number_id'=>$taxNumber,'salesman_id'=>$salesman,'note_code'=>$note_code,/*'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType,*/ 'ex_rate'=>$exRate,'description'=>$description);
 			
 //			$arrayMovement['document_code']=$documentCode;
 			
-	//		print_r($arrayItemsDetails);
+		//	print_r($admUserId);
+		//	print_r($salesman);
+		//	print_r($purchaseId);
 			
 			$movementCode = '';
 			$movementDocCode = '';
@@ -298,21 +456,23 @@ class SalSalesController extends AppController {
 //	$arrayMovement['inv_supplier_id'] = $supplier;
 	$arrayMovement['sal_employee_id'] = $employee;
 	$arrayMovement['sal_tax_number_id'] = $taxNumber;
+	$arrayMovement['salesman_id'] = $salesman;
 			}
 			
 			$data = array('SalSale'=>$arrayMovement, 'SalDetail'=>$arrayItemsDetails);
-		//	print_r($data);
+		//	print_r($this->request->data);
 			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
 			
 
 			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////
 			if($purchaseId <> ''){//update
 				if($this->SalSale->SalDetail->deleteAll(array('SalDetail.sal_sale_id'=>$purchaseId))){
-		//		print_r($data);
+		//		
 					if($this->SalSale->saveAssociated($data)){
 						
 //						$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $supplier);
 						echo 'modificado|'/*.$strItemsStock*/;
+						//print_r($data);
 					}
 				}
 			}else{//insert
@@ -330,10 +490,79 @@ class SalSalesController extends AppController {
 	}
 	
 	
+	public function ajax_change_state_approved_movement_in(){
+		if($this->RequestHandler->isAjax()){
+			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
+			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
+			$purchaseId = $this->request->data['purchaseId'];
+	
+			$this->loadModel('AdmUser');
+			
+			$date = $this->request->data['date'];
+			$employee = $this->request->data['employee'];
+			$taxNumber = $this->request->data['taxNumber'];
+			$admProfileId = $this->request->data['salesman'];
+			$description = $this->request->data['description'];
+			$exRate = $this->request->data['exRate'];
+			$note_code = $this->request->data['note_code'];
+	
+			$admUserId = $this->AdmUser->AdmProfile->find('list', array(
+			'fields'=>array('AdmProfile.adm_user_id'),
+			'conditions'=>array('AdmProfile.id'=>$admProfileId)
+			));
+			
+			$salesman = key($this->AdmUser->find('list', array(
+			'conditions'=>array('AdmUser.id'=>$admUserId)
+			)));
+			
+			$generalCode = $this->request->data['genericCode'];
+			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
+			
+			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
+			$arrayMovement = array('date'=>$date, 'sal_employee_id'=>$employee,'sal_tax_number_id'=>$taxNumber,'salesman_id'=>$salesman, 'description'=>$description, 'note_code'=>$note_code, 'ex_rate'=>$exRate);
+			$arrayMovement['lc_state'] = 'ORDER_APPROVED';
+			$arrayMovement['id'] = $purchaseId;
+			
+			$arrayInvoice = array('date'=>$date, 'sal_employee_id'=>$employee,'sal_tax_number_id'=>$taxNumber,'salesman_id'=>$salesman, 'description'=>$description, 'note_code'=>$note_code);		
+			$movementDocCode = $this->_generate_doc_code('FAC');
+			$arrayInvoice['lc_state'] = 'INVOICE_PENDANT';
+			$arrayInvoice['lc_transaction'] = 'CREATE';
+			$arrayInvoice['code'] = $generalCode;
+			$arrayInvoice['doc_code'] = $movementDocCode;
+//			$arrayInvoice['inv_supplier_id'] = $supplier;
+
+			
+			$data = array('SalSale'=>$arrayMovement, 'SalDetail'=>$arrayItemsDetails);
+			$dataInv = array('SalSale'=>$arrayInvoice, 'SalDetail'=>$arrayItemsDetails);
+			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
+			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
+
+			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
+			
+			//print_r($code);
+//			print_r($data);
+//			print_r($dataInv);
+			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////
+			if($purchaseId <> ''){//update
+				if($this->SalSale->SalDetail->deleteAll(array('SalDetail.sal_sale_id'=>$purchaseId))){
+					if(($this->SalSale->saveAssociated($data))&&($this->SalSale->saveAssociated($dataInv))){
+						
+						//////////////////////////////////////////////////////////
+
+				//////////////////////////////////////////////////////////////////////		
+						echo 'aprobado|';
+						//print_r($data);
+			//print_r($dataInv);
+					}
+				}
+			}
+			////////////////////////////////////////////FIN-SAVE////////////////////////////////////////////////////////
+		}
+	}
 	
 	private function _generate_code(){
-//		$period = $this->Session->read('Period.name');
-		$period = $this->Session->read('Period.year');
+		$period = $this->Session->read('Period.name');
+//		$period = $this->Session->read('Period.year');
 //		$movementType = '';
 //		if($keyword == 'ENT'){$movementType = 'entrada';}
 //		if($keyword == 'SAL'){$movementType = 'salida';}
@@ -345,17 +574,98 @@ class SalSalesController extends AppController {
 	}
 	
 	private function _generate_doc_code($keyword){
-//		$period = $this->Session->read('Period.name');
-		$period = $this->Session->read('Period.year');
-		$movements = $this->SalSale->find('count', array('conditions'=>array('SalSale.lc_state'=>array('ORDER_PENDANT','ORDER_APPROVED','ORDER_CANCELLED')))); // there are duplicates :S, unless there is no movement delete
+		$period = $this->Session->read('Period.name');
+
+		if ($keyword == 'NOT'){
+			$movements = $this->SalSale->find('count', array('conditions'=>array('SalSale.lc_state'=>array('ORDER_PENDANT','ORDER_APPROVED','ORDER_CANCELLED')))); // there are duplicates :S, unless there is no movement delete
+			
+		}elseif ($keyword == 'FAC'){
+			$movements = $this->SalSale->find('count', array('conditions'=>array('SalSale.lc_state'=>array('INVOICE_PENDANT','INVOICE_APPROVED','INVOICE_CANCELLED')))); // there are duplicates :S, unless there is no movement delete
+			
+		}
 		$quantity = $movements + 1; 
-		//$quantity = $this->InvMovement->getLastInsertID(); //hmm..
 		$docCode = $keyword.'-'.$period.'-'.$quantity;
 		return $docCode;
 	}
 	
+	public function index_invoice(){
+		$this->paginate = array(
+			'conditions' => array(
+				'SalSale.lc_state !='=>'INVOICE_LOGIC_DELETED',
+				'SalSale.lc_state LIKE'=> '%INVOICE%',
+			),
+			'order' => array('SalSale.id' => 'desc'),
+			'limit' => 15
+		);
+		$this->SalSale->recursive = 0;
+		$this->set('salSales', $this->paginate());
+	}
 	
 	
+	
+	
+	
+		public function ajax_initiate_modal_add_pay(){
+		if($this->RequestHandler->isAjax()){
+		//				$cost = $this->request->data['cost'];
+			$paysAlreadySaved = $this->request->data['paysAlreadySaved'];
+//			$warehouse = $this->request->data['warehouse'];
+		//	$supplier = $this->request->data['supplier'];
+//	//		$itemsBySupplier = $this->PurPurchase->InvSupplier->InvItemsSupplier->find('list', array(
+//				'fields'=>array('InvItemsSupplier.inv_item_id'),
+//				'conditions'=>array(
+//					'InvItemsSupplier.inv_supplier_id'=>$supplier
+//				),
+//				'recursive'=>-1
+//			)); 
+//debug($itemsBySupplier);			
+			$pays = $this->SalSale->SalPayment->SalPaymentType->find('list', array(
+					'fields'=>array('SalPaymentType.name'),
+					'conditions'=>array(
+//						'NOT'=>array('InvPriceType.id'=>$paysAlreadySaved) /*aca se hace la discriminacion de items seleccionados*/
+				),
+				
+				'recursive'=>-1
+				//'fields'=>array('InvItem.id', 'CONCAT(InvItem.code, '-', InvItem.name)')
+			));
+//debug($supplier);			
+//debug($items);
+//debug($this->request->data);
+		// gets the first price in the list of the item prices
+//		$firstItemListed = key($items);
+//		$priceDirty = $this->PurPurchase->PurDetail->InvItem->InvPrice->find('first', array(
+//			'fields'=>array('InvPrice.price'),
+//			'order' => array('InvPrice.date_created' => 'desc'),
+//			'conditions'=>array(
+//				'InvPrice.inv_item_id'=>$firstItemListed
+//				)
+//		));
+////debug($priceDirty);
+//		if($priceDirty==array()){
+//			$price = 0;
+//		}  else {
+//			
+//			$price = $priceDirty['InvPrice']['price'];
+//		}
+//			$amountDirty = $this->PurPurchase->PurPrice->find('first', array(
+//			'fields'=>array('PurPrice.amount'),
+//	//		'order' => array('rice.date_created' => 'desc'),
+//			'conditions'=>array(
+//				'PurPrice.inv_price_type_id'=>$costsAlreadySaved
+//				)
+//			));
+//			if($amountDirty==array()){
+//			$amount = 0;
+//		}  else {
+//			
+//			$amount = $amountDirty['PurPrice']['amount'];
+//		}
+				
+			$this->set(compact('pays'/*, 'amount'*/));
+		}
+	}
+	
+///////////////////////////////////////////*********************************************************************************///////////////	
 	
 	public function index() {
 		$this->SalSale->recursive = 0;

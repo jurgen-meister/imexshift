@@ -3,7 +3,7 @@
 echo $this->BootstrapForm->input('sal_employee_id', array(
 					'required' => 'required',
 					'label' => 'Encargado:',
-/*js*/				'id'=>'cbxEmployees',
+/*js*/				'id'=>'cbxEmployees'
 					//'value'=>$invWarehouses,
 //					'disabled'=>$disable,
 		//			'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
@@ -19,7 +19,7 @@ echo $this->BootstrapForm->input('sal_employee_id', array(
 echo $this->BootstrapForm->input('sal_tax_number_id', array(
 					'required' => 'required',
 					'label' => 'NIT - Nombre:',
-/*js*/				'id'=>'cbxTaxNumbers',
+/*js*/				'id'=>'cbxTaxNumbers'
 					//'value'=>$invWarehouses,
 			//		'disabled'=>$disable,
 		//			'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'

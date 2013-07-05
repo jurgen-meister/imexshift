@@ -4,7 +4,7 @@
 		'label' => 'Costo:',
 		'id'=>'cbxModalCosts',
 		'class'=>'input-xlarge',
-		'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+//		'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 		));
 /*		echo '<br>';
 		

@@ -12,7 +12,7 @@
 			echo $this->BootstrapForm->input('price', array(				
 			'label' => 'Precio Unitario:',
 			'id'=>'txtModalPrice',
-			'value'=>$price,
+		//	'value'=>$price,
 		//	'style'=>'background-color:#EEEEEE',
 			'class'=>'input-small',
 			'maxlength'=>'15'
@@ -24,6 +24,7 @@
 		'label' => 'Almacén:',
 		'id'=>'cbxModalWarehouses',
 		'class'=>'input-xlarge',
+			'selected' => $warehouse,
 	//	'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 		));
 		echo '<br>';

@@ -57,22 +57,22 @@
 			<?php $cont = $this->BootstrapPaginator->counter('{:start}'); ?>
 		<table class="table table-striped table-bordered table-hover">
 			<tr>
-				<th><?php echo $this->BootstrapPaginator->sort('#');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('Proveedor');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('Código');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('Fecha');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('Descripccion');?></th>				
+				<th><?php echo '#';?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('doc_code', 'Código');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('note_code', 'Código de Proforma');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('InvSupplier.name','Proveedor');?></th>			
 				<th><?php echo $this->BootstrapPaginator->sort('lc_state', 'Estado Documento');?></th>				
 			</tr>
 		<?php foreach ($purPurchases as $purPurchase): ?>
 			<tr>
 				<td><?php echo $cont++;?></td>				
+				<td><?php echo h($purPurchase['PurPurchase']['doc_code']); ?>&nbsp;</td>
+				<td><?php echo h($purPurchase['PurPurchase']['note_code']); ?>&nbsp;</td>
+				<td><?php echo date("d/m/Y", strtotime($purPurchase['PurPurchase']['date'])); ?>&nbsp;</td>
 				<td>
 					<?php echo $this->Html->link($purPurchase['InvSupplier']['name'], array('controller' => 'inv_suppliers', 'action' => 'view', $purPurchase['InvSupplier']['id'])); ?>
-				</td>
-				<td><?php echo h($purPurchase['PurPurchase']['doc_code']); ?>&nbsp;</td>
-				<td><?php echo h($purPurchase['PurPurchase']['date']); ?>&nbsp;</td>
-				<td><?php echo h($purPurchase['PurPurchase']['description']); ?>&nbsp;</td>				
+				</td>		
 				<td><?php 
 						$documentState = $purPurchase['PurPurchase']['lc_state'];
 						switch ($documentState){

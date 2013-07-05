@@ -144,9 +144,17 @@
 				echo $this->BootstrapForm->input('generic_code', array(
 					'id'=>'txtGenericCode',
 					'value'=>$genericCode,
-		//			'type'=>'hidden'
+					'type'=>'hidden'
 				
 				));
+				
+				echo $this->BootstrapForm->input('note_code', array(
+			'id'=>'txtNoteCode',
+	//		'value'=>$noteCode,
+			'label' => 'No. Factura Compra:',
+			//'type'=>'hidden'
+
+		));
 				
 				echo $this->BootstrapForm->input('date_in', array(
 					'required' => 'required',
@@ -273,8 +281,8 @@
 					</div>
 					
 					<div class="span3"></div>
-					
-				</div>-->
+					-->
+				</div>
 			<!-- ////////////////////////////////// FIN ITEMS /////////////////////////////////////// -->
 <p></p>	
 <!-- ////////////////////////////////// INICIO - COSTO /////////////////////////////////////// -->
@@ -356,8 +364,8 @@
 					</div>
 					
 					<div class="span3"></div>
-					
-				</div> -->
+					-->
+				</div> 
 			<!-- ////////////////////////////////// FIN COSTO /////////////////////////////////////// -->
 				
 			<!-- ////////////////////////////////// INICIO - PAGO /////////////////////////////////////// -->
@@ -449,8 +457,8 @@
 					</div>
 					
 					<div class="span3"></div>
-					
-				</div> -->
+					-->
+				</div> 
 			<!-- ////////////////////////////////// FIN PAGO /////////////////////////////////////// -->
 			
 			<!-- ////////////////////////////////// INICIO BOTONES /////////////////////////////////////// -->
@@ -624,7 +632,7 @@
 						'label' => 'Costo:',
 						'id'=>'cbxModalCosts',
 						'class'=>'input-xlarge',
-						'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+				//		'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 						));
 						echo '<br>';
 //						$amount='';
@@ -685,7 +693,7 @@
 							'label' => 'Pagos:',
 							'id'=>'cbxModalPays',
 							'class'=>'input-xlarge',
-							'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+					//		'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 							));
 						echo '<br>';
 //						$amount='';
