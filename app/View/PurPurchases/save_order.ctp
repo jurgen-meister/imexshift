@@ -1,31 +1,90 @@
 <?php echo $this->Html->script('modules/PurPurchases', FALSE); ?>
 
-
 <!-- ************************************************************************************************************************ -->
 <div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
 <!-- ************************************************************************************************************************ -->
 	<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 1/2 *************************************** -->
-						<?php
-							switch ($documentState){
-								case '':
-									$documentStateColor = '';
-									$documentStateName = 'SIN ESTADO';
-									break;
-								case 'ORDER_PENDANT':
-									$documentStateColor = 'label-warning';
-									$documentStateName = 'ORDEN PENDIENTE';
-									break;
-								case 'ORDER_APPROVED':
-									$documentStateColor = 'label-success';
-									$documentStateName = 'ORDEN APROBADA';
-									break;
-								case 'ORDER_CANCELLED':
-									$documentStateColor = 'label-important';
-									$documentStateName = 'ORDEN CANCELADA';
-									break;
-							}
-						?>
-<div class="widget-box">
+	<?php
+		switch ($documentState){
+			case '':
+				$documentStateColor = '';
+				$documentStateName = 'SIN ESTADO';
+				break;
+			case 'ORDER_PENDANT':
+				$documentStateColor = 'label-warning';
+				$documentStateName = 'ORDEN PENDIENTE';
+				break;
+			case 'ORDER_APPROVED':
+				$documentStateColor = 'label-success';
+				$documentStateName = 'ORDEN APROBADA';
+				break;
+			case 'ORDER_CANCELLED':
+				$documentStateColor = 'label-important';
+				$documentStateName = 'ORDEN CANCELADA';
+				break;
+		}
+	?>
+	<!-- //////////////////////////// Start - buttons /////////////////////////////////-->
+	<div class="widget-box">
+		<div class="widget-content nopadding">
+			<?php 
+				/////////////////START - SETTINGS BUTTON CANCEL /////////////////
+				$url=array('action'=>'index_order');
+				$parameters = $this->passedArgs;
+				if(!isset($parameters['search'])){
+//					unset($parameters['document_code']);
+					unset($parameters['code']);
+				}
+				unset($parameters['id']);
+				echo $this->Html->link('<i class=" icon-arrow-left"></i> Volver', array_merge($url,$parameters), array('class'=>'btn', 'escape'=>false)).' ';
+				//////////////////END - SETTINGS BUTTON CANCEL /////////////////
+			?>
+
+			<?php 
+				switch ($documentState){
+							case '':
+								$displayApproved = 'none';
+								$displayCancelled = 'none';
+								break;
+							case 'ORDER_PENDANT':
+								$displayApproved = 'inline';
+								$displayCancelled = 'none';
+								break;
+							case 'ORDER_APPROVED':
+								$displayApproved = 'none';
+								$displayCancelled = 'inline';
+								break;
+							case 'ORDER_CANCELLED':
+								$displayApproved = 'none';
+								$displayCancelled = 'none';
+								break;
+						}
+			?>
+			<?php
+			if($documentState == 'ORDER_PENDANT' OR $documentState == ''){
+				echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));	
+			}
+			?>
+			<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Orden de Compra</a>
+			<a href="#" id="btnLogicDeleteState" class="btn btn-danger" style="display:<?php echo $displayApproved;?>"><i class=" icon-trash icon-white"></i> Eliminar</a>
+			<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Orden de Compra</a>
+			<?php
+				$displayPrint = 'none';
+				if($id <> ''){
+					$displayPrint = 'inline';
+				}
+				echo $this->Html->link('<i class="icon-print icon-white"></i> Imprimir', array('action' => 'view_document_movement_pdf', $id.'.pdf'), array('class'=>'btn btn-primary','style'=>'display:'.$displayPrint, 'escape'=>false, 'title'=>'Nuevo', 'id'=>'btnPrint', 'target'=>'_blank')); 
+
+			?>
+			
+			
+			
+			
+		</div>
+	</div>
+	<!-- //////////////////////////// End - buttons /////////////////////////////////-->
+	
+	<div class="widget-box">
 		<div class="widget-title">
 			<span class="icon">
 				<i class="icon-edit"></i>								
@@ -34,91 +93,47 @@
 			<span id="documentState" class="label <?php echo $documentStateColor;?>"><?php echo $documentStateName;?></span>
 		</div>
 		<div class="widget-content nopadding">
-		<!-- //////////////////////////// START - IF NEEDED BREADCRUMB, SHOW PROCESS STATE //////////////////////// -->
-		<!--
-		<div id="breadcrumb">
-			<a href="#" title="Go to Home" class="tip-bottom">Orden Compra</a>
-			<a href="#" class="current">Remito</a>
-		</div>
-		-->
-		<!-- //////////////////////////// END - IF NEEDED BREADCRUMB, SHOW PROCESS STATE //////////////////////// -->
+			
 	<!-- //******************************** END - #UNICORN  WRAP FORM BOX PART 1/2 *************************************** -->
 
 	
-	<!-- ////////////////////////////////// INICIO - INICIO FORM ///////////////////////////////////// -->
+	<!-- ////////////////////////////////// START - FORM STARTS ///////////////////////////////////// -->
 		<?php echo $this->BootstrapForm->create('PurPurchase', array('class' => 'form-horizontal'));?>
 		<fieldset>
-	<!--	<legend><?php echo __('Orden de Compra'); ?></legend> -->
-	<!-- ////////////////////////////////// FIN - INICIO FORM /////////////////////////////////////// -->			
+	<!-- ////////////////////////////////// END - FORM ENDS /////////////////////////////////////// -->			
+					
 				
-				
-				<!-- ////////////////////////////////// INICIO - TABLA ESTADO PROCESO Y DOCUMENTO /////////////////////////////////////// -->
-				<!--
-				<div class="row-fluid">
-					<div class="span7">
-						
-					</div>
-					<div class="span2" >
-						Estado Documento:
-						
-						<table id="tableProcessState" class="table table-bordered table-condensed">
-							<tr>
-								<td id="columnStatePurchase" style="background-color:<?php echo $stateColor; ?>; color: white"><?php echo $stateName;?></td>
-							</tr>
-						</table>
-						
-					</div>
-					<div class="span3"></div>
-				</div>
-				-->
-				<!-- ////////////////////////////////// FIN - TABLA ESTADO PROCESO Y DOCUMENTO /////////////////////////////////////// -->
-				
-				
-				
-				<!-- ////////////////////////////////// INICIO CAMPOS FORMULARIOS ORDEN COMPRA /////////////////////////////////////// -->
+				<!-- ////////////////////////////////// START FORM ORDER FIELDS /////////////////////////////////////// -->
 				<?php
-				
 				//////////////////////////////////START - block when APPROVED or CANCELLED///////////////////////////////////////////////////
 				$disable = 'disabled';
 				$supplier_disable = 'disabled';
-				$rate_disable = 'disabled';
-//				$btnAddMovementType = '';
-//				
+				
 				if($documentState == 'ORDER_PENDANT'){
 					$disable = 'enabled';	
 					$supplier_disable = 'disabled';
-					$rate_disable = 'enabled';
-//					$btnAddMovementType = '<a class="btn btn-primary" href="#" id="btnAddMovementType" title="Nuevo Tipo Movimiento"><i class="icon-plus icon-white"></i></a>';
 				}
+				
 				if($documentState == ''){
 					$disable = 'enabled';
 					$supplier_disable = 'enabled';
 				}
 				
 				//////////////////////////////////END - block when APPROVED or CANCELLED///////////////////////////////////////////////////
-				/*
-				echo $this->BootstrapForm->input('token_status_hidden', array(
-					'id'=>'txtTokenStatusHidden',
-					'value'=>'entrada',
-					'type'=>'hidden'
-				));
-				*/
+				
 				echo $this->BootstrapForm->input('purchase_hidden', array(
-					//'id'=>'movement_hidden',
 					'id'=>'txtPurchaseIdHidden',
 					'value'=>$id,
 					'type'=>'hidden'
 				));
 							
 				echo $this->BootstrapForm->input('doc_code', array(
-					//'id'=>'code',
 					'id'=>'txtCode',
 					'label'=>'Código:',
+					'autocomplete'=>'off',
 					'style'=>'background-color:#EEEEEE',
 					'disabled'=>$disable,
 					'placeholder'=>'El sistema generará el código',
-					//'data-toggle'=>'tooltip',
-					//'data-placement'=>'top',
 				));
 				
 				echo $this->BootstrapForm->input('generic_code', array(
@@ -129,45 +144,30 @@
 				));
 				
 				echo $this->BootstrapForm->input('note_code', array(
-			'id'=>'txtNoteCode',
-	//		'value'=>$noteCode,
-			'label' => 'No. Factura Proforma:',
-			//'type'=>'hidden'
-
-		));
+					'id'=>'txtNoteCode',
+					'autocomplete'=>'off',
+					'label' => 'No. Factura Proforma:'
+				));
 				
 				echo $this->BootstrapForm->input('date_in', array(
 					'required' => 'required',
 					'label' => 'Fecha:',
+					'autocomplete'=>'off',
 					'id'=>'txtDate',
 					'value'=>$date,
 					'disabled'=>$disable,
-					'maxlength'=>'0',
-		//			'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+					'maxlength'=>'0'
 				));
-				
-				
 				
 				echo $this->BootstrapForm->input('inv_supplier_id', array(
 					'required' => 'required',
 					'label' => 'Proveedor:',
-/*js*/				'id'=>'cbxSuppliers',
-					//'value'=>$invWarehouses,
-					'disabled'=>$supplier_disable,
-		//			'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+					'id'=>'cbxSuppliers',
+					'disabled'=>$supplier_disable
 				));
-
-//				echo $this->BootstrapForm->input('inv_movement_type_id', array(
-//					'label' => 'Tipo Movimiento:',
-//					'id'=>'cbxMovementTypes',
-//					'disabled'=>$disable,
-//					'required' => 'required',
-//					'helpInline' => /*$btnAddMovementType.*/'<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;')
-//				);
 				
 				echo $this->BootstrapForm->input('description', array(
 					'rows' => 2,
-					//'style'=>'width:400px',//#UNICORN, COMMENT OR REPONSIVE DOESN'T WORK
 					'label' => 'Descripción:',
 					'disabled'=>$disable,
 					'id'=>'txtDescription'
@@ -176,40 +176,47 @@
 				echo $this->BootstrapForm->input('ex_rate', array(
 					'label' => 'Tipo de Cambio:',
 					'value'=>$exRate,
-				//	'placeholder'=>'El sistema generará el código',
-					'disabled'=>$rate_disable,
-				//	'type' => $type,
+					'disabled'=>$disable,
 					'id'=>'txtExRate'
 				));
 				?>
-				<!-- ////////////////////////////////// FIN CAMPOS FORMULARIOS MOVIMIENTO /////////////////////////////////////// -->
+				<!-- ////////////////////////////////// END FORM ORDER FIELDS /////////////////////////////////////// -->
 				
-				
-				
-						<!-- ////////////////////////////////// INICIO - ITEMS /////////////////////////////////////// -->
-			<!--	<ul class="nav nav-tabs">
-					<li class="active">
-						<a href="#">Items</a>
-					</li>
-				</ul> -->
-				
+					<!-- ////////////////////////////////// START MESSAGES /////////////////////////////////////// -->
+					<div id="boxMessage"></div>
+					<div id="processing"></div>
+					<!-- ////////////////////////////////// END MESSAGES /////////////////////////////////////// -->
+							
 
-				<div class="row-fluid">
-			<!--		
-					<div class="span1"></div>
-					
-					<div id="boxTable" class="span8">-->
+	<!-- ////////////////////////////////// START - END FORM ///////////////////////////////////// -->		
+	</fieldset>
+	<?php echo $this->BootstrapForm->end();?>
+	<!-- ////////////////////////////////// END - END FORM ///////////////////////////////////// -->
+	
+	<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
+		</div> <!-- Belongs to: <div class="widget-content nopadding"> -->
+	</div> <!-- Belongs to: <div class="widget-box"> -->
+	<!-- //******************************** END - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
+
+	<!-- ////////////////////////////////// START - MOVEMENT ITEMS DETAILS /////////////////////////////////////// -->
 						
-						<?php if($documentState == 'ORDER_PENDANT' OR $documentState == ''){ ?>
-						<a class="btn btn-primary" href='#' id="btnAddItem" title="Adicionar Item"><i class="icon-plus icon-white"></i></a>
-						<?php } ?>
-						<p></p>
-						
-						<table class="table table-bordered table-condensed table-striped table-hover" id="tablaItems">
+	<div class="widget-box">
+		<div class="widget-title">
+			<ul class="nav nav-tabs">
+				<li class="active"><a data-toggle="tab" href="#tab1">Items</a></li>
+			</ul>
+		</div>
+		<div class="widget-content tab-content">
+			<div id="tab1" class="tab-pane active">
+
+				<?php if($documentState == 'ORDER_PENDANT' OR $documentState == ''){ ?>
+					<a class="btn btn-primary" href='#' id="btnAddItem" title="Adicionar Item"><i class="icon-plus icon-white"></i></a>
+				<?php } ?>
+
+						<table class="table table-bordered table-striped table-hover" id="tablaItems">
 							<thead>
 								<tr>
 									<th>Item</th>
-<!--									<th>Stock</th>-->
 									<th>Precio Unitario</th>
 									<th>Cantidad</th>
 									<th>Subtotal</th>
@@ -231,140 +238,52 @@
 										if($documentState == 'ORDER_PENDANT' OR $documentState == ''){
 											echo '<td class="columnItemsButtons">';
 											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$purDetails[$i]['itemId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
-												
+
 												<a class="btn btn-danger" href="#" id="btnDeleteItem'.$purDetails[$i]['itemId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
 											echo '</td>';
 										}
 									echo '</tr>';	
 									$total += $subtotal;
-								}
-//								echo '<tr>';
-//										echo '<th></th>';
-//										echo '<th></th>';
-//										echo '<th>Total:</th>';
-//										echo '<th>'.$total.'</th>';
-//									echo '</tr>';
-								?>
-<!--								<tr>
-									<th></th>
-									<th></th>
-									<th></th>
-									<th></th>
-								</tr>-->
+								}?>
 							</tbody>
-							
 						</table>
-<!--						
-					<table class="table table-condensed table-striped table-hover">
-						<thead>
-								<tr>
-									<th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
-									<th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
-									<th>Total:</th>
-									<th><?php echo $total; ?></th>
-								</tr>
-							</thead>
-					</table>
-						
-					</div>
+
+				<div class="row-fluid"> <!-- vers si borrar este row-fluid creo q si -->
 					
-					<div class="span3"></div>
-					-->
-				</div> 
-			<!-- ////////////////////////////////// FIN ITEMS /////////////////////////////////////// -->
-
-<p></p>	
-				
-			<!-- ////////////////////////////////// INICIO BOTONES /////////////////////////////////////// -->
-			<!--<div class="form-actions">--><!-- no sirve se desconfigura los botones en modo tablet -->
-			<div class="row-fluid"> <!-- INICIO - row fluid para alinear los botones -->
-				<div class="span2"></div> <!-- INICIO Y FIN - ESPACIO A LA IZQUIERDA -->
-				<div class="span6">	<!-- INICIO - span 6 -->
-					<div class="btn-toolbar"> <!-- INICIO - toolbar para dejar espacio entre botones -->
-							<?php 
-								if($documentState == 'ORDER_PENDANT' OR $documentState == ''){
-									echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));	
-
-								}
-								/////////////////START - SETTINGS BUTTON CANCEL /////////////////
-								$url=array('action'=>'index_order');
-								$parameters = $this->passedArgs;
-								if(!isset($parameters['search'])){
-//									unset($parameters['document_code']);
-									unset($parameters['code']);
-								}
-								unset($parameters['id']);
-								echo $this->Html->link('Cancelar', array_merge($url,$parameters), array('class'=>'btn') );
-								//////////////////END - SETTINGS BUTTON CANCEL /////////////////
-							?>
-
-							<?php 
-								switch ($documentState){
-											case '':
-												$displayApproved = 'none';
-												$displayCancelled = 'none';
-												$displayLogicDelete = 'none';
-												break;
-											case 'ORDER_PENDANT':
-												$displayApproved = 'inline';
-												$displayCancelled = 'none';
-												$displayLogicDelete = 'inline';
-												break;
-											case 'ORDER_APPROVED':
-												$displayApproved = 'none';
-												$displayCancelled = 'inline';
-												$displayLogicDelete = 'none';
-												break;
-											case 'ORDER_CANCELLED':
-												$displayApproved = 'none';
-												$displayCancelled = 'none';
-												$displayLogicDelete = 'none';
-												break;
-										}
-							?>
-							<?php
-								$displayPrint = 'none';
-								if($id <> ''){
-									$displayPrint = 'inline';
-								}
-								echo $this->Html->link('<i class="icon-print icon-white"></i> Imprimir', array('action' => 'view_document_movement_pdf', $id.'.pdf'), array('class'=>'btn btn-primary','style'=>'display:'.$displayPrint, 'escape'=>false, 'title'=>'Nuevo', 'id'=>'btnPrint', 'target'=>'_blank')); 
+					<?php if($documentState == 'ORDER_APPROVED'){ ?>
+						<div class="span10">	</div>
+						<div class="span1">
+							<h4>Total:</h4>	
+						</div>
+						<div class="span1">
+							<h4 id="total" ><?php echo $total.' $us'; ?></h4>
+						</div>
+					<?php }  else { ?>
+						<div class="span8">	</div>
+						<div class="span1">
+							<h4>Total:</h4>	
+						</div>
+						<div class="span3">
+							<h4 id="total" ><?php echo $total.' $us'; ?></h4>
+						</div>
+					<?php }?>
+					
+				</div>
+					
+			</div>
+		</div>                            
+	</div>
 								
-							?>
-							<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Orden de Compra</a>
-							<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Orden de Compra</a>
-							<a href="#" id="btnLogicDeleteState" class="btn btn-danger" style="display:<?php echo $displayLogicDelete;?>"> Logic Delete</a>
-
-					</div> <!-- FIN - toolbar para dejar espacio entre botones -->
-				</div> <!-- FIN - span 6 -->
-				<div class="span4"></div> <!-- INICIO Y FIN - ESPACIO A LA DERECHA PARA NO DEJAR HUECOS -->
-			</div> <!-- FIN - row fluid para alinear los botones -->
-			<!--</div>--><!-- no sirve se desconfigura los botones en modo tablet class="form-actions" -->
-			<!-- ////////////////////////////////// FIN BOTONES /////////////////////////////////////// -->
-
-	<!-- ////////////////////////////////// INICIO - FIN FORM ///////////////////////////////////// -->		
-	</fieldset>
-	<?php echo $this->BootstrapForm->end();?>
-	<!-- ////////////////////////////////// FIN - FIN FORM ///////////////////////////////////// -->
-	
-	<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
-		</div> <!-- Belongs to: <div class="widget-content nopadding"> -->
-	</div> <!-- Belongs to: <div class="widget-box"> -->
-	<!-- //******************************** END - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
-
-	<!-- ////////////////////////////////// INICIO MENSAJES /////////////////////////////////////// -->
-	<div id="boxMessage"></div>
-	<div id="processing"></div>
-	<!-- ////////////////////////////////// FIN MENSAJES /////////////////////////////////////// -->
-	
+	<!-- ////////////////////////////////// END ORDER ITEMS DETAILS /////////////////////////////////////// -->
 	
 <!-- ************************************************************************************************************************ -->
-</div><!-- FIN CONTAINER FLUID/ROW FLUID/SPAN9 - Del Template Principal (SPAN3 reservado para menu izquierdo) -->
+</div><!-- END CONTAINER FLUID/ROW FLUID/SPAN12 - MAIN Template #UNICORN -->
 <!-- ************************************************************************************************************************ -->
 
 
 
 
-<!-- ////////////////////////////////// INICIO MODAL (Esta fuera del span9 pero sigue pertenciendo al template principal CONTAINER FLUID/ROW FLUID) ////////////////////////////// -->
+<!-- ////////////////////////////////// START MODAL (Esta fuera del span9 pero sigue pertenciendo al template principal CONTAINER FLUID/ROW FLUID) ////////////////////////////// -->
 			<div id="modalAddItem" class="modal hide fade ">
 				  
 				  <div class="modal-header">
@@ -381,10 +300,9 @@
 						echo $this->BootstrapForm->input('items_id', array(				
 						'label' => 'Item:',
 						'id'=>'cbxModalItems',
-						'class'=>'input-xlarge',
-				//		'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+						'class'=>'input-xlarge'
 						));
-						echo '<br>';
+				//		echo '<br>';
 						$price='';
 						echo '<div id="boxModalPrice">';
 							echo $this->BootstrapForm->input('price', array(				
@@ -397,7 +315,7 @@
 							));
 
 						echo '</div>';		
-						echo '<br>';
+				//		echo '<br>';
 
 						//////////////////////////////////////
 					echo '</div>';
@@ -406,18 +324,15 @@
 					'label' => 'Cantidad:',
 					'id'=>'txtModalQuantity',
 					'class'=>'input-small',
-					//'value'=>'6',
-					'maxlength'=>'10',
-			//		'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+					'maxlength'=>'10'
 					));
 					?>
 					  <div id="boxModalValidateItem" class="alert-error"></div> 
 				  </div>
 				  
 				  <div class="modal-footer">
-					 <!-- Ztep 0 Save button from modal triggers btnModalAddItem -->
-					<a href='#' class="btn btn-primary" id="btnModalAddItem">Guardar add</a>
-					<a href='#' class="btn btn-primary" id="btnModalEditItem">Guardar edit</a>
+					<a href='#' class="btn btn-primary" id="btnModalAddItem">Guardar</a>
+					<a href='#' class="btn btn-primary" id="btnModalEditItem">Guardar</a>
 					<button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
 					
 				  </div>

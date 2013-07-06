@@ -212,15 +212,15 @@ $(document).ready(function(){
 		{
 			case 'ORDER_PENDANT':
 				$('#documentState').addClass('label-warning');
-				$('#documentState').text('ORDEN PENDIENTE');
+				$('#documentState').text('NOTA PENDIENTE');
 				break;
 			case 'ORDER_APPROVED':
 				$('#documentState').removeClass('label-warning').addClass('label-success');
-				$('#documentState').text('ORDEN APROBADA');
+				$('#documentState').text('NOTA APROBADA');
 				break;
 			case 'ORDER_CANCELLED':
 				$('#documentState').removeClass('label-success').addClass('label-important');
-				$('#documentState').text('ORDEN CANCELADA');
+				$('#documentState').text('NOTA CANCELADA');
 				break;
 				case 'INVOICE_PENDANT':
 				$('#documentState').addClass('label-warning');
@@ -738,25 +738,48 @@ var exRate = $('#txtExRate').val();
         $('#processing').text("Procesando...");
     }
 	
+	function showGrowlMessage(type, text, sticky){
+		if(typeof(sticky)==='undefined') sticky = false;
+		
+		var title;
+		var image;
+		switch(type){
+			case 'ok':
+				title = 'EXITO!';
+				image= '/imexport/img/check.png';
+				break;
+			case 'error':
+				title = 'OCURRIO UN PROBLEMA!';
+				image= '/imexport/img/error.png';
+				break;
+			case 'warning':
+				title = 'PRECAUCIÓN!';
+				image= '/imexport/img/warning.png';
+				break;
+		}
+		$.gritter.add({
+			title:	title,
+			text: text,
+			sticky: sticky,
+			image: image
+		});	
+	}
+	
 	function saveAll(){
 		var arrayItemsDetails = [];
 		arrayItemsDetails = getItemsDetails();
-		var arrayCostsDetails = [];
-		arrayCostsDetails = getCostsDetails();
+//		var arrayCostsDetails = [];
+//		arrayCostsDetails = getCostsDetails();
 		var arrayPaysDetails = [];
 		arrayPaysDetails = getPaysDetails();
 		var error = validateBeforeSaveAll(arrayItemsDetails);
 		if( error == ''){
-			if(arr[3] == 'save_order'/* || arr[3] == 'save_purchase_in'*/){
+			if(arr[3] == 'save_order'){
 				ajax_save_movement_in(arrayItemsDetails);
 			}
 			if(arr[3] == 'save_invoice'){
-				ajax_save_invoice(arrayItemsDetails, arrayCostsDetails, arrayPaysDetails);
+				ajax_save_invoice(arrayItemsDetails,/* arrayCostsDetails,*/ arrayPaysDetails);
 			}
-//			if(arr[3] == 'save_warehouses_transfer'){
-//				//alert('funciona para transferencias entre almacenes');
-//				ajax_save_warehouses_transfer(arrayItemsDetails);
-//			}
 		}else{
 			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
 		}
@@ -764,72 +787,79 @@ var exRate = $('#txtExRate').val();
 	
 	// (AEA Ztep 2) action when button Aprobar Entrada Almacen is pressed
 	function changeStateApproved(){
+		showBittionAlertModal({content:'Al APROBAR este documento ya no se podrá hacer más modificaciones. ¿Está seguro?'});
+		$('#bittionBtnYes').click(function(){
 			var arrayItemsDetails = [];
 			arrayItemsDetails = getItemsDetails();
-			var arrayCostsDetails = [];
-			arrayCostsDetails = getCostsDetails();
+//			var arrayCostsDetails = [];
+//			arrayCostsDetails = getCostsDetails();
 			var arrayPaysDetails = [];
 			arrayPaysDetails = getPaysDetails();
-var error = validateBeforeSaveAll(arrayItemsDetails);
-if( error == ''){
-		if(confirm('Al APROBAR este documento ya no se podra hacer mas modificaciones. Esta seguro?')){
-
-			if(arr[3] == 'save_order' /*|| arr[3] == 'save_purchase_in'*/){
-				ajax_change_state_approved_movement_in(arrayItemsDetails);
+			var error = validateBeforeSaveAll(arrayItemsDetails);
+			if( error === ''){
+				if(arr[3] == 'save_order'){
+					ajax_change_state_approved_movement_in(arrayItemsDetails);
+				}
+				if(arr[3]=='save_invoice'){
+					ajax_change_state_approved_invoice(arrayItemsDetails,/* arrayCostsDetails,*/ arrayPaysDetails);
+				}
+			}else{
+				$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
 			}
-			if(arr[3]=='save_invoice'){
-				ajax_change_state_approved_invoice(arrayItemsDetails, arrayCostsDetails, arrayPaysDetails);
-			}
-//			if(arr[3] == 'save_warehouses_transfer'){
-//				ajax_change_state_approved_warehouses_transfer(arrayItemsDetails);
-//			}
-		}
-}else{
-	$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
-}
-		
+			hideBittionAlertModal();
+		});
 	}
 	// (CEA Ztep 2) action when button Cancelar Entrada Almacen is pressed
 	function changeStateCancelled(){
-		if(confirm('Al CANCELAR este documento ya no sera valido y no habra marcha atras. Esta seguro?')){
-			//$('#cbxWarehouses').removeAttr('disabled');
+		showBittionAlertModal({content:'Al CANCELAR este documento ya no será válido y no habrá marcha atrás. ¿Está seguro?'});
+		$('#bittionBtnYes').click(function(){
 			var arrayItemsDetails = [];
 			arrayItemsDetails = getItemsDetails();
-			var arrayCostsDetails = [];
-			arrayCostsDetails = getCostsDetails();
+//			var arrayCostsDetails = [];
+//			arrayCostsDetails = getCostsDetails();
 			var arrayPaysDetails = [];
 			arrayPaysDetails = getPaysDetails();
 			if(arr[3] == 'save_order' /*|| arr[3] == 'save_purchase_in'*/){
 				ajax_change_state_cancelled_movement_in(arrayItemsDetails);
 			}
 			if(arr[3]=='save_invoice'){
-				ajax_change_state_cancelled_invoice(arrayItemsDetails, arrayCostsDetails, arrayPaysDetails);			}
-//			if(arr[3] == 'save_warehouses_transfer'){
-//				ajax_change_state_cancelled_warehouses_transfer(arrayItemsDetails);
-//			}
-		}
+				ajax_change_state_cancelled_invoice(arrayItemsDetails/*, arrayCostsDetails*/, arrayPaysDetails);			
+			}
+			hideBittionAlertModal();
+		});
 	}
 	
 	
 	function changeStateLogicDeleted(){
-		if(confirm('Al CANCELAR este documento ya no sera valido y no habra marcha atras. Esta seguro?')){
-			//$('#cbxWarehouses').removeAttr('disabled');
-			var arrayItemsDetails = [];
-			arrayItemsDetails = getItemsDetails();
-			var arrayCostsDetails = [];
-			arrayCostsDetails = getCostsDetails();
-			var arrayPaysDetails = [];
-			arrayPaysDetails = getPaysDetails();
-			if(arr[3] == 'save_order' /*|| arr[3] == 'save_purchase_in'*/){
-				ajax_change_state_logic_deleted_movement_in(arrayItemsDetails);
+		showBittionAlertModal({content:'¿Está seguro de eliminar este documento en estado Pendiente?'});
+		$('#bittionBtnYes').click(function(){
+			var doc_code = $('#txtCode').val();
+			var type;
+			var index;
+			switch(arr[3]){
+				case 'save_order':
+					index = 'index_order';
+					type = 'ORDER_LOGIC_DELETED';
+					break;	
+				case 'save_invoice':
+					index = 'index_invoice';
+					type = 'INVOICE_LOGIC_DELETED';
+					break;	
+//				case 'save_purchase_in':
+//					index = 'index_purchase_in';
+//					break;	
+//				case 'save_sale_out':
+//					index = 'index_sale_out';
+//					break;	
+//				case 'save_warehouses_transfer':
+//					index = 'index_warehouses_transfer';
+//					code = $('#txtDocumentCode').val();
+//					type = 'transfer';
+//					break;	
 			}
-			if(arr[3]=='save_invoice'){
-				ajax_change_state_logic_deleted_invoice(arrayItemsDetails, arrayCostsDetails, arrayPaysDetails);
-			}
-//			if(arr[3] == 'save_warehouses_transfer'){
-//				ajax_change_state_cancelled_warehouses_transfer(arrayItemsDetails);
-//			}
-		}
+			ajax_logic_delete(doc_code, type, index);
+			hideBittionAlertModal();
+		});
 	}
 	//************************************************************************//
 	//////////////////////////////////END-FUNCTIONS//////////////////////
@@ -1004,11 +1034,6 @@ if( error == ''){
 	
 	//Save order IN
 	function ajax_save_movement_in(arrayItemsDetails){
-//		var movementType =1;//Purchase
-//		var documentCode ='NO';
-//		if ($('#txtDocumentCode').length > 0){//existe
-//			documentCode = $('#txtDocumentCode').val();
-//		}
 		$.ajax({
             type:"POST",
             url:moduleController + "ajax_save_movement_in",			
@@ -1022,7 +1047,6 @@ if( error == ''){
 				  ,note_code:$('#txtNoteCode').val()
 				  ,description:$('#txtDescription').val()
 				  ,exRate:$('#txtExRate').val()
-//				  ,documentCode:documentCode
 			  },
             beforeSend: showProcessing(),
             success: function(data){
@@ -1045,37 +1069,38 @@ $('#btnLogicDeleteState').show();
 				//var arrayItemsStocks = arrayCatch[1].split(',');
 				//updateMultipleStocks(arrayItemsStocks, 'spaStock');
 				$('#btnPrint').show();
-				$('#boxMessage').html('<div class="alert alert-success">\n\
-				<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
+				$('#boxMessage').html('');
+				showGrowlMessage('ok', 'Cambios guardados.');
+				
 				$('#processing').text('');
 /*					$('#boxMessage').html('<div class="alert alert-success">\n\
 					<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
 					$('#processing').text('');*/
 			},
 			error:function(data){
-				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				//$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
 				$('#processing').text('');
 			}
         });
 	}
 	
-	function ajax_save_invoice(arrayItemsDetails, arrayCostsDetails, arrayPaysDetails ){
-//		var movementType =1;//Purchase
-//		var documentCode ='NO';
-//		if ($('#txtDocumentCode').length > 0){//existe
-//			documentCode = $('#txtDocumentCode').val();
-//		}
+	function ajax_save_invoice(arrayItemsDetails,/* arrayCostsDetails,*/ arrayPaysDetails ){
 		$.ajax({
             type:"POST",
             url:moduleController + "ajax_save_invoice",			
             data:{arrayItemsDetails: arrayItemsDetails 
-				  ,arrayCostsDetails: arrayCostsDetails	
+				 // ,arrayCostsDetails: arrayCostsDetails	
 				  ,arrayPaysDetails: arrayPaysDetails	
 				  ,purchaseId:$('#txtPurchaseIdHidden').val()
 				  ,date:$('#txtDate').val()
-				  ,supplier:$('#cbxSuppliers').val()
+				  ,customer:$('#cbxCustomers').val()
+				  ,employee:$('#cbxEmployees').val()
+				  ,taxNumber:$('#cbxTaxNumbers').val()
+				  ,salesman:$('#cbxSalesman').val()
+				  ,note_code:$('#txtNoteCode').val()
 				  ,description:$('#txtDescription').val()
-//				  ,documentCode:documentCode
+				  ,exRate:$('#txtExRate').val()
 			  },
             beforeSend: showProcessing(),
             success: function(data){
@@ -1083,28 +1108,25 @@ $('#btnLogicDeleteState').show();
 
 				if(arrayCatch[0] == 'insertado'){ 
 					$('#txtCode').val(arrayCatch[1]);
-//					$('#columnStatePurchase').css('background-color','#F99C17');
-//					$('#columnStatePurchase').text('Factura Pendiente');
 
 changeLabelDocumentState('INVOICE_PENDANT'); //#UNICORN
 					$('#btnApproveState').show();
 					$('#txtPurchaseIdHidden').val(arrayCatch[2]);
 					$('#txtGenericCode').val(arrayCatch[3]);
+					$('#txtExRate').removeAttr('disabled');
 				}
 		
-				//update items stocks
-				//var arrayItemsStocks = arrayCatch[1].split(',');
-				//updateMultipleStocks(arrayItemsStocks, 'spaStock');
 				$('#btnPrint').show();
-				$('#boxMessage').html('<div class="alert alert-success">\n\
-				<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
+				$('#boxMessage').html('');
+				showGrowlMessage('ok', 'Cambios guardados.');
 				$('#processing').text('');
 /*					$('#boxMessage').html('<div class="alert alert-success">\n\
 					<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
 					$('#processing').text('');*/
 			},
 			error:function(data){
-				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				//$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
 				$('#processing').text('');
 			}
         });
@@ -1112,14 +1134,6 @@ changeLabelDocumentState('INVOICE_PENDANT'); //#UNICORN
 	
 	// (AEA Ztep 3) action when button Aprobar Entrada Almacen is pressed
 	function ajax_change_state_approved_movement_in(arrayItemsDetails){
-//		var movementType =1;//Purchase
-//		var documentCode ='NO';
-//		if ($('#cbxSuppliers').length > 0){//existe
-//			movementType = $('#cbxSuppliers').val();
-//		}
-//		if ($('#txtDocumentCode').length > 0){//existe
-//			documentCode = $('#txtDocumentCode').val();
-//		}
 		$.ajax({
             type:"POST",
             url:moduleController + "ajax_change_state_approved_movement_in",			
@@ -1134,7 +1148,6 @@ changeLabelDocumentState('INVOICE_PENDANT'); //#UNICORN
 				  ,exRate:$('#txtExRate').val()
 				  ,note_code:$('#txtNoteCode').val()
 				  ,genericCode:$('#txtGenericCode').val()
-//				  ,documentCode:documentCode
 			  },
             beforeSend: showProcessing(),
             success: function(data){			
@@ -1161,39 +1174,37 @@ $('#btnLogicDeleteState').hide();
 					$('#txtCode').attr('disabled','disabled');
 					$('#cbxSuppliers').attr('disabled','disabled');
 					$('#txtDescription').attr('disabled','disabled');
-					$('#boxMessage').html('<div class="alert alert-success">\n\
-					<button type="button" class="close" data-dismiss="alert">&times;</button>Orden Aprobada con exito<div>');
+					
+					$('#boxMessage').html('');
+					showGrowlMessage('ok', 'Entrada aprobada.');
 				}
 				$('#processing').text('');
 			},
 			error:function(data){
-				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				//$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
 				$('#processing').text('');
 			}
         });
 	}
 	
-	function ajax_change_state_approved_invoice(arrayItemsDetails, arrayCostsDetails, arrayPaysDetails){
-//		var movementType =1;//Purchase
-//		var documentCode ='NO';
-//		if ($('#cbxSuppliers').length > 0){//existe
-//			movementType = $('#cbxSuppliers').val();
-//		}
-//		if ($('#txtDocumentCode').length > 0){//existe
-//			documentCode = $('#txtDocumentCode').val();
-//		}
+	function ajax_change_state_approved_invoice(arrayItemsDetails,/* arrayCostsDetails,*/ arrayPaysDetails){
 		$.ajax({
             type:"POST",
             url:moduleController + "ajax_change_state_approved_invoice",			
             data:{arrayItemsDetails: arrayItemsDetails 
-				,arrayCostsDetails: arrayCostsDetails
+			//	,arrayCostsDetails: arrayCostsDetails
 				,arrayPaysDetails: arrayPaysDetails
 				  ,purchaseId:$('#txtPurchaseIdHidden').val()
 				  ,date:$('#txtDate').val()
-				  ,supplier:$('#cbxSuppliers').val()	
+				  ,customer:$('#cbxCustomers').val()
+				  ,employee:$('#cbxEmployees').val()
+				  ,taxNumber:$('#cbxTaxNumbers').val()
+				  ,salesman:$('#cbxSalesman').val()	
 				  ,description:$('#txtDescription').val()
+				  ,exRate:$('#txtExRate').val()
+				  ,note_code:$('#txtNoteCode').val()
 				  ,genericCode:$('#txtGenericCode').val()
-//				  ,documentCode:documentCode
 			  },
             beforeSend: showProcessing(),
             success: function(data){			
@@ -1206,6 +1217,7 @@ changeLabelDocumentState('INVOICE_APPROVED'); //#UNICORN
 					$('#btnApproveState').hide();
 					$('#btnCancellState').show();
 					$('#btnSaveAll').hide();
+					$('#btnLogicDeleteState').hide();
 	//				$('#btnAddMovementType').hide();
 					if ($('#btnAddItem').length > 0){//existe
 						$('#btnAddItem').hide();
@@ -1214,22 +1226,23 @@ changeLabelDocumentState('INVOICE_APPROVED'); //#UNICORN
 						$('#btnAddCost').hide();
 					}
 						$('.columnItemsButtons').hide();
-$('.columnCostsButtons').hide();
+//$('.columnCostsButtons').hide();
 
 	//				if ($('#txtDocumentCode').length > 0){//existe
 	//					$('#txtDocumentCode').attr('disabled','disabled');
 	//				}
 					$('#txtDate').attr('disabled','disabled');
 					$('#txtCode').attr('disabled','disabled');
-					$('#cbxSuppliers').attr('disabled','disabled');
+					//$('#cbxSuppliers').attr('disabled','disabled');
 					$('#txtDescription').attr('disabled','disabled');
-					$('#boxMessage').html('<div class="alert alert-success">\n\
-					<button type="button" class="close" data-dismiss="alert">&times;</button>Orden Aprobada con exito<div>');
+					$('#boxMessage').html('');
+					showGrowlMessage('ok', 'Entrada aprobada.');
 				}
 				$('#processing').text('');
 			},
 			error:function(data){
-				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				//$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
 				$('#processing').text('');
 			}
         });
@@ -1254,8 +1267,9 @@ $('.columnCostsButtons').hide();
 
 changeLabelDocumentState('ORDER_CANCELLED'); //#UNICORN
 					$('#btnCancellState').hide();
-					$('#boxMessage').html('<div class="alert alert-success">\n\
-					<button type="button" class="close" data-dismiss="alert">&times;</button>Orden Cancelada con exito<div>');
+					
+					showGrowlMessage('ok', 'Entrada cancelada.');
+					$('#boxMessage').html('');
 				}
 // REVISAR SI ES NECESARIO COMPROBAR LO DEL STOCK EN EL REMITO CON CANCELAR LA ORDEN				
 //				if(arrayCatch[0] == 'error'){
@@ -1266,18 +1280,19 @@ changeLabelDocumentState('ORDER_CANCELLED'); //#UNICORN
 				$('#processing').text('');
 			},
 			error:function(data){
-				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				//$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
 				$('#processing').text('');
 			}
         });
 	}
 	
-	function ajax_change_state_cancelled_invoice(arrayItemsDetails, arrayCostsDetails, arrayPaysDetails){
+	function ajax_change_state_cancelled_invoice(arrayItemsDetails, /*arrayCostsDetails,*/ arrayPaysDetails){
 		$.ajax({
             type:"POST",
             url:moduleController + "ajax_change_state_cancelled_invoice",			
             data:{arrayItemsDetails: arrayItemsDetails 
-				  ,arrayCostsDetails: arrayCostsDetails
+			//	  ,arrayCostsDetails: arrayCostsDetails
 				  ,arrayPaysDetails: arrayPaysDetails
 				  ,purchaseId:$('#txtPurchaseIdHidden').val()
 			  },
@@ -1292,8 +1307,8 @@ changeLabelDocumentState('ORDER_CANCELLED'); //#UNICORN
 
 changeLabelDocumentState('ORDER_CANCELLED'); //#UNICORN
 					$('#btnCancellState').hide();
-					$('#boxMessage').html('<div class="alert alert-success">\n\
-					<button type="button" class="close" data-dismiss="alert">&times;</button>Orden Cancelada con exito<div>');
+					showGrowlMessage('ok', 'Entrada cancelada.');
+					$('#boxMessage').html('');
 				}
 // REVISAR SI ES NECESARIO COMPROBAR LO DEL STOCK EN EL REMITO CON CANCELAR LA ORDEN				
 //				if(arrayCatch[0] == 'error'){
@@ -1304,96 +1319,30 @@ changeLabelDocumentState('ORDER_CANCELLED'); //#UNICORN
 				$('#processing').text('');
 			},
 			error:function(data){
-				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
 				$('#processing').text('');
 			}
         });
 	}
 	
-	function ajax_change_state_logic_deleted_movement_in(arrayItemsDetails){
+	function ajax_logic_delete(doc_code, type, index){
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_change_state_logic_deleted_movement_in",			
-            data:{arrayItemsDetails: arrayItemsDetails 
-				  ,purchaseId:$('#txtPurchaseIdHidden').val()
-			  },
-            beforeSend:showProcessing(),
+            url:moduleController + "ajax_logic_delete",			
+            data:{doc_code: doc_code, type: type},
             success: function(data){
-				var arrayCatch = data.split('|');
-//				var arrayItemsStocks = arrayCatch[1].split(',');
-				if(arrayCatch[0] == 'borradologico'){
-//					updateMultipleStocks(arrayItemsStocks, 'spaStock');
-//					$('#columnStatePurchase').css('background-color','#BD362F');
-//					$('#columnStatePurchase').text('Orden Cancelada');
-
-//changeLabelDocumentState('ORDER_LOGIC_DELETED'); //#UNICORN
-//					$('#btnLogicDeleteState').hide();
-//self.location = moduleController + "index_order";
-setTimeout(function() {
-  self.location = moduleController + "index_order";
-}, 2000);
-//window.location = moduleController + "index_order";
-//window.location.href = moduleController + "index_order";
-					$('#boxMessage').html('<div class="alert alert-success">\n\
-					<button type="button" class="close" data-dismiss="alert">&times;</button>Orden Cancelada con exito<div>');
-
+				if(data === 'success'){
+					showBittionAlertModal({content:'Se eliminó el documento en estado Pendiente', btnYes:'Aceptar', btnNo:''});
+					$('#bittionBtnYes').click(function(){
+						window.location = moduleController + index;
+					});
+					
+				}else{
+					showGrowlMessage('error', 'Vuelva a intentarlo.');
 				}
-// REVISAR SI ES NECESARIO COMPROBAR LO DEL STOCK EN EL REMITO CON CANCELAR LA ORDEN				
-//				if(arrayCatch[0] == 'error'){
-//					var error = validateBeforeMoveOut(arrayItemsStocks, 'spaStock');
-//					$('#boxMessage').html('<div class="alert alert-error">\n\
-//					<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo "Cancelar" la entrada debido a falta de stock:</p><ul>//'+error+'</ul><div>');
-//				}
-//				$('#processing').text('');
 			},
 			error:function(data){
-				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
-				$('#processing').text('');
-			}
-        });
-	}
-	
-	function ajax_change_state_logic_deleted_invoice(arrayItemsDetails, arrayCostsDetails, arrayPaysDetails){
-		$.ajax({
-            type:"POST",
-            url:moduleController + "ajax_change_state_logic_deleted_invoice",			
-            data:{arrayItemsDetails: arrayItemsDetails 
-				,arrayCostsDetails: arrayCostsDetails
-				,arrayPaysDetails: arrayPaysDetails
-				  ,purchaseId:$('#txtPurchaseIdHidden').val()
-			  },
-            beforeSend:showProcessing(),
-            success: function(data){
-				var arrayCatch = data.split('|');
-//				var arrayItemsStocks = arrayCatch[1].split(',');
-				if(arrayCatch[0] == 'borradologico'){
-//					updateMultipleStocks(arrayItemsStocks, 'spaStock');
-//					$('#columnStatePurchase').css('background-color','#BD362F');
-//					$('#columnStatePurchase').text('Orden Cancelada');
-
-//changeLabelDocumentState('ORDER_LOGIC_DELETED'); //#UNICORN
-//					$('#btnLogicDeleteState').hide();
-//self.location = moduleController + "index_order";
-setTimeout(function() {
-  self.location = moduleController + "index_invoice";
-}, 2000);
-//window.location = moduleController + "index_order";
-//window.location.href = moduleController + "index_order";
-					$('#boxMessage').html('<div class="alert alert-success">\n\
-					<button type="button" class="close" data-dismiss="alert">&times;</button>Orden Cancelada con exito<div>');
-
-				}
-// REVISAR SI ES NECESARIO COMPROBAR LO DEL STOCK EN EL REMITO CON CANCELAR LA ORDEN				
-//				if(arrayCatch[0] == 'error'){
-//					var error = validateBeforeMoveOut(arrayItemsStocks, 'spaStock');
-//					$('#boxMessage').html('<div class="alert alert-error">\n\
-//					<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo "Cancelar" la entrada debido a falta de stock:</p><ul>//'+error+'</ul><div>');
-//				}
-//				$('#processing').text('');
-			},
-			error:function(data){
-				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
-				$('#processing').text('');
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
 			}
         });
 	}
