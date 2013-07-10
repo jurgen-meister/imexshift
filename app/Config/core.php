@@ -196,9 +196,14 @@
 	Configure::write('Session', array(
 		'defaults' => 'php',
 		'cookie'=>'imexport',
-		'timeout'=>4320 //in secs = 3 days
+		'timeout'=>30 // 30 * 100(high) = 3000 minutes => 2.08 days
 	));
 
+/**
+ * The level of CakePHP security.
+ */
+	Configure::write('Security.level', 'high');	
+	
 /**
  * A random string used in security hashing methods.
  */

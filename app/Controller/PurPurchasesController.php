@@ -39,19 +39,14 @@ class PurPurchasesController extends AppController {
 			$id = $this->passedArgs['id'];
 		}
 		$invSuppliers = $this->PurPurchase->InvSupplier->find('list');
-	/*	$invMovementTypes = $this->InvMovement->InvMovementType->find('list', array(
-			'conditions'=>array('InvMovementType.status'=>'entrada', 'InvMovementType.document'=>0)//0 'cause don't have system document
-		)); */
 		
 		$this->PurPurchase->recursive = -1;
 		$this->request->data = $this->PurPurchase->read(null, $id);
-	//	$date='';
 		$genericCode ='';
-		//debug($this->request->data);
 		$purDetails = array();
 		$documentState = '';
 		$date=date('d/m/Y');
-		$exRate = '8.00';
+		$exRate = '8.00';	//esto tiene q llamar al cambio del dia
 		if($id <> null){
 			$date = date("d/m/Y", strtotime($this->request->data['PurPurchase']['date']));//$this->request->data['InvMovement']['date'];
 			$purDetails = $this->_get_movements_details($id);
@@ -60,7 +55,6 @@ class PurPurchasesController extends AppController {
 			$exRate = $this->request->data['PurPurchase']['ex_rate'];
 		}
 		$this->set(compact('invSuppliers', 'id', 'date', 'purDetails', 'documentState', 'genericCode', 'exRate'));
-//debug($this->request->data);
 	}
 	
 	public function save_invoice(){
@@ -69,20 +63,17 @@ class PurPurchasesController extends AppController {
 			$id = $this->passedArgs['id'];
 		}
 		$invSuppliers = $this->PurPurchase->InvSupplier->find('list');
-	/*	$invMovementTypes = $this->InvMovement->InvMovementType->find('list', array(
-			'conditions'=>array('InvMovementType.status'=>'entrada', 'InvMovementType.document'=>0)//0 'cause don't have system document
-		)); */
 				
 		$this->PurPurchase->recursive = -1;
 		$this->request->data = $this->PurPurchase->read(null, $id);
 		$date='';
 		$genericCode ='';
 		$originCode = '';
-		//debug($this->request->data);
 		$purDetails = array();
 		$purPrices = array();
 		$purPayments = array();
 		$documentState = '';
+		$exRate = '8.00';	//esto tiene q llamar al cambio del dia
 		if($id <> null){
 			$date = date("d/m/Y", strtotime($this->request->data['PurPurchase']['date']));//$this->request->data['InvMovement']['date'];
 			$purDetails = $this->_get_movements_details($id);
@@ -97,11 +88,12 @@ class PurPurchasesController extends AppController {
 					'PurPurchase.code'=>$genericCode
 					)
 			));
-			$originCode = $originDocCode['PurPurchase']['doc_code'];;
+			$originCode = $originDocCode['PurPurchase']['doc_code'];
+			$exRate = $this->request->data['PurPurchase']['ex_rate'];
 		}
 		
 			
-		$this->set(compact('invSuppliers', 'id', 'date', 'purDetails', 'purPrices', 'purPayments', 'documentState', 'genericCode', 'originCode'/*, 'exRate'*/));
+		$this->set(compact('invSuppliers', 'id', 'date', 'purDetails', 'purPrices', 'purPayments', 'documentState', 'genericCode', 'originCode', 'exRate'));
 //debug($this->request->data);
 	}
 	//START - AJAX START - AJAX START - AJAX START - AJAX START - AJAX START - AJAX START - AJAX
@@ -427,37 +419,24 @@ class PurPurchasesController extends AppController {
 			$arrayCostsDetails = $this->request->data['arrayCostsDetails'];
 			$arrayPaysDetails = $this->request->data['arrayPaysDetails'];
 			$purchaseId = $this->request->data['purchaseId'];
-//			$warehouse = $this->request->data['warehouse'];
 
 			$date = $this->request->data['date'];
 			$supplier = $this->request->data['supplier'];
 			$description = $this->request->data['description'];
-//			$movementType = $this->request->data['movementType'];
-//			$documentCode = $this->request->data['documentCode'];
+			$exRate = $this->request->data['exRate'];
 			$note_code = $this->request->data['note_code'];
 			////////////////////////////////////////////FIN-CAPTURAR AJAX////////////////////////////////////////////////////////
 			
 			
 			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
-			$arrayMovement = array('date'=>$date, 'supplier'=>$supplier, 'description'=>$description,'note_code'=>$note_code);
+			$arrayMovement = array('date'=>$date, 'supplier'=>$supplier, 'ex_rate'=>$exRate, 'description'=>$description,'note_code'=>$note_code);
 			
-//			$arrayMovement['document_code']=$documentCode;
-			
-			//print_r($arrayMovement);
-			
+		
 			$movementCode = '';
 			$movementDocCode = '';
 			if($purchaseId <> ''){//update
 				$arrayMovement['id'] = $purchaseId;
-			}/*else{//insert
-				$movementCode = $this->_generate_code('COM');
-				$movementDocCode = $this->_generate_doc_code('FAC');
-				$arrayMovement['lc_state'] = 'INVOICE_PENDANT';
-				$arrayMovement['lc_transaction'] = 'CREATE';
-				$arrayMovement['code'] = $movementCode;
-	$arrayMovement['doc_code'] = $movementDocCode;
-	$arrayMovement['inv_supplier_id'] = $supplier;
-			}*/
+			}
 			
 			//data sin costos ni pagos
 			$data = array('PurPurchase'=>$arrayMovement, 'PurDetail'=>$arrayItemsDetails);
@@ -471,20 +450,7 @@ class PurPurchasesController extends AppController {
 			//print_r($data4);
 
 			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////
-			if($purchaseId <> ''){//update
-//				if($arrayCostsDetails <> array()){	
-//					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId))) ){
-//						if($this->PurPurchase->saveAssociated($data2)){
-//							echo 'modificado| cost d&&d';
-//						}
-//					}
-//				}else{
-//					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId))) ){
-//						if($this->PurPurchase->saveAssociated($data)){
-//							echo 'modificado|d&&d';
-//						}
-//					}
-//				}	
+			if($purchaseId <> ''){//update	
 				if(($arrayCostsDetails <> array(0)) && ($arrayPaysDetails <> array(0)) ){
 					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPayment->deleteAll(array('PurPayment.pur_purchase_id'=>$purchaseId))) ){
 				//		print_r($data4);
@@ -516,8 +482,7 @@ class PurPurchasesController extends AppController {
 				}
 				
 			}else{//insert
-				if($this->PurPurchase->saveAssociated($data2)){
-//					$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $supplier);
+				if($this->PurPurchase->saveAssociated($data4)){
 					$purchaseIdInserted = $this->PurPurchase->id;
 						echo 'insertado|'/*.$strItemsStock.'|'*/.$movementDocCode.'|'.$purchaseIdInserted.'|'.$movementCode;
 				}
@@ -612,29 +577,14 @@ class PurPurchasesController extends AppController {
 
 			$date = $this->request->data['date'];
 			$description = $this->request->data['description'];
-			
+			$exRate = $this->request->data['exRate'];
 			$note_code = $this->request->data['note_code'];
-//	$generalCode = $this->request->data['genericCode'];
-//			$movementType = $this->request->data['movementType'];
-//			$documentCode = $this->request->data['documentCode'];
 			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
 			
 			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
-			$arrayMovement = array('date'=>$date, 'inv_supplier_id'=>$supplier, 'description'=>$description, 'note_code'=>$note_code);
+			$arrayMovement = array('date'=>$date, 'inv_supplier_id'=>$supplier, 'description'=>$description,'ex_rate'=>$exRate, 'note_code'=>$note_code);
 			$arrayMovement['lc_state'] = 'INVOICE_APPROVED';
 			$arrayMovement['id'] = $purchaseId;
-			
-//			$arrayInvoice = array('date'=>$date, 'inv_supplier_id'=>$supplier, 'description'=>$description/*, 'code'=>$code*/);
-	/*X*/		
-//			$movementDocCode = $this->_generate_doc_code('FAC');
-//			$arrayInvoice['lc_state'] = 'INVOICE_PENDANT';
-//			$arrayInvoice['lc_transaction'] = 'CREATE';
-//			$arrayInvoice['code'] = $generalCode;
-//	$arrayInvoice['doc_code'] = $movementDocCode;
-//	$arrayInvoice['inv_supplier_id'] = $supplier;
-//			if($documentCode <> ''){
-//				$arrayMovement['document_code']=$documentCode;
-//			}
 			
 			//data sin costos ni pagos
 			$data = array('PurPurchase'=>$arrayMovement, 'PurDetail'=>$arrayItemsDetails);
@@ -730,49 +680,13 @@ class PurPurchasesController extends AppController {
 		}
 	}
 	
-	public function ajax_change_state_logic_deleted_movement_in(){
+	public function ajax_logic_delete(){
 		if($this->RequestHandler->isAjax()){
-			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
-			$purchaseId = $this->request->data['purchaseId'];
-//			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
-			//$warehouse = $this->request->data['warehouse']; //combobox is disabled doesn't send nothing
-//			$warehouse = $this->InvMovement->field('InvMovement.inv_warehouse_id', array('InvMovement.id'=>$movementId));
-			//debug($warehouse);
-			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
-//			$error=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouse);
-//			if($error['error'] == 0){
-				$data = array('id'=>$purchaseId, 'lc_state'=>'ORDER_LOGIC_DELETED');
-				if($this->PurPurchase->save($data)){
-//					$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
-					echo 'borradologico|'/*.$strItemsStock*/;
-				}
-//			}else{
-//				echo 'error|'.$error['itemsStocks'];
-//			}
-						
-		}
-	}
-	
-	public function ajax_change_state_logic_deleted_invoice(){
-		if($this->RequestHandler->isAjax()){
-			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
-			$purchaseId = $this->request->data['purchaseId'];
-//			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
-			//$warehouse = $this->request->data['warehouse']; //combobox is disabled doesn't send nothing
-//			$warehouse = $this->InvMovement->field('InvMovement.inv_warehouse_id', array('InvMovement.id'=>$movementId));
-			//debug($warehouse);
-			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
-//			$error=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouse);
-//			if($error['error'] == 0){
-				$data = array('id'=>$purchaseId, 'lc_state'=>'INVOICE_LOGIC_DELETED');
-				if($this->PurPurchase->save($data)){
-//					$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
-					echo 'borradologico|'/*.$strItemsStock*/;
-				}
-//			}else{
-//				echo 'error|'.$error['itemsStocks'];
-//			}
-						
+			$doc_code = $this->request->data['doc_code'];		
+			$type = $this->request->data['type'];	
+			if($this->PurPurchase->updateAll(array('PurPurchase.lc_state'=>"'$type'"), array('PurPurchase.doc_code'=>$doc_code))){
+				echo 'success';
+			}
 		}
 	}
 	
@@ -798,7 +712,7 @@ class PurPurchasesController extends AppController {
 //		$movementType = '';
 //		if($keyword == 'ENT'){$movementType = 'entrada';}
 //		if($keyword == 'SAL'){$movementType = 'salida';}
-		$movements = $this->PurPurchase->find('count', array('conditions'=>array('PurPurchase.lc_state'=>array('ORDER_PENDANT','ORDER_APPROVED','ORDER_CANCELLED')))); // there are duplicates :S, unless there is no movement delete
+		$movements = $this->PurPurchase->find('count', array('conditions'=>array('PurPurchase.lc_state'=>array('ORDER_PENDANT','ORDER_APPROVED','ORDER_CANCELLED','ORDER_LOGIC_DELETED')))); // there are duplicates :S, unless there is no movement delete
 		$quantity = $movements + 1; 
 		//$quantity = $this->InvMovement->getLastInsertID(); //hmm..
 		$code = 'COM-'.$period.'-'.$quantity;
@@ -809,10 +723,10 @@ class PurPurchasesController extends AppController {
 		$period = $this->Session->read('Period.name');
 
 		if ($keyword == 'ORD'){
-			$movements = $this->PurPurchase->find('count', array('conditions'=>array('PurPurchase.lc_state'=>array('ORDER_PENDANT','ORDER_APPROVED','ORDER_CANCELLED')))); // there are duplicates :S, unless there is no movement delete
+			$movements = $this->PurPurchase->find('count', array('conditions'=>array('PurPurchase.lc_state'=>array('ORDER_PENDANT','ORDER_APPROVED','ORDER_CANCELLED','ORDER_LOGIC_DELETED')))); // there are duplicates :S, unless there is no movement delete
 			
 		}elseif ($keyword == 'FAC'){
-			$movements = $this->PurPurchase->find('count', array('conditions'=>array('PurPurchase.lc_state'=>array('INVOICE_PENDANT','INVOICE_APPROVED','INVOICE_CANCELLED')))); // there are duplicates :S, unless there is no movement delete
+			$movements = $this->PurPurchase->find('count', array('conditions'=>array('PurPurchase.lc_state'=>array('INVOICE_PENDANT','INVOICE_APPROVED','INVOICE_CANCELLED','INVOICE_LOGIC_DELETED')))); // there are duplicates :S, unless there is no movement delete
 			
 		}
 		$quantity = $movements + 1; 
@@ -920,29 +834,159 @@ class PurPurchasesController extends AppController {
  * @return void
  */
 	public function index_order() {	
+		
+		///////////////////////////////////////START - CREATING VARIABLES//////////////////////////////////////
+		$filters = array();
+		$code = '';
+		$doc_code = '';
+		$period = $this->Session->read('Period.name');
+		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
+		
+		////////////////////////////START - WHEN SEARCH IS SEND THROUGH POST//////////////////////////////////////
+		if($this->request->is("post")) {
+			$url = array('action'=>'index_order');
+			$parameters = array();
+			$empty=0;
+			if(isset($this->request->data['PurPurchase']['code']) && $this->request->data['PurPurchase']['code']){
+				$parameters['code'] = trim(strip_tags($this->request->data['PurPurchase']['code']));
+			}else{
+				$empty++;
+			}
+			if(isset($this->request->data['PurPurchase']['doc_code']) && $this->request->data['PurPurchase']['doc_code']){
+				$parameters['doc_code'] = trim(strip_tags($this->request->data['PurPurchase']['doc_code']));
+			}else{
+				$empty++;
+			}
+			if($empty == 2){
+				$parameters['search']='empty';
+			}else{
+				$parameters['search']='yes';
+			}
+			$this->redirect(array_merge($url,$parameters));
+		}
+		////////////////////////////END - WHEN SEARCH IS SEND THROUGH POST//////////////////////////////////////
+
+		////////////////////////////START - SETTING URL FILTERS//////////////////////////////////////
+		if(isset($this->passedArgs['code'])){
+			$filters['PurPurchase.code LIKE'] = '%'.strtoupper($this->passedArgs['code']).'%';
+			$code = $this->passedArgs['code'];
+		}
+		if(isset($this->passedArgs['doc_code'])){
+			$filters['PurPurchase.doc_code LIKE'] = '%'.strtoupper($this->passedArgs['doc_code']).'%';
+			$doc_code = $this->passedArgs['doc_code'];
+		}
+		////////////////////////////END - SETTING URL FILTERS//////////////////////////////////////
+		
+		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
 		$this->paginate = array(
-			'conditions' => array(
-				'PurPurchase.lc_state !='=>'ORDER_LOGIC_DELETED'
-				,'PurPurchase.lc_state LIKE'=> '%ORDER%'
-			),
-			'order' => array('PurPurchase.id' => 'desc'),
-			'limit' => 15
+			"conditions"=>array(
+				"PurPurchase.lc_state !="=>"ORDER_LOGIC_DELETED",
+				'PurPurchase.lc_state LIKE'=> '%ORDER%',
+				"to_char(PurPurchase.date,'YYYY')"=> $period,
+			//	"InvMovementType.status"=> "entrada",
+				$filters
+			 ),
+			"recursive"=>0,
+			"fields"=>array("PurPurchase.id", "PurPurchase.code", "PurPurchase.doc_code", "PurPurchase.date", "PurPurchase.note_code",/*"InvMovement.inv_movement_type_id","InvMovementType.name", */"PurPurchase.inv_supplier_id", "InvSupplier.name", "PurPurchase.lc_state"),
+			"order"=> array("PurPurchase.id"=>"desc"),
+			"limit" => 15,
 		);
-		$this->PurPurchase->recursive = 0;
-		$this->set('purPurchases', $this->paginate());
+		////////////////////////////END - SETTING PAGINATING VARIABLES//////////////////////////////////////
+		
+		////////////////////////START - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
+		$this->set('purPurchases', $this->paginate('PurPurchase'));
+		$this->set('code', $code);
+		$this->set('doc_code', $doc_code);
+		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
+		
+//		$this->paginate = array(
+//			'conditions' => array(
+//				'PurPurchase.lc_state !='=>'ORDER_LOGIC_DELETED'
+//				,'PurPurchase.lc_state LIKE'=> '%ORDER%'
+//			),
+//			'order' => array('PurPurchase.id' => 'desc'),
+//			'limit' => 15
+//		);
+//		$this->PurPurchase->recursive = 0;
+//		$this->set('purPurchases', $this->paginate());
 	}
 	
 	public function index_invoice(){
+		///////////////////////////////////////START - CREATING VARIABLES//////////////////////////////////////
+		$filters = array();
+		$code = '';
+		$doc_code = '';
+		$period = $this->Session->read('Period.name');
+		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
+		
+		////////////////////////////START - WHEN SEARCH IS SEND THROUGH POST//////////////////////////////////////
+		if($this->request->is("post")) {
+			$url = array('action'=>'index_invoice');
+			$parameters = array();
+			$empty=0;
+			if(isset($this->request->data['PurPurchase']['code']) && $this->request->data['PurPurchase']['code']){
+				$parameters['code'] = trim(strip_tags($this->request->data['PurPurchase']['code']));
+			}else{
+				$empty++;
+			}
+			if(isset($this->request->data['PurPurchase']['doc_code']) && $this->request->data['PurPurchase']['doc_code']){
+				$parameters['doc_code'] = trim(strip_tags($this->request->data['PurPurchase']['doc_code']));
+			}else{
+				$empty++;
+			}
+			if($empty == 2){
+				$parameters['search']='empty';
+			}else{
+				$parameters['search']='yes';
+			}
+			$this->redirect(array_merge($url,$parameters));
+		}
+		////////////////////////////END - WHEN SEARCH IS SEND THROUGH POST//////////////////////////////////////
+
+		////////////////////////////START - SETTING URL FILTERS//////////////////////////////////////
+		if(isset($this->passedArgs['code'])){
+			$filters['PurPurchase.code LIKE'] = '%'.strtoupper($this->passedArgs['code']).'%';
+			$code = $this->passedArgs['code'];
+		}
+		if(isset($this->passedArgs['doc_code'])){
+			$filters['PurPurchase.doc_code LIKE'] = '%'.strtoupper($this->passedArgs['doc_code']).'%';
+			$doc_code = $this->passedArgs['doc_code'];
+		}
+		////////////////////////////END - SETTING URL FILTERS//////////////////////////////////////
+		
+		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
 		$this->paginate = array(
-			'conditions' => array(
-				'PurPurchase.lc_state !='=>'INVOICE_LOGIC_DELETED',
+			"conditions"=>array(
+				"PurPurchase.lc_state !="=>"INVOICE_LOGIC_DELETED",
 				'PurPurchase.lc_state LIKE'=> '%INVOICE%',
-			),
-			'order' => array('PurPurchase.id' => 'desc'),
-			'limit' => 15
+				"to_char(PurPurchase.date,'YYYY')"=> $period,
+			//	"InvMovementType.status"=> "entrada",
+				$filters
+			 ),
+			"recursive"=>0,
+			"fields"=>array("PurPurchase.id", "PurPurchase.code", "PurPurchase.doc_code", "PurPurchase.date", "PurPurchase.note_code",/*"InvMovement.inv_movement_type_id","InvMovementType.name", */"PurPurchase.inv_supplier_id", "InvSupplier.name", "PurPurchase.lc_state"),
+			"order"=> array("PurPurchase.id"=>"desc"),
+			"limit" => 15,
 		);
-		$this->PurPurchase->recursive = 0;
-		$this->set('purPurchases', $this->paginate());
+		////////////////////////////END - SETTING PAGINATING VARIABLES//////////////////////////////////////
+		
+		////////////////////////START - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
+		$this->set('purPurchases', $this->paginate('PurPurchase'));
+		$this->set('code', $code);
+		$this->set('doc_code', $doc_code);
+		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
+		
+		
+//		$this->paginate = array(
+//			'conditions' => array(
+//				'PurPurchase.lc_state !='=>'INVOICE_LOGIC_DELETED',
+//				'PurPurchase.lc_state LIKE'=> '%INVOICE%',
+//			),
+//			'order' => array('PurPurchase.id' => 'desc'),
+//			'limit' => 15
+//		);
+//		$this->PurPurchase->recursive = 0;
+//		$this->set('purPurchases', $this->paginate());
 	}
 	
 	public function index_remit(){

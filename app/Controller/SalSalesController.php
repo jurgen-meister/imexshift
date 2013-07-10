@@ -31,17 +31,84 @@ class SalSalesController extends AppController {
  *
  * @return void
  */
-	public function index_order() {	
+	public function index_order() {
+		
+		///////////////////////////////////////START - CREATING VARIABLES//////////////////////////////////////
+		$filters = array();
+		$code = '';
+		$doc_code = '';
+		$period = $this->Session->read('Period.name');
+		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
+		
+		////////////////////////////START - WHEN SEARCH IS SEND THROUGH POST//////////////////////////////////////
+		if($this->request->is("post")) {
+			$url = array('action'=>'index_order');
+			$parameters = array();
+			$empty=0;
+			if(isset($this->request->data['SalSale']['code']) && $this->request->data['SalSale']['code']){
+				$parameters['code'] = trim(strip_tags($this->request->data['SalSale']['code']));
+			}else{
+				$empty++;
+			}
+			if(isset($this->request->data['SalSale']['doc_code']) && $this->request->data['SalSale']['doc_code']){
+				$parameters['doc_code'] = trim(strip_tags($this->request->data['SalSale']['doc_code']));
+			}else{
+				$empty++;
+			}
+			if($empty == 2){
+				$parameters['search']='empty';
+			}else{
+				$parameters['search']='yes';
+			}
+			$this->redirect(array_merge($url,$parameters));
+		}
+		////////////////////////////END - WHEN SEARCH IS SEND THROUGH POST//////////////////////////////////////
+		
+		////////////////////////////START - SETTING URL FILTERS//////////////////////////////////////
+		if(isset($this->passedArgs['code'])){
+			$filters['SalSale.code LIKE'] = '%'.strtoupper($this->passedArgs['code']).'%';
+			$code = $this->passedArgs['code'];
+		}
+		if(isset($this->passedArgs['doc_code'])){
+			$filters['SalSale.doc_code LIKE'] = '%'.strtoupper($this->passedArgs['doc_code']).'%';
+			$doc_code = $this->passedArgs['doc_code'];
+		}
+		////////////////////////////END - SETTING URL FILTERS//////////////////////////////////////
+		
+		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
 		$this->paginate = array(
-			'conditions' => array(
-				'SalSale.lc_state !='=>'ORDER_LOGIC_DELETED'
-				,'SalSale.lc_state LIKE'=> '%ORDER%'
-			),
-			'order' => array('SalSale.id' => 'desc'),
-			'limit' => 15
+			"conditions"=>array(
+				"SalSale.lc_state !="=>"ORDER_LOGIC_DELETED",
+				'SalSale.lc_state LIKE'=> '%ORDER%',
+				"to_char(SalSale.date,'YYYY')"=> $period,
+			//	"InvMovementType.status"=> "entrada",
+				$filters
+			 ),
+			"recursive"=>0,
+			"fields"=>array("SalSale.id", "SalSale.code", "SalSale.doc_code", "SalSale.date", "SalSale.note_code", "SalSale.sal_employee_id", "SalEmployee.name", "SalSale.lc_state"),
+			"order"=> array("SalSale.id"=>"desc"),
+			"limit" => 15,
 		);
-		$this->SalSale->recursive = 0;
-		$this->set('salSales', $this->paginate());
+		////////////////////////////END - SETTING PAGINATING VARIABLES//////////////////////////////////////
+		
+		////////////////////////START - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
+		$this->set('salSales', $this->paginate('SalSale'));
+		$this->set('code', $code);
+		$this->set('doc_code', $doc_code);
+		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
+		
+		
+		
+//		$this->paginate = array(
+//			'conditions' => array(
+//				'SalSale.lc_state !='=>'ORDER_LOGIC_DELETED'
+//				,'SalSale.lc_state LIKE'=> '%ORDER%'
+//			),
+//			'order' => array('SalSale.id' => 'desc'),
+//			'limit' => 15
+//		);
+//		$this->SalSale->recursive = 0;
+//		$this->set('salSales', $this->paginate());
 	}
 	
 	public function save_order(){
@@ -66,7 +133,7 @@ class SalSalesController extends AppController {
 		$this->request->data = $this->SalSale->read(null, $id);
 	//	$date='';
 		$date=date('d/m/Y');
-		$exRate = '8.00';
+		$exRate = '8.00';	//esto tiene q llamar al cambio del dia
 		$genericCode ='';
 		//debug($this->request->data);
 	//	debug($salAdmUsers);
@@ -125,6 +192,7 @@ class SalSalesController extends AppController {
 		$salPayments = array();
 //		$purPrices = array();
 		$documentState = '';
+		$exRate = '8.00';	//esto tiene q llamar al cambio del dia
 		if($id <> null){
 			$date = date("d/m/Y", strtotime($this->request->data['SalSale']['date']));
 			$salDetails = $this->_get_movements_details($id);
@@ -147,10 +215,11 @@ class SalSalesController extends AppController {
 			
 			$admProfileId = $this->request->data['SalSale']['salesman_id'];
 			$admUserId = $this->AdmUser->AdmProfile->find('list', array('fields'=>array('AdmProfile.id'),'conditions'=>array('AdmProfile.adm_user_id'=>$admProfileId)));
+			$exRate = $this->request->data['SalSale']['ex_rate'];
 		}
 		
 			
-		$this->set(compact('salCustomers','customerId', 'salTaxNumbers', 'salEmployees','employeeId', 'salAdmUsers', 'admUserId','id', 'date', 'salDetails', 'salPayments', 'documentState', 'genericCode', 'originCode'));
+		$this->set(compact('salCustomers','customerId', 'salTaxNumbers', 'salEmployees','employeeId', 'salAdmUsers', 'admUserId','id', 'date', 'salDetails', 'salPayments', 'documentState', 'genericCode', 'originCode', 'exRate'));
 //debug($this->request->data);
 	}
 	
@@ -434,7 +503,7 @@ class SalSalesController extends AppController {
 			
 			
 			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
-			$arrayMovement = array('date'=>$date, 'sal_employee_id'=>$employee,'sal_tax_number_id'=>$taxNumber,'salesman_id'=>$salesman,'note_code'=>$note_code,/*'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType,*/ 'ex_rate'=>$exRate,'description'=>$description);
+			$arrayMovement = array('date'=>$date, 'sal_employee_id'=>$employee,'sal_tax_number_id'=>$taxNumber,'salesman_id'=>$salesman,'note_code'=>$note_code,'ex_rate'=>$exRate,'description'=>$description);
 			
 //			$arrayMovement['document_code']=$documentCode;
 			
@@ -489,6 +558,99 @@ class SalSalesController extends AppController {
 		}
 	}
 	
+	public function ajax_save_invoice(){
+		if($this->RequestHandler->isAjax()){
+			
+			////////////////////////////////////////////INICIO-CAPTURAR AJAX////////////////////////////////////////////////////////
+			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];	
+//			$arrayCostsDetails = $this->request->data['arrayCostsDetails'];
+			$arrayPaysDetails = $this->request->data['arrayPaysDetails'];
+			$purchaseId = $this->request->data['purchaseId'];
+
+			$this->loadModel('AdmUser');
+			
+			$date = $this->request->data['date'];
+//			$supplier = $this->request->data['supplier'];
+			$employee = $this->request->data['employee'];
+			$taxNumber = $this->request->data['taxNumber'];
+			$admProfileId = $this->request->data['salesman'];
+			$exRate = $this->request->data['exRate'];
+			$description = $this->request->data['description'];
+			$note_code = $this->request->data['note_code'];
+			
+			$admUserId = $this->AdmUser->AdmProfile->find('list', array(
+			'fields'=>array('AdmProfile.adm_user_id'),
+			'conditions'=>array('AdmProfile.id'=>$admProfileId)
+			));
+			
+			$salesman = key($this->AdmUser->find('list', array(
+			'conditions'=>array('AdmUser.id'=>$admUserId)
+			)));
+			////////////////////////////////////////////FIN-CAPTURAR AJAX////////////////////////////////////////////////////////
+			
+			
+			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
+			$arrayMovement = array('date'=>$date, 'sal_employee_id'=>$employee,'sal_tax_number_id'=>$taxNumber,'salesman_id'=>$salesman,'note_code'=>$note_code,/*'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType,*/ 'ex_rate'=>$exRate,'description'=>$description);
+			
+			$movementCode = '';
+			$movementDocCode = '';
+			if($purchaseId <> ''){//update
+				$arrayMovement['id'] = $purchaseId;
+			}
+			
+			//data sin costos ni pagos
+			$data = array('SalSale'=>$arrayMovement, 'SalDetail'=>$arrayItemsDetails);
+			//data con costos
+	//		$data2 = array('PurPurchase'=>$arrayMovement, 'PurDetail'=>$arrayItemsDetails, 'PurPrice'=>$arrayCostsDetails);
+			//data con pagos
+			$data3 = array('SalSale'=>$arrayMovement, 'SalDetail'=>$arrayItemsDetails, 'SalPayment'=>$arrayPaysDetails);
+			//data con pagos y costos
+	//		$data4 = array('PurPurchase'=>$arrayMovement, 'PurDetail'=>$arrayItemsDetails, 'PurPrice'=>$arrayCostsDetails, 'PurPayment'=>$arrayPaysDetails);
+			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
+			//print_r($data4);
+
+			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////
+			if($purchaseId <> ''){
+			/*	if(($arrayCostsDetails <> array(0)) && ($arrayPaysDetails <> array(0)) ){
+					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPayment->deleteAll(array('PurPayment.pur_purchase_id'=>$purchaseId))) ){
+			
+						if($this->PurPurchase->saveAssociated($data4)){
+							echo 'modificado| cost pay d&&d&&d';
+						}
+					}
+				}elseif ($arrayCostsDetails <> array(0)) {
+					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPayment->deleteAll(array('PurPayment.pur_purchase_id'=>$purchaseId))) ){
+				
+						if($this->PurPurchase->saveAssociated($data2)){
+							echo 'modificado| cost d&&d&&d';
+						}
+					}
+				}else*/if ($arrayPaysDetails <> array(0)) {
+					if(($this->SalSale->SalDetail->deleteAll(array('SalDetail.sal_sale_id'=>$purchaseId)))&&($this->SalSale->SalPayment->deleteAll(array('SalPayment.sal_sale_id'=>$purchaseId))) ){
+			//		print_r($data3);
+						if($this->SalSale->saveAssociated($data3)){
+							echo 'modificado| pay d&&d&&d';
+						}
+					}
+				}else{
+					if(($this->SalSale->SalDetail->deleteAll(array('SalDetail.sal_sale_id'=>$purchaseId)))&&($this->SalSale->SalPayment->deleteAll(array('SalPayment.sal_sale_id'=>$purchaseId))) ){
+				//		print_r($data);
+						if($this->SalSale->saveAssociated($data)){
+							echo 'modificado| d&&d&&d';
+						}
+					}
+				}
+				
+			}else{//insert
+				if($this->SalSale->saveAssociated($data3)){
+					$purchaseIdInserted = $this->SalSale->id;
+						echo 'insertado|'/*.$strItemsStock.'|'*/.$movementDocCode.'|'.$purchaseIdInserted.'|'.$movementCode;
+				}
+			}
+			////////////////////////////////////////////FIN-SAVE////////////////////////////////////////////////////////
+		
+		}
+	}
 	
 	public function ajax_change_state_approved_movement_in(){
 		if($this->RequestHandler->isAjax()){
@@ -523,7 +685,7 @@ class SalSalesController extends AppController {
 			$arrayMovement['lc_state'] = 'ORDER_APPROVED';
 			$arrayMovement['id'] = $purchaseId;
 			
-			$arrayInvoice = array('date'=>$date, 'sal_employee_id'=>$employee,'sal_tax_number_id'=>$taxNumber,'salesman_id'=>$salesman, 'description'=>$description, 'note_code'=>$note_code);		
+			$arrayInvoice = array('date'=>$date, 'sal_employee_id'=>$employee,'sal_tax_number_id'=>$taxNumber,'salesman_id'=>$salesman, 'description'=>$description, 'note_code'=>$note_code, 'ex_rate'=>$exRate);		
 			$movementDocCode = $this->_generate_doc_code('FAC');
 			$arrayInvoice['lc_state'] = 'INVOICE_PENDANT';
 			$arrayInvoice['lc_transaction'] = 'CREATE';
@@ -560,6 +722,145 @@ class SalSalesController extends AppController {
 		}
 	}
 	
+	public function ajax_change_state_approved_invoice(){
+		if($this->RequestHandler->isAjax()){
+			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
+			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];	
+			//$arrayCostsDetails = $this->request->data['arrayCostsDetails'];
+			$arrayPaysDetails = $this->request->data['arrayPaysDetails'];
+
+			$purchaseId = $this->request->data['purchaseId'];
+			$this->loadModel('AdmUser');
+			
+			$date = $this->request->data['date'];
+//			$supplier = $this->request->data['supplier'];
+			$employee = $this->request->data['employee'];
+			$taxNumber = $this->request->data['taxNumber'];
+			$admProfileId = $this->request->data['salesman'];
+			$exRate = $this->request->data['exRate'];
+			$description = $this->request->data['description'];
+			$note_code = $this->request->data['note_code'];
+			
+			$admUserId = $this->AdmUser->AdmProfile->find('list', array(
+			'fields'=>array('AdmProfile.adm_user_id'),
+			'conditions'=>array('AdmProfile.id'=>$admProfileId)
+			));
+			
+			$salesman = key($this->AdmUser->find('list', array(
+			'conditions'=>array('AdmUser.id'=>$admUserId)
+			)));
+			////////////////////////////////////////////FIN-CAPTURAR AJAX////////////////////////////////////////////////////////
+			
+			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
+			$arrayMovement = array('date'=>$date, 'sal_employee_id'=>$employee,'sal_tax_number_id'=>$taxNumber,'salesman_id'=>$salesman,'note_code'=>$note_code,/*'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType,*/ 'ex_rate'=>$exRate,'description'=>$description);
+			$arrayMovement['lc_state'] = 'INVOICE_APPROVED';
+			$arrayMovement['id'] = $purchaseId;
+			
+//			//data sin costos ni pagos
+			$data = array('SalSale'=>$arrayMovement, 'SalDetail'=>$arrayItemsDetails);
+			//data con costos
+	//		$data2 = array('PurPurchase'=>$arrayMovement, 'PurDetail'=>$arrayItemsDetails, 'PurPrice'=>$arrayCostsDetails);
+			//data con pagos
+			$data3 = array('SalSale'=>$arrayMovement, 'SalDetail'=>$arrayItemsDetails, 'SalPayment'=>$arrayPaysDetails);
+			//data con pagos y costos
+	//		$data4 = array('PurPurchase'=>$arrayMovement, 'PurDetail'=>$arrayItemsDetails, 'PurPrice'=>$arrayCostsDetails, 'PurPayment'=>$arrayPaysDetails);
+			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
+			//print_r($code);
+//			print_r($data);
+//			print_r($dataInv);
+			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////
+			if($purchaseId <> ''){
+			/*	if(($arrayCostsDetails <> array(0)) && ($arrayPaysDetails <> array(0)) ){
+					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPayment->deleteAll(array('PurPayment.pur_purchase_id'=>$purchaseId))) ){
+			
+						if($this->PurPurchase->saveAssociated($data4)){
+							echo 'modificado| cost pay d&&d&&d';
+						}
+					}
+				}elseif ($arrayCostsDetails <> array(0)) {
+					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPayment->deleteAll(array('PurPayment.pur_purchase_id'=>$purchaseId))) ){
+				
+						if($this->PurPurchase->saveAssociated($data2)){
+							echo 'modificado| cost d&&d&&d';
+						}
+					}
+				}else*/if ($arrayPaysDetails <> array(0)) {
+					if(($this->SalSale->SalDetail->deleteAll(array('SalDetail.sal_sale_id'=>$purchaseId)))&&($this->SalSale->SalPayment->deleteAll(array('SalPayment.sal_sale_id'=>$purchaseId))) ){
+			//		print_r($data3);
+						if($this->SalSale->saveAssociated($data3)){
+							echo 'aprobado| pay d&&d&&d';
+						}
+					}
+				}else{
+					if(($this->SalSale->SalDetail->deleteAll(array('SalDetail.sal_sale_id'=>$purchaseId)))&&($this->SalSale->SalPayment->deleteAll(array('SalPayment.sal_sale_id'=>$purchaseId))) ){
+				//		print_r($data);
+						if($this->SalSale->saveAssociated($data)){
+							echo 'aprobado| d&&d&&d';
+						}
+					}
+				}
+				
+			}
+			////////////////////////////////////////////FIN-SAVE////////////////////////////////////////////////////////
+		}
+	}
+	
+	public function ajax_change_state_cancelled_movement_in(){
+		if($this->RequestHandler->isAjax()){
+			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
+			$purchaseId = $this->request->data['purchaseId'];
+//			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
+			//$warehouse = $this->request->data['warehouse']; //combobox is disabled doesn't send nothing
+//			$warehouse = $this->InvMovement->field('InvMovement.inv_warehouse_id', array('InvMovement.id'=>$movementId));
+			//debug($warehouse);
+			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
+//			$error=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouse);
+//			if($error['error'] == 0){
+				$data = array('id'=>$purchaseId, 'lc_state'=>'ORDER_CANCELLED');
+				if($this->SalSale->save($data)){
+//					$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
+					echo 'cancelado|'/*.$strItemsStock*/;
+				}
+//			}else{
+//				echo 'error|'.$error['itemsStocks'];
+//			}
+						
+		}
+	}
+	
+	public function ajax_change_state_cancelled_invoice(){
+		if($this->RequestHandler->isAjax()){
+			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
+			$purchaseId = $this->request->data['purchaseId'];
+//			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
+			//$warehouse = $this->request->data['warehouse']; //combobox is disabled doesn't send nothing
+//			$warehouse = $this->InvMovement->field('InvMovement.inv_warehouse_id', array('InvMovement.id'=>$movementId));
+			//debug($warehouse);
+			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
+//			$error=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouse);
+//			if($error['error'] == 0){
+				$data = array('id'=>$purchaseId, 'lc_state'=>'INVOICE_CANCELLED');
+				if($this->SalSale->save($data)){
+//					$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
+					echo 'cancelado|'/*.$strItemsStock*/;
+				}
+//			}else{
+//				echo 'error|'.$error['itemsStocks'];
+//			}
+						
+		}
+	}
+	
+	public function ajax_logic_delete(){
+		if($this->RequestHandler->isAjax()){
+			$doc_code = $this->request->data['doc_code'];		
+			$type = $this->request->data['type'];	
+			if($this->SalSale->updateAll(array('SalSale.lc_state'=>"'$type'"), array('SalSale.doc_code'=>$doc_code))){
+				echo 'success';
+			}
+		}
+	}
+	
 	private function _generate_code(){
 		$period = $this->Session->read('Period.name');
 //		$period = $this->Session->read('Period.year');
@@ -589,16 +890,79 @@ class SalSalesController extends AppController {
 	}
 	
 	public function index_invoice(){
+		///////////////////////////////////////START - CREATING VARIABLES//////////////////////////////////////
+		$filters = array();
+		$code = '';
+		$doc_code = '';
+		$period = $this->Session->read('Period.name');
+		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
+		
+		////////////////////////////START - WHEN SEARCH IS SEND THROUGH POST//////////////////////////////////////
+		if($this->request->is("post")) {
+			$url = array('action'=>'index_invoice');
+			$parameters = array();
+			$empty=0;
+			if(isset($this->request->data['SalSale']['code']) && $this->request->data['SalSale']['code']){
+				$parameters['code'] = trim(strip_tags($this->request->data['SalSale']['code']));
+			}else{
+				$empty++;
+			}
+			if(isset($this->request->data['SalSale']['doc_code']) && $this->request->data['SalSale']['doc_code']){
+				$parameters['doc_code'] = trim(strip_tags($this->request->data['SalSale']['doc_code']));
+			}else{
+				$empty++;
+			}
+			if($empty == 2){
+				$parameters['search']='empty';
+			}else{
+				$parameters['search']='yes';
+			}
+			$this->redirect(array_merge($url,$parameters));
+		}
+		////////////////////////////END - WHEN SEARCH IS SEND THROUGH POST//////////////////////////////////////
+
+		////////////////////////////START - SETTING URL FILTERS//////////////////////////////////////
+		if(isset($this->passedArgs['code'])){
+			$filters['SalSale.code LIKE'] = '%'.strtoupper($this->passedArgs['code']).'%';
+			$code = $this->passedArgs['code'];
+		}
+		if(isset($this->passedArgs['doc_code'])){
+			$filters['SalSale.doc_code LIKE'] = '%'.strtoupper($this->passedArgs['doc_code']).'%';
+			$doc_code = $this->passedArgs['doc_code'];
+		}
+		////////////////////////////END - SETTING URL FILTERS//////////////////////////////////////
+		
+		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
 		$this->paginate = array(
-			'conditions' => array(
-				'SalSale.lc_state !='=>'INVOICE_LOGIC_DELETED',
+			"conditions"=>array(
+				"SalSale.lc_state !="=>"INVOICE_LOGIC_DELETED",
 				'SalSale.lc_state LIKE'=> '%INVOICE%',
-			),
-			'order' => array('SalSale.id' => 'desc'),
-			'limit' => 15
+				"to_char(SalSale.date,'YYYY')"=> $period,
+				$filters
+			 ),
+			"recursive"=>0,
+			"fields"=>array("SalSale.id", "SalSale.code", "SalSale.doc_code", "SalSale.date", "SalSale.note_code",/*"InvMovement.inv_movement_type_id","InvMovementType.name", */"SalSale.sal_employee_id", "SalEmployee.name", "SalSale.lc_state"),
+			"order"=> array("SalSale.id"=>"desc"),
+			"limit" => 15,
 		);
-		$this->SalSale->recursive = 0;
-		$this->set('salSales', $this->paginate());
+		////////////////////////////END - SETTING PAGINATING VARIABLES//////////////////////////////////////
+		
+		////////////////////////START - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
+		$this->set('salSales', $this->paginate('SalSale'));
+		$this->set('code', $code);
+		$this->set('doc_code', $doc_code);
+		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
+		
+//		$this->paginate = array(
+//			'conditions' => array(
+//				'SalSale.lc_state !='=>'INVOICE_LOGIC_DELETED',
+//				'SalSale.lc_state LIKE'=> '%INVOICE%',
+//			),
+//			'order' => array('SalSale.id' => 'desc'),
+//			'limit' => 15
+//		);
+//		$this->SalSale->recursive = 0;
+//		$this->set('salSales', $this->paginate());
 	}
 	
 	

@@ -4,7 +4,7 @@
 <div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
 <!-- ************************************************************************************************************************ -->
 <h3>	<?php echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' => 'save_order'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo')); ?>
-			<?php echo __('Ordenes de %s', __('Compra'));?></h3>
+			<?php echo __('Ordenes de Compra');?></h3>
 <!-- *********************************************** #UNICORN SEARCH WRAP ********************************************-->
 		<div class="widget-box">
 			<div class="widget-title">
@@ -70,9 +70,7 @@
 				<td><?php echo h($purPurchase['PurPurchase']['doc_code']); ?>&nbsp;</td>
 				<td><?php echo h($purPurchase['PurPurchase']['note_code']); ?>&nbsp;</td>
 				<td><?php echo date("d/m/Y", strtotime($purPurchase['PurPurchase']['date'])); ?>&nbsp;</td>
-				<td>
-					<?php echo $this->Html->link($purPurchase['InvSupplier']['name'], array('controller' => 'inv_suppliers', 'action' => 'view', $purPurchase['InvSupplier']['id'])); ?>
-				</td>		
+				<td><?php echo h($purPurchase['InvSupplier']['name']); ?>&nbsp;</td>		
 				<td><?php 
 						$documentState = $purPurchase['PurPurchase']['lc_state'];
 						switch ($documentState){

@@ -1,31 +1,91 @@
 <?php echo $this->Html->script('modules/SalSales', FALSE); ?>
 
-
 <!-- ************************************************************************************************************************ -->
 <div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
 <!-- ************************************************************************************************************************ -->
 	<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 1/2 *************************************** -->
-						<?php
-							switch ($documentState){
-								case '':
-									$documentStateColor = '';
-									$documentStateName = 'SIN ESTADO';
-									break;
-								case 'INVOICE_PENDANT':
-									$documentStateColor = 'label-warning';
-									$documentStateName = 'FACTURA PENDIENTE';
-									break;
-								case 'INVOICE_APPROVED':
-									$documentStateColor = 'label-success';
-									$documentStateName = 'FACTURA APROBADA';
-									break;
-								case 'INVOICE_CANCELLED':
-									$documentStateColor = 'label-important';
-									$documentStateName = 'FACTURA CANCELADA';
-									break;
-							}
-						?>
-<div class="widget-box">
+	<?php
+		switch ($documentState){
+			case '':
+				$documentStateColor = '';
+				$documentStateName = 'SIN ESTADO';
+				break;
+			case 'INVOICE_PENDANT':
+				$documentStateColor = 'label-warning';
+				$documentStateName = 'FACTURA PENDIENTE';
+				break;
+			case 'INVOICE_APPROVED':
+				$documentStateColor = 'label-success';
+				$documentStateName = 'FACTURA APROBADA';
+				break;
+			case 'INVOICE_CANCELLED':
+				$documentStateColor = 'label-important';
+				$documentStateName = 'FACTURA CANCELADA';
+				break;
+		}
+	?>
+	<!-- //////////////////////////// Start - buttons /////////////////////////////////-->
+	<div class="widget-box">
+		<div class="widget-content nopadding">
+			<?php 
+				/////////////////START - SETTINGS BUTTON CANCEL /////////////////
+				$url=array('action'=>'index_invoice');
+				$parameters = $this->passedArgs;
+				if(!isset($parameters['search'])){
+//					unset($parameters['document_code']);
+					unset($parameters['code']);
+				}
+				unset($parameters['id']);
+				echo $this->Html->link('<i class=" icon-arrow-left"></i> Volver', array_merge($url,$parameters), array('class'=>'btn', 'escape'=>false)).' ';
+				//////////////////END - SETTINGS BUTTON CANCEL /////////////////
+			?>
+
+			<?php 
+				switch ($documentState){
+							case '':
+								$displayApproved = 'none';
+								$displayCancelled = 'none';
+								break;
+							case 'INVOICE_PENDANT':
+								$displayApproved = 'inline';
+								$displayCancelled = 'none';
+								break;
+							case 'INVOICE_APPROVED':
+								$displayApproved = 'none';
+								$displayCancelled = 'inline';
+								break;
+							case 'INVOICE_CANCELLED':
+								$displayApproved = 'none';
+								$displayCancelled = 'none';
+								break;
+						}
+			?>
+			<?php
+			if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){
+				echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));	
+			}
+			?>
+			<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Factura de Compra</a>
+			<a href="#" id="btnLogicDeleteState" class="btn btn-danger" style="display:<?php echo $displayApproved;?>"><i class=" icon-trash icon-white"></i> Eliminar</a>
+			<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Factura de Compra</a>
+			<?php
+				$displayPrint = 'none';
+				if($id <> ''){
+					$displayPrint = 'inline';
+				}
+				echo $this->Html->link('<i class="icon-print icon-white"></i> Imprimir', array('action' => 'view_document_movement_pdf', $id.'.pdf'), array('class'=>'btn btn-primary','style'=>'display:'.$displayPrint, 'escape'=>false, 'title'=>'Nuevo', 'id'=>'btnPrint', 'target'=>'_blank')); 
+
+			?>
+			
+			
+			
+			
+		</div>
+	</div>
+	<!-- //////////////////////////// End - buttons /////////////////////////////////-->
+	
+	
+	<div class="widget-box">
 		<div class="widget-title">
 			<span class="icon">
 				<i class="icon-edit"></i>								
@@ -34,126 +94,59 @@
 			<span id="documentState" class="label <?php echo $documentStateColor;?>"><?php echo $documentStateName;?></span>
 		</div>
 		<div class="widget-content nopadding">
-		<!-- //////////////////////////// START - IF NEEDED BREADCRUMB, SHOW PROCESS STATE //////////////////////// -->
-		<!--
-		<div id="breadcrumb">
-			<a href="#" title="Go to Home" class="tip-bottom">Orden Compra</a>
-			<a href="#" class="current">Remito</a>
-		</div>
-		-->
-		<!-- //////////////////////////// END - IF NEEDED BREADCRUMB, SHOW PROCESS STATE //////////////////////// -->
+			
 	<!-- //******************************** END - #UNICORN  WRAP FORM BOX PART 1/2 *************************************** -->
 
-	<!-- ////////////////////////////////// INICIO - INICIO FORM ///////////////////////////////////// -->
+	
+	<!-- ////////////////////////////////// START - FORM STARTS ///////////////////////////////////// -->
 		<?php echo $this->BootstrapForm->create('SalSale', array('class' => 'form-horizontal'));?>
 		<fieldset>
-	<!--	<legend><?php echo __('Factura de Venta'); ?></legend>-->
-	<!-- ////////////////////////////////// FIN - INICIO FORM /////////////////////////////////////// -->			
+	<!-- ////////////////////////////////// END - FORM ENDS /////////////////////////////////////// -->			
 				
 				
-				<!-- ////////////////////////////////// INICIO - TABLA ESTADO PROCESO Y DOCUMENTO /////////////////////////////////////// -->
-		<!--		<div class="row-fluid">
-					<div class="span7">
-						
-					</div>
-					<div class="span2" >
-						Estado Documento:
-						<?php
-							switch ($documentState){
-								case '':
-									$stateColor = '#BBBBBB';
-									$stateName = 'Sin estado';
-									break;
-								case 'INVOICE_PENDANT':
-									$stateColor = '#F99C17';
-									$stateName = 'Factura Pendiente';
-									break;
-								case 'INVOICE_APPROVED':
-									$stateColor = '#54AA54';
-									$stateName = 'Factura Aprobada';
-									break;
-								case 'INVOICE_CANCELLED':
-									$stateColor = '#BD362F';
-									$stateName = 'Factura Cancelada';
-									break;
-							}
-						?>
-						<table id="tableProcessState" class="table table-bordered table-condensed">
-							<tr>
-								<td id="columnStatePurchase" style="background-color:<?php echo $stateColor; ?>; color: white"><?php echo $stateName;?></td>
-							</tr>
-						</table>
-						
-					</div>
-					<div class="span3"></div>
-				</div> -->
-				<!-- ////////////////////////////////// FIN - TABLA ESTADO PROCESO Y DOCUMENTO /////////////////////////////////////// -->
-				
-				
-				
-				<!-- ////////////////////////////////// INICIO CAMPOS FORMULARIOS ORDEN COMPRA /////////////////////////////////////// -->
+				<!-- ////////////////////////////////// START FORM INVOICE FIELDS /////////////////////////////////////// -->
 				<?php
-				
 				//////////////////////////////////START - block when APPROVED or CANCELLED///////////////////////////////////////////////////
 				$disable = 'disabled';
 				$disable2 = 'disabled';
-//				$btnAddMovementType = '';
-//				
+				
 				if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){
-					$disable = 'enabled';	
-//					$btnAddMovementType = '<a class="btn btn-primary" href="#" id="btnAddMovementType" title="Nuevo Tipo Movimiento"><i class="icon-plus icon-white"></i></a>';
+					$disable = 'enabled';
 				}
 				
 				//////////////////////////////////END - block when APPROVED or CANCELLED///////////////////////////////////////////////////
-				/*
-				echo $this->BootstrapForm->input('token_status_hidden', array(
-					'id'=>'txtTokenStatusHidden',
-					'value'=>'entrada',
-					'type'=>'hidden'
-				));
-				*/
+				
 				echo $this->BootstrapForm->input('purchase_hidden', array(
-					//'id'=>'movement_hidden',
 					'id'=>'txtPurchaseIdHidden',
 					'value'=>$id,
 					'type'=>'hidden'
 				));
 							
 				echo $this->BootstrapForm->input('doc_code', array(
-					//'id'=>'code',
 					'id'=>'txtCode',
 					'label'=>'Código:',
 					'style'=>'background-color:#EEEEEE',
 					'disabled'=>$disable2,
-					'placeholder'=>'El sistema generará el código',
-					//'data-toggle'=>'tooltip',
-					//'data-placement'=>'top',
+					'placeholder'=>'El sistema generará el código'
 				));
 				
 				echo $this->BootstrapForm->input('origin_code', array(
-					//'id'=>'code',
-/*copiar a Purchases.js*/		'id'=>'txtOriginCode',
+					'id'=>'txtOriginCode',
 					'label'=>'Documento Origen:',
 					'style'=>'background-color:#EEEEEE',
 					'disabled'=>$disable2,
-					'value'=>$originCode,
-					//'data-toggle'=>'tooltip',
-					//'data-placement'=>'top',
+					'value'=>$originCode
 				));
 				
 				echo $this->BootstrapForm->input('note_code', array(
-			'id'=>'txtNoteCode',
-	//		'value'=>$noteCode,
-			'label' => 'No. Nota de Remision:',
-			//'type'=>'hidden'
-
-		));
+					'id'=>'txtNoteCode',
+					'label' => 'No. Nota de Remision:'
+				));
 				
 				echo $this->BootstrapForm->input('generic_code', array(
 					'id'=>'txtGenericCode',
 					'value'=>$genericCode,
-		//			'type'=>'hidden'
-				
+					'type'=>'hidden'
 				));
 				
 				echo $this->BootstrapForm->input('date_in', array(
@@ -162,94 +155,91 @@
 					'id'=>'txtDate',
 					'value'=>$date,
 					'disabled'=>$disable,
-					'maxlength'=>'0',
-//					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
-				));
-				
-				
+					'maxlength'=>'0'
+				));				
 				
 				echo $this->BootstrapForm->input('sal_customer_id', array(
 					'required' => 'required',
 					'label' => 'Cliente:',
-/*js*/				'id'=>'cbxCustomers',
-					//'value'=>$invWarehouses,
+					'id'=>'cbxCustomers',
 					'selected' => $customerId,
-					
 					'disabled'=>$disable
-		//			'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 				));
 				
-			echo '<div id="boxControllers">';
-				echo $this->BootstrapForm->input('sal_employee_id', array(
-					'required' => 'required',
-					'label' => 'Encargado:',
-/*js*/				'id'=>'cbxEmployees'
-				//	'selected' => 207
-					//'value'=>$invWarehouses,
-//					'disabled'=>$disable,
-		//			'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
-				));
-			
+				echo '<div id="boxControllers">';
+					echo $this->BootstrapForm->input('sal_employee_id', array(
+						'required' => 'required',
+						'label' => 'Encargado:',
+						'id'=>'cbxEmployees'
+					));
 
-				echo $this->BootstrapForm->input('sal_tax_number_id', array(
-					'required' => 'required',
-					'label' => 'NIT - Nombre:',
-/*js*/				'id'=>'cbxTaxNumbers',
-					//'value'=>$invWarehouses,
-					'disabled'=>$disable,
-		//			'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
-				));
-			echo '</div>';
+					echo $this->BootstrapForm->input('sal_tax_number_id', array(
+						'required' => 'required',
+						'label' => 'NIT - Nombre:',
+						'id'=>'cbxTaxNumbers',
+						'disabled'=>$disable
+					));
+				echo '</div>';
 			
 				echo $this->BootstrapForm->input('sal_adm_user_id', array(
 					'required' => 'required',
 					'label' => 'Vendedor:',
-/*js*/				'id'=>'cbxSalesman',
-					//'value'=>$invWarehouses,
+					'id'=>'cbxSalesman',
 					'selected' => $admUserId,
 					'disabled'=>$disable
-		//			'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 				));
 
-				
 				echo $this->BootstrapForm->input('description', array(
 					'rows' => 2,
-					//'style'=>'width:400px',//#UNICORN, COMMENT OR REPONSIVE DOESN'T WORK
 					'label' => 'Descripción:',
 					'disabled'=>$disable,
 					'id'=>'txtDescription'
 				));
 				
-				
+				echo $this->BootstrapForm->input('ex_rate', array(
+					'label' => 'Tipo de Cambio:',
+					'value'=>$exRate,
+					'disabled'=>$disable,
+					'id'=>'txtExRate'
+				));
 				?>
-				<!-- ////////////////////////////////// FIN CAMPOS FORMULARIOS MOVIMIENTO /////////////////////////////////////// -->
+				<!-- ////////////////////////////////// END FORM INVOICE FIELDS /////////////////////////////////////// -->
 				
-				
-				
-						<!-- ////////////////////////////////// INICIO - ITEMS /////////////////////////////////////// -->
-		<!-- 		<ul class="nav nav-tabs">
-					<li class="active">
-						<a href="#">Items</a>
-					</li>
-				</ul> -->
-				
-
-				<div class="row-fluid">
+					<!-- ////////////////////////////////// START MESSAGES /////////////////////////////////////// -->
+					<div id="boxMessage"></div>
+					<div id="processing"></div>
+					<!-- ////////////////////////////////// END MESSAGES /////////////////////////////////////// -->
 					
-		<!-- 			<div class="span1"></div>
-					
-					<div id="boxTable" class="span8"> -->
+	<!-- ////////////////////////////////// START - END FORM ///////////////////////////////////// -->		
+	</fieldset>
+	<?php echo $this->BootstrapForm->end();?>
+	<!-- ////////////////////////////////// END - END FORM ///////////////////////////////////// -->			
+				
+	<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
+		</div> <!-- Belongs to: <div class="widget-content nopadding"> -->
+	</div> <!-- Belongs to: <div class="widget-box"> -->
+	<!-- //******************************** END - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
+	
+	<!-- ////////////////////////////////// START - INVOICE DETAILS /////////////////////////////////////// -->
+	
+	<div class="widget-box">
+		<div class="widget-title">
+			<ul class="nav nav-tabs">
+				<li class="active"><a data-toggle="tab" href="#tab1">Items</a></li>
+				<li><a data-toggle="tab" href="#tab2">Pagos</a></li>
+			</ul>
+		</div>
+		<div class="widget-content tab-content">
+			<div id="tab1" class="tab-pane active">
+				<!-- ////////////////////////////////// START - INVOICE ITEMS DETAILS /////////////////////////////////////// -->
+				<?php if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){ ?>
+					<a class="btn btn-primary" href='#' id="btnAddItem" title="Adicionar Item"><i class="icon-plus icon-white"></i></a>
+				<?php } ?>
 						
-						<?php if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){ ?>
-						<a class="btn btn-primary" href='#' id="btnAddItem" title="Adicionar Item"><i class="icon-plus icon-white"></i></a>
-						<?php } ?>
-						<p></p>
-						
-						<table class="table table-bordered table-condensed table-striped table-hover" id="tablaItems">
+						<table class="table table-bordered table-striped table-hover" id="tablaItems">
 							<thead>
 								<tr>
 									<th>Item</th>
-<!--									<th>Stock</th>-->
 									<th>Precio Unitario</th>
 									<th>Cantidad</th>
 									<th>Almacen</th>
@@ -269,8 +259,8 @@
 										echo '<td><span id="spaItemName'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['item'].'</span><input type="hidden" value="'.$salDetails[$i]['itemId'].'" id="txtItemId" ></td>';
 										echo '<td><span id="spaPrice'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['price'].'</span></td>';
 										echo '<td><span id="spaQuantity'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['cantidad'].'</span></td>';
-								echo '<td><span id="spaWarehouse'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['warehouse'].'</span><input type="hidden" value="'.$salDetails[$i]['warehouseId'].'" id="txtWarehouseId'.$salDetails[$i]['itemId'].'" ></td>';
-								echo '<td><span id="spaStock'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['stock'].'</span></td>';
+										echo '<td><span id="spaWarehouse'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['warehouse'].'</span><input type="hidden" value="'.$salDetails[$i]['warehouseId'].'" id="txtWarehouseId'.$salDetails[$i]['itemId'].'" ></td>';
+										echo '<td><span id="spaStock'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['stock'].'</span></td>';
 										echo '<td><span id="spaSubtotal'.$salDetails[$i]['itemId'].'">'.$subtotal.'</span></td>';
 										if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){
 											echo '<td class="columnItemsButtons">';
@@ -281,62 +271,40 @@
 										}
 									echo '</tr>';	
 									$total += $subtotal;
-								}
-//								echo '<tr>';
-//										echo '<th></th>';
-//										echo '<th></th>';
-//										echo '<th>Total:</th>';
-//										echo '<th>'.$total.'</th>';
-//									echo '</tr>';
-								?>
-<!--								<tr>
-									<th></th>
-									<th></th>
-									<th></th>
-									<th></th>
-								</tr>-->
+								}?>
 							</tbody>
-							
 						</table>
-	<!--				<table class="table table-condensed table-striped table-hover">
-						<thead>
-								<tr>
-									<th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
-									<th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
-									<th>Total:</th>
-									<th><?php echo $total; ?></th>
-								</tr>
-							</thead>
-					</table>
-						
-					</div>
 					
-					<div class="span3"></div>
-					-->
+				<div class="row-fluid"> <!-- vers si borrar este row-fluid creo q si -->
+					
+					<?php if($documentState == 'INVOICE_APPROVED'){ ?>
+						<div class="span10">	</div>
+						<div class="span1">
+							<h4>Total:</h4>	
+						</div>
+						<div class="span1">
+							<h4 id="total" ><?php echo $total.' $us'; ?></h4>
+						</div>
+					<?php }  else { ?>
+						<div class="span8">	</div>
+						<div class="span1">
+							<h4>Total:</h4>	
+						</div>
+						<div class="span3">
+							<h4 id="total" ><?php echo $total.' $us'; ?></h4>
+						</div>
+					<?php }?>
+					
 				</div>
-			<!-- ////////////////////////////////// FIN ITEMS /////////////////////////////////////// -->
-
-		
-			<!-- ////////////////////////////////// INICIO - PAGO /////////////////////////////////////// -->
-	<!--			<ul class="nav nav-tabs">
-					<li class="active">
-						<a href="#">Costos Adicionales de Importación</a>
-					</li>
-				</ul>-->
-				
-
-				<div class="row-fluid">
-					
-			<!--		<div class="span1"></div>
-					
-					<div id="boxTable" class="span8">-->
+				<!-- ////////////////////////////////// END INVOICE ITEMS DETAILS /////////////////////////////////////// -->
+			</div>
+			<div id="tab2" class="tab-pane">
+				<!-- ////////////////////////////////// START - INVOICE PAY DETAILS /////////////////////////////////////// -->
+				<?php if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){ ?>
+					<a class="btn btn-primary" href='#' id="btnAddPay" title="Adicionar Pago"><i class="icon-plus icon-white"></i></a>
+				<?php } ?>
 						
-						<?php if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){ ?>
-						<a class="btn btn-primary" href='#' id="btnAddPay" title="Adicionar Pago"><i class="icon-plus icon-white"></i></a>
-						<?php } ?>
-						<p></p>
-						
-						<table class="table table-bordered table-condensed table-striped table-hover" id="tablaPays">
+						<table class="table table-bordered table-striped table-hover" id="tablaPays">
 							<thead>
 								<tr>
 									<th>Pago</th>
@@ -356,7 +324,6 @@
 								$total = 0;
 								$debtAmount = 0;
 								for($i=0; $i<count($salPayments); $i++){
-								//	$subtotal = ($purPrices[$i]['cantidad'])*($purPrices[$i]['price']);
 									echo '<tr>';
 										echo '<td><span id="spaPayName'.$salPayments[$i]['payId'].'">'.$salPayments[$i]['pay'].'</span><input type="hidden" value="'.$salPayments[$i]['payId'].'" id="txtPayId" ></td>';
 										echo '<td><span id="spaDate'.$salPayments[$i]['payId'].'">'.$salPayments[$i]['date'].'</span></td>';
@@ -375,131 +342,46 @@
 										}
 									echo '</tr>';	
 									$total += $subtotal;
-								}
-//								echo '<tr>';
-//										echo '<th></th>';
-//										echo '<th></th>';
-//										echo '<th>Total:</th>';
-//										echo '<th>'.$xxxtotal.'</th>';
-//									echo '</tr>';
-								?>
-<!--								<tr>
-									<th></th>
-									<th></th>
-									<th></th>
-									<th></th>
-								</tr>-->
+								}?>
 							</tbody>
-							
 						</table>
-		<!--			<table class="table table-condensed table-striped table-hover">
-						<thead>
-								<tr>
-									<th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
-									<th>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</th>
-									<th>Total:</th>
-									<th><?php echo $total; ?></th>
-								</tr>
-							</thead>
-					</table>
-						
-					</div>
+				<div class="row-fluid"> <!-- vers si borrar este row-fluid creo q si -->
 					
-					<div class="span3"></div>
-					 -->
+					<?php if($documentState == 'INVOICE_APPROVED'){ ?>
+						<div class="span10">	</div>
+						<div class="span1">
+							<h4>Total:</h4>	
+						</div>
+						<div class="span1">
+							<h4 id="total" ><?php echo $total.' $us'; ?></h4>
+						</div>
+					<?php }  else { ?>
+						<div class="span8">	</div>
+						<div class="span1">
+							<h4>Total:</h4>	
+						</div>
+						<div class="span3">
+							<h4 id="total" ><?php echo $total.' $us'; ?></h4>
+						</div>
+					<?php }?>
+					
 				</div>
-			<!-- ////////////////////////////////// FIN PAGO /////////////////////////////////////// -->
-			
-			<!-- ////////////////////////////////// INICIO BOTONES /////////////////////////////////////// -->
-			<!--<div class="form-actions">--><!-- no sirve se desconfigura los botones en modo tablet -->
-			<div class="row-fluid"> <!-- INICIO - row fluid para alinear los botones -->
-				<div class="span2"></div> <!-- INICIO Y FIN - ESPACIO A LA IZQUIERDA -->
-				<div class="span6">	<!-- INICIO - span 6 -->
-					<div class="btn-toolbar"> <!-- INICIO - toolbar para dejar espacio entre botones -->
-							<?php 
-								if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){
-									echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));	
-
-								}
-								/////////////////START - SETTINGS BUTTON CANCEL /////////////////
-								$url=array('action'=>'index_invoice');
-								$parameters = $this->passedArgs;
-								if(!isset($parameters['search'])){
-//									unset($parameters['document_code']);
-									unset($parameters['code']);
-								}
-								unset($parameters['id']);
-								echo $this->Html->link('Cancelar', array_merge($url,$parameters), array('class'=>'btn') );
-								//////////////////END - SETTINGS BUTTON CANCEL /////////////////
-							?>
-
-							<?php 
-								switch ($documentState){
-											case '':
-												$displayApproved = 'none';
-												$displayCancelled = 'none';
-												$displayLogicDelete = 'none';
-												break;
-											case 'INVOICE_PENDANT':
-												$displayApproved = 'inline';
-												$displayCancelled = 'none';
-												$displayLogicDelete = 'inline';
-												break;
-											case 'INVOICE_APPROVED':
-												$displayApproved = 'none';
-												$displayCancelled = 'inline';
-												$displayLogicDelete = 'none';
-												break;
-											case 'INVOICE_CANCELLED':
-												$displayApproved = 'none';
-												$displayCancelled = 'none';
-												$displayLogicDelete = 'none';
-												break;
-										}
-							?>
-							<?php
-								$displayPrint = 'none';
-								if($id <> ''){
-									$displayPrint = 'inline';
-								}
-								echo $this->Html->link('<i class="icon-print icon-white"></i> Imprimir', array('action' => 'view_document_movement_pdf', $id.'.pdf'), array('class'=>'btn btn-primary','style'=>'display:'.$displayPrint, 'escape'=>false, 'title'=>'Nuevo', 'id'=>'btnPrint', 'target'=>'_blank')); 
+				<!-- ////////////////////////////////// END INVOICE PAY DETAILS /////////////////////////////////////// -->
+			</div>
+		</div>                            
+	</div>
 								
-							?>
-							<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Factura de Venta</a>
-							<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Factura de Venta</a>
-							<a href="#" id="btnLogicDeleteState" class="btn btn-danger" style="display:<?php echo $displayLogicDelete;?>"> Logic Delete</a>
-					</div> <!-- FIN - toolbar para dejar espacio entre botones -->
-				</div> <!-- FIN - span 6 -->
-				<div class="span4"></div> <!-- INICIO Y FIN - ESPACIO A LA DERECHA PARA NO DEJAR HUECOS -->
-			</div> <!-- FIN - row fluid para alinear los botones -->
-			<!--</div>--><!-- no sirve se desconfigura los botones en modo tablet class="form-actions" -->
-			<!-- ////////////////////////////////// FIN BOTONES /////////////////////////////////////// -->
-
-	<!-- ////////////////////////////////// INICIO - FIN FORM ///////////////////////////////////// -->		
-	</fieldset>
-	<?php echo $this->BootstrapForm->end();?>
-	<!-- ////////////////////////////////// FIN - FIN FORM ///////////////////////////////////// -->
-	
-	<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
-		</div> <!-- Belongs to: <div class="widget-content nopadding"> -->
-	</div> <!-- Belongs to: <div class="widget-box"> -->
-	<!-- //******************************** END - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
-
-	
-	<!-- ////////////////////////////////// INICIO MENSAJES /////////////////////////////////////// -->
-	<div id="boxMessage"></div>
-	<div id="processing"></div>
-	<!-- ////////////////////////////////// FIN MENSAJES /////////////////////////////////////// -->
-	
+	<!-- ////////////////////////////////// END INVOICE DETAILS /////////////////////////////////////// -->
 	
 <!-- ************************************************************************************************************************ -->
-</div><!-- FIN CONTAINER FLUID/ROW FLUID/SPAN9 - Del Template Principal (SPAN3 reservado para menu izquierdo) -->
-<!-- ************************************************************************************************************************ -->
+</div><!-- END CONTAINER FLUID/ROW FLUID/SPAN12 - MAIN Template #UNICORN -->
+<!-- ************************************************************************************************************************ --> 
 
 
 
 
-<!-- ////////////////////////////////// INICIO MODAL (Esta fuera del span9 pero sigue pertenciendo al template principal CONTAINER FLUID/ROW FLUID) ////////////////////////////// -->
+
+<!-- ////////////////////////////////// START MODAL (Esta fuera del span9 pero sigue pertenciendo al template principal CONTAINER FLUID/ROW FLUID) ////////////////////////////// -->
 			<div id="modalAddItem" class="modal hide fade ">
 				  
 				  <div class="modal-header">
@@ -541,7 +423,6 @@
 					'label' => 'Cantidad:',
 					'id'=>'txtModalQuantity',
 					'class'=>'input-small',
-					//'value'=>'6',
 					'maxlength'=>'10',
 					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 					));
@@ -551,14 +432,16 @@
 				  
 				  <div class="modal-footer">
 					 <!-- Ztep 0 Save button from modal triggers btnModalAddItem -->
-					<a href='#' class="btn btn-primary" id="btnModalAddItem">Guardar add</a>
-					<a href='#' class="btn btn-primary" id="btnModalEditItem">Guardar edit</a>
+					<a href='#' class="btn btn-primary" id="btnModalAddItem">Guardar</a>
+					<a href='#' class="btn btn-primary" id="btnModalEditItem">Guardar</a>
 					<button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
 					
 				  </div>
 					
 			</div>
 <!-- ////////////////////////////////// FIN MODAL (Esta fuera del span9 pero sigue pertenciendo al template principal CONTAINER FLUID/ROW FLUID) ////////////////////////////// -->
+
+
 
 <!-- ////////////////////////////////// INICIO MODAL PAYS(Esta fuera del span9 pero sigue pertenciendo al template principal CONTAINER FLUID/ROW FLUID) ////////////////////////////// -->
 			<div id="modalAddPay" class="modal hide fade ">
@@ -577,103 +460,57 @@
 						echo $this->BootstrapForm->input('pays_id', array(				
 							'label' => 'Pagos:',
 							'id'=>'cbxModalPays',
-							'class'=>'input-xlarge',
-							'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+							'class'=>'input-xlarge'
 							));
 						echo '<br>';
-//						$amount='';
-//						echo '<div id="boxModalAmount">';
-							
-
-//						echo '</div>';		
-//						echo '<br>';
-
-						//////////////////////////////////////
-//						echo $this->BootstrapForm->input('date_in', array(
-//					'required' => 'required',
-//					'label' => 'Fecha:',
-//					'id'=>'txtDate',
-//					'value'=>$date,
-//					'disabled'=>$disable,
-//					'maxlength'=>'0',
-////					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
-//				));
-						
 					echo '</div>';
-					echo $this->BootstrapForm->input('date', array(		
-					//		'required' => 'required',
+					echo $this->BootstrapForm->input('date', array(	
 							'label' => 'Fecha Pago:',
 							'id'=>'txtModalDate',
 							));
 					echo '<br>';
 					
-//					echo '</div>';
 					echo $this->BootstrapForm->input('due_date', array(				
 							'label' => 'Fecha Limite:',
 							'id'=>'txtModalDueDate',
 							));
 					echo '<br>';
 					
-//					echo '</div>';
-//					echo $this->BootstrapForm->input('debt_amount', array(				
-//							'label' => 'Deuda:',
-//							'id'=>'txtModalDebtAmount',
-//						//	'value'=>$amount,
-//							'style'=>'background-color:#EEEEEE',
-//							'class'=>'input-small',
-//							'maxlength'=>'15'
-//							));
-//					echo '<br>';
-					
-//					echo '</div>';
 					echo $this->BootstrapForm->input('amount', array(				
 							'label' => 'Monto Pagado:',
 							'id'=>'txtModalPaidAmount',
-						//	'value'=>$amount,
 							'style'=>'background-color:#EEEEEE',
 							'class'=>'input-small',
 							'maxlength'=>'15'
 							));
 					echo '<br>';
 					
-//					echo '</div>';
 					echo $this->BootstrapForm->input('description', array(				
 							'label' => 'Descripcion:',
 							'id'=>'txtModalDescription',
-						//	'value'=>$amount,
 							'style'=>'background-color:#EEEEEE',
 							'class'=>'input-small',
 							'maxlength'=>'15'
 							));
 					echo '<br>';
 					
-//					echo '</div>';
 					echo $this->BootstrapForm->input('state', array(				
 							'label' => 'Estado:',
 							'id'=>'txtModalState',
-						//	'value'=>$amount,
 							'style'=>'background-color:#EEEEEE',
 							'class'=>'input-small',
 							'maxlength'=>'15'
 							));
 					echo '<br>';
 
-//					echo $this->BootstrapForm->input('quantity', array(				
-//					'label' => 'Cantidad:',
-//					'id'=>'txtModalQuantity',
-//					'class'=>'input-small',
-//					//'value'=>'6',
-//					'maxlength'=>'10',
-//					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
-//					));
 					?>
 					  <div id="boxModalValidatePay" class="alert-error"></div> 
 				  </div>
 				  
 				  <div class="modal-footer">
 					 <!-- Ztep 0 Save button from modal triggers btnModalAddItem -->
-					<a href='#' class="btn btn-primary" id="btnModalAddPay">Guardar add cost</a>
-					<a href='#' class="btn btn-primary" id="btnModalEditPay">Guardar edit cost</a>
+					<a href='#' class="btn btn-primary" id="btnModalAddPay">Guardar</a>
+					<a href='#' class="btn btn-primary" id="btnModalEditPay">Guardar</a>
 					<button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
 					
 				  </div>
