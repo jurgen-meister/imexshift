@@ -86,7 +86,7 @@ $(document).ready(function(){
 		}*/
 	}
 	//validates before add item quantity
-	function validateItem(item, quantity, price/*, documentQuantity*/){
+	function validateItem(item, quantity, exFobPrice/*, documentQuantity*/){
 		var error = '';
 		if(quantity == ''){
 			error+='<li>El campo "Cantidad" no puede estar vacio</li>'; 
@@ -103,7 +103,7 @@ $(document).ready(function(){
 //			}
 		}
 		
-		if(price == ''){
+		if(exFobPrice == ''){
 			error+='<li>El campo "P/U" no puede estar vacio</li>'; 
 		}/*else{
 //o si puede ser cero el precio?			
@@ -274,6 +274,23 @@ $(document).ready(function(){
 		}
 	}
 
+	function validateOnlyFloatNumbers(event){
+		// Allow backspace,	tab, decimal point
+		if (event.keyCode == 8 || event.keyCode == 9 || event.keyCode == 110 || event.keyCode == 190) {
+			// let it happen, don't do anything
+		}
+		else {
+			// Ensure that it is a number and stop the keypress
+			if ( (event.keyCode < 96 || event.keyCode > 105) ) { //habilita keypad
+				if ((event.keyCode < 48 || event.keyCode > 57 ) ) {
+					
+						event.preventDefault(); 					
+					
+				}
+			}   
+		}
+	}
+	
 	function initiateModalAddItem(){
 		if(arrayItemsAlreadySaved.length == 0){  //For fix undefined index
 			arrayItemsAlreadySaved = [0] //if there isn't any row, the array must have at least one field 0 otherwise it sends null
@@ -312,7 +329,7 @@ $(document).ready(function(){
 		$('#btnModalEditItem').show();
 		$('#boxModalValidateItem').html('');//clear error message
 		$('#txtModalQuantity').val(objectTableRowSelected.find('#spaQuantity'+itemIdForEdit).text());
-		$('#txtModalPrice').val(objectTableRowSelected.find('#spaPrice'+itemIdForEdit).text());
+		$('#txtModalPrice').val(objectTableRowSelected.find('#spaExFobPrice'+itemIdForEdit).text());
 //		$('#txtModalPrice').keypress(function(){return false;});
 /*		if ($('#txtModalQuantityDocument').length > 0){//existe
 			$('#txtModalQuantityDocument').val(objectTableRowSelected.find('#spaQuantityDocument'+itemIdForEdit).text());
@@ -444,6 +461,13 @@ $(document).ready(function(){
 		if(confirm('Esta seguro de Eliminar el costo?')){	
 
 			var costIdForDelete = objectTableRowSelected.find('#txtCostId').val();  //
+			
+			//	this should be a function
+			var subtotal = $('#spaAmount'+costIdForDelete).text();	
+			var total = parseFloat($('#totalcost').text()) - Number(subtotal);
+			//	this should be a function
+			$('#totalcost').text(parseFloat(total).toFixed(2)+' $us');
+			
 			arrayCostsAlreadySaved = jQuery.grep(arrayCostsAlreadySaved, function(value){
 				return value != costIdForDelete;
 			});
@@ -479,10 +503,10 @@ $(document).ready(function(){
 	}
 	
 	// (GC Ztep 3) function to fill Items list when saved in modal triggered by addItem()
-	function createRowItemTable(itemId, itemCodeName, price, quantity, subtotal){
+	function createRowItemTable(itemId, itemCodeName, exFobPrice, quantity, subtotal){
 		var row = '<tr>';
 		row +='<td><span id="spaItemName'+itemId+'">'+itemCodeName+'</span><input type="hidden" value="'+itemId+'" id="txtItemId" ></td>';
-		row +='<td><span id="spaPrice'+itemId+'">'+price+'</span></td>';
+		row +='<td><span id="spaExFobPrice'+itemId+'">'+exFobPrice+'</span></td>';
 		row +='<td><span id="spaQuantity'+itemId+'">'+quantity+'</span></td>';
 		row +='<td><span id="spaSubtotal'+itemId+'">'+subtotal+'</span></td>';
 		row +='<td class="columnItemsButtons">';
@@ -530,15 +554,15 @@ $(document).ready(function(){
 		var quantity = $('#txtModalQuantity').val();
 		var itemId = $('#cbxModalItems').val();
 		var itemCodeName = $('#cbxModalItems option:selected').text();
-		var price = $('#txtModalPrice').val();
+		var exFobPrice = $('#txtModalPrice').val();
 	//	this should be a function
-	var subtotal = Number(quantity) * Number(price);
+	var subtotal = Number(quantity) * Number(exFobPrice);
 	var total = parseFloat($('#total').text()) + Number(subtotal);
 	//	this should be a function
-		var error = validateItem(itemCodeName, quantity, parseFloat(price).toFixed(2)/*, ''*/); 
+		var error = validateItem(itemCodeName, quantity, parseFloat(exFobPrice).toFixed(2)/*, ''*/); 
 		if(error == ''){
 			
-			createRowItemTable(itemId, itemCodeName, parseFloat(price).toFixed(2), parseInt(quantity,10)/*, stock2*/, parseFloat(subtotal).toFixed(2));
+			createRowItemTable(itemId, itemCodeName, parseFloat(exFobPrice).toFixed(2), parseInt(quantity,10)/*, stock2*/, parseFloat(subtotal).toFixed(2));
 			createEventClickEditItemButton(itemId);
 			createEventClickDeleteItemButton(itemId);
 			arrayItemsAlreadySaved.push(itemId);  //push into array of the added item
@@ -553,12 +577,12 @@ $(document).ready(function(){
 		var itemId = $('#cbxModalItems').val();
 		var quantity = $('#txtModalQuantity').val();
 		var itemCodeName = $('#cbxModalItems option:selected').text();
-var price = $('#txtModalPrice').val();
-var subtotal = ((quantity) * (price));
-		var error = validateItem(itemCodeName, quantity, parseFloat(price).toFixed(2)/*, ''*/); 
+var exFobPrice = $('#txtModalPrice').val();
+var subtotal = ((quantity) * (exFobPrice));
+		var error = validateItem(itemCodeName, quantity, parseFloat(exFobPrice).toFixed(2)/*, ''*/); 
 		if(error == ''){
 			$('#spaQuantity'+itemId).text(parseInt(quantity,10));
-			$('#spaPrice'+itemId).text(parseFloat(price).toFixed(2));
+			$('#spaExFobPrice'+itemId).text(parseFloat(exFobPrice).toFixed(2));
 			$('#spaSubtotal'+itemId).text(parseFloat(subtotal).toFixed(2));
 			$('#modalAddItem').modal('hide');
 		}else{
@@ -573,7 +597,7 @@ var subtotal = ((quantity) * (price));
 		var costId = $('#cbxModalCosts').val();
 		var costCodeName = $('#cbxModalCosts option:selected').text();
 		var amount = $('#txtModalAmount').val();
-//	var subtotal = ((quantity) * (price));
+var total = parseFloat($('#totalcost').text()) + Number(amount);
 		var error = validateCost(costCodeName, parseFloat(amount).toFixed(2)/*, ''*/); 
 		if(error == ''){
 			
@@ -582,6 +606,7 @@ var subtotal = ((quantity) * (price));
 			createEventClickDeleteCostButton(costId);
 			arrayCostsAlreadySaved.push(costId);  //push into array of the added item
 			$('#modalAddCost').modal('hide');
+			$('#totalcost').text(parseFloat(total).toFixed(2)+' $us');
 		}else{
 			$('#boxModalValidateCost').html('<ul>'+error+'</ul>');
 		}
@@ -630,27 +655,27 @@ var amount = $('#txtModalAmount').val();
 	function getItemsDetails(){		
 		var arrayItemsDetails = [];
 		var itemId = '';
-		var itemPrice = '';
+		var itemExFobPrice = '';
 		var itemQuantity = '';
 		
 		var exRate = $('#txtExRate').val();
 	//	var itemExRate = '';
-		var itemExPrice = '';
+		var itemFobPrice = '';
 //		var itemQuantityDocument = '';
 		
 		
 		
 		$('#tablaItems tbody tr').each(function(){		
 			itemId = $(this).find('#txtItemId').val();
-			itemPrice = $(this).find('#spaPrice'+itemId).text();
+			itemExFobPrice = $(this).find('#spaExFobPrice'+itemId).text();
 			itemQuantity = $(this).find('#spaQuantity'+itemId).text();
 	
 /*			if ($('#spaQuantityDocument'+itemId).length > 0){//exists
 				itemQuantityDocument = $(this).find('#spaQuantityDocument'+itemId).text();
 			}
 */	//		itemExRate = $('#txtExRate').val();
-			itemExPrice = itemPrice * exRate;//(parseFloat(itemExPrice).toFixed(2))
-			arrayItemsDetails.push({'inv_item_id':itemId, 'price':itemPrice, 'quantity':itemQuantity, /*'ex_rate':itemExRate,*/ 'ex_price':parseFloat(itemExPrice).toFixed(2)/*, 'quantity_document':itemQuantityDocument*//*, 'stock2':itemStock2*/});
+			itemFobPrice = itemExFobPrice * exRate;//(parseFloat(itemExPrice).toFixed(2))
+			arrayItemsDetails.push({'inv_item_id':itemId, 'ex_fob_price':itemExFobPrice, 'quantity':itemQuantity, /*'ex_rate':itemExRate,*/ 'fob_price':parseFloat(itemFobPrice).toFixed(2)/*, 'quantity_document':itemQuantityDocument*//*, 'stock2':itemStock2*/});
 			
 		});
 		
@@ -878,12 +903,33 @@ var amount = $('#txtModalAmount').val();
 	  showButtonPanel: true
 	});
 	
+	$('#txtDate').focusout(function() {
+			ajax_update_ex_rate();			
+	});
+	
+	function ajax_update_ex_rate(){
+		$.ajax({
+		    type:"POST",
+		    url:moduleController + "ajax_update_ex_rate",			
+		    data:{date: $("#txtDate").val()},
+		    beforeSend: showProcessing(),
+				success:function(data){
+					$("#processing").text("");
+					$("#boxExRate").html(data);
+				}
+		});
+    }
+	
 	$("#txtModalDate").datepicker({
 	  showButtonPanel: true
 	});
 	
 	$("#txtModalDueDate").datepicker({
 	  showButtonPanel: true
+	});
+	
+	$('#txtExRate').keydown(function(event) {
+			validateOnlyFloatNumbers(event);			
 	});
 //	$('#txtDate').glDatePicker(
 //	{

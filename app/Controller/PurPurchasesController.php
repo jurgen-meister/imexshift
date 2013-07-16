@@ -38,6 +38,21 @@ class PurPurchasesController extends AppController {
 		if(isset($this->passedArgs['id'])){
 			$id = $this->passedArgs['id'];
 		}
+		$this->loadModel('AdmParameter');
+		$currency = $this->AdmParameter->AdmParameterDetail->find('first', array(
+			//	'fields'=>array('AdmParameterDetail.id'),
+				'conditions'=>array(
+					'AdmParameter.name'=>'Moneda',
+					'AdmParameterDetail.par_char1'=>'Dolares'
+				)
+			//	'recursive'=>-1
+			)); 
+//		debug($currency);
+		$currencyId = $currency['AdmParameterDetail']['id'];
+//		debug($currencyId);
+		
+		
+		
 		$invSuppliers = $this->PurPurchase->InvSupplier->find('list');
 		
 		$this->PurPurchase->recursive = -1;
@@ -46,13 +61,48 @@ class PurPurchasesController extends AppController {
 		$purDetails = array();
 		$documentState = '';
 		$date=date('d/m/Y');
-		$exRate = '8.00';	//esto tiene q llamar al cambio del dia
+		
+		//////////////////////////////////////////////////////////
+		$this->loadModel('AdmExchangeRate');
+		$xxxRate = $this->AdmExchangeRate->find('first', array(
+				'fields'=>array('AdmExchangeRate.value'),
+				'conditions'=>array(
+					'AdmExchangeRate.currency'=>$currencyId,
+					'AdmExchangeRate.date'=>$date
+				),
+				'recursive'=>-1
+			)); 		
+//		debug($xxxRate);
+		
+		
+		$exRate = $xxxRate['AdmExchangeRate']['value'];	//esto tiene q llamar al cambio del dia
+		////////////////////////////////////////////////////////////
+//		debug($exRate);
 		if($id <> null){
 			$date = date("d/m/Y", strtotime($this->request->data['PurPurchase']['date']));//$this->request->data['InvMovement']['date'];
 			$purDetails = $this->_get_movements_details($id);
 			$documentState =$this->request->data['PurPurchase']['lc_state'];
 			$genericCode = $this->request->data['PurPurchase']['code'];
+			//////////////////////////////////////////////////////////
+//			$this->loadModel('AdmExchangeRate');
+//			$xxxRate = $this->AdmExchangeRate->find('first', array(
+//					'fields'=>array('AdmExchangeRate.value'),
+//					'conditions'=>array(
+//						'AdmExchangeRate.currency'=>$currencyId,
+//						'AdmExchangeRate.date'=>$date
+//					),
+//					'recursive'=>-1
+//				)); 		
+//	//		debug($xxxRate);
+
+
+//			$exRate = $xxxRate['AdmExchangeRate']['value'];
+			
 			$exRate = $this->request->data['PurPurchase']['ex_rate'];
+			////////////////////////////////////////////////////////// arriba jala de la fecha guardada, abajo jala de el exRate guardado,
+			////////////////////////////////////////////que si el usuario cambia en adm_exchanges_rates puede ser diferente a lo guardado
+			
+			
 		}
 		$this->set(compact('invSuppliers', 'id', 'date', 'purDetails', 'documentState', 'genericCode', 'exRate'));
 	}
@@ -62,6 +112,20 @@ class PurPurchasesController extends AppController {
 		if(isset($this->passedArgs['id'])){
 			$id = $this->passedArgs['id'];
 		}
+		$this->loadModel('AdmParameter');
+		$currency = $this->AdmParameter->AdmParameterDetail->find('first', array(
+			//	'fields'=>array('AdmParameterDetail.id'),
+				'conditions'=>array(
+					'AdmParameter.name'=>'Moneda',
+					'AdmParameterDetail.par_char1'=>'Dolares'
+				)
+			//	'recursive'=>-1
+			)); 
+//		debug($currency);
+		$currencyId = $currency['AdmParameterDetail']['id'];
+//		debug($currencyId);
+		
+		
 		$invSuppliers = $this->PurPurchase->InvSupplier->find('list');
 				
 		$this->PurPurchase->recursive = -1;
@@ -73,7 +137,7 @@ class PurPurchasesController extends AppController {
 		$purPrices = array();
 		$purPayments = array();
 		$documentState = '';
-		$exRate = '8.00';	//esto tiene q llamar al cambio del dia
+	//	$exRate = '8.00';	//esto tiene q llamar al cambio del dia
 		if($id <> null){
 			$date = date("d/m/Y", strtotime($this->request->data['PurPurchase']['date']));//$this->request->data['InvMovement']['date'];
 			$purDetails = $this->_get_movements_details($id);
@@ -89,6 +153,9 @@ class PurPurchasesController extends AppController {
 					)
 			));
 			$originCode = $originDocCode['PurPurchase']['doc_code'];
+			
+			
+			
 			$exRate = $this->request->data['PurPurchase']['ex_rate'];
 		}
 		
@@ -326,6 +393,41 @@ class PurPurchasesController extends AppController {
 		}
 	}
 	
+	public function ajax_update_ex_rate(){
+		if($this->RequestHandler->isAjax()){
+			$date = $this->request->data['date']; 
+			
+			$this->loadModel('AdmParameter');
+			$currency = $this->AdmParameter->AdmParameterDetail->find('first', array(
+				//	'fields'=>array('AdmParameterDetail.id'),
+					'conditions'=>array(
+						'AdmParameter.name'=>'Moneda',
+						'AdmParameterDetail.par_char1'=>'Dolares'
+					)
+				//	'recursive'=>-1
+				)); 
+	//		debug($currency);
+			$currencyId = $currency['AdmParameterDetail']['id'];
+	//		debug($currencyId);
+			$this->loadModel('AdmExchangeRate');
+			$xxxRate = $this->AdmExchangeRate->find('first', array(
+					'fields'=>array('AdmExchangeRate.value'),
+					'conditions'=>array(
+						'AdmExchangeRate.currency'=>$currencyId,
+						'AdmExchangeRate.date'=>$date
+					),
+					'recursive'=>-1
+				)); 		
+	//		debug($xxxRate);
+			$exRate = $xxxRate['AdmExchangeRate']['value'];
+		
+			$this->set(compact('exRate'));			
+		}else{
+			$this->redirect($this->Auth->logout());
+		}
+	}
+	
+	
 	//aca tendria que poder calcular el pago adeudado en base a los pagos guardados
 //	public function ajax_update_pay(){
 //		if($this->RequestHandler->isAjax()){
@@ -514,7 +616,7 @@ class PurPurchasesController extends AppController {
 			$arrayMovement['lc_state'] = 'ORDER_APPROVED';
 			$arrayMovement['id'] = $purchaseId;
 			
-			$arrayInvoice = array('date'=>$date, 'inv_supplier_id'=>$supplier, 'description'=>$description,'note_code'=>$note_code/*, 'code'=>$code*/);
+			$arrayInvoice = array('date'=>$date, 'inv_supplier_id'=>$supplier, 'description'=>$description,'note_code'=>$note_code, 'ex_rate'=>$exRate/*, 'code'=>$code*/);
 	/*X*/		
 			$movementDocCode = $this->_generate_doc_code('FAC');
 			$arrayInvoice['lc_state'] = 'INVOICE_PENDANT';
@@ -739,7 +841,7 @@ class PurPurchasesController extends AppController {
 			'conditions'=>array(
 				'PurDetail.pur_purchase_id'=>$idMovement
 				),
-			'fields'=>array('InvItem.name', 'InvItem.code', 'PurDetail.price', 'PurDetail.quantity', 'InvItem.id'/*, 'PurPurchase.inv_supplier_id','InvPrice.price'*/)
+			'fields'=>array('InvItem.name', 'InvItem.code', 'PurDetail.ex_fob_price', 'PurDetail.quantity', 'InvItem.id'/*, 'PurPurchase.inv_supplier_id','InvPrice.price'*/)
 			));
 		
 		$formatedMovementDetails = array();
@@ -757,7 +859,7 @@ class PurPurchasesController extends AppController {
 			$formatedMovementDetails[$key] = array(
 				'itemId'=>$value['InvItem']['id'],
 				'item'=>'[ '. $value['InvItem']['code'].' ] '.$value['InvItem']['name'],
-				'price'=>$value['PurDetail']['price'],//llamar precio
+				'exFobPrice'=>$value['PurDetail']['ex_fob_price'],//llamar precio
 				'cantidad'=>$value['PurDetail']['quantity']//llamar cantidad
 				);
 		}

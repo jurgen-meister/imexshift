@@ -196,12 +196,14 @@
 					'id'=>'txtDescription'
 				));
 				
-				echo $this->BootstrapForm->input('ex_rate', array(
-					'label' => 'Tipo de Cambio:',
-					'value'=>$exRate,
-					'disabled'=>$disable,
-					'id'=>'txtExRate'
-				));
+				echo '<div id="boxExRate">';
+					echo $this->BootstrapForm->input('ex_rate', array(
+						'label' => 'Tipo de Cambio:',
+						'value'=>$exRate,
+						'disabled'=>'disabled',
+						'id'=>'txtExRate'
+					));
+				echo '</div>';
 				?>
 				<!-- ////////////////////////////////// END FORM INVOICE FIELDS /////////////////////////////////////// -->
 				
@@ -254,10 +256,10 @@
 								<?php
 								$total = 0;
 								for($i=0; $i<count($salDetails); $i++){
-									$subtotal = ($salDetails[$i]['cantidad'])*($salDetails[$i]['price']);
+									$subtotal = ($salDetails[$i]['cantidad'])*($salDetails[$i]['salePrice']);
 									echo '<tr>';																							//type="hidden" txtWarehouseId
 										echo '<td><span id="spaItemName'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['item'].'</span><input type="hidden" value="'.$salDetails[$i]['itemId'].'" id="txtItemId" ></td>';
-										echo '<td><span id="spaPrice'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['price'].'</span></td>';
+										echo '<td><span id="spaSalePrice'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['salePrice'].'</span></td>';
 										echo '<td><span id="spaQuantity'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['cantidad'].'</span></td>';
 										echo '<td><span id="spaWarehouse'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['warehouse'].'</span><input type="hidden" value="'.$salDetails[$i]['warehouseId'].'" id="txtWarehouseId'.$salDetails[$i]['itemId'].'" ></td>';
 										echo '<td><span id="spaStock'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['stock'].'</span></td>';

@@ -10,15 +10,15 @@
 				$documentStateColor = '';
 				$documentStateName = 'SIN ESTADO';
 				break;
-			case 'ORDER_PENDANT':
+			case 'NOTE_PENDANT':
 				$documentStateColor = 'label-warning';
 				$documentStateName = 'NOTA PENDIENTE';
 				break;
-			case 'ORDER_APPROVED':
+			case 'NOTE_APPROVED':
 				$documentStateColor = 'label-success';
 				$documentStateName = 'NOTA APROBADA';
 				break;
-			case 'ORDER_CANCELLED':
+			case 'NOTE_CANCELLED':
 				$documentStateColor = 'label-important';
 				$documentStateName = 'NOTA CANCELADA';
 				break;
@@ -46,22 +46,22 @@
 								$displayApproved = 'none';
 								$displayCancelled = 'none';
 								break;
-							case 'ORDER_PENDANT':
+							case 'NOTE_PENDANT':
 								$displayApproved = 'inline';
 								$displayCancelled = 'none';
 								break;
-							case 'ORDER_APPROVED':
+							case 'NOTE_APPROVED':
 								$displayApproved = 'none';
 								$displayCancelled = 'inline';
 								break;
-							case 'ORDER_CANCELLED':
+							case 'NOTE_CANCELLED':
 								$displayApproved = 'none';
 								$displayCancelled = 'none';
 								break;
 						}
 			?>
 			<?php
-			if($documentState == 'ORDER_PENDANT' OR $documentState == ''){
+			if($documentState == 'NOTE_PENDANT' OR $documentState == ''){
 				echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));	
 			}
 			?>
@@ -107,7 +107,7 @@
 				//////////////////////////////////START - block when APPROVED or CANCELLED///////////////////////////////////////////////////
 				$disable = 'disabled';
 
-				if($documentState == 'ORDER_PENDANT'){
+				if($documentState == 'NOTE_PENDANT'){
 					$disable = 'enabled';	
 				}
 				
@@ -191,13 +191,17 @@
 					'id'=>'txtDescription'
 				));
 				
-				echo $this->BootstrapForm->input('ex_rate', array(
-					'label' => 'Tipo de Cambio:',
-					'value'=>$exRate,
-					'disabled'=>$disable,
-					'id'=>'txtExRate'
-				));
-				
+				echo '<div id="boxExRate">';
+					echo $this->BootstrapForm->input('ex_rate', array(
+						'label' => 'Tipo de Cambio:',
+						'value'=>$exRate,
+						'disabled'=>'disabled',
+						'id'=>'txtExRate',
+					//	'step'=>0.01,
+					//	'min'=>0
+						'type'=>'text'
+					));
+				echo '</div>';
 				?>
 				<!-- ////////////////////////////////// END FORM ORDER FIELDS /////////////////////////////////////// -->
 				
@@ -227,7 +231,7 @@
 		<div class="widget-content tab-content">
 			<div id="tab1" class="tab-pane active">
 				
-				<?php if($documentState == 'ORDER_PENDANT' OR $documentState == ''){ ?>
+				<?php if($documentState == 'NOTE_PENDANT' OR $documentState == ''){ ?>
 					<a class="btn btn-primary" href='#' id="btnAddItem" title="Adicionar Item"><i class="icon-plus icon-white"></i></a>
 				<?php } ?>
 						
@@ -240,7 +244,7 @@
 									<th>Almacen</th>
 									<th>Stock</th>
 									<th>Subtotal</th>
-									<?php if($documentState == 'ORDER_PENDANT' OR $documentState == ''){ ?>
+									<?php if($documentState == 'NOTE_PENDANT' OR $documentState == ''){ ?>
 									<th class="columnItemsButtons"></th>
 									<?php }?>
 								</tr>
@@ -249,15 +253,15 @@
 								<?php
 								$total = 0;
 								for($i=0; $i<count($salDetails); $i++){
-									$subtotal = ($salDetails[$i]['cantidad'])*($salDetails[$i]['price']);
+									$subtotal = ($salDetails[$i]['cantidad'])*($salDetails[$i]['salePrice']);
 									echo '<tr>';																							//type="hidden" txtWarehouseId
 										echo '<td><span id="spaItemName'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['item'].'</span><input type="hidden" value="'.$salDetails[$i]['itemId'].'" id="txtItemId" ></td>';
-										echo '<td><span id="spaPrice'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['price'].'</span></td>';
+										echo '<td><span id="spaSalePrice'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['salePrice'].'</span></td>';
 										echo '<td><span id="spaQuantity'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['cantidad'].'</span></td>';
 								echo '<td><span id="spaWarehouse'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['warehouse'].'</span><input type="hidden" value="'.$salDetails[$i]['warehouseId'].'" id="txtWarehouseId'.$salDetails[$i]['itemId'].'" ></td>';
 								echo '<td><span id="spaStock'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['stock'].'</span></td>';
 										echo '<td><span id="spaSubtotal'.$salDetails[$i]['itemId'].'">'.$subtotal.'</span></td>';
-										if($documentState == 'ORDER_PENDANT' OR $documentState == ''){
+										if($documentState == 'NOTE_PENDANT' OR $documentState == ''){
 											echo '<td class="columnItemsButtons">';
 											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$salDetails[$i]['itemId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
 												
@@ -272,7 +276,7 @@
 					
 				<div class="row-fluid"> <!-- vers si borrar este row-fluid creo q si -->
 					
-					<?php if($documentState == 'ORDER_APPROVED'){ ?>
+					<?php if($documentState == 'NOTE_APPROVED'){ ?>
 						<div class="span10">	</div>
 						<div class="span1">
 							<h4>Total:</h4>	
@@ -328,7 +332,7 @@
 				//		echo '<br>';
 						$price='';
 						echo '<div id="boxModalPrice">';
-							echo $this->BootstrapForm->input('price', array(				
+							echo $this->BootstrapForm->input('sale_price', array(				
 							'label' => 'P/U s_o:',
 							'id'=>'txtModalPrice',
 							'value'=>$price,
