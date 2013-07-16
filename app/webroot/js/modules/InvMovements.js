@@ -8,6 +8,9 @@ $(document).ready(function(){
 	var arrayItemsAlreadySaved = []; 
 	startEventsWhenExistsItems();
 	
+	if(arr[3] === 'report'){
+		$('select').select2();
+	}
 	
 	/////////////START - Token Status///////////////
 	/*
@@ -360,6 +363,7 @@ $(document).ready(function(){
 			image: image
 		});	
 	}
+	
 	
 	function saveAll(){
 		var arrayItemsDetails = [];
