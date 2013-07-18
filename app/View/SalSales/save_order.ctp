@@ -282,7 +282,7 @@
 							<h4>Total:</h4>	
 						</div>
 						<div class="span1">
-							<h4 id="total" ><?php echo $total.' $us'; ?></h4>
+							<h4 id="total" ><?php echo $total.' Bs.'; ?></h4>
 						</div>
 					<?php }  else { ?>
 						<div class="span8">	</div>
@@ -290,7 +290,7 @@
 							<h4>Total:</h4>	
 						</div>
 						<div class="span3">
-							<h4 id="total" ><?php echo $total.' $us'; ?></h4>
+							<h4 id="total" ><?php echo $total.' Bs.'; ?></h4>
 						</div>
 					<?php }?>
 					
