@@ -79,7 +79,7 @@ class SalSalesController extends AppController {
 		$this->paginate = array(
 			"conditions"=>array(
 				"SalSale.lc_state !="=>"NOTE_LOGIC_DELETED",
-				'SalSale.lc_state LIKE'=> '%ORDER%',
+				'SalSale.lc_state LIKE'=> '%NOTE%',
 				"to_char(SalSale.date,'YYYY')"=> $period,
 			//	"InvMovementType.status"=> "entrada",
 				$filters
