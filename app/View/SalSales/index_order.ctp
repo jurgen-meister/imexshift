@@ -15,21 +15,21 @@
 			</div>
 			<div class="widget-content nopadding">
 			<!-- ////////////////////////////////////////INCIO - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
-			<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-search', 'novalidate' => true));?>
+			<?php echo $this->BootstrapForm->create('SalSale', array('class' => 'form-search', 'novalidate' => true));?>
 			<fieldset>
 						<?php
-						echo $this->BootstrapForm->input('code', array(				
+						echo $this->BootstrapForm->input('doc_code', array(				
 										//'label' => 'Codigo Entrada:',
 										'id'=>'txtCode',
-//										'value'=>$code,
-										'placeholder'=>'Codigo Entrada'
+										'value'=>$doc_code,
+										'placeholder'=>'Codigo'
 										));
 						?>
 						<?php
-						echo $this->BootstrapForm->input('document_code', array(				
-								'id'=>'txtCodeDocument',
-//								'value'=>$document_code,
-								'placeholder'=>'Codigo Documento'
+						echo $this->BootstrapForm->input('note_code', array(				
+								'id'=>'txtNoteCode',
+								'value'=>$note_code,
+								'placeholder'=>'Codigo de Nota de Venta'
 								));
 						?>
 

@@ -396,6 +396,13 @@ $(document).ready(function(){
 		if(confirm('Esta seguro de Eliminar el item?')){	
 
 			var itemIdForDelete = objectTableRowSelected.find('#txtItemId').val();  //
+			
+			//	this should be a function
+			var subtotal = $('#spaSubtotal'+itemIdForDelete).text();	
+			var total = parseFloat($('#total').text()) - Number(subtotal);
+			//	this should be a function
+			$('#total').text(parseFloat(total).toFixed(2)+' Bs.');
+			
 			arrayItemsAlreadySaved = jQuery.grep(arrayItemsAlreadySaved, function(value){
 				return value != itemIdForDelete;
 			});
@@ -534,7 +541,10 @@ row +='<td><span id="spaStock'+itemId+'">'+stock+'</span></td>';
 var warehouseId = $('#cbxModalWarehouses').val();		
 var warehouse = $('#cbxModalWarehouses option:selected').text();
 var stock = $('#txtModalStock').val();
-	var subtotal = ((quantity) * (salePrice));
+
+	var subtotal = Number(quantity) * Number(salePrice);
+	var total = parseFloat($('#total').text()) + Number(subtotal);
+
 		var error = validateItem(itemCodeName, quantity, parseFloat(salePrice).toFixed(2)/*, ''*/); 
 		if(error == ''){
 			
@@ -543,6 +553,7 @@ var stock = $('#txtModalStock').val();
 			createEventClickDeleteItemButton(itemId);
 			arrayItemsAlreadySaved.push(itemId);  //push into array of the added item
 			$('#modalAddItem').modal('hide');
+			$('#total').text(parseFloat(total).toFixed(2)+' Bs.');
 		}else{
 			$('#boxModalValidateItem').html('<ul>'+error+'</ul>');
 		}

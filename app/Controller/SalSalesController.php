@@ -35,8 +35,8 @@ class SalSalesController extends AppController {
 		
 		///////////////////////////////////////START - CREATING VARIABLES//////////////////////////////////////
 		$filters = array();
-		$code = '';
 		$doc_code = '';
+		$note_code = '';
 		$period = $this->Session->read('Period.name');
 		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
 		
@@ -45,13 +45,13 @@ class SalSalesController extends AppController {
 			$url = array('action'=>'index_order');
 			$parameters = array();
 			$empty=0;
-			if(isset($this->request->data['SalSale']['code']) && $this->request->data['SalSale']['code']){
-				$parameters['code'] = trim(strip_tags($this->request->data['SalSale']['code']));
+			if(isset($this->request->data['SalSale']['doc_code']) && $this->request->data['SalSale']['doc_code']){
+				$parameters['doc_code'] = trim(strip_tags($this->request->data['SalSale']['doc_code']));
 			}else{
 				$empty++;
 			}
-			if(isset($this->request->data['SalSale']['doc_code']) && $this->request->data['SalSale']['doc_code']){
-				$parameters['doc_code'] = trim(strip_tags($this->request->data['SalSale']['doc_code']));
+			if(isset($this->request->data['SalSale']['note_code']) && $this->request->data['SalSale']['note_code']){
+				$parameters['note_code'] = trim(strip_tags($this->request->data['SalSale']['note_code']));
 			}else{
 				$empty++;
 			}
@@ -65,13 +65,13 @@ class SalSalesController extends AppController {
 		////////////////////////////END - WHEN SEARCH IS SEND THROUGH POST//////////////////////////////////////
 		
 		////////////////////////////START - SETTING URL FILTERS//////////////////////////////////////
-		if(isset($this->passedArgs['code'])){
-			$filters['SalSale.code LIKE'] = '%'.strtoupper($this->passedArgs['code']).'%';
-			$code = $this->passedArgs['code'];
-		}
 		if(isset($this->passedArgs['doc_code'])){
 			$filters['SalSale.doc_code LIKE'] = '%'.strtoupper($this->passedArgs['doc_code']).'%';
 			$doc_code = $this->passedArgs['doc_code'];
+		}
+		if(isset($this->passedArgs['note_code'])){
+			$filters['SalSale.note_code LIKE'] = '%'.strtoupper($this->passedArgs['note_code']).'%';
+			$note_code = $this->passedArgs['note_code'];
 		}
 		////////////////////////////END - SETTING URL FILTERS//////////////////////////////////////
 		
@@ -93,8 +93,8 @@ class SalSalesController extends AppController {
 		
 		////////////////////////START - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
 		$this->set('salSales', $this->paginate('SalSale'));
-		$this->set('code', $code);
 		$this->set('doc_code', $doc_code);
+		$this->set('note_code', $note_code);
 		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
 		
 		
