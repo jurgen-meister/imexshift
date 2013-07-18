@@ -175,13 +175,14 @@
 					'disabled'=>$disable,
 					'id'=>'txtDescription'
 				));
-				
-				echo $this->BootstrapForm->input('ex_rate', array(
-					'label' => 'Tipo de Cambio:',
-					'value'=>$exRate,
-					'disabled'=>$disable,
-					'id'=>'txtExRate'
-				));
+				echo '<div id="boxExRate">';
+					echo $this->BootstrapForm->input('ex_rate', array(
+						'label' => 'Tipo de Cambio:',
+						'value'=>$exRate,
+						'disabled'=>'disabled',
+						'id'=>'txtExRate'
+					));
+				echo '</div>';
 				?>
 				<!-- ////////////////////////////////// END FORM INVOICE FIELDS /////////////////////////////////////// -->
 				
@@ -234,10 +235,10 @@
 								<?php
 								$total = 0;
 								for($i=0; $i<count($purDetails); $i++){
-									$subtotal = ($purDetails[$i]['cantidad'])*($purDetails[$i]['price']);
+									$subtotal = ($purDetails[$i]['cantidad'])*($purDetails[$i]['exFobPrice']);
 									echo '<tr>';
 										echo '<td><span id="spaItemName'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['item'].'</span><input type="hidden" value="'.$purDetails[$i]['itemId'].'" id="txtItemId" ></td>';
-										echo '<td><span id="spaPrice'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['price'].'</span></td>';
+										echo '<td><span id="spaExFobPrice'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['exFobPrice'].'</span></td>';
 										echo '<td><span id="spaQuantity'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['cantidad'].'</span></td>';
 										echo '<td><span id="spaSubtotal'.$purDetails[$i]['itemId'].'">'.$subtotal.'</span></td>';
 										if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){
@@ -295,7 +296,7 @@
 							</thead>
 							<tbody>
 								<?php
-								$total = 0;
+								$totalcost = 0;
 								for($i=0; $i<count($purPrices); $i++){
 									echo '<tr>';
 										echo '<td><span id="spaCostName'.$purPrices[$i]['costId'].'">'.$purPrices[$i]['cost'].'</span><input type="hidden" value="'.$purPrices[$i]['costId'].'" id="txtCostId" ></td>';
@@ -308,7 +309,7 @@
 											echo '</td>';
 										}
 									echo '</tr>';	
-									$total += $subtotal;
+									$totalcost += $purPrices[$i]['amount'];
 								}?>
 							</tbody>
 						</table>
@@ -321,7 +322,7 @@
 							<h4>Total:</h4>	
 						</div>
 						<div class="span1">
-							<h4 id="total" ><?php echo $total.' $us'; ?></h4>
+							<h4 id="totalcost" ><?php echo $totalcost.' $us'; ?></h4>
 						</div>
 					<?php }  else { ?>
 						<div class="span8">	</div>
@@ -329,7 +330,7 @@
 							<h4>Total:</h4>	
 						</div>
 						<div class="span3">
-							<h4 id="total" ><?php echo $total.' $us'; ?></h4>
+							<h4 id="totalcost" ><?php echo $totalcost.' $us'; ?></h4>
 						</div>
 					<?php }?>
 					
@@ -443,7 +444,7 @@
 						echo '<br>';
 						$price='';
 						echo '<div id="boxModalPrice">';
-							echo $this->BootstrapForm->input('price', array(				
+							echo $this->BootstrapForm->input('ex_fob_price', array(				
 							'label' => 'P/U s_o:',
 							'id'=>'txtModalPrice',
 							'value'=>$price,

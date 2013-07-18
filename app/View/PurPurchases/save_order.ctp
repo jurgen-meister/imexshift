@@ -65,9 +65,9 @@
 				echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));	
 			}
 			?>
-			<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Orden de Compra</a>
+			<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"><i class=" icon-ok icon-white"></i> Aprobar Orden de Compra</a>
 			<a href="#" id="btnLogicDeleteState" class="btn btn-danger" style="display:<?php echo $displayApproved;?>"><i class=" icon-trash icon-white"></i> Eliminar</a>
-			<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Orden de Compra</a>
+			<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"><i class=" icon-remove icon-white"></i> Cancelar Orden de Compra</a>
 			<?php
 				$displayPrint = 'none';
 				if($id <> ''){
@@ -172,13 +172,17 @@
 					'disabled'=>$disable,
 					'id'=>'txtDescription'
 				));
-				
-				echo $this->BootstrapForm->input('ex_rate', array(
-					'label' => 'Tipo de Cambio:',
-					'value'=>$exRate,
-					'disabled'=>$disable,
-					'id'=>'txtExRate'
-				));
+				echo '<div id="boxExRate">';
+					echo $this->BootstrapForm->input('ex_rate', array(
+						'label' => 'Tipo de Cambio:',
+						'value'=>$exRate,
+						'disabled'=>'disabled',
+						'id'=>'txtExRate',
+					//	'step'=>0.01,
+					//	'min'=>0
+						'type'=>'text'
+					));
+				echo '</div>';
 				?>
 				<!-- ////////////////////////////////// END FORM ORDER FIELDS /////////////////////////////////////// -->
 				
@@ -229,10 +233,10 @@
 								<?php
 								$total = 0;
 								for($i=0; $i<count($purDetails); $i++){
-									$subtotal = ($purDetails[$i]['cantidad'])*($purDetails[$i]['price']);
+									$subtotal = ($purDetails[$i]['cantidad'])*($purDetails[$i]['exFobPrice']);
 									echo '<tr>';
 										echo '<td><span id="spaItemName'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['item'].'</span><input type="hidden" value="'.$purDetails[$i]['itemId'].'" id="txtItemId" ></td>';
-										echo '<td><span id="spaPrice'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['price'].'</span></td>';
+										echo '<td><span id="spaExFobPrice'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['exFobPrice'].'</span></td>';
 										echo '<td><span id="spaQuantity'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['cantidad'].'</span></td>';
 										echo '<td><span id="spaSubtotal'.$purDetails[$i]['itemId'].'">'.$subtotal.'</span></td>';
 										if($documentState == 'ORDER_PENDANT' OR $documentState == ''){
@@ -305,7 +309,7 @@
 				//		echo '<br>';
 						$price='';
 						echo '<div id="boxModalPrice">';
-							echo $this->BootstrapForm->input('price', array(				
+							echo $this->BootstrapForm->input('ex_fob_price', array(				
 							'label' => 'Precio Unitario:',
 							'id'=>'txtModalPrice',
 							'value'=>$price,

@@ -78,7 +78,7 @@ class SalSalesController extends AppController {
 		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
 		$this->paginate = array(
 			"conditions"=>array(
-				"SalSale.lc_state !="=>"ORDER_LOGIC_DELETED",
+				"SalSale.lc_state !="=>"NOTE_LOGIC_DELETED",
 				'SalSale.lc_state LIKE'=> '%ORDER%',
 				"to_char(SalSale.date,'YYYY')"=> $period,
 			//	"InvMovementType.status"=> "entrada",
@@ -101,7 +101,7 @@ class SalSalesController extends AppController {
 		
 //		$this->paginate = array(
 //			'conditions' => array(
-//				'SalSale.lc_state !='=>'ORDER_LOGIC_DELETED'
+//				'SalSale.lc_state !='=>'NOTE_LOGIC_DELETED'
 //				,'SalSale.lc_state LIKE'=> '%ORDER%'
 //			),
 //			'order' => array('SalSale.id' => 'desc'),
@@ -117,6 +117,20 @@ class SalSalesController extends AppController {
 			$id = $this->passedArgs['id'];
 		}
 
+		$this->loadModel('AdmParameter');
+		$currency = $this->AdmParameter->AdmParameterDetail->find('first', array(
+			//	'fields'=>array('AdmParameterDetail.id'),
+				'conditions'=>array(
+					'AdmParameter.name'=>'Moneda',
+					'AdmParameterDetail.par_char1'=>'Dolares'
+				)
+			//	'recursive'=>-1
+			)); 
+//		debug($currency);
+		$currencyId = $currency['AdmParameterDetail']['id'];
+//		debug($currencyId);
+		
+		
 		$this->loadModel('AdmUser');
 		
 		$salAdmUsers = $this->AdmUser->AdmProfile->find('list');
@@ -133,7 +147,22 @@ class SalSalesController extends AppController {
 		$this->request->data = $this->SalSale->read(null, $id);
 	//	$date='';
 		$date=date('d/m/Y');
-		$exRate = '8.00';	//esto tiene q llamar al cambio del dia
+		//////////////////////////////////////////////////////////
+		$this->loadModel('AdmExchangeRate');
+		$xxxRate = $this->AdmExchangeRate->find('first', array(
+				'fields'=>array('AdmExchangeRate.value'),
+				'conditions'=>array(
+					'AdmExchangeRate.currency'=>$currencyId,
+					'AdmExchangeRate.date'=>$date
+				),
+				'recursive'=>-1
+			)); 		
+//		debug($xxxRate);
+		
+		
+		$exRate = $xxxRate['AdmExchangeRate']['value'];	//esto tiene q llamar al cambio del dia
+		////////////////////////////////////////////////////////////
+//		debug($exRate);
 		$genericCode ='';
 		//debug($this->request->data);
 	//	debug($salAdmUsers);
@@ -228,7 +257,7 @@ class SalSalesController extends AppController {
 			'conditions'=>array(
 				'SalDetail.sal_sale_id'=>$idMovement
 				),																									                             /*REVISAR ESTO V*/
-			'fields'=>array('InvItem.name', 'InvItem.code', 'SalDetail.price', 'SalDetail.quantity','SalDetail.inv_warehouse_id', 'InvItem.id', 'InvWarehouse.name','InvWarehouse.id', 'InvItem.id'/*, 'PurPurchase.inv_supplier_id','InvPrice.price'*/)
+			'fields'=>array('InvItem.name', 'InvItem.code', 'SalDetail.sale_price', 'SalDetail.quantity','SalDetail.inv_warehouse_id', 'InvItem.id', 'InvWarehouse.name','InvWarehouse.id', 'InvItem.id'/*, 'PurPurchase.inv_supplier_id','InvPrice.price'*/)
 			));
 		
 		$formatedMovementDetails = array();
@@ -246,7 +275,7 @@ class SalSalesController extends AppController {
 			$formatedMovementDetails[$key] = array(
 				'itemId'=>$value['InvItem']['id'],
 				'item'=>'[ '. $value['InvItem']['code'].' ] '.$value['InvItem']['name'],
-				'price'=>$value['SalDetail']['price'],//llamar precio
+				'salePrice'=>$value['SalDetail']['sale_price'],//llamar precio
 				'cantidad'=>$value['SalDetail']['quantity'],//llamar cantidad
 				'warehouseId'=>$value['InvWarehouse']['id'],
 				'warehouse'=>$value['InvWarehouse']['name'],//llamar almacen
@@ -518,7 +547,7 @@ class SalSalesController extends AppController {
 			}else{//insert
 				$movementCode = $this->_generate_code('VEN');
 				$movementDocCode = $this->_generate_doc_code('NOT');
-				$arrayMovement['lc_state'] = 'ORDER_PENDANT';
+				$arrayMovement['lc_state'] = 'NOTE_PENDANT';
 				$arrayMovement['lc_transaction'] = 'CREATE';
 				$arrayMovement['code'] = $movementCode;
 	$arrayMovement['doc_code'] = $movementDocCode;
@@ -682,7 +711,7 @@ class SalSalesController extends AppController {
 			
 			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
 			$arrayMovement = array('date'=>$date, 'sal_employee_id'=>$employee,'sal_tax_number_id'=>$taxNumber,'salesman_id'=>$salesman, 'description'=>$description, 'note_code'=>$note_code, 'ex_rate'=>$exRate);
-			$arrayMovement['lc_state'] = 'ORDER_APPROVED';
+			$arrayMovement['lc_state'] = 'NOTE_APPROVED';
 			$arrayMovement['id'] = $purchaseId;
 			
 			$arrayInvoice = array('date'=>$date, 'sal_employee_id'=>$employee,'sal_tax_number_id'=>$taxNumber,'salesman_id'=>$salesman, 'description'=>$description, 'note_code'=>$note_code, 'ex_rate'=>$exRate);		
@@ -816,7 +845,7 @@ class SalSalesController extends AppController {
 			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
 //			$error=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouse);
 //			if($error['error'] == 0){
-				$data = array('id'=>$purchaseId, 'lc_state'=>'ORDER_CANCELLED');
+				$data = array('id'=>$purchaseId, 'lc_state'=>'NOTE_CANCELLED');
 				if($this->SalSale->save($data)){
 //					$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
 					echo 'cancelado|'/*.$strItemsStock*/;
@@ -867,7 +896,7 @@ class SalSalesController extends AppController {
 //		$movementType = '';
 //		if($keyword == 'ENT'){$movementType = 'entrada';}
 //		if($keyword == 'SAL'){$movementType = 'salida';}
-		$movements = $this->SalSale->find('count', array('conditions'=>array('SalSale.lc_state'=>array('ORDER_PENDANT','ORDER_APPROVED','ORDER_CANCELLED')))); // there are duplicates :S, unless there is no movement delete
+		$movements = $this->SalSale->find('count', array('conditions'=>array('SalSale.lc_state'=>array('NOTE_PENDANT','NOTE_APPROVED','NOTE_CANCELLED','NOTE_LOGIC_DELETED')))); // there are duplicates :S, unless there is no movement delete
 		$quantity = $movements + 1; 
 		//$quantity = $this->InvMovement->getLastInsertID(); //hmm..
 		$code = 'VEN-'.$period.'-'.$quantity;
@@ -878,10 +907,10 @@ class SalSalesController extends AppController {
 		$period = $this->Session->read('Period.name');
 
 		if ($keyword == 'NOT'){
-			$movements = $this->SalSale->find('count', array('conditions'=>array('SalSale.lc_state'=>array('ORDER_PENDANT','ORDER_APPROVED','ORDER_CANCELLED')))); // there are duplicates :S, unless there is no movement delete
+			$movements = $this->SalSale->find('count', array('conditions'=>array('SalSale.lc_state'=>array('NOTE_PENDANT','NOTE_APPROVED','NOTE_CANCELLED','NOTE_LOGIC_DELETED')))); // there are duplicates :S, unless there is no movement delete
 			
 		}elseif ($keyword == 'FAC'){
-			$movements = $this->SalSale->find('count', array('conditions'=>array('SalSale.lc_state'=>array('INVOICE_PENDANT','INVOICE_APPROVED','INVOICE_CANCELLED')))); // there are duplicates :S, unless there is no movement delete
+			$movements = $this->SalSale->find('count', array('conditions'=>array('SalSale.lc_state'=>array('INVOICE_PENDANT','INVOICE_APPROVED','INVOICE_CANCELLED','INVOICE_LOGIC_DELETED')))); // there are duplicates :S, unless there is no movement delete
 			
 		}
 		$quantity = $movements + 1; 
@@ -1026,6 +1055,41 @@ class SalSalesController extends AppController {
 //		}
 				
 			$this->set(compact('pays'/*, 'amount'*/));
+		}
+	}
+	
+	
+	public function ajax_update_ex_rate(){
+		if($this->RequestHandler->isAjax()){
+			$date = $this->request->data['date']; 
+			
+			$this->loadModel('AdmParameter');
+			$currency = $this->AdmParameter->AdmParameterDetail->find('first', array(
+				//	'fields'=>array('AdmParameterDetail.id'),
+					'conditions'=>array(
+						'AdmParameter.name'=>'Moneda',
+						'AdmParameterDetail.par_char1'=>'Dolares'
+					)
+				//	'recursive'=>-1
+				)); 
+	//		debug($currency);
+			$currencyId = $currency['AdmParameterDetail']['id'];
+	//		debug($currencyId);
+			$this->loadModel('AdmExchangeRate');
+			$xxxRate = $this->AdmExchangeRate->find('first', array(
+					'fields'=>array('AdmExchangeRate.value'),
+					'conditions'=>array(
+						'AdmExchangeRate.currency'=>$currencyId,
+						'AdmExchangeRate.date'=>$date
+					),
+					'recursive'=>-1
+				)); 		
+	//		debug($xxxRate);
+			$exRate = $xxxRate['AdmExchangeRate']['value'];
+		
+			$this->set(compact('exRate'));			
+		}else{
+			$this->redirect($this->Auth->logout());
 		}
 	}
 	

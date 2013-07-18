@@ -74,15 +74,15 @@
 				<td><?php 
 						$documentState = $salSale['SalSale']['lc_state'];
 						switch ($documentState){
-							case 'ORDER_PENDANT':
+							case 'NOTE_PENDANT':
 								$stateColor = 'btn-warning';
 								$stateName = 'Nota Pendiente';
 								break;
-							case 'ORDER_APPROVED':
+							case 'NOTE_APPROVED':
 								$stateColor = 'btn-success';
 								$stateName = 'Nota Aprobada';
 								break;
-							case 'ORDER_CANCELLED':
+							case 'NOTE_CANCELLED':
 								$stateColor = 'btn-danger';
 								$stateName = 'Nota Cancelada';
 								break;						

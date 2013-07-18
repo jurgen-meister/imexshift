@@ -85,7 +85,7 @@ $(document).ready(function(){
 		}*/
 	}
 	//validates before add item quantity
-	function validateItem(item, quantity, price/*, documentQuantity*/){
+	function validateItem(item, quantity, salePrice/*, documentQuantity*/){
 		var error = '';
 		if(quantity == ''){
 			error+='<li>El campo "Cantidad" no puede estar vacio</li>'; 
@@ -102,7 +102,7 @@ $(document).ready(function(){
 //			}
 		}
 		
-		if(price == ''){
+		if(salePrice == ''){
 			error+='<li>El campo "P/U" no puede estar vacio</li>'; 
 		}/*else{
 //o si puede ser cero el precio?			
@@ -210,15 +210,15 @@ $(document).ready(function(){
 	function changeLabelDocumentState(state){
 		switch(state)
 		{
-			case 'ORDER_PENDANT':
+			case 'NOTE_PENDANT':
 				$('#documentState').addClass('label-warning');
 				$('#documentState').text('NOTA PENDIENTE');
 				break;
-			case 'ORDER_APPROVED':
+			case 'NOTE_APPROVED':
 				$('#documentState').removeClass('label-warning').addClass('label-success');
 				$('#documentState').text('NOTA APROBADA');
 				break;
-			case 'ORDER_CANCELLED':
+			case 'NOTE_CANCELLED':
 				$('#documentState').removeClass('label-success').addClass('label-important');
 				$('#documentState').text('NOTA CANCELADA');
 				break;
@@ -477,10 +477,10 @@ $(document).ready(function(){
 	}
 	
 	// (GC Ztep 3) function to fill Items list when saved in modal triggered by addItem()
-	function createRowItemTable(itemId, itemCodeName, price, quantity, warehouse, warehouseId, stock, subtotal){
+	function createRowItemTable(itemId, itemCodeName, salePrice, quantity, warehouse, warehouseId, stock, subtotal){
 		var row = '<tr>';
 		row +='<td><span id="spaItemName'+itemId+'">'+itemCodeName+'</span><input type="hidden" value="'+itemId+'" id="txtItemId" ></td>';
-		row +='<td><span id="spaPrice'+itemId+'">'+price+'</span></td>';
+		row +='<td><span id="spaSalePrice'+itemId+'">'+salePrice+'</span></td>';
 		row +='<td><span id="spaQuantity'+itemId+'">'+quantity+'</span></td>';
 row +='<td><span id="spaWarehouse'+itemId+'">'+warehouse+'</span><input type="hidden" value="'+warehouseId+'" id="txtWarehouseId'+itemId+'" ></td>';
 row +='<td><span id="spaStock'+itemId+'">'+stock+'</span></td>';
@@ -530,15 +530,15 @@ row +='<td><span id="spaStock'+itemId+'">'+stock+'</span></td>';
 		var quantity = $('#txtModalQuantity').val();
 		var itemId = $('#cbxModalItems').val();
 		var itemCodeName = $('#cbxModalItems option:selected').text();
-		var price = $('#txtModalPrice').val();
+		var salePrice = $('#txtModalPrice').val();
 var warehouseId = $('#cbxModalWarehouses').val();		
 var warehouse = $('#cbxModalWarehouses option:selected').text();
 var stock = $('#txtModalStock').val();
-	var subtotal = ((quantity) * (price));
-		var error = validateItem(itemCodeName, quantity, parseFloat(price).toFixed(2)/*, ''*/); 
+	var subtotal = ((quantity) * (salePrice));
+		var error = validateItem(itemCodeName, quantity, parseFloat(salePrice).toFixed(2)/*, ''*/); 
 		if(error == ''){
 			
-			createRowItemTable(itemId, itemCodeName, parseFloat(price).toFixed(2), parseInt(quantity,10), warehouse, warehouseId, stock/*, stock2*/, parseFloat(subtotal).toFixed(2));
+			createRowItemTable(itemId, itemCodeName, parseFloat(salePrice).toFixed(2), parseInt(quantity,10), warehouse, warehouseId, stock/*, stock2*/, parseFloat(subtotal).toFixed(2));
 			createEventClickEditItemButton(itemId);
 			createEventClickDeleteItemButton(itemId);
 			arrayItemsAlreadySaved.push(itemId);  //push into array of the added item
@@ -552,17 +552,17 @@ var stock = $('#txtModalStock').val();
 		var itemId = $('#cbxModalItems').val();
 		var quantity = $('#txtModalQuantity').val();
 		var itemCodeName = $('#cbxModalItems option:selected').text();
-var price = $('#txtModalPrice').val();
+var salePrice = $('#txtModalPrice').val();
 
 var warehouseId = $('#cbxModalWarehouses').val();		
 var warehouse = $('#cbxModalWarehouses option:selected').text();
 var stock = $('#txtModalStock').val();
 
-var subtotal = ((quantity) * (price));
-		var error = validateItem(itemCodeName, quantity, parseFloat(price).toFixed(2)/*, ''*/); 
+var subtotal = ((quantity) * (salePrice));
+		var error = validateItem(itemCodeName, quantity, parseFloat(salePrice).toFixed(2)/*, ''*/); 
 		if(error == ''){
 			$('#spaQuantity'+itemId).text(parseInt(quantity,10));
-			$('#spaPrice'+itemId).text(parseFloat(price).toFixed(2));
+			$('#spaSalePrice'+itemId).text(parseFloat(salePrice).toFixed(2));
 			
 			$('#spaWarehouse'+itemId).text(warehouse);
 			$('#txtWarehouseId'+itemId).val(warehouseId); ////////////////
@@ -639,24 +639,24 @@ var amount = $('#txtModalAmount').val();
 	function getItemsDetails(){		
 		var arrayItemsDetails = [];
 		var itemId = '';
-		var itemPrice = '';
+		var itemSalePrice = '';
 		var itemQuantity = '';
 		var itemWarehouse = '';
 //		var itemQuantityDocument = '';
 var exRate = $('#txtExRate').val();
 	
-		var itemExPrice = '';
+		var itemExSalePrice = '';
 		
 		$('#tablaItems tbody tr').each(function(){		
 			itemId = $(this).find('#txtItemId').val();
-			itemPrice = $(this).find('#spaPrice'+itemId).text();
+			itemSalePrice = $(this).find('#spaSalePrice'+itemId).text();
 			itemQuantity = $(this).find('#spaQuantity'+itemId).text();
 			itemWarehouse = $(this).find('#txtWarehouseId'+itemId).val();
 /*			if ($('#spaQuantityDocument'+itemId).length > 0){//exists
 				itemQuantityDocument = $(this).find('#spaQuantityDocument'+itemId).text();
 			}
-*/			itemExPrice = itemPrice * exRate;
-			arrayItemsDetails.push({'inv_item_id':itemId, 'price':itemPrice, 'quantity':itemQuantity, 'inv_warehouse_id':itemWarehouse, 'ex_price':parseFloat(itemExPrice).toFixed(2)/*, 'quantity_document':itemQuantityDocument*//*, 'stock2':itemStock2*/});
+*/			itemExSalePrice = itemSalePrice / exRate;
+			arrayItemsDetails.push({'inv_item_id':itemId, 'sale_price':itemSalePrice, 'quantity':itemQuantity, 'inv_warehouse_id':itemWarehouse, 'ex_sale_price':parseFloat(itemExSalePrice).toFixed(2)/*, 'quantity_document':itemQuantityDocument*//*, 'stock2':itemStock2*/});
 			
 		});
 		
@@ -839,7 +839,7 @@ var exRate = $('#txtExRate').val();
 			switch(arr[3]){
 				case 'save_order':
 					index = 'index_order';
-					type = 'ORDER_LOGIC_DELETED';
+					type = 'NOTE_LOGIC_DELETED';
 					break;	
 				case 'save_invoice':
 					index = 'index_invoice';
@@ -883,6 +883,23 @@ var exRate = $('#txtExRate').val();
 	$("#txtDate").datepicker({
 	  showButtonPanel: true
 	});
+	
+	$('#txtDate').focusout(function() {
+			ajax_update_ex_rate();			
+	});
+	
+	function ajax_update_ex_rate(){
+		$.ajax({
+		    type:"POST",
+		    url:moduleController + "ajax_update_ex_rate",			
+		    data:{date: $("#txtDate").val()},
+		    beforeSend: showProcessing(),
+				success:function(data){
+					$("#processing").text("");
+					$("#boxExRate").html(data);
+				}
+		});
+    }
 	
 	$("#txtModalDate").datepicker({
 	  showButtonPanel: true
@@ -999,7 +1016,9 @@ var exRate = $('#txtExRate').val();
             beforeSend: showProcessing(),
             //success: showControllersInside
 			success:function(data){
-				showControllersInside(data);
+				$("#processing").text("");
+		        $("#boxControllers").html(data);
+				//showControllersInside(data);
 //				$('#controllers').bind("change",function(){
 //					 ajax_list_actions_inside();
 //				});
@@ -1007,10 +1026,10 @@ var exRate = $('#txtExRate').val();
         });
     }
 	
-	function showControllersInside(data){
-        $("#processing").text("");
-        $("#boxControllers").html(data);
-    }
+//	function showControllersInside(data){
+//        $("#processing").text("");
+//        $("#boxControllers").html(data);
+//    }
 
 	$('#txtDate').keypress(function(){return false;});
 	$('#txtModalDate').keypress(function(){return false;});
@@ -1056,7 +1075,7 @@ var exRate = $('#txtExRate').val();
 					$('#txtCode').val(arrayCatch[1]);
 //					$('#columnStatePurchase').css('background-color','#F99C17');
 //					$('#columnStatePurchase').text('Orden Pendiente');
-changeLabelDocumentState('ORDER_PENDANT'); //#UNICORN
+changeLabelDocumentState('NOTE_PENDANT'); //#UNICORN
 					$('#btnApproveState').show();
 $('#btnLogicDeleteState').show();
 					$('#txtPurchaseIdHidden').val(arrayCatch[2]);
@@ -1156,7 +1175,7 @@ changeLabelDocumentState('INVOICE_PENDANT'); //#UNICORN
 //					$('#columnStatePurchase').css('background-color','#54AA54');
 //					$('#columnStatePurchase').text('Orden Aprobada');
 
-changeLabelDocumentState('ORDER_APPROVED'); //#UNICORN
+changeLabelDocumentState('NOTE_APPROVED'); //#UNICORN
 					$('#btnApproveState').hide();
 					$('#btnCancellState').show();
 					$('#btnSaveAll').hide();
@@ -1265,7 +1284,7 @@ changeLabelDocumentState('INVOICE_APPROVED'); //#UNICORN
 //					$('#columnStatePurchase').css('background-color','#BD362F');
 //					$('#columnStatePurchase').text('Orden Cancelada');
 
-changeLabelDocumentState('ORDER_CANCELLED'); //#UNICORN
+changeLabelDocumentState('NOTE_CANCELLED'); //#UNICORN
 					$('#btnCancellState').hide();
 					
 					showGrowlMessage('ok', 'Entrada cancelada.');
@@ -1305,7 +1324,7 @@ changeLabelDocumentState('ORDER_CANCELLED'); //#UNICORN
 //					$('#columnStatePurchase').css('background-color','#BD362F');
 //					$('#columnStatePurchase').text('Orden Cancelada');
 
-changeLabelDocumentState('ORDER_CANCELLED'); //#UNICORN
+changeLabelDocumentState('NOTE_CANCELLED'); //#UNICORN
 					$('#btnCancellState').hide();
 					showGrowlMessage('ok', 'Entrada cancelada.');
 					$('#boxMessage').html('');
@@ -1402,7 +1421,7 @@ changeLabelDocumentState('ORDER_CANCELLED'); //#UNICORN
 		$('#boxModalInitiateItemPrice').html(data);///////////////////////////////////////////////
 		
 		$('#txtModalQuantity').val(objectTableRowSelected.find('#spaQuantity'+itemIdForEdit).text());
-		$('#txtModalPrice').val(objectTableRowSelected.find('#spaPrice'+itemIdForEdit).text());
+		$('#txtModalPrice').val(objectTableRowSelected.find('#spaSalePrice'+itemIdForEdit).text());
 		
 		$('#cbxModalItems').empty();
 		$('#cbxModalItems').append('<option value="'+itemIdForEdit+'">'+objectTableRowSelected.find('td:first').text()+'</option>');
