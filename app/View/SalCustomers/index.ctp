@@ -3,6 +3,35 @@
 		<?php echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' => 'add'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo'));?>
 		<?php echo __('Lista de %s', __('Clientes'));?>
 	</h3>
+	
+	<div class="widget-box">
+			<div class="widget-title">
+				<span class="icon">
+					<i class="icon-search"></i>
+				</span>
+				<h5>Filtro</h5>
+			</div>
+			<div class="widget-content nopadding">
+			<!-- ////////////////////////////////////////INCIO - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
+			<?php echo $this->BootstrapForm->create('SalCustomer', array('class' => 'form-search', 'novalidate' => true));?>
+			<fieldset>
+						<?php
+						echo $this->BootstrapForm->input('name', array(											
+										'id'=>'txtName',
+										'value'=>$name,
+										'placeholder'=>'Nombre Cliente'
+										));
+						?>				
+
+					<?php
+						echo $this->BootstrapForm->submit('<i class="icon-search icon-white"></i>',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSearch', 'title'=>'Buscar'));
+					?>
+
+			</fieldset>
+			<?php echo $this->BootstrapForm->end();?>
+			<!-- ////////////////////////////////////////FIN - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->		
+			</div>
+		</div>
 
 	<div class="widget-box">
 	<div class="widget-title">
@@ -29,9 +58,16 @@
 			<td><?php echo h($salCustomer['SalCustomer']['phone']); ?>&nbsp;</td>
 			<td><?php echo h($salCustomer['SalCustomer']['email']); ?>&nbsp;</td>				
 			<td class="actions">
-				<?php echo $this->Html->link(__('View'), array('action' => 'view', $salCustomer['SalCustomer']['id'])); ?>
-				<?php echo $this->Html->link(__('Edit'), array('action' => 'edit', $salCustomer['SalCustomer']['id'])); ?>
-				<?php echo $this->Form->postLink(__('Delete'), array('action' => 'delete', $salCustomer['SalCustomer']['id']), null, __('Are you sure you want to delete # %s?', $salCustomer['SalCustomer']['id'])); ?>
+				<?php //echo $this->Html->link(__('View'), array('action' => 'view', $salCustomer['SalCustomer']['id'])); ?>
+				<?php 
+					   $url = array();
+							$parameters = $this->passedArgs;
+						
+							
+							$url['action'] = 'edit';
+							$parameters['id'] = $salCustomer['SalCustomer']['id'];
+					   echo $this->Html->link('<i class= "icon-pencil icon-white"></i>',array('action' => 'edit', $salCustomer['SalCustomer']['id']),array('class' => 'btn btn-primary', 'escape'=>false, 'title'=>'Editar')); ?>
+				<?php echo $this->Form->postLink('<i class= "icon-trash icon-white"></i>', array('action' => 'delete', $salCustomer['SalCustomer']['id']), array('class'=>'btn btn-danger', 'escape'=>false, 'title' => 'Eliminar'), __('Are you sure you want to delete # %s?', $salCustomer['SalCustomer']['id'])); ?>
 			</td>
 		</tr>
 	<?php endforeach; ?>
