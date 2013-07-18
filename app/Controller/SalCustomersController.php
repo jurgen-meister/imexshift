@@ -32,8 +32,48 @@ class SalCustomersController extends AppController {
  * @return void
  */
 	public function index() {
+		$filters = array();
+		$name = '';
+		////////////////////////////START - WHEN SEARCH IS SEND THROUGH POST//////////////////////////////////////
+		if($this->request->is("post")) {
+			$url = array('action'=>'index');
+			$parameters = array();
+			$empty=0;
+			if(isset($this->request->data['SalCustomer']['name']) && $this->request->data['SalCustomer']['name']){
+				$parameters['name'] = trim(strip_tags($this->request->data['SalCustomer']['name']));
+			}else{
+				$empty++;
+			}
+			
+			if($empty == 1){
+				$parameters['search']='empty';
+			}else{
+				$parameters['search']='yes';
+			}
+			$this->redirect(array_merge($url,$parameters));
+		}
+		////////////////////////////END - WHEN SEARCH IS SEND THROUGH POST//////////////////////////////////////
+		
+		////////////////////////////START - SETTING URL FILTERS//////////////////////////////////////
+		if(isset($this->passedArgs['name'])){
+			$filters['SalCustomer.name LIKE'] = '%'.strtoupper($this->passedArgs['name']).'%';
+			$name = $this->passedArgs['name'];
+		}		
+		////////////////////////////END - SETTING URL FILTERS//////////////////////////////////////
+		
+		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////	
+		
+		$this->paginate = array(
+			'conditions' => array($filters),
+			'order' => array('SalCustomer.name' => 'asc'),
+			//'limit' => 15
+		);
+		////////////////////////////END - SETTING PAGINATING VARIABLES//////////////////////////////////////
 		$this->SalCustomer->recursive = 0;
+		////////////////////////START - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
 		$this->set('salCustomers', $this->paginate());
+		$this->set('name', $name);
+		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
 	}
 
 /**
