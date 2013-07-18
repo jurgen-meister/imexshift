@@ -66,13 +66,70 @@ class InvMovementsController extends AppController {
 	
 	//////////////////////////////////////////// START - REPORT ////////////////////////////////////////////////
 	public function report(){
-		$this->loadModel("InvCategory");
-		$category = $this->InvCategory->find("list");
-		$this->loadModel("InvBrand");
-		$brand = $this->InvBrand->find("list");
-		$this->set(compact("category", "brand"));
+		$this->loadModel("InvWarehouse");
+		$warehouse = $this->InvWarehouse->find('list');
+		$item = $this->_find_items();
+		$this->set(compact("warehouse", "item"));
 	}
-	//////////////////////////////////////////// END - REPORT /////////////////////////////////////////////////
+	
+	private function _find_items($type = 'none', $selected = array()){
+		$conditions = array();
+		$order = array('InvItem.name');
+		switch ($type){
+			case 'category':
+				$conditions = array('InvItem.inv_category_id'=>$selected);
+				$order = array('InvCategory.name');
+				break;
+			case 'brand':
+				$conditions = array('InvItem.inv_brand_id'=>$selected);
+				$order = array('InvBrand.name');
+				break;
+		}
+			
+		$this->loadModel("InvItem");
+		$this->InvItem->unbindModel(array('hasMany' => array('InvPrice', 'InvCategory', 'InvMovementDetail', 'InvItemsSupplier')));
+		return $this->InvItem->find("all", array(
+					"fields"=>array('InvItem.code', 'InvItem.name', 'InvCategory.name', 'InvBrand.name'),
+					"conditions"=>$conditions,
+					"order"=>$order
+				));
+	}
+	
+	public function ajax_get_group_items_and_filters(){
+		if($this->RequestHandler->isAjax()){
+			$type = $this->request->data['type'];
+			$group = array();
+			switch ($type) {
+				case 'category':
+					$this->loadModel("InvCategory");
+					$group = $this->InvCategory->find("list", array("order"=>array("InvCategory.name")));
+					$this->set('group', $group);
+					break;
+				case 'brand':
+					$this->loadModel("InvBrand");
+					$group = $this->InvBrand->find("list", array("order"=>array("InvBrand.name")));
+					$this->set('group', $group);
+					break;
+			}
+			$item = $this->_find_items($type, array_keys($group));
+			$this->set(compact("item"));
+		}
+	}
+	
+	public function ajax_get_group_items(){
+		if($this->RequestHandler->isAjax()){
+			$type = $this->request->data['type'];
+			if(isset($this->request->data['selected'])){
+				$selected = $this->request->data['selected'];
+			}else{
+				$selected = array(); 
+			}
+			$item = $this->_find_items($type, $selected);
+			$this->set(compact("item"));
+		}
+	}
+
+		//////////////////////////////////////////// END - REPORT /////////////////////////////////////////////////
 	
 	
 	
