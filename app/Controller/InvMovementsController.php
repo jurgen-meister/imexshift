@@ -869,6 +869,7 @@ class InvMovementsController extends AppController {
 			$documentCode = $this->request->data['documentCode'];
 			$movementStatus = $this->request->data['movementStatus'];
 			$code = $this->request->data['code'];
+			$movementState = $this->request->data['movementState'];
 			////////////////////////////////////////////END - AJAX////////////////////////////////////////////////////////
 			
 			
@@ -878,10 +879,11 @@ class InvMovementsController extends AppController {
 
 			if($movementId <> ''){//update
 				$arrayMovement['id'] = $movementId;
+				$arrayMovement['lc_state'] = $movementState; 
 			}else{//insert
 				$code = $this->_generate_code($movementStatus);
 				if($code == 'error'){$error++;}//IF ERROR
-				$arrayMovement['lc_state'] = 'PENDANT'; 
+				$arrayMovement['lc_state'] = $movementState; 
 				$arrayMovement['code'] = $code;
 			}
 			
@@ -890,26 +892,31 @@ class InvMovementsController extends AppController {
 			////////////////////////////////////////////END - PARAMETERS////////////////////////////////////////////////////////
 			
 
-			
-			////////////////////////////////////////////START-SAVE////////////////////////////////////////////////////////
+			$validation['error'] = 0;
+			////////////////////////////////////////////START- CORE SAVE////////////////////////////////////////////////////////
 			if($error == 0){
-				$res = $this->InvMovement->saveMovement($dataDelete, $dataSave);//with transaction in the model
-				$movementIdSaved = 0;//default value if error exists
-				$action = 'inserted';
-				if($res <> 'error'){
-					$movementIdSaved = $res;
-					if($movementId <> ''){
-						$action = 'updated';
-					}
-					$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
-					echo $action.'|'.$movementIdSaved.'|'.$code.'|'.$strItemsStock;
-				}else{
-					echo 'error';
+			/////////////////////START - SAVE/////////////////////////////	
+				if(($movementStatus == 'SAL' AND $movementState == 'APPROVED') OR ($movementStatus == 'ENT' AND $movementState == 'CANCELLED')){
+					$validation=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouse);
 				}
+				if($validation['error'] == 0){
+					$res = $this->InvMovement->saveMovement($dataDelete, $dataSave);//with transaction in the model
+					if($res <> 'error'){
+						$movementIdSaved = $res;
+						$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
+						echo $movementState.'|'.$movementIdSaved.'|'.$code.'|'.$strItemsStock;
+					}else{
+						echo 'ERROR';
+					}
+				}else{
+						echo 'VALIDATION|'.$validation['itemsStocks'];
+				}
+				
+			/////////////////////END - SAVE////////////////////////////////	
 			}else{
-				echo 'error';
+				echo 'ERROR';
 			}
-			////////////////////////////////////////////END-SAVE////////////////////////////////////////////////////////
+			////////////////////////////////////////////END-CORE SAVE////////////////////////////////////////////////////////
 		}
 	}
 	
@@ -922,6 +929,7 @@ class InvMovementsController extends AppController {
 			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
 			$documentCode = $this->request->data['documentCode'];
 			$movementIdOut = $this->request->data['movementId'];
+			$movementState = $this->request->data['movementState'];
 			$movementIdIn = '';
 			if($documentCode <> ''){
 				try{
@@ -953,14 +961,16 @@ class InvMovementsController extends AppController {
 			if($movementIdOut <> ''){//update
 				$arrayMovementOut['id'] = $movementIdOut;
 				$arrayMovementIn['id'] = $movementIdIn;
+				$arrayMovementOut['lc_state'] = $movementState;
+				$arrayMovementIn['lc_state'] = $movementState;
 			}else{//insert
-				$arrayMovementOut['lc_state'] = 'PENDANT';
+				$arrayMovementOut['lc_state'] = $movementState;
 				$arrayMovementOut['document_code']=$documentCode;
 				$salCode = $this->_generate_code('SAL');
 				if($salCode == 'error'){$error++;}//IF ERROR
 				$arrayMovementOut['code'] = $salCode;
 				
-				$arrayMovementIn['lc_state'] = 'PENDANT';
+				$arrayMovementIn['lc_state'] = $movementState;
 				$arrayMovementIn['document_code']=$documentCode;
 				$entCode = $this->_generate_code('ENT');
 				if($entCode == 'error'){$error++;}//IF ERROR
@@ -974,298 +984,35 @@ class InvMovementsController extends AppController {
 			$dataDelete = array($movementIdOut, $movementIdIn);
 			////////////////////////////////////////////END - PARAMETERS////////////////////////////////////////////////////////
 			
-			
-			////////////////////////////////////////////START-SAVE////////////////////////////////////////////////////////
+			$validation['error'] = 0;
+			////////////////////////////////////////////START-CORE SAVE////////////////////////////////////////////////////////
 			if($error == 0){
-				$res = $this->InvMovement->saveMovement($dataDelete, $dataSave);//with transaction in the model
-				$movementIdInsertedOut = 0;//default value if error exists
-				$action = 'inserted';
-				if($res <> 'error'){
-					$movementIdInsertedOut = $res;
-					if($movementIdOut <> ''){
-						$action = 'updated';
+			/////////////////////START - SAVE/////////////////////////////	
+				
+				if($movementState == 'APPROVED'){
+					$validation=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouseOut);
+				}
+				if($movementState == 'CANCELLED'){
+					$validation=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouseIn);
+				}
+				if($validation['error'] == 0){
+					$res = $this->InvMovement->saveMovement($dataDelete, $dataSave);//with transaction in the model
+					if($res <> 'error'){
+						$movementIdInsertedOut = $res;
+						$strItemsStockOut = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouseOut);
+						$strItemsStockIn = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouseIn);
+						echo $movementState.'|'.$movementIdInsertedOut.'|'.$documentCode.'|'.$strItemsStockOut.'|'.$strItemsStockIn;
+					}else{
+						echo 'ERROR';
 					}
-					$strItemsStockOut = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouseOut);
-					$strItemsStockIn = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouseIn);
-					echo $action.'|'.$movementIdInsertedOut.'|'.$documentCode.'|'.$strItemsStockOut.'|'.$strItemsStockIn;
 				}else{
-					echo 'error';
+						echo 'VALIDATION|'.$validation['itemsStocks'];
 				}
+			/////////////////////START - SAVE/////////////////////////////		
 			}else{
-				echo 'error';
+				echo 'ERROR';
 			}
-			////////////////////////////////////////////END-SAVE////////////////////////////////////////////////////////
-		}
-	}
-	
-	public function ajax_change_state_approved_warehouses_transfer(){
-		if($this->RequestHandler->isAjax()){
-			////////////////////////////////////////////INICIO-CAPTURAR AJAX////////////////////////////////////////////////////////
-			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
-			$documentCode = $this->request->data['documentCode'];
-			$movementIdOut = $this->request->data['movementId'];
-			//debug($movementIdOut);
-			$movementIdIn = '';
-			if($documentCode <> ''){
-				$movementIdIn = $this->InvMovement->field('InvMovement.id', array(
-					'InvMovement.document_code'=>$documentCode,
-					'InvMovement.id !='=>$movementIdOut
-					));
-			}
-			//debug($movementIdIn);
-			$date = $this->request->data['date'];
-			$warehouseOut = $this->request->data['warehouseOut'];
-			$warehouseIn = $this->request->data['warehouseIn'];
-			
-			$description = $this->request->data['description'];
-			$movementTypeOut = 3;//Traspaso Almacenes Salida
-			$movementTypeIn = 4;//Traspaso Almacenes Entrada
-			////////////////////////////////////////////FIN-CAPTURAR AJAX////////////////////////////////////////////////////////
-			
-			
-			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
-			$arrayMovementOut = array('date'=>$date, 'inv_warehouse_id'=>$warehouseOut, 'inv_movement_type_id'=>$movementTypeOut, 'description'=>$description);
-			$arrayMovementIn = array('date'=>$date, 'inv_warehouse_id'=>$warehouseIn, 'inv_movement_type_id'=>$movementTypeIn, 'description'=>$description);
-			
-			if($movementIdOut <> ''){//update
-				$arrayMovementOut['id'] = $movementIdOut;
-				$arrayMovementIn['id'] = $movementIdIn;
-				$arrayMovementOut['lc_state'] = 'APPROVED';
-				$arrayMovementIn['lc_state'] = 'APPROVED';
-				$arrayMovementOut['lc_transaction'] = 'MODIFY';
-				$arrayMovementIn['lc_transaction'] = 'MODIFY';
-			}
-			/*
-			else{//insert
-				$arrayMovementOut['lc_state'] = 'PENDANT';
-				$arrayMovementOut['lc_transaction'] = 'CREATE';
-				$arrayMovementOut['document_code']=$documentCode;
-				$arrayMovementOut['code'] = $this->_generate_code('SAL');
-				
-				$arrayMovementIn['lc_state'] = 'PENDANT';
-				$arrayMovementIn['lc_transaction'] = 'CREATE';
-				$arrayMovementIn['document_code']=$documentCode;
-				$arrayMovementIn['code'] = $this->_generate_code('ENT');
-			}
-			*/
-			$dataOut = array('InvMovement'=>$arrayMovementOut, 'InvMovementDetail'=>$arrayItemsDetails);
-			$dataIn = array('InvMovement'=>$arrayMovementIn, 'InvMovementDetail'=>$arrayItemsDetails);
-			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
-				
-					
-			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////
-			$errorOut=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouseOut);//show errors of movement OUT 'cause movement IN doesn't need validation
-			if($errorOut['error'] == 0){
-				/*
-				if($movementId <> ''){//update
-					if($this->InvMovement->InvMovementDetail->deleteAll(array('InvMovementDetail.inv_movement_id'=>$movementId))){
-						if($this->InvMovement->saveAssociated($data)){
-							$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
-							echo 'aprobado|'.$strItemsStock;
-						}
-					}
-				}*/
-				if($movementIdOut <> ''){//update
-					$this->InvMovement->InvMovementDetail->deleteAll(array('InvMovementDetail.inv_movement_id'=>$movementIdOut));
-					$this->InvMovement->InvMovementDetail->deleteAll(array('InvMovementDetail.inv_movement_id'=>$movementIdIn));
-					$this->InvMovement->saveAssociated($dataOut);
-					$this->InvMovement->saveAssociated($dataIn);
-					$strItemsStockOut = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouseOut);
-					$strItemsStockIn = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouseIn);
-					echo 'aprobado|'.$strItemsStockOut.'|'.$strItemsStockIn;
-				}
-			}else{
-				$strItemsStockIn = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouseIn);
-				echo 'error|'.$errorOut['itemsStocks'].'|'. $strItemsStockIn;
-			}
-			
-			////////////////////////////////////////////FIN-SAVE////////////////////////////////////////////////////////		
-		}
-	}
-	
-	
-	public function ajax_change_state_cancelled_warehouses_transfer(){
-		if($this->RequestHandler->isAjax()){
-			////////////////////////////////////////////INICIO-CAPTURAR AJAX////////////////////////////////////////////////////////
-			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
-			$documentCode = $this->request->data['documentCode'];
-			$movementIdOut = $this->request->data['movementId'];
-			//$warehouseOut = $this->request->data['warehouseOut'];
-			//$warehouseIn = $this->request->data['warehouseIn'];
-			
-			
-			
-			$movementIdIn = '';
-			if($documentCode <> ''){
-				$movementIdIn = $this->InvMovement->field('InvMovement.id', array(
-					'InvMovement.document_code'=>$documentCode,
-					'InvMovement.id !='=>$movementIdOut
-					));
-			}
-			$warehouseOut = $this->InvMovement->field('InvMovement.inv_warehouse_id', array('InvMovement.id'=>$movementIdOut));
-			$warehouseIn = $this->InvMovement->field('InvMovement.inv_warehouse_id', array('InvMovement.id'=>$movementIdIn));
-			////////////////////////////////////////////FIN-CAPTURAR AJAX////////////////////////////////////////////////////////
-			
-			
-			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
-			$arrayMovementOut = array();
-			$arrayMovementIn = array();
-			
-			if($movementIdOut <> ''){//update
-				$arrayMovementOut['id'] = $movementIdOut;
-				$arrayMovementIn['id'] = $movementIdIn;
-				$arrayMovementOut['lc_state'] = 'CANCELLED';
-				$arrayMovementIn['lc_state'] = 'CANCELLED';
-				$arrayMovementOut['lc_transaction'] = 'MODIFY';
-				$arrayMovementIn['lc_transaction'] = 'MODIFY';
-			}
-			
-			$data = array(array('InvMovement'=>$arrayMovementOut), array('InvMovement'=>$arrayMovementIn));
-			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
-				
-					
-			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////
-			$errorIn=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouseIn);
-			if($errorIn['error'] == 0){
-				if($this->InvMovement->saveMany($data)){
-					$strItemsStockOut = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouseOut);
-					$strItemsStockIn = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouseIn);
-					echo 'cancelado|'.$strItemsStockIn.'|'.$strItemsStockOut;
-				}
-			}else{
-				$strItemsStockOut = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouseOut);
-				echo 'error|'.$errorIn['itemsStocks'].'|'.$strItemsStockOut;
-			}
-			////////////////////////////////////////////FIN-SAVE////////////////////////////////////////////////////////		
-		}
-	}
-	
-	
-	public function ajax_change_state_approved_movement_in(){
-		if($this->RequestHandler->isAjax()){
-			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
-			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
-			$movementId = $this->request->data['movementId'];
-			$warehouse = $this->request->data['warehouse'];
-
-			$date = $this->request->data['date'];
-			$description = $this->request->data['description'];
-			$movementType = $this->request->data['movementType'];
-			$documentCode = $this->request->data['documentCode'];
-			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
-			
-			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
-			$arrayRemit = array('date'=>$date, 'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType, 'description'=>$description);
-			$arrayRemit['lc_state'] = 'APPROVED';
-			$arrayRemit['id'] = $movementId;
-			if($documentCode <> ''){
-				$arrayRemit['document_code']=$documentCode;
-			}
-			
-			$data = array('InvMovement'=>$arrayRemit, 'InvMovementDetail'=>$arrayItemsDetails);
-			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
-			
-			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////
-			if($movementId <> ''){//update
-				if($this->InvMovement->InvMovementDetail->deleteAll(array('InvMovementDetail.inv_movement_id'=>$movementId))){
-					if($this->InvMovement->saveAssociated($data)){
-						$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
-						echo 'aprobado|'. $strItemsStock;
-					}
-				}
-			}
-			////////////////////////////////////////////FIN-SAVE////////////////////////////////////////////////////////
-		}
-	}
-
-	public function ajax_change_state_approved_movement_out(){
-		if($this->RequestHandler->isAjax()){
-			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
-			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
-			$movementId = $this->request->data['movementId'];
-			$warehouse = $this->request->data['warehouse'];
-
-			$date = $this->request->data['date'];
-			$description = $this->request->data['description'];
-			$movementType = $this->request->data['movementType'];
-			$documentCode = $this->request->data['documentCode'];
-			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
-			
-			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
-			$arrayMovement = array('date'=>$date, 'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType, 'description'=>$description);
-			$arrayMovement['lc_state'] = 'APPROVED';
-			$arrayMovement['id'] = $movementId;
-			if($documentCode <> ''){
-				$arrayMovement['document_code']=$documentCode;
-			}
-			
-			$data = array('InvMovement'=>$arrayMovement, 'InvMovementDetail'=>$arrayItemsDetails);
-			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
-			
-			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////
-			$error=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouse);
-			if($error['error'] == 0){
-				if($movementId <> ''){//update
-					if($this->InvMovement->InvMovementDetail->deleteAll(array('InvMovementDetail.inv_movement_id'=>$movementId))){
-						if($this->InvMovement->saveAssociated($data)){
-							$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
-							echo 'aprobado|'.$strItemsStock;
-						}
-					}
-				}
-			}else{
-				echo 'error|'.$error['itemsStocks'];
-			}
-			
-			////////////////////////////////////////////FIN-SAVE////////////////////////////////////////////////////////		
-		}
-	}
-	
-	
-	
-	public function ajax_change_state_cancelled_movement_in(){
-		if($this->RequestHandler->isAjax()){
-			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
-			$movementId = $this->request->data['movementId'];
-			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
-			//$warehouse = $this->request->data['warehouse']; //combobox is disabled doesn't send nothing
-			$warehouse = $this->InvMovement->field('InvMovement.inv_warehouse_id', array('InvMovement.id'=>$movementId));
-			//debug($warehouse);
-			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
-			$error=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouse);
-			if($error['error'] == 0){
-				$data = array('id'=>$movementId, 'lc_state'=>'CANCELLED');
-				if($this->InvMovement->save($data)){
-					$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
-					echo 'cancelado|'.$strItemsStock;
-				}
-			}else{
-				echo 'error|'.$error['itemsStocks'];
-			}
-						
-		}
-	}
-	
-	public function ajax_change_state_cancelled_movement_out(){
-		if($this->RequestHandler->isAjax()){
-			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
-			$movementId = $this->request->data['movementId'];
-			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
-			//$warehouse = $this->request->data['warehouse']; //combobox is disabled doesn't send nothing
-			$warehouseId = $this->InvMovement->field('InvMovement.inv_warehouse_id', array('InvMovement.id'=>$movementId));
-			//debug($warehouse);
-			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
-			//$error=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouseId);
-			//if($error == ''){
-				$data = array('id'=>$movementId, 'lc_state'=>'CANCELLED');
-				if($this->InvMovement->save($data)){
-					$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouseId);
-					echo 'cancelado|'.$strItemsStock;
-				}
-			//}else{
-			//	echo 'error|'.$error;
-			//}
-						
+			////////////////////////////////////////////END-CORE SAVE////////////////////////////////////////////////////////
 		}
 	}
 	
