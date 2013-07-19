@@ -98,4 +98,25 @@ class InvMovement extends AppModel {
 		)
 	);
 
+	public function saveMovement($dataDelete, $dataSave){
+		$dataSource = $this->getDataSource();
+		$dataSource->begin();
+		//Delete when update
+		if($dataDelete[0] <> ''){
+			if(!$this->InvMovementDetail->deleteAll(array('InvMovementDetail.inv_movement_id'=>$dataDelete))){
+				$dataSource->rollback();
+				return 'error';
+			}
+		}
+		//Save for insert or update
+		if($this->saveAll($dataSave, array('deep'=>true))){
+			$dataSource->commit();
+			return $this->id;
+		}else{
+			$dataSource->rollback();
+			return 'error';
+		}	
+	}
+	
+//END MODEL
 }

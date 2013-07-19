@@ -30,7 +30,7 @@
 		<div class="widget-content nopadding">
 			<?php 
 				/////////////////START - SETTINGS BUTTON CANCEL /////////////////
-				$url=array('action'=>'index_in');
+				$url=array('action'=>'index_out');
 				$parameters = $this->passedArgs;
 				if(!isset($parameters['search'])){
 					unset($parameters['document_code']);

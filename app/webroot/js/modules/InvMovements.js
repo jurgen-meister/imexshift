@@ -412,11 +412,17 @@ $(document).ready(function(){
 
 		var error = validateBeforeSaveAll(arrayItemsDetails);
 		if( error === ''){
-			if(arr[3] === 'save_in' || arr[3] === 'save_purchase_in'){
-				ajax_save_movement_in(arrayItemsDetails);
+			if(arr[3] === 'save_in'){
+				ajax_save_movement(arrayItemsDetails, 'ENT', 0);
 			}
-			if(arr[3] === 'save_out' || arr[3] === 'save_sale_out'){
-				ajax_save_movement_out(arrayItemsDetails);
+			if(arr[3] === 'save_purchase_in'){
+				ajax_save_movement(arrayItemsDetails, 'ENT', 1);
+			}
+			if(arr[3] === 'save_out'){
+				ajax_save_movement(arrayItemsDetails, 'SAL', 0);
+			}
+			if(arr[3] === 'save_sale_out'){
+				ajax_save_movement(arrayItemsDetails, 'SAL', 2);
 			}
 			if(arr[3] === 'save_warehouses_transfer'){
 				ajax_save_warehouses_transfer(arrayItemsDetails);
@@ -602,117 +608,61 @@ $(document).ready(function(){
 	//////////////////////////////////BEGIN-AJAX FUNCTIONS//////////////////////
 	////************************************************************************//
 
-
-
-	//Save movement IN
-	function ajax_save_movement_in(arrayItemsDetails){
-		var movementType =1;//Purchase
+	//Save movement 
+	function ajax_save_movement(arrayItemsDetails, movementStatus, movementType){
 		var documentCode ='NO';
-		if ($('#cbxMovementTypes').length > 0){//existe
+		if ($('#cbxMovementTypes').length > 0){//exists
 			movementType = $('#cbxMovementTypes').val();
 		}
-		if ($('#txtDocumentCode').length > 0){//existe
+		
+		if ($('#txtDocumentCode').length > 0){//exists
 			documentCode = $('#txtDocumentCode').val();
 		}
+		
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_save_movement_in",			
-            data:{arrayItemsDetails: arrayItemsDetails 
+            url:moduleController + "ajax_save_movement",			
+            data:{ arrayItemsDetails: arrayItemsDetails 
 				  ,movementId:$('#txtMovementIdHidden').val()
 				  ,date:$('#txtDate').val()
 				  ,warehouse:$('#cbxWarehouses').val()
 				  ,movementType:movementType
 				  ,description:$('#txtDescription').val()
 				  ,documentCode:documentCode
+				  ,code:$('#txtCode').val()
+				  ,movementStatus:movementStatus
 			  },
             beforeSend: showProcessing(),
             success: function(data){
 				var arrayCatch = data.split('|');
 
-				if(arrayCatch[0] === 'insertado'){ 
+				if(arrayCatch[0] === 'inserted'){ 
 					$('#txtCode').val(arrayCatch[2]);
-					//$('#columnStateMovementIn').css('background-color','#F99C17');
-					//$('#columnStateMovementIn').text('Pendiente');	
 					changeLabelDocumentState('PENDANT'); //#UNICORN
-					
-					$('#btnApproveState').show();
-					$('#txtMovementIdHidden').val(arrayCatch[3]);
+					$('#btnApproveState, #btnPrint, #btnLogicDelete').show();
+					$('#txtMovementIdHidden').val(arrayCatch[1]);
 				}				
 				
-				//update items stocks
-				var arrayItemsStocks = arrayCatch[1].split(',');
-				updateMultipleStocks(arrayItemsStocks, 'spaStock');
-				$('#btnPrint').show();
-				$('#btnLogicDelete').show();
+				if(arrayCatch[0] !== 'error'){
+					showGrowlMessage('ok', 'Cambios guardados.');
+					//update items stocks
+					var arrayItemsStocks = arrayCatch[3].split(',');
+					updateMultipleStocks(arrayItemsStocks, 'spaStock');
+				}else{
+					showGrowlMessage('error!', 'Vuelva a intentarlo.');
+				}
+				
 				$('#boxMessage').html('');
-				showGrowlMessage('ok', 'Cambios guardados.');
-				//$('#boxMessage').html('<div class="alert alert-success">\n\
-				//<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
 				$('#processing').text('');
 			},
 			error:function(data){
-				//$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
 				showGrowlMessage('error', 'Vuelva a intentarlo.');
 				$('#processing').text('');
 			}
         });
 	}
 	
-	//Save movement OUT
-	function ajax_save_movement_out(arrayItemsDetails){
-		var movementType =2; //Sale
-		var documentCode ='NO';
-		if ($('#cbxMovementTypes').length > 0){//existe
-			movementType = $('#cbxMovementTypes').val();
-		}
-		if ($('#txtDocumentCode').length > 0){//existe
-			documentCode = $('#txtDocumentCode').val();
-		}
-		$.ajax({
-            type:"POST",
-            url:moduleController + "ajax_save_movement_out",			
-            data:{arrayItemsDetails: arrayItemsDetails 
-				  ,movementId:$('#txtMovementIdHidden').val()
-				  ,date:$('#txtDate').val()
-				  ,warehouse:$('#cbxWarehouses').val()
-				  ,movementType:movementType
-				  ,description:$('#txtDescription').val()
-				  ,documentCode:documentCode
-			  },
-            beforeSend: showProcessing(),
-            success: function(data){
-
-				var arrayCatch = data.split('|');
-
-				if(arrayCatch[0] === 'insertado'){ 
-					$('#txtCode').val(arrayCatch[2]);
-					//$('#columnStateMovementIn').css('background-color','#F99C17');
-					//$('#columnStateMovementIn').text('Pendiente');
-					changeLabelDocumentState('PENDANT');//#UNICORN
-					
-					$('#btnApproveState').show();
-					$('#btnLogicDelete').show();
-					$('#txtMovementIdHidden').val(arrayCatch[3]);
-				}
-
-				//update items stocks
-				var arrayItemsStocks = arrayCatch[1].split(',');
-				updateMultipleStocks(arrayItemsStocks, 'spaStock');
-
-				$('#btnPrint').show();	
-				//$('#boxMessage').html('<div class="alert alert-success">\n\
-				//<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
-				$('#boxMessage').html('');
-				showGrowlMessage('ok', 'Cambios guardados.');
-				$('#processing').text('');
-			},
-			error:function(data){
-				//$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
-				showGrowlMessage('error', 'Vuelva a intentarlo.');
-				$('#processing').text('');
-			}
-        });
-	}
+	
 
 	//Save movement Warehouse transfer
 	function ajax_save_warehouses_transfer(arrayItemsDetails){
@@ -731,39 +681,33 @@ $(document).ready(function(){
             success: function(data){
 				var arrayCatch = data.split('|');
 				var arrayItemsStocks = [];
-				if(arrayCatch[0] === 'insertado'){ 
+				
+				if(arrayCatch[0] === 'inserted'){ 
 					$('#txtDocumentCode').val(arrayCatch[2]);
-					//$('#columnStateMovementIn').css('background-color','#F99C17');
-					//$('#columnStateMovementIn').text('Pendiente');
 					changeLabelDocumentState('PENDANT');//#UNICORN
+					$('#btnApproveState, #btnLogicDelete, #btnPrint').show();
+					$('#txtMovementIdHidden').val(arrayCatch[1]);
+				}
+				
+				if(arrayCatch[0] !== 'error'){
+					showGrowlMessage('ok', 'Cambios guardados.');
 					
-					$('#btnApproveState').show();
-					$('#btnLogicDelete').show();
-					$('#txtMovementIdHidden').val(arrayCatch[3]);
-					//update items stocks when transfer
+					//Update Origin/StockOut
+					arrayItemsStocks = arrayCatch[3].split(',');
+					updateMultipleStocks(arrayItemsStocks, 'spaStock');
+
+					//Update Destination/StockIn
 					arrayItemsStocks = arrayCatch[4].split(',');
 					updateMultipleStocks(arrayItemsStocks, 'spaStock2-');
+				}else{
+					showGrowlMessage('error!', 'Vuelva a intentarlo.');
 				}
-
-				//update items stocks
-				arrayItemsStocks = arrayCatch[1].split(',');
-				updateMultipleStocks(arrayItemsStocks, 'spaStock');
-
-				if(arrayCatch[0] === 'modificado'){ 
-					//update items stocks when transfer
-					arrayItemsStocks = arrayCatch[2].split(',');
-					updateMultipleStocks(arrayItemsStocks, 'spaStock2-');
-				}
-				$('#btnPrint').show();
-				//$('#boxMessage').html('<div class="alert alert-success">\n\
-				//<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
+				
 				$('#boxMessage').html('');
-				showGrowlMessage('ok', 'Cambios guardados.');
 				$('#processing').text('');
 
 			},
 			error:function(data){
-				//$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
 				showGrowlMessage('error', 'Vuelva a intentarlo.');
 				$('#processing').text('');
 			}
