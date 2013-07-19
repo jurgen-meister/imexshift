@@ -8,15 +8,7 @@ $(document).ready(function(){
 	var arrayItemsAlreadySaved = []; 
 	startEventsWhenExistsItems();
 	
-	if(arr[3] === 'report'){
-		$('select').select2();
-		//$('select#cbxCategories,select#cbxWarehouses').select2();//doesn't work without specifying select 'cause extra div for multiple
-		$("#txtReportStartDate, #txtReportFinishDate").datepicker({
-			showButtonPanel: true
-		});
-		 
-		startDataTable();
-	}
+
 	
 	/////////////START - Token Status///////////////
 	/*
@@ -49,42 +41,7 @@ $(document).ready(function(){
 		}
 	}
 	*/
-   
-   function startDataTable(){
-	   $('.data-table').dataTable({
-			"bJQueryUI": true,
-			//"sPaginationType": "full_numbers",
-			"sDom": '<"">t<"F"f>i',
-			"sScrollY": "200px",
-			"bPaginate": false,
-			"oLanguage": {
-				"sSearch": "Filtrar:",
-				 "sZeroRecords":  "No hay resultados que coincidan.",
-				 //"sInfo":         "Ids from _START_ to _END_ of _TOTAL_ total" //when pagination exists
-				 "sInfo": "Encontrados _TOTAL_ Items",
-				 "sInfoEmpty": "Encontrados 0 Items",
-				 "sInfoFiltered": "(filtrado de _MAX_ Items)"
-			}
-		});
-		$('input[type=checkbox]').uniform();
-		$("#title-table-checkbox").click(function() {
-			var checkedStatus = this.checked;
-			var checkbox = $(this).parents('.widget-box').find('tr td:first-child input:checkbox');		
-			checkbox.each(function() {
-				this.checked = checkedStatus;
-				if (checkedStatus === this.checked) {
-					$(this).closest('.checker > span').removeClass('checked');
-				}
-				if (this.checked) {
-					$(this).closest('.checker > span').addClass('checked');
-				}
-			});
-		});	
-   }
-   
-   
-	   
- 
+
 	//When exist items, it starts its events and fills arrayItemsAlreadySaved
 	function startEventsWhenExistsItems(){
 		var arrayAux = [];
@@ -519,11 +476,7 @@ $(document).ready(function(){
 			hideBittionAlertModal();
 		});
 	}
-	
-	
-	function getGroupItemsAndFilters(){
-		ajax_get_group_items_and_filters();
-	}
+
 	//************************************************************************//
 	//////////////////////////////////END-FUNCTIONS//////////////////////
 	//************************************************************************//
@@ -603,9 +556,6 @@ $(document).ready(function(){
 		$('#txtDocumentCode').keydown(function(e){e.preventDefault();});
 	}
 	
-	$('#cbxReportGroupTypes').change(function(){
-		getGroupItemsAndFilters();
-	});
 	//************************************************************************//
 	//////////////////////////////////END-CONTROLS EVENTS//////////////////////
 	//************************************************************************//
@@ -657,6 +607,7 @@ $(document).ready(function(){
 				}				
 				//////////////////////////////////////////
 				if(arrayCatch[0] === 'APPROVED'){ 
+					$('#txtCode').val(arrayCatch[2]);
 					$('#btnApproveState, #btnLogicDelete, #btnSaveAll, #btnAddMovementType, .columnItemsButtons').hide();
 					$('#btnCancellState').show();
 					$('#txtDate, #txtCode, #cbxWarehouses, #txtDescription').attr('disabled','disabled');
@@ -691,10 +642,9 @@ $(document).ready(function(){
 					var arrayItemsStocks = arrayCatch[3].split(',');
 					updateMultipleStocks(arrayItemsStocks, 'spaStock');
 				}else{
-					showGrowlMessage('error!', 'Vuelva a intentarlo.');
+					showGrowlMessage('error', 'Vuelva a intentarlo.');
 				}
 				//////////////////////////////////////////
-				
 			},
 			error:function(data){
 				showGrowlMessage('error', 'Vuelva a intentarlo.');
@@ -768,7 +718,7 @@ $(document).ready(function(){
 					arrayItemsStocks = arrayCatch[4].split(',');
 					updateMultipleStocks(arrayItemsStocks, 'spaStock2-');
 				}else{
-					showGrowlMessage('error!', 'Vuelva a intentarlo.');
+					showGrowlMessage('error', 'Vuelva a intentarlo.');
 				}
 			},
 			error:function(data){
@@ -889,69 +839,6 @@ $(document).ready(function(){
 			}
         });
 	}
-	
-	function ajax_get_group_items_and_filters(){ //Report
-		$.ajax({
-            type:"POST",
-            url:moduleController + "ajax_get_group_items_and_filters",			
-            data:{type: $('#cbxReportGroupTypes').val()},
-			beforeSend: function(){
-				$('#boxMessage').text('Procesando...');
-			},
-            success: function(data){
-				$('#boxGroupItemsAndFilters').html(data);
-				$('select').select2();
-				startDataTable();
-				$('#boxGroupItemsAndFilters #cbxReportGroupFilters').bind("change",function(){ 
-					var selected = new Array();
-					$("#boxGroupItemsAndFilters #cbxReportGroupFilters option:selected").each(function () {
-						selected.push($(this).val());
-					});
-					//alert('hola mundo');
-					ajax_get_group_items(selected);
-				});
-				$('#boxMessage').text('');
-			},
-			error:function(data){
-				showGrowlMessage('error', 'Vuelva a intentarlo.');
-				$('#boxMessage').text('');
-			}
-        });
-	}
-	
-	function ajax_get_group_items(selected){ //Report
-		$.ajax({
-            type:"POST",
-            url:moduleController + "ajax_get_group_items",			
-            data:{type: $('#cbxReportGroupTypes').val(), selected: selected},
-			beforeSend: function(){
-				$('#boxMessage').text('Procesando...');
-			},
-            success: function(data){
-				$('#boxGroupItems').html(data);
-				startDataTable();
-				$('#boxMessage').text('');
-			},
-			error:function(data){
-				showGrowlMessage('error', 'Vuelva a intentarlo.');
-				$('#boxMessage').text('');
-			}
-        });
-	}
-	
-	
-/*
-//A simple Test
-$('form #cbxReportWarehouses').change(function(){
-	var str = "YOU SELECTED :";
-	$("form #cbxReportWarehouses option:selected").each(function () {
-	//str += $(this).text() + " ";
-	str += $(this).val() + " ";
-	});
-   alert(str);
-});
-*/
-
 
 	//************************************************************************//
 	//////////////////////////////////END-AJAX FUNCTIONS////////////////////////

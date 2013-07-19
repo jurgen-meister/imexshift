@@ -880,9 +880,13 @@ class InvMovementsController extends AppController {
 			if($movementId <> ''){//update
 				$arrayMovement['id'] = $movementId;
 				$arrayMovement['lc_state'] = $movementState; 
+				if($movementState == 'APPROVED'){
+					$code = $this->_generate_code($movementStatus);
+					if($code == 'error'){$error++;}//IF ERROR
+					$arrayMovement['code'] = $code;
+				}
 			}else{//insert
-				$code = $this->_generate_code($movementStatus);
-				if($code == 'error'){$error++;}//IF ERROR
+				$code = 'BORRADOR'; //When insert always will be BORRADOR
 				$arrayMovement['lc_state'] = $movementState; 
 				$arrayMovement['code'] = $code;
 			}
@@ -906,7 +910,7 @@ class InvMovementsController extends AppController {
 						$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
 						echo $movementState.'|'.$movementIdSaved.'|'.$code.'|'.$strItemsStock;
 					}else{
-						echo 'ERROR';
+						echo 'ERROR|onSaving';
 					}
 				}else{
 						echo 'VALIDATION|'.$validation['itemsStocks'];
@@ -914,7 +918,7 @@ class InvMovementsController extends AppController {
 				
 			/////////////////////END - SAVE////////////////////////////////	
 			}else{
-				echo 'ERROR';
+				echo 'ERROR|onGeneratingParameters';
 			}
 			////////////////////////////////////////////END-CORE SAVE////////////////////////////////////////////////////////
 		}
@@ -1003,14 +1007,14 @@ class InvMovementsController extends AppController {
 						$strItemsStockIn = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouseIn);
 						echo $movementState.'|'.$movementIdInsertedOut.'|'.$documentCode.'|'.$strItemsStockOut.'|'.$strItemsStockIn;
 					}else{
-						echo 'ERROR';
+						echo 'ERROR|onSaving';
 					}
 				}else{
 						echo 'VALIDATION|'.$validation['itemsStocks'];
 				}
 			/////////////////////START - SAVE/////////////////////////////		
 			}else{
-				echo 'ERROR';
+				echo 'ERROR|onGeneratingParameters';
 			}
 			////////////////////////////////////////////END-CORE SAVE////////////////////////////////////////////////////////
 		}
@@ -1194,7 +1198,9 @@ class InvMovementsController extends AppController {
 		if($keyword == 'SAL'){$movementType = 'salida';}
 		if($period <> ''){
 			try{
-				$movements = $this->InvMovement->find('count', array('conditions'=>array('InvMovementType.status'=>$movementType))); 
+				$movements = $this->InvMovement->find('count', array(
+					'conditions'=>array('InvMovementType.status'=>$movementType, 'InvMovement.code !='=>'BORRADOR')
+				)); 
 			}catch(Exception $e){
 				return 'error';
 			}

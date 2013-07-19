@@ -1,6 +1,6 @@
 <?php echo $this->Html->script('jquery.dataTables.min.js', FALSE); ?>
 <?php echo $this->Html->script('jquery.uniform.js', FALSE); ?>
-<?php echo $this->Html->script('modules/InvMovements', FALSE); ?>
+<?php echo $this->Html->script('modules/InvReports', FALSE); ?>
 
 <!-- ************************************************************************************************************************ -->
 <div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FROM MAIN TEMPLATE #UNICORN -->
