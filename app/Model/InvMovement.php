@@ -126,10 +126,29 @@ class InvMovement extends AppModel {
 		//}
 		
 		//for save MovementDetail
-		if(!$this->InvMovementDetail->saveAll($dataSaveMovementDetail)){
-			$dataSource->rollback();
-			return 'error';
-		}
+		/*	
+		$exist = $this->InvMovementDetail->find('count', array(
+			'conditions'=>array(
+				'InvMovementDetail.inv_movement_id'=>$dataSaveMovementDetail['InvMovementDetail']['inv_movement_id'],
+				'InvMovementDetail.inv_item_id'=>$dataSaveMovementDetail['InvMovementDetail']['inv_item_id']
+			),
+			
+		));	
+		if($exist == 0){*/
+			if(!$this->InvMovementDetail->saveAll($dataSaveMovementDetail)){
+				$dataSource->rollback();
+				return 'error';
+			}
+		/*}else{
+			$this->updateAll(
+					array('InvMovementDetail.quantity'=>$dataSaveMovementDetail['InvMovementDetail']['quantity']), 
+					array(
+						'InvMovementDetail.inv_movement_id'=>$dataSaveMovementDetail['InvMovementDetail']['inv_movement_id'],
+						'InvMovementDetail.inv_item_id'=>$dataSaveMovementDetail['InvMovementDetail']['inv_item_id']
+					)
+			);
+		}*/
+		
 		
 		$dataSource->commit();
 		return $dataSaveMovementDetail['InvMovementDetail']['inv_movement_id'];
