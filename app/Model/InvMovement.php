@@ -98,25 +98,43 @@ class InvMovement extends AppModel {
 		)
 	);
 
-	public function saveMovement($dataDelete, $dataSave){
+	public function saveMovement($dataSave){
 		$dataSource = $this->getDataSource();
 		$dataSource->begin();
-		//Delete when update
-		if($dataDelete[0] <> ''){
-			if(!$this->InvMovementDetail->deleteAll(array('InvMovementDetail.inv_movement_id'=>$dataDelete))){
-				$dataSource->rollback();
-				return 'error';
-			}
-		}
+		
 		//Save for insert or update
-		if($this->saveAll($dataSave, array('deep'=>true))){
-			$dataSource->commit();
+		if($this->saveAll($dataSave)){	
+		    $dataSource->commit();
 			return $this->id;
 		}else{
 			$dataSource->rollback();
 			return 'error';
 		}	
 	}
+	
+	public function saveItem($dataSaveMovement, $dataSaveMovementDetail){
+		$dataSource = $this->getDataSource();
+		$dataSource->begin();
+		//for save Movement if doesn't exist
+		//if(count($dataSaveMovement) > 0){
+			if(!$this->saveAll($dataSaveMovement)){
+				$dataSource->rollback();
+				return 'error';
+			}else{
+				$dataSaveMovementDetail['InvMovementDetail']['inv_movement_id']=$this->id;
+			}
+		//}
+		
+		//for save MovementDetail
+		if(!$this->InvMovementDetail->saveAll($dataSaveMovementDetail)){
+			$dataSource->rollback();
+			return 'error';
+		}
+		
+		$dataSource->commit();
+		return $dataSaveMovementDetail['InvMovementDetail']['inv_movement_id'];
+	}
+	
 	
 //END MODEL
 }

@@ -853,7 +853,70 @@ class InvMovementsController extends AppController {
 			$this->set(compact('stock', 'stock2', 'transfer'));
 		}
 	}
+	
+	public function ajax_save_item(){
+		if($this->RequestHandler->isAjax()){
+			//$error=0;
+			////////////////////////////////////////////START - AJAX////////////////////////////////////////////////////////
+			//$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
+			$item = $this->request->data['item'];
+			$quantity = $this->request->data['quantity'];
+			
+			$movementId = $this->request->data['movementId'];
+			$warehouse = $this->request->data['warehouse'];
 
+			$date = $this->request->data['date'];
+			$description = $this->request->data['description'];
+			$movementType = $this->request->data['movementType'];
+			$documentCode = $this->request->data['documentCode'];
+			//$movementStatus = $this->request->data['movementStatus'];
+			//$code = $this->request->data['code'];
+			//$movementState = $this->request->data['movementState'];
+			////////////////////////////////////////////END - AJAX////////////////////////////////////////////////////////
+			
+			////////////////////////////////////////////START PARAMETERS////////////////////////////////////////////////////////
+			//$arrayMovement = array();
+			//$dataSaveMovement = array();
+			$arrayItemsDetails = array('inv_item_id'=>$item, 'quantity'=>$quantity);
+			$action = 'INSERT';	
+			
+			$arrayMovement = array('date'=>$date, 'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType, 'description'=>$description);
+			$arrayMovement['document_code']=$documentCode;
+			//$code = 'BORRADOR'; //When insert always will be BORRADOR
+			$arrayMovement['lc_state'] = 'PENDANT'; 
+			$arrayMovement['code'] = 'BORRADOR';
+			$dataSaveMovement = array('InvMovement'=>$arrayMovement);
+			
+			if($movementId <> ''){//update
+				$arrayMovement['id'] = $movementId;
+				$arrayItemsDetails['inv_movement_id']=$movementId;
+				$action = 'UPDATE';
+			}
+			
+			//debug($dataSaveMovement);
+			$dataSaveMovementDetail = array('InvMovementDetail'=> $arrayItemsDetails);
+			//debug($dataSaveMovementDetail);
+			//$dataDelete = array($movementId);
+			////////////////////////////////////////////END - PARAMETERS////////////////////////////////////////////////////////
+			
+			////////////////////////////////////////////START- CORE SAVE////////////////////////////////////////////////////////
+			//if($error == 0){
+			/////////////////////START - SAVE/////////////////////////////	
+				$res = $this->InvMovement->saveItem($dataSaveMovement, $dataSaveMovementDetail);//with transaction in the model
+				if($res <> 'error'){
+					$movementIdSaved = $res; 
+					//$strItemsStock = $this->_createStringItemsStocksUpdated(array($arrayItemsDetails), $warehouse);
+					echo 'PENDANT|'.$movementIdSaved.'|BORRADOR|'.$action;//.'|'.$strItemsStock;
+				}else{
+					echo 'ERROR|onSaving';
+				}
+			/////////////////////END - SAVE////////////////////////////////	
+			//}else{
+			//	echo 'ERROR|onGeneratingParameters';
+			//}
+			////////////////////////////////////////////END-CORE SAVE////////////////////////////////////////////////////////
+		}
+	}
 	
 	public function ajax_save_movement(){
 		if($this->RequestHandler->isAjax()){
@@ -891,8 +954,9 @@ class InvMovementsController extends AppController {
 				$arrayMovement['code'] = $code;
 			}
 			
-			$dataSave = array('InvMovement'=>$arrayMovement, 'InvMovementDetail'=>$arrayItemsDetails);
-			$dataDelete = array($movementId);
+			//$dataSave = array('InvMovement'=>$arrayMovement, 'InvMovementDetail'=>$arrayItemsDetails);
+			$dataSave = array('InvMovement'=>$arrayMovement);
+			//$dataDelete = array($movementId);
 			////////////////////////////////////////////END - PARAMETERS////////////////////////////////////////////////////////
 			
 
@@ -904,7 +968,7 @@ class InvMovementsController extends AppController {
 					$validation=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouse);
 				}
 				if($validation['error'] == 0){
-					$res = $this->InvMovement->saveMovement($dataDelete, $dataSave);//with transaction in the model
+					$res = $this->InvMovement->saveMovement(/*$dataDelete,*/$dataSave);//with transaction in the model
 					if($res <> 'error'){
 						$movementIdSaved = $res;
 						$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);

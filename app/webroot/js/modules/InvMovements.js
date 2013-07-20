@@ -273,21 +273,31 @@ $(document).ready(function(){
 	}
 
 	function addItem(){
-		var quantity = $('#txtModalQuantity').val();
+		
 		var itemId = $('#cbxModalItems').val();
-		var itemCodeName = $('#cbxModalItems option:selected').text();
+		var quantity = $('#txtModalQuantity').val();
+		var itemCodeName = $('#cbxModalItems option:selected').text();//
 		var stock = $('#txtModalStock').val();
 		var stock2 = '';
 		if(arr[3] === 'save_warehouses_transfer'){
 			stock2 = $('#txtModalStock2').val();
 		}
+		
 		var error = validateItem(itemCodeName, quantity, ''); 
 		if(error === ''){
-			createRowItemTable(itemId, itemCodeName, stock, parseInt(quantity,10), stock2);
-			createEventClickEditItemButton(itemId);
-			createEventClickDeleteItemButton(itemId);
-			arrayItemsAlreadySaved.push(itemId);  //push into array of the added item
-			$('#modalAddItem').modal('hide');
+			if(arr[3] === 'save_in'){//0
+				ajax_save_item(0, itemId, quantity, itemCodeName, stock, stock2);
+			}
+			if(arr[3] === 'save_purchase_in'){//1
+				ajax_save_item(1, itemId, quantity, itemCodeName, stock, stock2);
+			}
+			if(arr[3] === 'save_out'){//0
+				ajax_save_item(0, itemId, quantity, itemCodeName, stock, stock2);
+			}
+			if(arr[3] === 'save_sale_out'){//2
+				ajax_save_item(2, itemId, quantity, itemCodeName, stock, stock2);
+			}
+			//transfer goes here
 		}else{
 			$('#boxModalValidateItem').html('<ul>'+error+'</ul>');
 		}
@@ -363,7 +373,7 @@ $(document).ready(function(){
 	function saveAll(){
 		var arrayItemsDetails = [];
 		arrayItemsDetails = getItemsDetails();
-
+		
 		var error = validateBeforeSaveAll(arrayItemsDetails);
 		if( error === ''){
 			if(arr[3] === 'save_in'){
@@ -510,6 +520,7 @@ $(document).ready(function(){
 	//Add a new item quantity
 	$('#btnModalAddItem').click(function(){
 		addItem();
+		//ajax_save_item();
 		return false; //avoid page refresh
 	});
 
@@ -566,7 +577,91 @@ $(document).ready(function(){
 	//************************************************************************//
 	//////////////////////////////////BEGIN-AJAX FUNCTIONS//////////////////////
 	////************************************************************************//
-
+	function ajax_save_item(movementType, itemId, quantity, itemCodeName, stock, stock2){//insert or edit
+		var documentCode ='NO';
+		if ($('#cbxMovementTypes').length > 0){//exists
+			movementType = $('#cbxMovementTypes').val();
+		}
+		
+		if ($('#txtDocumentCode').length > 0){//exists
+			documentCode = $('#txtDocumentCode').val();
+		}
+		//var arrayItemsDetails = [];
+		//arrayItemsDetails.push({'inv_item_id':itemId, 'quantity':quantity});
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_save_item",			
+            data:{ 
+				   movementId:$('#txtMovementIdHidden').val()
+				  ,date:$('#txtDate').val()
+				  ,warehouse:$('#cbxWarehouses').val()
+				  ,movementType:movementType
+				  ,description:$('#txtDescription').val()
+				  ,documentCode:documentCode
+				  //,code:$('#txtCode').val()
+				  //,movementStatus:movementStatus
+				  //,movementState:'PENDANT'
+				  //,arrayItemsDetails:arrayItemsDetails
+				  ///////////////key/////////////////////
+				  ,item:itemId
+				  ,quantity:quantity
+				  //////////////////////////////////////
+			},
+			beforeSend: showProcessing(),
+			success: function(data){
+				$('#boxMessage').html('');
+				$('#processing').text('');
+				var arrayCatch = data.split('|');
+				if(arrayCatch[0] === 'PENDANT'){
+					if(arrayCatch[3] === 'INSERT'){
+						$('#txtCode').val(arrayCatch[2]);
+						$('#btnApproveState, #btnPrint, #btnLogicDelete').show();
+						$('#txtMovementIdHidden').val(arrayCatch[1]);
+						changeLabelDocumentState('PENDANT'); //#UNICORN
+					}
+					///////////////create row/////////////////
+					createRowItemTable(itemId, itemCodeName, stock, parseInt(quantity,10), stock2);
+					createEventClickEditItemButton(itemId);
+					createEventClickDeleteItemButton(itemId);
+					arrayItemsAlreadySaved.push(itemId);  //push into array of the added item
+					$('#modalAddItem').modal('hide');
+					///////////////create row/////////////////
+					
+					//update items stocks
+					//var arrayItemsStocks = arrayCatch[1].split(',');
+					//updateMultipleStocks(arrayItemsStocks, 'spaStock');
+					showGrowlMessage('ok', 'Cambios guardados.');
+				}else{
+					//showGrowlMessage('error', 'Vuelva a intentarlo.');
+					$('#boxModalValidateItem').html('<ul><li>Ocurrio un problema, vuelva a intentarlo.</li></ul>');
+				}
+			},
+			error:function(data){
+				//showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#boxModalValidateItem').html('<ul><li>Ocurrio un problema, vuelva a intentarlo.</li></ul>');
+				$('#processing').text('');
+			}
+		});
+	}
+	
+	
+	function ajax_delete_item(){
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_delete_item",			
+            data:{ 
+				
+			},
+			beforeSend: showProcessing(),
+			success: function(data){
+				
+			},
+			error:function(data){
+		
+			}
+		});
+	}
+	
 	//Save movement (PENDANT, APPROVED, CANCELLED)
 	function ajax_save_movement(arrayItemsDetails, movementStatus, movementType, movementState){
 		var documentCode ='NO';
@@ -581,8 +676,8 @@ $(document).ready(function(){
 		$.ajax({
             type:"POST",
             url:moduleController + "ajax_save_movement",			
-            data:{ arrayItemsDetails: arrayItemsDetails 
-				  ,movementId:$('#txtMovementIdHidden').val()
+            data:{ 
+				   movementId:$('#txtMovementIdHidden').val()
 				  ,date:$('#txtDate').val()
 				  ,warehouse:$('#cbxWarehouses').val()
 				  ,movementType:movementType
@@ -591,6 +686,7 @@ $(document).ready(function(){
 				  ,code:$('#txtCode').val()
 				  ,movementStatus:movementStatus
 				  ,movementState:movementState
+				  ,arrayItemsDetails: arrayItemsDetails 
 			  },
             beforeSend: showProcessing(),
             success: function(data){
