@@ -889,14 +889,13 @@ class InvMovementsController extends AppController {
 			//debug($dataSaveMovementDetail);
 			////////////////////////////////////////////START-SAVE////////////////////////////////////////////////////////
 				if($actionItem == 'ADDITEM'){
-					$res = $this->InvMovement->saveItem($dataSaveMovement, $dataSaveMovementDetail);//with transaction in the model
+					$res = $this->InvMovement->addItem($dataSaveMovement, $dataSaveMovementDetail);//with transaction in the model
 				}
 				if($actionItem == 'EDITITEM'){
-					$res = $movementId;
-					if(!$this->InvMovement->InvMovementDetail->updateAll(array('InvMovementDetail.quantity'=>$quantity), array('InvMovementDetail.inv_movement_id'=>$movementId,	'InvMovementDetail.inv_item_id'=>$item))){
-						$res = 'error';
-					}
-					
+					$res = $this->InvMovement->editItem($dataSaveMovement, $dataSaveMovementDetail);
+				}
+				if($actionItem == 'DELETEITEM'){
+					$res = $this->InvMovement->deleteItem($dataSaveMovement, $dataSaveMovementDetail);
 				}
 				if($res <> 'error'){
 					$movementIdSaved = $res; 
@@ -962,7 +961,10 @@ class InvMovementsController extends AppController {
 					$res = $this->InvMovement->saveMovement(/*$dataDelete,*/$dataSave);//with transaction in the model
 					if($res <> 'error'){
 						$movementIdSaved = $res;
-						$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
+						$strItemsStock = '';
+						if($movementState == 'APPROVED' OR $movementState == 'CANCELLED'){
+							$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
+						}
 						echo $movementState.'|'.$movementIdSaved.'|'.$code.'|'.$strItemsStock;
 					}else{
 						echo 'ERROR|onSaving';

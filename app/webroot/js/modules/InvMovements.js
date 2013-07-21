@@ -234,12 +234,22 @@ $(document).ready(function(){
 	function deleteItem(objectTableRowSelected){
 		showBittionAlertModal({content:'¿Está seguro de eliminar este item?'});
 		$('#bittionBtnYes').click(function(){
-			var itemIdForDelete = objectTableRowSelected.find('#txtItemId').val();  //
-			arrayItemsAlreadySaved = jQuery.grep(arrayItemsAlreadySaved, function(value){
-				return value !== itemIdForDelete;
-			});
-			objectTableRowSelected.remove();
-			hideBittionAlertModal();
+			var itemId = objectTableRowSelected.find('#txtItemId').val();//$('#cbxModalItems').val();
+			//var quantity = objectTableRowSelected.find('#txtItemId').val();//$('#txtModalQuantity').val();
+			//var itemCodeName = $('#cbxModalItems option:selected').text();
+			if(arr[3] === 'save_in'){//0
+				ajax_save_item('DELETEITEM', 0, itemId, '', '', '', '', objectTableRowSelected);
+			}
+			if(arr[3] === 'save_purchase_in'){//1
+				ajax_save_item('DELETEITEM', 1, itemId, '', '', '', '', objectTableRowSelected);
+			}
+			if(arr[3] === 'save_out'){//0
+				ajax_save_item('DELETEITEM', 0, itemId, '', '', '', '', objectTableRowSelected);
+			}
+			if(arr[3] === 'save_sale_out'){//2
+				ajax_save_item('DELETEITEM', 2, itemId, '', '', '', '', objectTableRowSelected);
+			}
+			//transfer goes here
 		});
 	}
 
@@ -266,16 +276,16 @@ $(document).ready(function(){
 		var error = validateItem(itemCodeName, quantity, ''); 
 		if(error === ''){
 			if(arr[3] === 'save_in'){//0
-				ajax_save_item('EDITITEM', 0, itemId, quantity, itemCodeName, '', '');
+				ajax_save_item('EDITITEM', 0, itemId, quantity, itemCodeName, '', '','');
 			}
 			if(arr[3] === 'save_purchase_in'){//1
-				ajax_save_item('EDITITEM', 1, itemId, quantity, itemCodeName, '', '');
+				ajax_save_item('EDITITEM', 1, itemId, quantity, itemCodeName, '', '','');
 			}
 			if(arr[3] === 'save_out'){//0
-				ajax_save_item('EDITITEM', 0, itemId, quantity, itemCodeName, '', '');
+				ajax_save_item('EDITITEM', 0, itemId, quantity, itemCodeName, '', '','');
 			}
 			if(arr[3] === 'save_sale_out'){//2
-				ajax_save_item('EDITITEM', 2, itemId, quantity, itemCodeName, '', '');
+				ajax_save_item('EDITITEM', 2, itemId, quantity, itemCodeName, '', '','');
 			}
 			//transfer goes here
 		}else{
@@ -297,16 +307,16 @@ $(document).ready(function(){
 		var error = validateItem(itemCodeName, quantity, ''); 
 		if(error === ''){
 			if(arr[3] === 'save_in'){//0
-				ajax_save_item('ADDITEM', 0, itemId, quantity, itemCodeName, stock, stock2);
+				ajax_save_item('ADDITEM', 0, itemId, quantity, itemCodeName, stock, stock2,'');
 			}
 			if(arr[3] === 'save_purchase_in'){//1
-				ajax_save_item('ADDITEM', 1, itemId, quantity, itemCodeName, stock, stock2);
+				ajax_save_item('ADDITEM', 1, itemId, quantity, itemCodeName, stock, stock2,'');
 			}
 			if(arr[3] === 'save_out'){//0
-				ajax_save_item('ADDITEM', 0, itemId, quantity, itemCodeName, stock, stock2);
+				ajax_save_item('ADDITEM', 0, itemId, quantity, itemCodeName, stock, stock2,'');
 			}
 			if(arr[3] === 'save_sale_out'){//2
-				ajax_save_item('ADDITEM', 2, itemId, quantity, itemCodeName, stock, stock2);
+				ajax_save_item('ADDITEM', 2, itemId, quantity, itemCodeName, stock, stock2,'');
 			}
 			//transfer goes here
 		}else{
@@ -383,8 +393,8 @@ $(document).ready(function(){
 	
 	function saveAll(){
 		var arrayItemsDetails = [];
-		arrayItemsDetails = getItemsDetails();
-		
+		//arrayItemsDetails = getItemsDetails();
+		arrayItemsDetails.push({0:0});//sending useless info 'cause won't update stocks here, if i don't declare doesn't work
 		var error = validateBeforeSaveAll(arrayItemsDetails);
 		if( error === ''){
 			if(arr[3] === 'save_in'){
@@ -493,7 +503,7 @@ $(document).ready(function(){
 					type = 'transfer';
 					break;	
 			}
-			ajax_logic_delete(code, type, index);
+			ajax_logic_Item(code, type, index);
 			hideBittionAlertModal();
 		});
 	}
@@ -588,7 +598,7 @@ $(document).ready(function(){
 	//************************************************************************//
 	//////////////////////////////////BEGIN-AJAX FUNCTIONS//////////////////////
 	////************************************************************************//
-	function ajax_save_item(actionItem, movementType, itemId, quantity, itemCodeName, stock, stock2){//insert or edit
+	function ajax_save_item(actionItem, movementType, itemId, quantity, itemCodeName, stock, stock2, objectTableRowSelected){//insert or edit
 		var documentCode ='NO';
 		if ($('#cbxMovementTypes').length > 0){//exists
 			movementType = $('#cbxMovementTypes').val();
@@ -643,6 +653,14 @@ $(document).ready(function(){
 					if(actionItem === 'EDITITEM'){
 						$('#spaQuantity'+itemId).text(parseInt(quantity,10));
 						$('#modalAddItem').modal('hide');
+					}
+					if(actionItem === 'DELETEITEM'){
+						//var itemIdForDelete = objectTableRowSelected.find('#txtItemId').val();  
+						arrayItemsAlreadySaved = jQuery.grep(arrayItemsAlreadySaved, function(value){
+							return value !== itemId;
+						});
+						objectTableRowSelected.remove();
+						hideBittionAlertModal();
 					}
 					///////////////create row/////////////////
 					showGrowlMessage('ok', 'Cambios guardados.');
@@ -709,6 +727,52 @@ $(document).ready(function(){
 				$('#processing').text('');//this must go at the begining not at the end, otherwise, it won't work when validation is send
 				var arrayCatch = data.split('|');
 				//////////////////////////////////////////
+				if(arrayCatch[0] === 'APPROVED' || arrayCatch[0] === 'CANCELLED' || arrayCatch[0] === 'VALIDATION'){
+					//update items stocks
+					var arrayItemsStocks = arrayCatch[3].split(',');
+					updateMultipleStocks(arrayItemsStocks, 'spaStock');
+				}
+				switch(arrayCatch[0]){
+					case 'PENDANT':
+						$('#txtCode').val(arrayCatch[2]);
+						$('#btnApproveState, #btnPrint, #btnLogicDelete').show();
+						$('#txtMovementIdHidden').val(arrayCatch[1]);
+						changeLabelDocumentState(movementState); //#UNICORN
+						showGrowlMessage('ok', 'Cambios guardados.');
+						break;
+					case 'APPROVED':
+						$('#txtCode').val(arrayCatch[2]);
+						$('#btnApproveState, #btnLogicDelete, #btnSaveAll, #btnAddMovementType, .columnItemsButtons').hide();
+						$('#btnCancellState').show();
+						$('#txtDate, #txtCode, #cbxWarehouses, #txtDescription').attr('disabled','disabled');
+						if ($('#btnAddItem').length > 0){//existe
+							$('#btnAddItem').hide();
+						}
+						if ($('#txtDocumentCode').length > 0){//existe
+							$('#txtDocumentCode').attr('disabled','disabled');
+						}
+						if ($('#cbxMovementTypes').length > 0){//existe
+							$('#cbxMovementTypes').attr('disabled','disabled');
+						}
+						changeLabelDocumentState(movementState); //#UNICORN
+						showGrowlMessage('ok', 'Aprobado.');
+						break;
+					case 'CANCELLED':
+						$('#btnCancellState').hide();
+						changeLabelDocumentState(movementState); //#UNICORN
+						showGrowlMessage('ok', 'Cancelado.');
+						break;
+					case 'VALIDATION':
+						var arrayItemsStocks = arrayCatch[1].split(',');
+						var validation = validateBeforeMoveOut(arrayItemsStocks, 'spaStock');
+						$('#boxMessage').html('<div class="alert alert-error">\n\
+						<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo realizar la acción debido a falta de STOCK:</p><ul>'+validation+'</ul><div>');
+						break;
+					case 'ERROR':
+						showGrowlMessage('error', 'Vuelva a intentarlo.');
+						break;
+					}
+				/*
 				if(arrayCatch[0] === 'PENDANT'){ 
 					$('#txtCode').val(arrayCatch[2]);
 					$('#btnApproveState, #btnPrint, #btnLogicDelete').show();
@@ -748,13 +812,10 @@ $(document).ready(function(){
 					<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo realizar la acción debido a falta de STOCK:</p><ul>'+validation+'</ul><div>');
 				}
 				//////////////////////////////////////////
-				if(arrayCatch[0] !== 'ERROR'){
-					//update items stocks
-					var arrayItemsStocks = arrayCatch[3].split(',');
-					updateMultipleStocks(arrayItemsStocks, 'spaStock');
-				}else{
+				if(arrayCatch[0] === 'ERROR'){
 					showGrowlMessage('error', 'Vuelva a intentarlo.');
 				}
+				*/
 				//////////////////////////////////////////
 			},
 			error:function(data){

@@ -112,48 +112,53 @@ class InvMovement extends AppModel {
 		}	
 	}
 	
-	public function saveItem($dataSaveMovement, $dataSaveMovementDetail){
+	public function addItem($dataSaveMovement, $dataSaveMovementDetail){
 		$dataSource = $this->getDataSource();
 		$dataSource->begin();
-		//for save Movement if doesn't exist
-		//if(count($dataSaveMovement) > 0){
 			if(!$this->saveAll($dataSaveMovement)){
 				$dataSource->rollback();
 				return 'error';
 			}else{
 				$dataSaveMovementDetail['InvMovementDetail']['inv_movement_id']=$this->id;
 			}
-		//}
-		
-		//for save MovementDetail
-		/*	
-		$exist = $this->InvMovementDetail->find('count', array(
-			'conditions'=>array(
-				'InvMovementDetail.inv_movement_id'=>$dataSaveMovementDetail['InvMovementDetail']['inv_movement_id'],
-				'InvMovementDetail.inv_item_id'=>$dataSaveMovementDetail['InvMovementDetail']['inv_item_id']
-			),
-			
-		));	
-		if($exist == 0){*/
+
 			if(!$this->InvMovementDetail->saveAll($dataSaveMovementDetail)){
 				$dataSource->rollback();
 				return 'error';
 			}
-		/*}else{
-			$this->updateAll(
-					array('InvMovementDetail.quantity'=>$dataSaveMovementDetail['InvMovementDetail']['quantity']), 
-					array(
-						'InvMovementDetail.inv_movement_id'=>$dataSaveMovementDetail['InvMovementDetail']['inv_movement_id'],
-						'InvMovementDetail.inv_item_id'=>$dataSaveMovementDetail['InvMovementDetail']['inv_item_id']
-					)
-			);
-		}*/
-		
-		
 		$dataSource->commit();
 		return $dataSaveMovementDetail['InvMovementDetail']['inv_movement_id'];
 	}
 	
+	public function editItem($dataSaveMovement, $dataSaveMovementDetail){
+		$dataSource = $this->getDataSource();
+		$dataSource->begin();
+		if(!$this->saveAll($dataSaveMovement)){
+			$dataSource->rollback();
+			return 'error';
+		}
+		if(!$this->InvMovementDetail->updateAll(array('InvMovementDetail.quantity'=>$dataSaveMovementDetail['InvMovementDetail']['quantity']), array('InvMovementDetail.inv_movement_id'=>$dataSaveMovementDetail['InvMovementDetail']['inv_movement_id'],	'InvMovementDetail.inv_item_id'=>$dataSaveMovementDetail['InvMovementDetail']['inv_item_id']))){
+			$dataSource->rollback();
+			return 'error';
+		}
+		$dataSource->commit();
+		return $dataSaveMovementDetail['InvMovementDetail']['inv_movement_id'];
+	}
+	
+	public function deleteItem($dataSaveMovement, $dataSaveMovementDetail){
+		$dataSource = $this->getDataSource();
+		$dataSource->begin();
+		if(!$this->saveAll($dataSaveMovement)){
+			$dataSource->rollback();
+			return 'error';
+		}
+		if(!$this->InvMovementDetail->deleteAll(array('InvMovementDetail.inv_movement_id'=>$dataSaveMovementDetail['InvMovementDetail']['inv_movement_id'],	'InvMovementDetail.inv_item_id'=>$dataSaveMovementDetail['InvMovementDetail']['inv_item_id']))){
+			$dataSource->rollback();
+			return 'error';
+		}
+		$dataSource->commit();
+		return $dataSaveMovementDetail['InvMovementDetail']['inv_movement_id'];
+	}
 	
 //END MODEL
 }
