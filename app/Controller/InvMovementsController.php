@@ -854,61 +854,9 @@ class InvMovementsController extends AppController {
 		}
 	}
 	
-	public function ajax_save_item(){
-		if($this->RequestHandler->isAjax()){
-			////////////////////////////////////////////START - AJAX////////////////////////////////////////////////////////
-			$item = $this->request->data['item'];
-			$quantity = $this->request->data['quantity'];
-			$movementId = $this->request->data['movementId'];
-			$warehouse = $this->request->data['warehouse'];
-			$date = $this->request->data['date'];
-			$description = $this->request->data['description'];
-			$movementType = $this->request->data['movementType'];
-			$documentCode = $this->request->data['documentCode'];
-			$actionItem = $this->request->data['actionItem'];
-			////////////////////////////////////////////END - AJAX////////////////////////////////////////////////////////
-			
-			////////////////////////////////////////////START PARAMETERS////////////////////////////////////////////////////////
-			$arrayItemsDetails = array('inv_item_id'=>$item, 'quantity'=>$quantity);
-			$action = 'INSERT';	
-			$arrayMovement = array('date'=>$date, 'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType, 'description'=>$description);
-			$arrayMovement['document_code']=$documentCode;
-			$arrayMovement['lc_state'] = 'PENDANT'; 
-			$arrayMovement['code'] = 'BORRADOR';
-
-			if($movementId <> ''){//update
-				$arrayMovement['id'] = $movementId;
-				$arrayItemsDetails['inv_movement_id']=$movementId;
-				$action = 'UPDATE';
-			}
-			
-			$dataSaveMovement = array('InvMovement'=>$arrayMovement);
-			$dataSaveMovementDetail = array('InvMovementDetail'=> $arrayItemsDetails);
-			////////////////////////////////////////////END - PARAMETERS////////////////////////////////////////////////////////
-			//debug($dataSaveMovement);
-			//debug($dataSaveMovementDetail);
-			////////////////////////////////////////////START-SAVE////////////////////////////////////////////////////////
-				if($actionItem == 'ADDITEM'){
-					$res = $this->InvMovement->addItem($dataSaveMovement, $dataSaveMovementDetail);//with transaction in the model
-				}
-				if($actionItem == 'EDITITEM'){
-					$res = $this->InvMovement->editItem($dataSaveMovement, $dataSaveMovementDetail);
-				}
-				if($actionItem == 'DELETEITEM'){
-					$res = $this->InvMovement->deleteItem($dataSaveMovement, $dataSaveMovementDetail);
-				}
-				if($res <> 'error'){
-					$movementIdSaved = $res; 
-					//$strItemsStock = $this->_createStringItemsStocksUpdated(array($arrayItemsDetails), $warehouse);
-					echo 'PENDANT|'.$movementIdSaved.'|BORRADOR|'.$action;//.'|'.$strItemsStock;
-				}else{
-					echo 'ERROR|onSaving';
-				}
-			////////////////////////////////////////////END-SAVE////////////////////////////////////////////////////////
-		}
-	}
 	
-	public function ajax_save_movement(){
+	
+	public function ajax_save_movement22(){
 		if($this->RequestHandler->isAjax()){
 			$error=0;
 			////////////////////////////////////////////START - AJAX////////////////////////////////////////////////////////
@@ -981,8 +929,295 @@ class InvMovementsController extends AppController {
 		}
 	}
 	
+	public function ajax_save_movement(){
+		if($this->RequestHandler->isAjax()){
+			////////////////////////////////////////////START - RECIEVE AJAX////////////////////////////////////////////////////////
+			//Movement
+			$movementId = $this->request->data['movementId'];
+			$date = $this->request->data['date'];
+			$warehouseId = $this->request->data['warehouseId'];
+			$description = $this->request->data['description'];
+			$code = $this->request->data['code'];
+			$documentCode ='';
+			If(isset($this->request->data['documentCode'])){$documentCode = $this->request->data['documentCode'];}
+			$warehouseId2 = $this->request->data['warehouseId2'];
+			$movementTypeId = 0;
+			if(isset($this->request->data['movementTypeId'])){$movementTypeId = $this->request->data['movementTypeId'];}
+			//Movement Details
+			$itemId = $this->request->data['itemId'];
+			$quantity = $this->request->data['quantity'];
+			//For making algorithm
+			$ACTION = $this->request->data['ACTION'];
+			$OPERATION= $this->request->data['OPERATION'];
+			$STATE = $this->request->data['STATE'];//also for Movement
+			//For validate before approve OUT or cancelled IN
+			$arrayForValidate = array();
+			if(isset($this->request->data['arrayForValidate'])){$arrayForValidate = $this->request->data['arrayForValidate'];}
+			////////////////////////////////////////////END - RECIEVE AJAX////////////////////////////////////////////////////////
+			
+			////////////////////////////////////////////////START - SET DATA/////////////////////////////////////////////////////
+			$arrayMovement = array('date'=>$date, 'inv_warehouse_id'=>$warehouseId, 'description'=>$description, 'lc_state'=>$STATE);
+			
+			if($ACTION == 'save_warehouses_transfer'){
+				$arrayMovementDestination = $arrayMovement; //IN(destination),OUT(origin)
+				$arrayMovementDestination['inv_warehouse_id'] = $warehouseId2;
+			}
+			
+			//INSERT OR UPDATE
+			if($movementId == ''){//INSERT
+				//$code = 'BORRADOR'.date('Y').'-'.date('mdHis');
+				switch ($ACTION) {
+					case 'save_in':
+						$arrayMovement['document_code'] = 'NO';
+						$arrayMovement['inv_movement_type_id']=$movementTypeId;
+						$code = $this->_generate_code('ENT');
+						$arrayMovement['code'] = $code;
+						break;
+					case 'save_purchase_in':
+						$arrayMovement['document_code'] = $documentCode;
+						$arrayMovement['inv_movement_type_id']=1;
+						$code = $this->_generate_code('ENT');
+						$arrayMovement['code'] = $code;
+						break;
+					case 'save_out':
+						$arrayMovement['document_code'] = 'NO';
+						$arrayMovement['inv_movement_type_id']=$movementTypeId;
+						$code = $this->_generate_code('SAL');
+						$arrayMovement['code'] = $code;
+						break;
+					case 'save_sale_out':
+						$arrayMovement['document_code'] = $documentCode;
+						$arrayMovement['inv_movement_type_id']=2;
+						$code = $this->_generate_code('SAL');
+						$arrayMovement['code'] = $code;
+						break;
+					case 'save_warehouses_transfer':
+						$code = $this->_generate_code('SAL');
+						$arrayMovement['code'] = $code;
+						
+						$code2 = $this->_generate_code('ENT');
+						$arrayMovementDestination['code'] = $code2;
+						
+						$documentCode = $this->_generate_document_code_transfer('TRA-ALM');
+						$arrayMovement['document_code'] = $documentCode;
+						$arrayMovementDestination['document_code'] = $documentCode;
+						
+						$arrayMovement['inv_movement_type_id']=3; //Origin/Out
+						$arrayMovementDestination['inv_movement_type_id']=4;//Destination/In
+						break;
+				}
+			}else{//UPDATE
+				$arrayMovement['id'] = $movementId;
+			}
+
+			
+			if($ACTION == 'save_warehouses_transfer'){
+				$dataMovement = array('InvMovement'=>$arrayMovementDestination, 'InvMovement'=>$arrayMovement);	//IN(destination),OUT(origin)
+			}else{
+				$dataMovement = array('InvMovement'=>$arrayMovement);	
+			}
+			
+			$arrayMovementDetails = array('inv_item_id'=>$itemId, 'quantity'=>$quantity);
+			$dataMovementDetail = array('InvMovementDetail'=> $arrayMovementDetails);
+			$error=0;
+			////////////////////////////////////////////////END - SET DATA//////////////////////////////////////////////////////
+			
+			$validation['error'] = 0;
+			////////////////////////////////////////////START- CORE SAVE////////////////////////////////////////////////////////
+			if($error == 0){
+				/////////////////////START - SAVE/////////////////////////////	
+					if(count($arrayForValidate) > 0){
+						if(($STATE == 'APPROVED') AND ($ACTION == 'save_out' OR $ACTION == 'save_sale_out')){
+							$validation=$this->_validateItemsStocksOut($arrayForValidate, $warehouseId);
+						}
+						if(($STATE == 'CANCELLED') AND ($ACTION == 'save_in' OR $ACTION == 'save_purchase_in')){
+							$validation=$this->_validateItemsStocksOut($arrayForValidate, $warehouseId);
+						}
+					}
+					if($validation['error'] == 0){
+						$res = $this->InvMovement->saveMovement($dataMovement, $dataMovementDetail, $OPERATION);
+						if($res <> 'error'){
+							$movementIdSaved = $res;
+							$strItemsStock = '';
+							if($STATE == 'APPROVED' OR $STATE == 'CANCELLED'){
+								$strItemsStock = $this->_createStringItemsStocksUpdated($arrayForValidate, $warehouseId);
+							}
+							echo $STATE.'|'.$movementIdSaved.'|'.$code.'|'.$strItemsStock;
+						}else{
+							echo 'ERROR|onSaving';
+						}
+					}else{
+							echo 'VALIDATION|'.$validation['itemsStocks'];
+					}
+
+				/////////////////////END - SAVE////////////////////////////////	
+			}else{
+				echo 'ERROR|onGeneratingParameters';
+			}
+			////////////////////////////////////////////END-CORE SAVE////////////////////////////////////////////////////////
+		}
+	}
+	
+	public function ajax_save_item(){
+		if($this->RequestHandler->isAjax()){
+			////////////////////////////////////////////START - AJAX////////////////////////////////////////////////////////
+			$item = $this->request->data['item'];
+			$quantity = $this->request->data['quantity'];
+			$movementId = $this->request->data['movementId'];
+			$warehouse = $this->request->data['warehouse'];
+			$date = $this->request->data['date'];
+			$description = $this->request->data['description'];
+			$movementType = $this->request->data['movementType'];
+			$documentCode = $this->request->data['documentCode'];
+			$actionItem = $this->request->data['actionItem'];
+			////////////////////////////////////////////END - AJAX////////////////////////////////////////////////////////
+			
+			////////////////////////////////////////////START PARAMETERS////////////////////////////////////////////////////////
+			$arrayItemsDetails = array('inv_item_id'=>$item, 'quantity'=>$quantity);
+			$action = 'INSERT';	//internal
+			$arrayMovement = array('date'=>$date, 'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType, 'description'=>$description);
+			$arrayMovement['document_code']=$documentCode;
+			$arrayMovement['lc_state'] = 'PENDANT'; 
+			$arrayMovement['code'] = 'BORRADOR';
+
+			if($movementId <> ''){//update
+				$arrayMovement['id'] = $movementId;
+				$arrayItemsDetails['inv_movement_id']=$movementId;
+				$action = 'UPDATE';//internal
+			}
+			
+			$dataSaveMovement = array('InvMovement'=>$arrayMovement);
+			$dataSaveMovementDetail = array('InvMovementDetail'=> $arrayItemsDetails);
+			////////////////////////////////////////////END - PARAMETERS////////////////////////////////////////////////////////
+			//debug($dataSaveMovement);
+			//debug($dataSaveMovementDetail);
+			////////////////////////////////////////////START-SAVE////////////////////////////////////////////////////////
+				if($actionItem == 'ADDITEM'){
+					$res = $this->InvMovement->addItem($dataSaveMovement, $dataSaveMovementDetail);//with transaction in the model
+				}
+				if($actionItem == 'EDITITEM'){
+					$res = $this->InvMovement->editItem($dataSaveMovement, $dataSaveMovementDetail);
+				}
+				if($actionItem == 'DELETEITEM'){
+					$res = $this->InvMovement->deleteItem($dataSaveMovement, $dataSaveMovementDetail);
+				}
+				if($res <> 'error'){
+					$movementIdSaved = $res; 
+					//$strItemsStock = $this->_createStringItemsStocksUpdated(array($arrayItemsDetails), $warehouse);
+					echo 'PENDANT|'.$movementIdSaved.'|BORRADOR|'.$action;//.'|'.$strItemsStock;
+				}else{
+					echo 'ERROR|onSaving';
+				}
+			////////////////////////////////////////////END-SAVE////////////////////////////////////////////////////////
+		}
+	}
 	
 	public function ajax_save_warehouses_transfer(){
+		if($this->RequestHandler->isAjax()){
+			////////////////////////////////////////////START - AJAX////////////////////////////////////////////////////////
+			$error=0;
+			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
+			$documentCode = $this->request->data['documentCode'];
+			$movementState = $this->request->data['movementState'];
+			$warehouseOut = $this->request->data['warehouseOut'];
+			$warehouseIn = $this->request->data['warehouseIn'];
+			$description = $this->request->data['description'];
+			$date = $this->request->data['date'];
+			$movementTypeOut = 3;//Origin/StockOut
+			$movementTypeIn = 4;//Destination/StockIn
+			$movementIdOut = $this->request->data['movementId'];
+			$movementIdIn = '';
+			if($documentCode <> ''){//update
+				try{
+					$movementIdIn = $this->InvMovement->field('InvMovement.id', array('InvMovement.document_code'=>$documentCode,'InvMovement.id !='=>$movementIdOut));
+				}catch(Exception $e){ //IF ERROR
+					$error++;
+				}
+			}else{//insert
+				$documentCode = $this->_generate_document_code_transfer('TRA-ALM');
+				if($documentCode == 'error'){$error++;}//IF ERROR
+			}
+			
+			//NEW
+			$actionItem = $this->request->data['actionItem'];
+			////////////////////////////////////////////END - AJAX////////////////////////////////////////////////////////
+			
+			////////////////////////////////////////////START PARAMETERS////////////////////////////////////////////////////////
+			$arrayMovementOut = array('date'=>$date, 'inv_warehouse_id'=>$warehouseOut, 'inv_movement_type_id'=>$movementTypeOut, 'description'=>$description);
+			$arrayMovementIn = array('date'=>$date, 'inv_warehouse_id'=>$warehouseIn, 'inv_movement_type_id'=>$movementTypeIn, 'description'=>$description);
+			
+			if($movementIdOut <> ''){//update
+				$arrayMovementOut['id'] = $movementIdOut;
+				$arrayMovementIn['id'] = $movementIdIn;
+				$arrayMovementOut['lc_state'] = $movementState;
+				$arrayMovementIn['lc_state'] = $movementState;
+			}else{//insert
+				$arrayMovementOut['lc_state'] = $movementState;
+				$arrayMovementOut['document_code']=$documentCode;
+				$salCode = $this->_generate_code('SAL');
+				if($salCode == 'error'){$error++;}//IF ERROR
+				$arrayMovementOut['code'] = $salCode;
+				
+				$arrayMovementIn['lc_state'] = $movementState;
+				$arrayMovementIn['document_code']=$documentCode;
+				$entCode = $this->_generate_code('ENT');
+				if($entCode == 'error'){$error++;}//IF ERROR
+				$arrayMovementIn['code'] = $entCode;
+			}
+			
+			$dataSaveMovement = array('InvMovement'=>array($arrayMovementIn, $arrayMovementOut));
+			$dataSaveMovementDetail = array('InvMovementDetail'=> $arrayItemsDetails);
+			
+			////////////////////////////////////////////END - PARAMETERS////////////////////////////////////////////////////////
+			
+			
+			//****************************************************************************************************************//
+			$validation['error'] = 0;
+			if($error == 0){
+			/////////////////////START - SAVE/////////////////////////////	
+				if(($movementState == 'APPROVED') OR ($movementState == 'CANCELLED')){
+					$validation=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouseOut);
+				}
+				if($validation['error'] == 0){
+					switch ($actionItem){
+						case 'SAVECHANGES':
+							$res = $this->InvMovement->saveMovement($dataSaveMovement);//with transaction inside the model
+							brake;
+						case 'ADDITEM':
+							$res = $this->InvMovement->addItem($dataSaveMovement, $dataSaveMovementDetail);//with transaction in the model
+							brake;
+						case 'EDITITEM':
+							$res = $this->InvMovement->editItem($dataSaveMovement, $dataSaveMovementDetail);
+							brake;
+						case 'DELETEITEM':
+							$res = $this->InvMovement->deleteItem($dataSaveMovement, $dataSaveMovementDetail);
+							brake;
+					}
+					///////////////////////
+					if($res <> 'error'){
+						$movementIdInsertedOut = $res;
+						$strItemsStockOut = '';
+						$strItemsStockIn = '';
+						if($movementState == 'APPROVED' OR $movementState == 'CANCELLED'){
+							$strItemsStockOut = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouseOut);
+							$strItemsStockIn = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouseIn);
+						}
+						echo $movementState.'|'.$movementIdInsertedOut.'|'.$documentCode.'|'.$strItemsStockOut.'|'.$strItemsStockIn;
+					}else{
+						echo 'ERROR|onSaving';
+					}
+				}else{
+						echo 'VALIDATION|'.$validation['itemsStocks'];
+				}
+			/////////////////////START - SAVE/////////////////////////////		
+			}else{
+				echo 'ERROR|onGeneratingParameters';
+			}
+			//****************************************************************************************************************//
+		}
+	}
+	
+	public function ajax_save_warehouses_transfer22(){
 		if($this->RequestHandler->isAjax()){
 			
 			////////////////////////////////////////////START - AJAX////////////////////////////////////////////////////////
@@ -1049,19 +1284,19 @@ class InvMovementsController extends AppController {
 			////////////////////////////////////////////START-CORE SAVE////////////////////////////////////////////////////////
 			if($error == 0){
 			/////////////////////START - SAVE/////////////////////////////	
-				
-				if($movementState == 'APPROVED'){
+				if(($movementState == 'APPROVED') OR ($movementState == 'CANCELLED')){
 					$validation=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouseOut);
 				}
-				if($movementState == 'CANCELLED'){
-					$validation=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouseIn);
-				}
 				if($validation['error'] == 0){
-					$res = $this->InvMovement->saveMovement($dataDelete, $dataSave);//with transaction in the model
+					$res = $this->InvMovement->saveMovement($dataDelete, $dataSave);//with transaction inside the model
 					if($res <> 'error'){
 						$movementIdInsertedOut = $res;
-						$strItemsStockOut = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouseOut);
-						$strItemsStockIn = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouseIn);
+						$strItemsStockOut = '';
+						$strItemsStockIn = '';
+						if($movementState == 'APPROVED' OR $movementState == 'CANCELLED'){
+							$strItemsStockOut = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouseOut);
+							$strItemsStockIn = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouseIn);
+						}
 						echo $movementState.'|'.$movementIdInsertedOut.'|'.$documentCode.'|'.$strItemsStockOut.'|'.$strItemsStockIn;
 					}else{
 						echo 'ERROR|onSaving';

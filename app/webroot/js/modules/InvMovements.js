@@ -217,22 +217,26 @@ $(document).ready(function(){
 		if( error === ''){
 			showBittionAlertModal({content:'¿Está seguro de eliminar este item?'});
 			$('#bittionBtnYes').click(function(){
-				var itemId = objectTableRowSelected.find('#txtItemId').val();//$('#cbxModalItems').val();
-				//var quantity = objectTableRowSelected.find('#txtItemId').val();//$('#txtModalQuantity').val();
-				//var itemCodeName = $('#cbxModalItems option:selected').text();
+				ajax_save_movement('DELETE', 'PENDANT', objectTableRowSelected, []);
+				/*
+				//var itemId = objectTableRowSelected.find('#txtItemId').val();//$('#cbxModalItems').val();
 				if(arr[3] === 'save_in'){//0
-					ajax_save_item('DELETEITEM', 0, itemId, '', '', '', '', objectTableRowSelected);
+					//ajax_save_item('DELETEITEM', 0, itemId, '', '', '', '', objectTableRowSelected);
+					ajax_save_movement('save_in', 'DELETE', 'PENDANT', objectTableRowSelected);
 				}
 				if(arr[3] === 'save_purchase_in'){//1
-					ajax_save_item('DELETEITEM', 1, itemId, '', '', '', '', objectTableRowSelected);
+					ajax_save_movement('save_purchase_in', 'DELETE', 'PENDANT', objectTableRowSelected);
 				}
 				if(arr[3] === 'save_out'){//0
-					ajax_save_item('DELETEITEM', 0, itemId, '', '', '', '', objectTableRowSelected);
+					ajax_save_movement('save_out', 'DELETE', 'PENDANT', objectTableRowSelected);
 				}
 				if(arr[3] === 'save_sale_out'){//2
-					ajax_save_item('DELETEITEM', 2, itemId, '', '', '', '', objectTableRowSelected);
+					ajax_save_movement('save_sale_out', 'DELETE', 'PENDANT', objectTableRowSelected);
 				}
-				//transfer goes here
+				if(arr[3] === 'save_warehouse_transfer'){//2
+					ajax_save_movement('save_warehouse_transfer', 'DELETE', 'PENDANT', objectTableRowSelected);
+				}
+				*/
 			});
 		}else{
 			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
@@ -261,19 +265,25 @@ $(document).ready(function(){
 		var itemCodeName = $('#cbxModalItems option:selected').text();
 		var error = validateItem(itemCodeName, quantity, ''); 
 		if(error === ''){
+			ajax_save_movement('EDIT', 'PENDANT', '', []);
+			/*
 			if(arr[3] === 'save_in'){//0
-				ajax_save_item('EDITITEM', 0, itemId, quantity, itemCodeName, '', '','');
+				//ajax_save_item('EDITITEM', 0, itemId, quantity, itemCodeName, '', '','');
+				ajax_save_movement('save_in', 'EDIT', 'PENDANT', '');
 			}
 			if(arr[3] === 'save_purchase_in'){//1
-				ajax_save_item('EDITITEM', 1, itemId, quantity, itemCodeName, '', '','');
+				ajax_save_movement('save_purchase_in', 'EDIT', 'PENDANT', '');
 			}
 			if(arr[3] === 'save_out'){//0
-				ajax_save_item('EDITITEM', 0, itemId, quantity, itemCodeName, '', '','');
+				ajax_save_movement('save_out', 'EDIT', 'PENDANT', '');
 			}
 			if(arr[3] === 'save_sale_out'){//2
-				ajax_save_item('EDITITEM', 2, itemId, quantity, itemCodeName, '', '','');
+				ajax_save_movement('save_sale_out', 'EDIT', 'PENDANT', '');
 			}
-			//transfer goes here
+			if(arr[3] === 'save_warehouses_transfer'){//2
+				ajax_save_movement('save_warehouses_transfer', 'EDIT', 'PENDANT', '');
+			}
+			*/
 		}else{
 			$('#boxModalValidateItem').html('<ul>'+error+'</ul>');
 		}
@@ -292,19 +302,26 @@ $(document).ready(function(){
 		
 		var error = validateItem(itemCodeName, quantity, ''); 
 		if(error === ''){
+			ajax_save_movement('ADD', 'PENDANT', '', []);
+			/*
 			if(arr[3] === 'save_in'){//0
-				ajax_save_item('ADDITEM', 0, itemId, quantity, itemCodeName, stock, stock2,'');
+				//ajax_save_item('ADDITEM', 0, itemId, quantity, itemCodeName, stock, stock2,'');
+				ajax_save_movement('save_in', 'ADD', 'PENDANT', '');
 			}
 			if(arr[3] === 'save_purchase_in'){//1
-				ajax_save_item('ADDITEM', 1, itemId, quantity, itemCodeName, stock, stock2,'');
+				ajax_save_movement('save_purchase_in', 'ADD', 'PENDANT', '');
 			}
 			if(arr[3] === 'save_out'){//0
-				ajax_save_item('ADDITEM', 0, itemId, quantity, itemCodeName, stock, stock2,'');
+				ajax_save_movement('save_out', 'ADD', 'PENDANT', '');
 			}
 			if(arr[3] === 'save_sale_out'){//2
-				ajax_save_item('ADDITEM', 2, itemId, quantity, itemCodeName, stock, stock2,'');
+				ajax_save_movement('save_sale_out', 'ADD', 'PENDANT', '');
 			}
 			//transfer goes here
+			if(arr[3] === 'save_warehouses_transfer'){
+				ajax_save_movement('save_warehouses_transfer', 'ADD', 'PENDANT', '');
+			}
+			*/
 		}else{
 			$('#boxModalValidateItem').html('<ul>'+error+'</ul>');
 		}
@@ -382,22 +399,26 @@ $(document).ready(function(){
 		arrayItemsDetails = getItemsDetails();
 		var error = validateBeforeSaveAll(arrayItemsDetails);
 		if( error === ''){
+			ajax_save_movement('DEFAULT', 'PENDANT', '', []);
 			//I send [{0:0}] 'cause don't not need to update stock in PENDANT 
+			/*
 			if(arr[3] === 'save_in'){
-				ajax_save_movement([{0:0}], 'ENT', 0, 'PENDANT');
+				//ajax_save_movement([{0:0}], 'ENT', 0, 'PENDANT');
+				ajax_save_movement('save_in', 'DEFAULT', 'PENDANT', '');
 			}
 			if(arr[3] === 'save_purchase_in'){
-				ajax_save_movement([{0:0}], 'ENT', 1, 'PENDANT');
+				ajax_save_movement('save_purchase_in', 'DEFAULT', 'PENDANT', '');
 			}
 			if(arr[3] === 'save_out'){
-				ajax_save_movement([{0:0}], 'SAL', 0, 'PENDANT');
+				ajax_save_movement('save_out', 'DEFAULT', 'PENDANT', '');
 			}
 			if(arr[3] === 'save_sale_out'){
-				ajax_save_movement([{0:0}], 'SAL', 2, 'PENDANT');
+				ajax_save_movement('save_sale_out', 'DEFAULT', 'PENDANT', '');
 			}
 			if(arr[3] === 'save_warehouses_transfer'){
-				ajax_save_warehouses_transfer([{0:0}], 'PENDANT');
+				ajax_save_movement('save_warehouses_transfer', 'DEFAULT', 'PENDANT', '');
 			}
+			*/
 		}else{
 			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
 		}
@@ -414,10 +435,12 @@ $(document).ready(function(){
 	function changeStateApproved(){
 		showBittionAlertModal({content:'Al APROBAR este documento ya no se podrá hacer más modificaciones. ¿Está seguro?'});
 		$('#bittionBtnYes').click(function(){
-			var arrayItemsDetails = [];
-			arrayItemsDetails = getItemsDetails();
-			var error = validateBeforeSaveAll(arrayItemsDetails);
+			var arrayForValidate = [];
+			arrayForValidate = getItemsDetails();
+			var error = validateBeforeSaveAll(arrayForValidate);
 			if( error === ''){
+				ajax_save_movement('DEFAULT', 'APPROVED', '', arrayForValidate);
+				/*
 				if(arr[3] === 'save_in'){
 					ajax_save_movement(arrayItemsDetails, 'ENT', 0, 'APPROVED');
 				}
@@ -433,6 +456,7 @@ $(document).ready(function(){
 				if(arr[3] === 'save_warehouses_transfer'){
 					ajax_save_warehouses_transfer(arrayItemsDetails, 'APPROVED');
 				}
+				*/
 			}else{
 				$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
 			}
@@ -443,8 +467,12 @@ $(document).ready(function(){
 	function changeStateCancelled(){
 		showBittionAlertModal({content:'Al CANCELAR este documento ya no será válido y no habrá marcha atrás. ¿Está seguro?'});
 		$('#bittionBtnYes').click(function(){
-			var arrayItemsDetails = [];
-			arrayItemsDetails = getItemsDetails();
+			//var arrayItemsDetails = [];
+			//arrayItemsDetails = getItemsDetails();
+			var arrayForValidate = [];
+			arrayForValidate = getItemsDetails();
+			ajax_save_movement('DEFAULT', 'CANCELLED', '', arrayForValidate);
+			/*
 			if(arr[3] === 'save_in'){
 				ajax_save_movement(arrayItemsDetails, 'ENT', 0, 'CANCELLED');
 			}
@@ -460,6 +488,7 @@ $(document).ready(function(){
 			if(arr[3] === 'save_warehouses_transfer'){
 				ajax_save_warehouses_transfer(arrayItemsDetails, 'CANCELLED');
 			}
+			*/
 			hideBittionAlertModal();
 		});
 	}
@@ -682,7 +711,7 @@ $(document).ready(function(){
 	}
 	
 	//Save movement (PENDANT, APPROVED, CANCELLED)
-	function ajax_save_movement(arrayItemsDetails, movementStatus, movementType, movementState){
+	function ajax_save_movement22(arrayItemsDetails, movementStatus, movementType, movementState){
 		var documentCode ='NO';
 		if ($('#cbxMovementTypes').length > 0){//exists
 			movementType = $('#cbxMovementTypes').val();
@@ -758,50 +787,6 @@ $(document).ready(function(){
 						showGrowlMessage('error', 'Vuelva a intentarlo.');
 						break;
 					}
-				/*
-				if(arrayCatch[0] === 'PENDANT'){ 
-					$('#txtCode').val(arrayCatch[2]);
-					$('#btnApproveState, #btnPrint, #btnLogicDelete').show();
-					$('#txtMovementIdHidden').val(arrayCatch[1]);
-					changeLabelDocumentState(movementState); //#UNICORN
-					showGrowlMessage('ok', 'Cambios guardados.');
-				}				
-				//////////////////////////////////////////
-				if(arrayCatch[0] === 'APPROVED'){ 
-					$('#txtCode').val(arrayCatch[2]);
-					$('#btnApproveState, #btnLogicDelete, #btnSaveAll, #btnAddMovementType, .columnItemsButtons').hide();
-					$('#btnCancellState').show();
-					$('#txtDate, #txtCode, #cbxWarehouses, #txtDescription').attr('disabled','disabled');
-					if ($('#btnAddItem').length > 0){//existe
-						$('#btnAddItem').hide();
-					}
-					if ($('#txtDocumentCode').length > 0){//existe
-						$('#txtDocumentCode').attr('disabled','disabled');
-					}
-					if ($('#cbxMovementTypes').length > 0){//existe
-						$('#cbxMovementTypes').attr('disabled','disabled');
-					}
-					changeLabelDocumentState(movementState); //#UNICORN
-					showGrowlMessage('ok', 'Aprobado.');
-				}
-				//////////////////////////////////////////
-				if(arrayCatch[0] === 'CANCELLED'){ 
-					$('#btnCancellState').hide();
-					changeLabelDocumentState(movementState); //#UNICORN
-					showGrowlMessage('ok', 'Cancelado.');
-				}
-				//////////////////////////////////////////
-				if(arrayCatch[0] === 'VALIDATION'){
-					var arrayItemsStocks = arrayCatch[1].split(',');
-					var validation = validateBeforeMoveOut(arrayItemsStocks, 'spaStock');
-					$('#boxMessage').html('<div class="alert alert-error">\n\
-					<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo realizar la acción debido a falta de STOCK:</p><ul>'+validation+'</ul><div>');
-				}
-				//////////////////////////////////////////
-				if(arrayCatch[0] === 'ERROR'){
-					showGrowlMessage('error', 'Vuelva a intentarlo.');
-				}
-				*/
 				//////////////////////////////////////////
 			},
 			error:function(data){
@@ -812,81 +797,211 @@ $(document).ready(function(){
 	}
 	
 	
-
-	//Save movement Warehouse transfer
-	function ajax_save_warehouses_transfer(arrayItemsDetails, movementState){
-			$.ajax({
+	
+	//*****************************************************************************************************************************//
+	function setOnData(ACTION, OPERATION, STATE, objectTableRowSelected, arrayForValidate){
+		var DATA = [];
+		//constants
+		var movementId=$('#txtMovementIdHidden').val();
+		var date = $('#txtDate').val();
+		var warehouseId = $('#cbxWarehouses').val();
+		var description = $('#txtDescription').val();
+		//variables
+		var code = '';
+		var documentCode = '';
+		var warehouseId2 = 0;
+		var movementTypeId = 0;
+		var itemId = 0;
+		var quantity = 0;
+		//only used for ADD
+		var itemCodeName = '';
+		var stock = 0;
+		var stock2 = '';//otherwise create one more column on details table
+		
+		//for validate
+		//var arrayForValidate = [];
+		
+		//Movement setup variables
+		if((ACTION !== 'save_in') || (ACTION !== 'save_out')){
+			documentCode = $('#txtDocumentCode').val();
+			movementTypeId = $('#cbxMovementTypes').val();
+		}
+		/*
+		if((ACTION === 'save_in') || (ACTION === 'save_purchase_in')){
+			if(STATE === 'APPROVED'){
+				arrayForValidate = [];
+			}
+		}
+		if((ACTION === 'save_out') || (ACTION === 'save_sale_out')){
+			if(STATE === 'CANCELLED'){
+				arrayForValidate = [];
+			}
+		}
+		*/
+		
+		if(ACTION === 'save_warehouse_transfer'){
+			warehouseId2 = $('#cbxWarehouses2').val();
+		}
+		if(ACTION !== 'save_warehouse_transfer'){
+			code = $('#txtCode').val();
+		}
+		//MovementDetails(Item) setup variables
+		if(OPERATION === 'ADD' || OPERATION === 'EDIT'){
+			itemId = $('#cbxModalItems').val();
+			quantity = $('#txtModalQuantity').val();
+			if(OPERATION === 'ADD'){
+				itemCodeName = $('#cbxModalItems option:selected').text();
+				stock = $('#txtModalStock').val();
+				if(ACTION > 'save_warehouse_transfer'){//exists
+					stock2 = $('#txtModalStock2').val();
+				}
+			}
+		}
+		if(OPERATION === 'DELETE'){
+			itemId = objectTableRowSelected.find('#txtItemId').val();
+		}
+		//setting data
+		DATA ={   'movementId':movementId
+				  ,'date':date
+				  ,'warehouseId':warehouseId
+				  ,'description':description  
+				  ,'code':code
+				  ,'documentCode':documentCode
+				  ,'warehouseId2':warehouseId2
+				  ,'movementTypeId':movementTypeId
+				  ,'itemId':itemId
+				  ,'quantity':quantity
+				  ,'ACTION':ACTION
+				  ,'OPERATION':OPERATION
+				  ,'STATE':STATE
+				  ,itemCodeName:itemCodeName
+				  ,stock:stock
+				  ,stock2:stock2
+				  ,arrayForValidate:arrayForValidate
+			  };
+		  
+		return DATA;
+	}
+	
+	
+	function setOnPendant(DATA, OPERATION, STATE, objectTableRowSelected , itemId, itemCodeName, quantity, stock, stock2){
+		if($('#txtMovementIdHidden').val() === ''){
+			$('#txtCode').val(DATA[2]);
+			$('#btnApproveState, #btnPrint, #btnLogicDelete').show();
+			$('#txtMovementIdHidden').val(DATA[1]);
+			changeLabelDocumentState(STATE); //#UNICORN
+		}
+		/////////////************************************////////////////////////
+		//Item's table setup
+		if(OPERATION === 'ADD'){
+			createRowItemTable(itemId, itemCodeName, stock, parseInt(quantity,10), stock2);
+			createEventClickEditItemButton(itemId);
+			createEventClickDeleteItemButton(itemId);
+			arrayItemsAlreadySaved.push(itemId);  //push into array of the added item
+			$('#modalAddItem').modal('hide');
+		}
+		if(OPERATION === 'EDIT'){
+			$('#spaQuantity'+itemId).text(parseInt(quantity,10));
+			$('#modalAddItem').modal('hide');
+		}
+		if(OPERATION === 'DELETE'){
+			arrayItemsAlreadySaved = jQuery.grep(arrayItemsAlreadySaved, function(value){
+				return value !== itemId;
+			});
+			objectTableRowSelected.remove();
+			hideBittionAlertModal();
+		}
+		showGrowlMessage('ok', 'Cambios guardados.');
+	}
+	
+	function setOnApproved(DATA, STATE){
+		$('#txtCode').val(DATA[2]);
+		$('#btnApproveState, #btnLogicDelete, #btnSaveAll, #btnAddMovementType, .columnItemsButtons').hide();
+		$('#btnCancellState').show();
+		$('#txtDate, #txtCode, #cbxWarehouses, #txtDescription').attr('disabled','disabled');
+		if ($('#btnAddItem').length > 0){//existe
+			$('#btnAddItem').hide();
+		}
+		if ($('#txtDocumentCode').length > 0){//existe
+			$('#txtDocumentCode').attr('disabled','disabled');
+		}
+		if ($('#cbxMovementTypes').length > 0){//existe
+			$('#cbxMovementTypes').attr('disabled','disabled');
+		}
+		changeLabelDocumentState(STATE); //#UNICORN
+		showGrowlMessage('ok', 'Aprobado.');
+	}
+	
+	function setOnCancelled(STATE){
+		$('#btnCancellState').hide();
+		changeLabelDocumentState(STATE); //#UNICORN
+		showGrowlMessage('ok', 'Cancelado.');
+	}
+	
+	function setOnValidation(DATA){
+		var arrayItemsStocks = DATA[1].split(',');
+		var validation = validateBeforeMoveOut(arrayItemsStocks, 'spaStock');
+		$('#boxMessage').html('<div class="alert alert-error">\n\
+		<button type="button" class="close" data-dismiss="alert">&times;</button>\n\
+		<p>No se pudo realizar la operación debido a falta de STOCK:</p><ul>'+validation+'</ul><div>');
+	}
+	
+	function setOnError(){
+		showGrowlMessage('error', 'Vuelva a intentarlo.');
+	}
+	
+	//Save movement 
+	function ajax_save_movement(OPERATION, STATE, objectTableRowSelected, arrayForValidate){//SAVE_IN/ADD/PENDANT
+		var ACTION = arr[3];
+		var dataSent = setOnData(ACTION, OPERATION, STATE, objectTableRowSelected, arrayForValidate);
+		//Ajax Interaction	
+		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_save_warehouses_transfer",			
-            data:{ arrayItemsDetails: arrayItemsDetails 
-				  ,movementId:$('#txtMovementIdHidden').val()
-				  ,date:$('#txtDate').val()
-				  ,warehouseOut:$('#cbxWarehouses').val()
-				  ,warehouseIn:$('#cbxWarehouses2').val()
-				  ,description:$('#txtDescription').val()
-				  ,documentCode:$('#txtDocumentCode').val()//transfer code for both parts
-				  ,movementState:movementState
-			  },
+            url:moduleController + "ajax_save_movement",//saveMovement			
+            data:dataSent,
             beforeSend: showProcessing(),
             success: function(data){
-				$('#boxMessage').html('');
-				$('#processing').text('');
-				//////////////////////////////
-				var arrayCatch = data.split('|');
-				if(arrayCatch[0] === 'PENDANT'){ 
-					$('#txtDocumentCode').val(arrayCatch[2]);
-					$('#btnApproveState, #btnLogicDelete, #btnPrint').show();
-					$('#txtMovementIdHidden').val(arrayCatch[1]);
-					changeLabelDocumentState(movementState);//#UNICORN
-					showGrowlMessage('ok', 'Cambios guardados.');
-				}
+				$('#boxMessage').html('');//this for order goes here
+				$('#processing').text('');//this must go at the begining not at the end, otherwise, it won't work when validation is send
+				var dataReceived = data.split('|');
 				//////////////////////////////////////////
-				if(arrayCatch[0] === 'APPROVED'){ 
-					$('#btnApproveState, #btnLogicDelete, #btnSaveAll, .columnItemsButtons').hide();
-					$('#btnCancellState').show();
-					if ($('#btnAddItem').length > 0){//existe
-						$('#btnAddItem').hide();
+				
+				if(dataReceived[0] === 'APPROVED' || dataReceived[0] === 'CANCELLED' || dataReceived[0] === 'VALIDATION'){
+					//update items stocks if no error
+					if(dataReceived[3] === 'undefined'){
+						var arrayItemsStocks = dataReceived[3].split(',');
+						updateMultipleStocks(arrayItemsStocks, 'spaStock');
 					}
-					$('#txtDocumentCode, #txtDate, #cbxWarehouses, #cbxWarehouses2, #txtDescription').attr('disabled','disabled');
-					if ($('#cbxMovementTypes').length > 0){//existe
-						$('#cbxMovementTypes').attr('disabled','disabled');
-					}
-					changeLabelDocumentState(movementState); //#UNICORN
-					showGrowlMessage('ok', 'Aprobado.');
 				}
-				//////////////////////////////////////////
-				if(arrayCatch[0] === 'CANCELLED'){ 
-					$('#btnCancellState').hide();
-					changeLabelDocumentState(movementState); //#UNICORN
-					showGrowlMessage('ok', 'Cancelado.');
-				}
-				//////////////////////////////////////////
-				if(arrayCatch[0] === 'VALIDATION'){
-					var arrayItemsStocks = arrayCatch[1].split(',');
-					var validation = validateBeforeMoveOut(arrayItemsStocks, 'spaStock');
-					$('#boxMessage').html('<div class="alert alert-error">\n\
-					<button type="button" class="close" data-dismiss="alert">&times;</button><p>No se pudo realizar la acción debido a falta de STOCK:</p><ul>'+validation+'</ul><div>');
-				}
-				if(arrayCatch[0] !== 'ERROR'){
-					//Update Origin/StockOut
-					arrayItemsStocks = arrayCatch[3].split(',');
-					updateMultipleStocks(arrayItemsStocks, 'spaStock');
-
-					//Update Destination/StockIn
-					arrayItemsStocks = arrayCatch[4].split(',');
-					updateMultipleStocks(arrayItemsStocks, 'spaStock2-');
-				}else{
-					showGrowlMessage('error', 'Vuelva a intentarlo.');
+				switch(dataReceived[0]){
+					case 'PENDANT':
+						setOnPendant(dataReceived, OPERATION, STATE, objectTableRowSelected , dataSent['itemId'], dataSent['itemCodeName'], dataSent['quantity'], dataSent['stock'], dataSent['stock2']);
+						break;
+					case 'APPROVED':
+						setOnApproved(dataReceived, STATE);
+						break;
+					case 'CANCELLED':
+						setOnCancelled(STATE);
+						break;
+					case 'VALIDATION':
+						setOnValidation(dataReceived);
+						//alert('jfjfjfj');
+						break;
+					case 'ERROR':
+						setOnError();
+						break;
 				}
 			},
 			error:function(data){
-				showGrowlMessage('error', 'Vuelva a intentarlo.');
-				$('#processing').text('');
+				$('#boxMessage').html(''); 
+				$('#processing').text(''); 
+				setOnError();
 			}
         });
 	}
 
-
+	
+	
 	//Get items and stock for the fist item when inititates modal
 	function ajax_initiate_modal_add_item_in(itemsAlreadySaved){
 		var transfer = '';
