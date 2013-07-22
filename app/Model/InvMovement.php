@@ -98,43 +98,69 @@ class InvMovement extends AppModel {
 		)
 	);
 
-	public function saveMovement($dataMovement, $dataMovementDetail, $OPERATION){
+	public function saveMovement($dataMovement, $dataMovementDetail, $OPERATION, $ACTION){
 		$dataSource = $this->getDataSource();
 		$dataSource->begin();
-		
+		$token = '';
+		if($ACTION == 'save_purchase_in' || $ACTION == 'save_sale_out'){
+			if(!isset($dataMovement['InvMovement']['id'])){
+				$token = 'INSERT';
+			}
+		}
 		if(!$this->saveAll($dataMovement)){
 			$dataSource->rollback();
 			return 'error';
 		}else{
-			$dataMovementDetail['InvMovementDetail']['inv_movement_id']=$this->id;
+			$idMovement = $this->id;
+			if($token <> 'INSERT'){
+				$dataMovementDetail['InvMovementDetail']['inv_movement_id']=$idMovement;
+			}
 		}
-		switch ($OPERATION) {
-			case 'ADD':
-				if(!$this->InvMovementDetail->saveAll($dataMovementDetail)){
+		
+		
+		if($token == 'INSERT'){//Create for purchase or sale
+			for($i=0;$i<count($dataMovementDetail)+1;$i++){
+				$dataMovementDetail['InvMovementDetail'][$i]['inv_movement_id'] = $idMovement;
+			}
+			for($i=0;$i<count($dataMovementDetail)+1;$i++){
+				$this->InvMovementDetail->create();
+				if(!$this->InvMovementDetail->save($dataMovementDetail['InvMovementDetail'][$i])){
 					$dataSource->rollback();
 					return 'error';
 				}
-				break;
-			case 'EDIT':
-				if($this->InvMovementDetail->updateAll(array('InvMovementDetail.quantity'=>$dataMovementDetail['InvMovementDetail']['quantity']), array('InvMovementDetail.inv_movement_id'=>$dataMovementDetail['InvMovementDetail']['inv_movement_id'],	'InvMovementDetail.inv_item_id'=>$dataMovementDetail['InvMovementDetail']['inv_item_id']))){
-					$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
-				}
-				if($rowsAffected == 0){
-					$dataSource->rollback();
-					return 'error';
-				}
-				break;
-			case 'DELETE':
-				if(!$this->InvMovementDetail->deleteAll(array('InvMovementDetail.inv_movement_id'=>$dataMovementDetail['InvMovementDetail']['inv_movement_id'],	'InvMovementDetail.inv_item_id'=>$dataMovementDetail['InvMovementDetail']['inv_item_id']))){
-					$dataSource->rollback();
-					return 'error';
-				}
-				break;
+			}
+		}else{
+			switch ($OPERATION) {
+				case 'ADD':
+					if(!$this->InvMovementDetail->saveAll($dataMovementDetail)){
+						$dataSource->rollback();
+						return 'error';
+					}
+					break;
+				case 'EDIT':
+						if($this->InvMovementDetail->updateAll(array('InvMovementDetail.quantity'=>$dataMovementDetail['InvMovementDetail']['quantity']), array('InvMovementDetail.inv_movement_id'=>$dataMovementDetail['InvMovementDetail']['inv_movement_id'],	'InvMovementDetail.inv_item_id'=>$dataMovementDetail['InvMovementDetail']['inv_item_id']))){
+							$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
+						}
+						if($rowsAffected == 0){
+							$dataSource->rollback();
+							return 'error';
+						}
+					break;
+				case 'DELETE':
+					if(!$this->InvMovementDetail->deleteAll(array('InvMovementDetail.inv_movement_id'=>$dataMovementDetail['InvMovementDetail']['inv_movement_id'],	'InvMovementDetail.inv_item_id'=>$dataMovementDetail['InvMovementDetail']['inv_item_id']))){
+						$dataSource->rollback();
+						return 'error';
+					}
+					break;
+			}
 		}
+		
+		
 		$dataSource->commit();
-		return $dataMovementDetail['InvMovementDetail']['inv_movement_id'];
+		return $idMovement;
 	}
 
+	
 	public function saveMovementTransfer($dataMovement, $OPERATION, $tokenTransfer){
 		$dataSource = $this->getDataSource();
 		$dataSource->begin();
@@ -145,29 +171,40 @@ class InvMovement extends AppModel {
 				return 'error';
 			}
 		}else{
-			
-			
 			if($OPERATION <> 'DELETE'){
 				//debug($dataMovement);
-				$this->save($dataMovement[0]);
-				$this->save($dataMovement[1]);
+				if(!$this->save($dataMovement[0])){
+					$dataSource->rollback();
+					return 'error';
+				}
+				if(!$this->save($dataMovement[1])){
+					$dataSource->rollback();
+					return 'error';
+				}
 				if($OPERATION == 'EDIT'){
-					$this->InvMovementDetail->updateAll(
+					if($this->InvMovementDetail->updateAll(
 							array('InvMovementDetail.quantity'=>$dataMovement[2]['InvMovementDetail']['quantity']),
 							array('InvMovementDetail.inv_movement_id'=>array($dataMovement[0]['InvMovement']['id'], $dataMovement[1]['InvMovement']['id']),
-								'InvMovementDetail.inv_item_id'=>$dataMovement[2]['InvMovementDetail']['inv_item_id'])
-							);
+								'InvMovementDetail.inv_item_id'=>$dataMovement[2]['InvMovementDetail']['inv_item_id']))){
+						$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
+					}
+					if($rowsAffected == 0){
+						$dataSource->rollback();
+						return 'error';
+					}
 				}
 				if($OPERATION == 'ADD'){
 					//debug($dataMovement[0]['InvMovement']['id']);
 					//debug($dataMovement[1]['InvMovement']['id']);
 					$this->InvMovementDetail->create();//without this doesn't clean and update (in the beginning just in case)
-					if($this->InvMovementDetail->save(array('InvMovementDetail'=>array('inv_movement_id'=>$dataMovement[0]['InvMovement']['id'], 'inv_item_id'=>$dataMovement[2]['InvMovementDetail']['inv_item_id'],'quantity'=>$dataMovement[2]['InvMovementDetail']['quantity'])))){
-						
+					if(!$this->InvMovementDetail->save(array('InvMovementDetail'=>array('inv_movement_id'=>$dataMovement[0]['InvMovement']['id'], 'inv_item_id'=>$dataMovement[2]['InvMovementDetail']['inv_item_id'],'quantity'=>$dataMovement[2]['InvMovementDetail']['quantity'])))){
+						$dataSource->rollback();
+						return 'error';
 					}
 					$this->InvMovementDetail->create();//without this doesn't clean and update
-					if($this->InvMovementDetail->save(array('InvMovementDetail'=>array('inv_movement_id'=>$dataMovement[1]['InvMovement']['id'], 'inv_item_id'=>$dataMovement[2]['InvMovementDetail']['inv_item_id'],'quantity'=>$dataMovement[2]['InvMovementDetail']['quantity'])))){
-						
+					if(!$this->InvMovementDetail->save(array('InvMovementDetail'=>array('inv_movement_id'=>$dataMovement[1]['InvMovement']['id'], 'inv_item_id'=>$dataMovement[2]['InvMovementDetail']['inv_item_id'],'quantity'=>$dataMovement[2]['InvMovementDetail']['quantity'])))){
+						$dataSource->rollback();
+						return 'error';
 					}
 				}	
 			}else{
@@ -177,88 +214,10 @@ class InvMovement extends AppModel {
 				}
 			}
 		}
-		
 		$dataSource->commit();
 		return $this->id;
-		
 	}
 	
-	
-	public function addItem($dataSaveMovement, $dataSaveMovementDetail){
-		$dataSource = $this->getDataSource();
-		$dataSource->begin();
-			if(!$this->saveAll($dataSaveMovement)){
-				$dataSource->rollback();
-				return 'error';
-			}else{
-				$dataSaveMovementDetail['InvMovementDetail']['inv_movement_id']=$this->id;
-			}
-
-			if(!$this->InvMovementDetail->saveAll($dataSaveMovementDetail)){
-				$dataSource->rollback();
-				return 'error';
-			}
-		$dataSource->commit();
-		return $dataSaveMovementDetail['InvMovementDetail']['inv_movement_id'];
-	}
-	
-	public function editItem($dataSaveMovement, $dataSaveMovementDetail){
-		$dataSource = $this->getDataSource();
-		$dataSource->begin();
-		//debug($dataSaveMovement);
-		
-		if(isset($dataSaveMovementDetail['InvMovementDetail']['inv_movement_id'])){
-			$action = 'update';
-		}else{
-			$action = 'insert';
-		}
-		
-		if(!$this->saveAll($dataSaveMovement)){
-			$dataSource->rollback();
-			return 'error';
-		}else{
-			$dataSaveMovementDetail['InvMovementDetail']['inv_movement_id']=$this->id;
-			//debug($dataSaveMovementDetail['InvMovementDetail']['inv_movement_id']=$this->id);
-		}
-		//if movemementTypeId is 1(buy) or 2(sell)
-		//must go saveAll blabla
-		
-		if($action == 'update'){
-			if($this->InvMovementDetail->updateAll(array('InvMovementDetail.quantity'=>$dataSaveMovementDetail['InvMovementDetail']['quantity']), array('InvMovementDetail.inv_movement_id'=>$dataSaveMovementDetail['InvMovementDetail']['inv_movement_id'],	'InvMovementDetail.inv_item_id'=>$dataSaveMovementDetail['InvMovementDetail']['inv_item_id']))){
-				$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
-			}
-			if($rowsAffected == 0){
-				$dataSource->rollback();
-				return 'error';
-			}
-		}
-		
-		if($action == 'insert'){
-			if(!$this->InvMovementDetail->saveAll($dataSaveMovementDetail)){
-				$dataSource->rollback();
-				return 'error';
-			}
-		}	
-		
-		$dataSource->commit();
-		return $dataSaveMovementDetail['InvMovementDetail']['inv_movement_id'];
-	}
-	
-	public function deleteItem($dataSaveMovement, $dataSaveMovementDetail){
-		$dataSource = $this->getDataSource();
-		$dataSource->begin();
-		if(!$this->saveAll($dataSaveMovement)){
-			$dataSource->rollback();
-			return 'error';
-		}
-		if(!$this->InvMovementDetail->deleteAll(array('InvMovementDetail.inv_movement_id'=>$dataSaveMovementDetail['InvMovementDetail']['inv_movement_id'],	'InvMovementDetail.inv_item_id'=>$dataSaveMovementDetail['InvMovementDetail']['inv_item_id']))){
-			$dataSource->rollback();
-			return 'error';
-		}
-		$dataSource->commit();
-		return $dataSaveMovementDetail['InvMovementDetail']['inv_movement_id'];
-	}
-
 	
 	public function reduceCredits($id, $amount) { 
                 if($this->updateAll( 
