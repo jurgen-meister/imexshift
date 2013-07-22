@@ -135,6 +135,54 @@ class InvMovement extends AppModel {
 		return $dataMovementDetail['InvMovementDetail']['inv_movement_id'];
 	}
 
+	public function saveMovementTransfer($dataMovement, $OPERATION, $tokenTransfer){
+		$dataSource = $this->getDataSource();
+		$dataSource->begin();
+		//debug($dataMovement);
+		if($tokenTransfer == 'INSERT'){
+			if(!$this->saveAll($dataMovement, array('deep' => true))){
+				$dataSource->rollback();
+				return 'error';
+			}
+		}else{
+			
+			
+			if($OPERATION <> 'DELETE'){
+				//debug($dataMovement);
+				$this->save($dataMovement[0]);
+				$this->save($dataMovement[1]);
+				if($OPERATION == 'EDIT'){
+					$this->InvMovementDetail->updateAll(
+							array('InvMovementDetail.quantity'=>$dataMovement[2]['InvMovementDetail']['quantity']),
+							array('InvMovementDetail.inv_movement_id'=>array($dataMovement[0]['InvMovement']['id'], $dataMovement[1]['InvMovement']['id']),
+								'InvMovementDetail.inv_item_id'=>$dataMovement[2]['InvMovementDetail']['inv_item_id'])
+							);
+				}
+				if($OPERATION == 'ADD'){
+					//debug($dataMovement[0]['InvMovement']['id']);
+					//debug($dataMovement[1]['InvMovement']['id']);
+					$this->InvMovementDetail->create();//without this doesn't clean and update (in the beginning just in case)
+					if($this->InvMovementDetail->save(array('InvMovementDetail'=>array('inv_movement_id'=>$dataMovement[0]['InvMovement']['id'], 'inv_item_id'=>$dataMovement[2]['InvMovementDetail']['inv_item_id'],'quantity'=>$dataMovement[2]['InvMovementDetail']['quantity'])))){
+						
+					}
+					$this->InvMovementDetail->create();//without this doesn't clean and update
+					if($this->InvMovementDetail->save(array('InvMovementDetail'=>array('inv_movement_id'=>$dataMovement[1]['InvMovement']['id'], 'inv_item_id'=>$dataMovement[2]['InvMovementDetail']['inv_item_id'],'quantity'=>$dataMovement[2]['InvMovementDetail']['quantity'])))){
+						
+					}
+				}	
+			}else{
+				if(!$this->InvMovementDetail->deleteAll(array('InvMovementDetail.inv_movement_id'=>array($dataMovement[0]['InvMovement']['id'], $dataMovement[1]['InvMovement']['id']),	'InvMovementDetail.inv_item_id'=>$dataMovement[2]['InvMovementDetail']['inv_item_id']))){
+					$dataSource->rollback();
+					return 'error';
+				}
+			}
+		}
+		
+		$dataSource->commit();
+		return $this->id;
+		
+	}
+	
 	
 	public function addItem($dataSaveMovement, $dataSaveMovementDetail){
 		$dataSource = $this->getDataSource();

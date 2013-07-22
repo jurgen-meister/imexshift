@@ -953,6 +953,10 @@ class InvMovementsController extends AppController {
 			//For validate before approve OUT or cancelled IN
 			$arrayForValidate = array();
 			if(isset($this->request->data['arrayForValidate'])){$arrayForValidate = $this->request->data['arrayForValidate'];}
+			//Internal variables
+			$error=0;
+			$movementDestinationId=0;
+			
 			////////////////////////////////////////////END - RECIEVE AJAX////////////////////////////////////////////////////////
 			
 			////////////////////////////////////////////////START - SET DATA/////////////////////////////////////////////////////
@@ -962,6 +966,8 @@ class InvMovementsController extends AppController {
 				$arrayMovementDestination = $arrayMovement; //IN(destination),OUT(origin)
 				$arrayMovementDestination['inv_warehouse_id'] = $warehouseId2;
 			}
+			
+			$arrayMovementDetails = array('inv_item_id'=>$itemId, 'quantity'=>$quantity);
 			
 			//INSERT OR UPDATE
 			if($movementId == ''){//INSERT
@@ -1004,22 +1010,39 @@ class InvMovementsController extends AppController {
 						
 						$arrayMovement['inv_movement_type_id']=3; //Origin/Out
 						$arrayMovementDestination['inv_movement_type_id']=4;//Destination/In
+						
+						$dataOut = array('InvMovement'=>$arrayMovement, 'InvMovementDetail'=>array($arrayMovementDetails));
+						$dataIn = array('InvMovement'=>$arrayMovementDestination, 'InvMovementDetail'=>array($arrayMovementDetails));
+						$dataTransfer = array($dataIn, $dataOut);
+						
+						$tokenTransfer = 'INSERT';
 						break;
 				}
 			}else{//UPDATE
 				$arrayMovement['id'] = $movementId;
+				if($ACTION == 'save_warehouses_transfer'){
+					try{
+						$movementDestinationId = $this->InvMovement->field('InvMovement.id', array(
+							'InvMovement.document_code'=>$documentCode,
+							'InvMovement.id !='=>$movementId
+						));
+					}catch(Exception $e){ //IF ERROR
+						$error++;
+					}
+					$tokenTransfer = 'UPDATE';
+				}
+				$arrayMovementDestination['id'] = $movementDestinationId;
+				$dataOut = array('InvMovement'=>$arrayMovement);
+				$dataIn = array('InvMovement'=>$arrayMovementDestination);
+				$movementDetails = array('InvMovementDetail'=>$arrayMovementDetails);
+				$dataTransfer = array($dataIn, $dataOut, $movementDetails);
 			}
 
 			
-			if($ACTION == 'save_warehouses_transfer'){
-				$dataMovement = array('InvMovement'=>$arrayMovementDestination, 'InvMovement'=>$arrayMovement);	//IN(destination),OUT(origin)
-			}else{
-				$dataMovement = array('InvMovement'=>$arrayMovement);	
+			if($ACTION <> 'save_warehouses_transfer'){
+				$dataMovement = array('InvMovement'=>$arrayMovement);
+				$dataMovementDetail = array('InvMovementDetail'=> $arrayMovementDetails);
 			}
-			
-			$arrayMovementDetails = array('inv_item_id'=>$itemId, 'quantity'=>$quantity);
-			$dataMovementDetail = array('InvMovementDetail'=> $arrayMovementDetails);
-			$error=0;
 			////////////////////////////////////////////////END - SET DATA//////////////////////////////////////////////////////
 			
 			$validation['error'] = 0;
@@ -1035,7 +1058,12 @@ class InvMovementsController extends AppController {
 						}
 					}
 					if($validation['error'] == 0){
-						$res = $this->InvMovement->saveMovement($dataMovement, $dataMovementDetail, $OPERATION);
+						if($ACTION <> 'save_warehouses_transfer'){
+							$res = $this->InvMovement->saveMovement($dataMovement, $dataMovementDetail, $OPERATION);
+						}else{
+							$res = $this->InvMovement->saveMovementTransfer($dataTransfer, $OPERATION, $tokenTransfer);
+							$code = $documentCode;
+						}
 						if($res <> 'error'){
 							$movementIdSaved = $res;
 							$strItemsStock = '';

@@ -839,7 +839,7 @@ $(document).ready(function(){
 		}
 		*/
 		
-		if(ACTION === 'save_warehouse_transfer'){
+		if(ACTION === 'save_warehouses_transfer'){
 			warehouseId2 = $('#cbxWarehouses2').val();
 		}
 		if(ACTION !== 'save_warehouse_transfer'){
@@ -884,9 +884,14 @@ $(document).ready(function(){
 	}
 	
 	
-	function setOnPendant(DATA, OPERATION, STATE, objectTableRowSelected , itemId, itemCodeName, quantity, stock, stock2){
+	function setOnPendant(DATA, ACTION, OPERATION, STATE, objectTableRowSelected , itemId, itemCodeName, quantity, stock, stock2){
 		if($('#txtMovementIdHidden').val() === ''){
-			$('#txtCode').val(DATA[2]);
+			if(ACTION === 'save_warehouses_transfer'){
+				$('#txtDocumentCode').val(DATA[2]);
+			}else{
+				$('#txtCode').val(DATA[2]);
+			}
+			
 			$('#btnApproveState, #btnPrint, #btnLogicDelete').show();
 			$('#txtMovementIdHidden').val(DATA[1]);
 			changeLabelDocumentState(STATE); //#UNICORN
@@ -975,7 +980,7 @@ $(document).ready(function(){
 				}
 				switch(dataReceived[0]){
 					case 'PENDANT':
-						setOnPendant(dataReceived, OPERATION, STATE, objectTableRowSelected , dataSent['itemId'], dataSent['itemCodeName'], dataSent['quantity'], dataSent['stock'], dataSent['stock2']);
+						setOnPendant(dataReceived, ACTION, OPERATION, STATE, objectTableRowSelected , dataSent['itemId'], dataSent['itemCodeName'], dataSent['quantity'], dataSent['stock'], dataSent['stock2']);
 						break;
 					case 'APPROVED':
 						setOnApproved(dataReceived, STATE);
