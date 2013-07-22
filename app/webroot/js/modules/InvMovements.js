@@ -9,39 +9,6 @@ $(document).ready(function(){
 	startEventsWhenExistsItems();
 	
 
-	
-	/////////////START - Token Status///////////////
-	/*
-	var tokenStatus = '';
-	var tokenIn = 'entrada';
-	var tokenOut = 'salida';
-	if($('txtTokenStatusHidden').length > 0){ //exists
-		tokenStatus = $('txtTokenStatusHidden').val();
-	}
-	*/
-	/////////////FINISH - Token Status//////////////
-	//$('#cbxWarehouses').select2(); // to create advanced select or combobox
-	
-	//clearFieldsForFirefox();
-
-	//************************************************************************//
-	//////////////////////////////////BEGIN-FUNCTIONS////////////////
-	//************************************************************************//
-	//firefox doesn't clear by himself the fields when there is a refresh in a new form
-	/*
-	function clearFieldsForFirefox(){
-		var urlController = ['save_in', 'save_out', 'save_warehouses_transfer'];
-		for(var i=0;i < urlController.length; i++ ){
-			if(arr[3] == urlController[i]){
-				if(arr[4] == null){
-					$('input').val('');//empty all inputs including hidden thks jquery 
-					$('textarea').val('');
-				}
-			}
-		}
-	}
-	*/
-
 	//When exist items, it starts its events and fills arrayItemsAlreadySaved
 	function startEventsWhenExistsItems(){
 		var arrayAux = [];
@@ -185,34 +152,45 @@ $(document).ready(function(){
 	}
 
 	function initiateModalAddItem(){
-		if(arrayItemsAlreadySaved.length === 0){  //For fix undefined index
-			arrayItemsAlreadySaved = [0]; //if there isn't any row, the array must have at least one field 0 otherwise it sends null
+		var error = validateBeforeSaveAll([{0:0}]);//I send [{0:0}] 'cause it doesn't care to validate if arrayItemsDetails is empty or not
+		if( error === ''){
+			if(arrayItemsAlreadySaved.length === 0){  //For fix undefined index
+				arrayItemsAlreadySaved = [0]; //if there isn't any row, the array must have at least one field 0 otherwise it sends null
+			}
+			$('#btnModalAddItem').show();
+			$('#btnModalEditItem').hide();
+			$('#boxModalValidateItem').html('');//clear error message
+			ajax_initiate_modal_add_item_in(arrayItemsAlreadySaved);
+		}else{
+			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
 		}
-		$('#btnModalAddItem').show();
-		$('#btnModalEditItem').hide();
-		$('#boxModalValidateItem').html('');//clear error message
-		ajax_initiate_modal_add_item_in(arrayItemsAlreadySaved);
 	}
 
 	function initiateModalEditItem(objectTableRowSelected){
-		var itemIdForEdit = objectTableRowSelected.find('#txtItemId').val();  //
-		$('#btnModalAddItem').hide();
-		$('#btnModalEditItem').show();
-		$('#boxModalValidateItem').html('');//clear error message
-		$('#txtModalQuantity').val(objectTableRowSelected.find('#spaQuantity'+itemIdForEdit).text());
-		$('#txtModalStock').val(objectTableRowSelected.find('#spaStock'+itemIdForEdit).text());
-		$('#txtModalStock').keypress(function(){return false;});
-		if ($('#txtModalQuantityDocument').length > 0){//existe
-			$('#txtModalQuantityDocument').val(objectTableRowSelected.find('#spaQuantityDocument'+itemIdForEdit).text());
-			$('#txtModalQuantityDocument').keypress(function(){return false;});
+		var error = validateBeforeSaveAll([{0:0}]);//I send [{0:0}] 'cause it doesn't care to validate if arrayItemsDetails is empty or not
+		if( error === ''){
+			var itemIdForEdit = objectTableRowSelected.find('#txtItemId').val();  //
+			$('#btnModalAddItem').hide();
+			$('#btnModalEditItem').show();
+			$('#boxModalValidateItem').html('');//clear error message
+			$('#txtModalQuantity').val(objectTableRowSelected.find('#spaQuantity'+itemIdForEdit).text());
+			$('#txtModalStock').val(objectTableRowSelected.find('#spaStock'+itemIdForEdit).text());
+			$('#txtModalStock').keypress(function(){return false;});
+			if ($('#txtModalQuantityDocument').length > 0){//existe
+				$('#txtModalQuantityDocument').val(objectTableRowSelected.find('#spaQuantityDocument'+itemIdForEdit).text());
+				$('#txtModalQuantityDocument').keypress(function(){return false;});
+			}
+			if($('#cbxWarehouses2').length > 0){
+				$('#txtModalStock2').val(objectTableRowSelected.find('#spaStock2-'+itemIdForEdit).text());
+				$('#txtModalStock2').keypress(function(){return false;});
+			}
+			$('#cbxModalItems').empty();
+			$('#cbxModalItems').append('<option value="'+itemIdForEdit+'">'+objectTableRowSelected.find('td').text()+'</option>');
+			initiateModal();
+		}else{
+			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
 		}
-		if($('#cbxWarehouses2').length > 0){
-			$('#txtModalStock2').val(objectTableRowSelected.find('#spaStock2-'+itemIdForEdit).text());
-			$('#txtModalStock2').keypress(function(){return false;});
-		}
-		$('#cbxModalItems').empty();
-		$('#cbxModalItems').append('<option value="'+itemIdForEdit+'">'+objectTableRowSelected.find('td').text()+'</option>');
-		initiateModal();
+		
 	}
 
 	function createEventClickEditItemButton(itemId){
@@ -232,25 +210,33 @@ $(document).ready(function(){
 	}
 
 	function deleteItem(objectTableRowSelected){
-		showBittionAlertModal({content:'¿Está seguro de eliminar este item?'});
-		$('#bittionBtnYes').click(function(){
-			var itemId = objectTableRowSelected.find('#txtItemId').val();//$('#cbxModalItems').val();
-			//var quantity = objectTableRowSelected.find('#txtItemId').val();//$('#txtModalQuantity').val();
-			//var itemCodeName = $('#cbxModalItems option:selected').text();
-			if(arr[3] === 'save_in'){//0
-				ajax_save_item('DELETEITEM', 0, itemId, '', '', '', '', objectTableRowSelected);
-			}
-			if(arr[3] === 'save_purchase_in'){//1
-				ajax_save_item('DELETEITEM', 1, itemId, '', '', '', '', objectTableRowSelected);
-			}
-			if(arr[3] === 'save_out'){//0
-				ajax_save_item('DELETEITEM', 0, itemId, '', '', '', '', objectTableRowSelected);
-			}
-			if(arr[3] === 'save_sale_out'){//2
-				ajax_save_item('DELETEITEM', 2, itemId, '', '', '', '', objectTableRowSelected);
-			}
-			//transfer goes here
-		});
+		//var arrayItemsDetails = [];
+		var arrayItemsDetails = getItemsDetails();
+		var error = validateBeforeSaveAll([{0:0}]);//Send [{0:0}] 'cause I won't use arrayItemsDetails classic validation, I will use it differently for this case (as done below)
+		if(arrayItemsDetails.length === 1){error+='<li> Debe existir al menos 1 "Item" </li>';}
+		if( error === ''){
+			showBittionAlertModal({content:'¿Está seguro de eliminar este item?'});
+			$('#bittionBtnYes').click(function(){
+				var itemId = objectTableRowSelected.find('#txtItemId').val();//$('#cbxModalItems').val();
+				//var quantity = objectTableRowSelected.find('#txtItemId').val();//$('#txtModalQuantity').val();
+				//var itemCodeName = $('#cbxModalItems option:selected').text();
+				if(arr[3] === 'save_in'){//0
+					ajax_save_item('DELETEITEM', 0, itemId, '', '', '', '', objectTableRowSelected);
+				}
+				if(arr[3] === 'save_purchase_in'){//1
+					ajax_save_item('DELETEITEM', 1, itemId, '', '', '', '', objectTableRowSelected);
+				}
+				if(arr[3] === 'save_out'){//0
+					ajax_save_item('DELETEITEM', 0, itemId, '', '', '', '', objectTableRowSelected);
+				}
+				if(arr[3] === 'save_sale_out'){//2
+					ajax_save_item('DELETEITEM', 2, itemId, '', '', '', '', objectTableRowSelected);
+				}
+				//transfer goes here
+			});
+		}else{
+			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
+		}
 	}
 
 	function createRowItemTable(itemId, itemCodeName, stock, quantity, stock2){
@@ -393,24 +379,24 @@ $(document).ready(function(){
 	
 	function saveAll(){
 		var arrayItemsDetails = [];
-		//arrayItemsDetails = getItemsDetails();
-		arrayItemsDetails.push({0:0});//sending useless info 'cause won't update stocks here, if i don't declare doesn't work
+		arrayItemsDetails = getItemsDetails();
 		var error = validateBeforeSaveAll(arrayItemsDetails);
 		if( error === ''){
+			//I send [{0:0}] 'cause don't not need to update stock in PENDANT 
 			if(arr[3] === 'save_in'){
-				ajax_save_movement(arrayItemsDetails, 'ENT', 0, 'PENDANT');
+				ajax_save_movement([{0:0}], 'ENT', 0, 'PENDANT');
 			}
 			if(arr[3] === 'save_purchase_in'){
-				ajax_save_movement(arrayItemsDetails, 'ENT', 1, 'PENDANT');
+				ajax_save_movement([{0:0}], 'ENT', 1, 'PENDANT');
 			}
 			if(arr[3] === 'save_out'){
-				ajax_save_movement(arrayItemsDetails, 'SAL', 0, 'PENDANT');
+				ajax_save_movement([{0:0}], 'SAL', 0, 'PENDANT');
 			}
 			if(arr[3] === 'save_sale_out'){
-				ajax_save_movement(arrayItemsDetails, 'SAL', 2, 'PENDANT');
+				ajax_save_movement([{0:0}], 'SAL', 2, 'PENDANT');
 			}
 			if(arr[3] === 'save_warehouses_transfer'){
-				ajax_save_warehouses_transfer(arrayItemsDetails, 'PENDANT');
+				ajax_save_warehouses_transfer([{0:0}], 'PENDANT');
 			}
 		}else{
 			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
@@ -503,7 +489,7 @@ $(document).ready(function(){
 					type = 'transfer';
 					break;	
 			}
-			ajax_logic_Item(code, type, index);
+			ajax_logic_delete(code, type, index);
 			hideBittionAlertModal();
 		});
 	}

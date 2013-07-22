@@ -49,7 +49,7 @@
 		<table class="table table-striped table-bordered table-hover">
 			<tr>
 				<th><?php echo "#";?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('code', 'Codigo Compra');?></th>
+				<th><?php echo 'Codigo Compra';?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('inv_supplier_id', 'Proveedor');?></th>
 				<!--<th><?php //echo ('Codigo Entrada Almacen');?></th>-->

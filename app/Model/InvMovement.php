@@ -133,14 +133,41 @@ class InvMovement extends AppModel {
 	public function editItem($dataSaveMovement, $dataSaveMovementDetail){
 		$dataSource = $this->getDataSource();
 		$dataSource->begin();
+		//debug($dataSaveMovement);
+		
+		if(isset($dataSaveMovementDetail['InvMovementDetail']['inv_movement_id'])){
+			$action = 'update';
+		}else{
+			$action = 'insert';
+		}
+		
 		if(!$this->saveAll($dataSaveMovement)){
 			$dataSource->rollback();
 			return 'error';
+		}else{
+			$dataSaveMovementDetail['InvMovementDetail']['inv_movement_id']=$this->id;
+			//debug($dataSaveMovementDetail['InvMovementDetail']['inv_movement_id']=$this->id);
 		}
-		if(!$this->InvMovementDetail->updateAll(array('InvMovementDetail.quantity'=>$dataSaveMovementDetail['InvMovementDetail']['quantity']), array('InvMovementDetail.inv_movement_id'=>$dataSaveMovementDetail['InvMovementDetail']['inv_movement_id'],	'InvMovementDetail.inv_item_id'=>$dataSaveMovementDetail['InvMovementDetail']['inv_item_id']))){
-			$dataSource->rollback();
-			return 'error';
+		//if movemementTypeId is 1(buy) or 2(sell)
+		//must go saveAll blabla
+		
+		if($action == 'update'){
+			if($this->InvMovementDetail->updateAll(array('InvMovementDetail.quantity'=>$dataSaveMovementDetail['InvMovementDetail']['quantity']), array('InvMovementDetail.inv_movement_id'=>$dataSaveMovementDetail['InvMovementDetail']['inv_movement_id'],	'InvMovementDetail.inv_item_id'=>$dataSaveMovementDetail['InvMovementDetail']['inv_item_id']))){
+				$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
+			}
+			if($rowsAffected == 0){
+				$dataSource->rollback();
+				return 'error';
+			}
 		}
+		
+		if($action == 'insert'){
+			if(!$this->InvMovementDetail->saveAll($dataSaveMovementDetail)){
+				$dataSource->rollback();
+				return 'error';
+			}
+		}	
+		
 		$dataSource->commit();
 		return $dataSaveMovementDetail['InvMovementDetail']['inv_movement_id'];
 	}
@@ -159,6 +186,23 @@ class InvMovement extends AppModel {
 		$dataSource->commit();
 		return $dataSaveMovementDetail['InvMovementDetail']['inv_movement_id'];
 	}
+
+	
+	public function reduceCredits($id, $amount) { 
+                if($this->updateAll( 
+                                array( 
+                                        'Manager.credit' => "Manager.credit-{$amount}" 
+                                         ), 
+                                array( 
+                                        'Manager.id' => $id, 
+                                        'Manager.credit >= ' => $amount 
+                                        ) 
+                                ) 
+                        )  { 
+                        return $this->getAffectedRows(); 
+                } 
+                return false; 
+	} 
 	
 //END MODEL
 }
