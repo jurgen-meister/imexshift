@@ -76,6 +76,8 @@ class SalSalesController extends AppController {
 		////////////////////////////END - SETTING URL FILTERS//////////////////////////////////////
 		
 		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
+		$this->SalSale->bindModel(array('hasOne'=>array('SalCustomer'=>array('foreignKey'=>false,'conditions'=> array('SalEmployee.sal_customer_id = SalCustomer.id')))));
+		
 		$this->paginate = array(
 			"conditions"=>array(
 				"SalSale.lc_state !="=>"NOTE_LOGIC_DELETED",
@@ -85,7 +87,7 @@ class SalSalesController extends AppController {
 				$filters
 			 ),
 			"recursive"=>0,
-			"fields"=>array("SalSale.id", "SalSale.code", "SalSale.doc_code", "SalSale.date", "SalSale.note_code", "SalSale.sal_employee_id", "SalEmployee.name", "SalSale.lc_state"),
+			"fields"=>array("SalSale.id", "SalSale.code", "SalSale.doc_code", "SalSale.date", "SalSale.note_code", "SalSale.sal_employee_id", "SalEmployee.name", "SalSale.lc_state", "SalCustomer.name"),
 			"order"=> array("SalSale.id"=>"desc"),
 			"limit" => 15,
 		);
@@ -134,9 +136,7 @@ class SalSalesController extends AppController {
 		$this->loadModel('AdmUser');
 		
 		$salAdmUsers = $this->AdmUser->AdmProfile->find('list');
-	//	debug($salAdmUsers);
-		array_unshift($salAdmUsers,"Sin Vendedor");
-	
+		//array_unshift($salAdmUsers,"Sin Vendedor"); //REVISAR ESTO ARRUINA EL CODIGO Q BOTA EL DROPDOWN
 		$salCustomers = $this->SalSale->SalEmployee->SalCustomer->find('list'/*, array('conditions'=>array('SalCustomer.location'=>'COCHABAMBA'))*/);
 		$customer = key($salCustomers);
 		$salEmployees = $this->SalSale->SalEmployee->find('list', array('conditions'=>array('SalEmployee.sal_customer_id'=>$customer)));
@@ -183,7 +183,8 @@ class SalSalesController extends AppController {
 			
 			$admProfileId = $this->request->data['SalSale']['salesman_id'];
 			$admUserId = $this->AdmUser->AdmProfile->find('list', array('fields'=>array('AdmProfile.id'),'conditions'=>array('AdmProfile.adm_user_id'=>$admProfileId)));
-		
+//		debug($admProfileId);
+//			debug($admUserId);
 			$exRate = $this->request->data['SalSale']['ex_rate'];
 		}
 		$this->set(compact('salCustomers','customerId', 'salTaxNumbers', 'salEmployees','employeeId', 'salAdmUsers', 'admUserId','id', 'date', 'salDetails', 'documentState', 'genericCode', 'exRate'));
@@ -200,7 +201,7 @@ class SalSalesController extends AppController {
 		
 		$salAdmUsers = $this->AdmUser->AdmProfile->find('list');
 	//	debug($salAdmUsers);
-		array_unshift($salAdmUsers,"Sin Vendedor");
+		//array_unshift($salAdmUsers,"Sin Vendedor");//REVISAR ESTO ARRUINA EL CODIGO Q BOTA EL DROPDOWN
 	
 		$salCustomers = $this->SalSale->SalEmployee->SalCustomer->find('list');
 		$customer = key($salCustomers);
@@ -257,7 +258,7 @@ class SalSalesController extends AppController {
 			'conditions'=>array(
 				'SalDetail.sal_sale_id'=>$idMovement
 				),																									                             /*REVISAR ESTO V*/
-			'fields'=>array('InvItem.name', 'InvItem.code', 'SalDetail.sale_price', 'SalDetail.quantity','SalDetail.inv_warehouse_id', 'InvItem.id', 'InvWarehouse.name','InvWarehouse.id', 'InvItem.id'/*, 'PurPurchase.inv_supplier_id','InvPrice.price'*/)
+			'fields'=>array('InvItem.name', 'InvItem.code', 'SalDetail.sale_price', 'SalDetail.quantity','SalDetail.inv_warehouse_id', 'InvItem.id', 'InvWarehouse.name','InvWarehouse.id', 'InvItem.id', 'SalDetail.cif_price','SalDetail.ex_cif_price')
 			));
 		
 		$formatedMovementDetails = array();
@@ -279,7 +280,10 @@ class SalSalesController extends AppController {
 				'cantidad'=>$value['SalDetail']['quantity'],//llamar cantidad
 				'warehouseId'=>$value['InvWarehouse']['id'],
 				'warehouse'=>$value['InvWarehouse']['name'],//llamar almacen
+	'cifPrice'=>$value['SalDetail']['cif_price'],
+	'exCifPrice'=>$value['SalDetail']['ex_cif_price'],
 				'stock'=> $this->_find_stock($value['InvItem']['id'], $value['SalDetail']['inv_warehouse_id'])
+				
 				);
 		}
 //debug($formatedMovementDetails);		
@@ -309,6 +313,7 @@ class SalSalesController extends AppController {
 		if($this->RequestHandler->isAjax()){
 						
 			$itemsAlreadySaved = $this->request->data['itemsAlreadySaved'];
+			$warehouseItemsAlreadySaved = $this->request->data['warehouseItemsAlreadySaved'];
 //			$warehouse = $this->request->data['warehouse'];
 //			$supplier = $this->request->data['supplier'];
 //			$itemsBySupplier = $this->PurPurchase->InvSupplier->InvItemsSupplier->find('list', array(
@@ -318,10 +323,24 @@ class SalSalesController extends AppController {
 //				),
 //				'recursive'=>-1
 //			)); 
-//debug($itemsBySupplier);			
+			$invWarehouses = $this->SalSale->SalDetail->InvItem->InvMovementDetail->InvMovement->InvWarehouse->find('list');
+			
+			$warehouse = key($invWarehouses);
+			
+			$itemsAlreadySavedInWarehouse = [];
+			for($i=0; $i<count($itemsAlreadySaved); $i++){
+				if($warehouseItemsAlreadySaved[$i] == $warehouse){
+					$itemsAlreadySavedInWarehouse[] = $itemsAlreadySaved[$i];
+				}	
+			}
+		
+//			debug($itemsAlreadySaved);
+//			debug($warehouseItemsAlreadySaved);
+//			debug($itemsAlreadySavedInWarehouse);
+			
 			$items = $this->SalSale->SalDetail->InvItem->find('list', array(
 				'conditions'=>array(
-					'NOT'=>array('InvItem.id'=>$itemsAlreadySaved)
+					'NOT'=>array('InvItem.id'=>$itemsAlreadySavedInWarehouse)
 					
 					/*,'InvItem.id'=>$itemsBySupplier*/
 				),
@@ -329,13 +348,8 @@ class SalSalesController extends AppController {
 				//'fields'=>array('InvItem.id', 'CONCAT(InvItem.code, '-', InvItem.name)')
 			));
 			
-			$invWarehouses = $this->SalSale->SalDetail->InvItem->InvMovementDetail->InvMovement->InvWarehouse->find('list');
-			
-			
 			$firstItemListed = key($items);
-			
-			$warehouse = key($invWarehouses);
-			
+		
 			$stock = $this->_find_stock($firstItemListed, $warehouse);
 			
 //debug($items);
@@ -438,6 +452,8 @@ class SalSalesController extends AppController {
 //			if($transfer == 'warehouses_transfer'){
 //				$stock2 = $this->_find_stock($item, $warehouse2);//if it's warehouse_transfer is IN	
 //			}
+			//debug($item);
+			//////////////////////CAMBIAR POR EL ALGORITMO QUE SACA EL PRECIO PRORRATEADO////////////////
 			$priceDirty = $this->SalSale->SalDetail->InvItem->InvPrice->find('first', array(
 			'fields'=>array('InvPrice.price'),
 			'order' => array('InvPrice.date_created' => 'desc'),
@@ -447,10 +463,11 @@ class SalSalesController extends AppController {
 			));
 			if($priceDirty==array()){
 			$price = 0;
-		}  else {
+			}  else {
 			
 			$price = $priceDirty['InvPrice']['price'];
-		}
+			}
+			//////////////////////CAMBIAR POR EL ALGORITMO QUE SACA EL PRECIO PRORRATEADO////////////////
 			$this->set(compact('price'));
 		}
 	}
@@ -493,6 +510,55 @@ class SalSalesController extends AppController {
 		}
 	}
 	
+	public function ajax_update_items_modal(){
+		if($this->RequestHandler->isAjax()){
+			$itemsAlreadySaved = $this->request->data['itemsAlreadySaved'];
+			$warehouseItemsAlreadySaved = $this->request->data['warehouseItemsAlreadySaved'];
+			$warehouse = $this->request->data['warehouse'];
+			
+			$itemsAlreadySavedInWarehouse = [];
+			for($i=0; $i<count($itemsAlreadySaved); $i++){
+				if($warehouseItemsAlreadySaved[$i] == $warehouse){
+					$itemsAlreadySavedInWarehouse[] = $itemsAlreadySaved[$i];
+				}	
+			}
+			
+//			debug($itemsAlreadySaved);
+//			debug($warehouseItemsAlreadySaved);
+//			debug($itemsAlreadySavedInWarehouse);
+			
+			$items = $this->SalSale->SalDetail->InvItem->find('list', array(
+				'conditions'=>array(
+					'NOT'=>array('InvItem.id'=>$itemsAlreadySavedInWarehouse)
+					
+					/*,'InvItem.id'=>$itemsBySupplier*/
+				),
+				'recursive'=>-1
+				//'fields'=>array('InvItem.id', 'CONCAT(InvItem.code, '-', InvItem.name)')
+			));
+			//debug($items);
+			$item = key($items);
+			//debug($item);
+			//////////////////////CAMBIAR POR EL ALGORITMO QUE SACA EL PRECIO PRORRATEADO////////////////
+			$priceDirty = $this->SalSale->SalDetail->InvItem->InvPrice->find('first', array(
+			'fields'=>array('InvPrice.price'),
+			'order' => array('InvPrice.date_created' => 'desc'),
+			'conditions'=>array(
+				'InvPrice.inv_item_id'=>$item
+				)
+			));
+			if($priceDirty==array()){
+			$price = 0;
+			}  else {
+			
+			$price = $priceDirty['InvPrice']['price'];
+			}
+			//////////////////////CAMBIAR POR EL ALGORITMO QUE SACA EL PRECIO PRORRATEADO////////////////
+			$stock = $this->_find_stock($item, $warehouse);	
+			
+			$this->set(compact('items', 'price', 'stock'));
+		}
+	}
 	
 	public function ajax_save_movement_in(){
 		if($this->RequestHandler->isAjax()){
@@ -512,6 +578,7 @@ class SalSalesController extends AppController {
 			$description = $this->request->data['description'];
 			$exRate = $this->request->data['exRate'];
 			$note_code = $this->request->data['note_code'];
+		//	print_r($admProfileId);
 		//	$movementType = $this->request->data['movementType'];
 		//	$documentCode = $this->request->data['documentCode'];
 			$admUserId = $this->AdmUser->AdmProfile->find('list', array(
@@ -523,13 +590,16 @@ class SalSalesController extends AppController {
 			'conditions'=>array('AdmUser.id'=>$admUserId)
 			)));
 			
-			//$salesman = $this->request->data['salesman'];
-//			$salesman = key($this->SalSale->AdmUser->find('list', array(
-//			//'fields'=>array('AdmProfile.adm_user_id'),
-//			'conditions'=>array('AdmUser.id'=>$salesman2)
-//			)));
+//			print_r($arrayItemsDetails);
+//			$cif_price = $this->SalSale->SalDetail->find('list', array(
+//			'fields'=>array('SalDetail.cif_price'),
+//			'conditions'=>array('SalDetail.sal_sale_id'=>$purchaseId)
+//			));
+//			print_r($cif_price);
+//			$arrayItemsDetails['cif_price']  = $cif_price;
+//			print_r($arrayItemsDetails);
 			////////////////////////////////////////////FIN-CAPTURAR AJAX////////////////////////////////////////////////////////
-			
+
 			
 			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
 			$arrayMovement = array('date'=>$date, 'sal_employee_id'=>$employee,'sal_tax_number_id'=>$taxNumber,'salesman_id'=>$salesman,'note_code'=>$note_code,'ex_rate'=>$exRate,'description'=>$description);
@@ -544,6 +614,8 @@ class SalSalesController extends AppController {
 			$movementDocCode = '';
 			if($purchaseId <> ''){//update
 				$arrayMovement['id'] = $purchaseId;
+//														$arrayMovement['cif_price'] = 28;
+//														$arrayMovement['ex_cif_price'] = 'ex_cif_price';
 			}else{//insert
 				$movementCode = $this->_generate_code('VEN');
 				$movementDocCode = $this->_generate_doc_code('NOT');

@@ -70,7 +70,7 @@
 				<td><?php echo h($salSale['SalSale']['doc_code']); ?>&nbsp;</td>
 				<td><?php echo h($salSale['SalSale']['note_code']); ?>&nbsp;</td>
 				<td><?php echo date("d/m/Y", strtotime($salSale['SalSale']['date'])); ?>&nbsp;</td>
-				<td><?php echo h($salSale['SalEmployee']['name']); ?>&nbsp;</td>				
+				<td><?php echo h($salSale['SalCustomer']['name']); ?>&nbsp;</td>				
 				<td><?php 
 						$documentState = $salSale['SalSale']['lc_state'];
 						switch ($documentState){

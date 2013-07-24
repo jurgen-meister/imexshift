@@ -256,16 +256,18 @@
 									$subtotal = ($salDetails[$i]['cantidad'])*($salDetails[$i]['salePrice']);
 									echo '<tr>';																							//type="hidden" txtWarehouseId
 										echo '<td><span id="spaItemName'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['item'].'</span><input type="hidden" value="'.$salDetails[$i]['itemId'].'" id="txtItemId" ></td>';
-										echo '<td><span id="spaSalePrice'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['salePrice'].'</span></td>';
+										echo '<td><span id="spaSalePrice'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['salePrice'].'</span><input  value="'.$salDetails[$i]['cifPrice'].'" id="txtCifPrice" ><input  value="'.$salDetails[$i]['exCifPrice'].'" id="txtCifExPrice" ></td>';
 										echo '<td><span id="spaQuantity'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['cantidad'].'</span></td>';
-								echo '<td><span id="spaWarehouse'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['warehouse'].'</span><input type="hidden" value="'.$salDetails[$i]['warehouseId'].'" id="txtWarehouseId'.$salDetails[$i]['itemId'].'" ></td>';
-								echo '<td><span id="spaStock'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['stock'].'</span></td>';
+										echo '<td><span id="spaWarehouse'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['warehouse'].'</span><input type="hidden" value="'.$salDetails[$i]['warehouseId'].'" id="txtWarehouseId'.$salDetails[$i]['itemId'].'" ></td>';
+										echo '<td><span id="spaStock'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['stock'].'</span></td>';
 										echo '<td><span id="spaSubtotal'.$salDetails[$i]['itemId'].'">'.$subtotal.'</span></td>';
+										
+										
 										if($documentState == 'NOTE_PENDANT' OR $documentState == ''){
 											echo '<td class="columnItemsButtons">';
-											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$salDetails[$i]['itemId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
+											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$salDetails[$i]['itemId'].''.$salDetails[$i]['warehouseId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
 												
-												<a class="btn btn-danger" href="#" id="btnDeleteItem'.$salDetails[$i]['itemId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
+												<a class="btn btn-danger" href="#" id="btnDeleteItem'.$salDetails[$i]['itemId'].''.$salDetails[$i]['warehouseId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
 											echo '</td>';
 										}
 									echo '</tr>';	
@@ -322,47 +324,45 @@
 					<?php
 					echo '<div id="boxModalInitiateItemPrice">';
 						//////////////////////////////////////
-
-						echo $this->BootstrapForm->input('items_id', array(				
-						'label' => 'Item:',
-						'id'=>'cbxModalItems',
-						'class'=>'input-xlarge',
-						'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
-						));
-				//		echo '<br>';
-						$price='';
-						echo '<div id="boxModalPrice">';
-							echo $this->BootstrapForm->input('sale_price', array(				
-							'label' => 'P/U s_o:',
-							'id'=>'txtModalPrice',
-							'value'=>$price,
-							'style'=>'background-color:#EEEEEE',
-							'class'=>'input-small',
-							'maxlength'=>'15'
-							));
-
-						echo '</div>';		
-				//		echo '<br>';	
 						echo $this->BootstrapForm->input('inv_warehouse_id', array(				
 						'label' => 'Almacén:',
 						'id'=>'cbxModalWarehouses',
-						'class'=>'input-xlarge',
-		//				'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+						'class'=>'input-xlarge'
 						));
-						echo '<br>';
-						$stock='';
-						echo '<div id="boxModalStock">';
-							echo $this->BootstrapForm->input('stock', array(				
-							'label' => 'Stock:',
-							'id'=>'txtModalStock',
-							'value'=>$stock,
-							'style'=>'background-color:#EEEEEE',
-							'class'=>'input-small',
-							'maxlength'=>'15'
+					
+						echo '<div id="boxModalItemPriceStock">';
+							//////////////////////////////////////
+							echo $this->BootstrapForm->input('items_id', array(				
+							'label' => 'Item:',
+							'id'=>'cbxModalItems',
+							'class'=>'input-xlarge'
 							));
 
-						echo '</div>';		
-						echo '<br>';
+							echo '<div id="boxModalPrice">';
+								$price='';
+								echo $this->BootstrapForm->input('sale_price', array(				
+								'label' => 'Precio Unitario:',
+								'id'=>'txtModalPrice',
+								'value'=>$price,
+								'class'=>'input-small',
+								'maxlength'=>'15'
+								));
+							echo '</div>';	
+
+							echo '<div id="boxModalStock">';
+								$stock='';
+								echo $this->BootstrapForm->input('stock', array(				
+								'label' => 'Stock:',
+								'id'=>'txtModalStock',
+								'value'=>$stock,
+								'disabled'=>'disabled',
+								'style'=>'background-color:#EEEEEE',
+								'class'=>'input-small',
+								'maxlength'=>'15'
+								));
+							echo '</div>';	
+							//////////////////////////////////////
+						echo '</div>';
 						//////////////////////////////////////
 					echo '</div>';
 
