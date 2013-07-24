@@ -119,10 +119,10 @@ class InvMovement extends AppModel {
 		
 		
 		if($token == 'INSERT'){//Create for purchase or sale
-			for($i=0;$i<count($dataMovementDetail)+1;$i++){
+			for($i=0;$i<count($dataMovementDetail['InvMovementDetail']);$i++){
 				$dataMovementDetail['InvMovementDetail'][$i]['inv_movement_id'] = $idMovement;
 			}
-			for($i=0;$i<count($dataMovementDetail)+1;$i++){
+			for($i=0;$i<count($dataMovementDetail['InvMovementDetail']);$i++){
 				$this->InvMovementDetail->create();
 				if(!$this->InvMovementDetail->save($dataMovementDetail['InvMovementDetail'][$i])){
 					$dataSource->rollback();

@@ -413,7 +413,7 @@ class InvMovementsController extends AppController {
 			'conditions'=>array(
 				"SalSale.lc_state !="=>"LOGIC_DELETED",
 				"to_char(SalSale.date,'YYYY')"=> $period,
-				"SalSale.lc_state"=>"SALE_NOTE_APPROVED",
+				"SalSale.lc_state"=>"NOTE_APPROVED",
 				$filters
 			 ),
 			'fields'=>array('SalSale.id','SalSale.code', 'SalSale.date', 'SalCustomer.name'),
@@ -1212,7 +1212,7 @@ class InvMovementsController extends AppController {
 		if($period <> ''){
 			try{
 				$movements = $this->InvMovement->find('count', array(
-					'conditions'=>array('InvMovementType.status'=>$movementType, 'InvMovement.code !='=>'BORRADOR')
+					'conditions'=>array('InvMovementType.status'=>$movementType)
 				)); 
 			}catch(Exception $e){
 				return 'error';
