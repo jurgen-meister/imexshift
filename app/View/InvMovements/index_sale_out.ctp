@@ -50,7 +50,7 @@
 		<table class="table table-striped table-bordered table-hover">
 			<tr>
 				<th><?php echo "#";?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('code', 'Codigo Venta');?></th>
+				<th><?php echo 'Codigo Venta';?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('SalCustomer.name', 'Cliente');?></th>
 				<!--<th><?php //echo ('Codigo Salida Almacen');?></th>-->

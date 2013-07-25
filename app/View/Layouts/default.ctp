@@ -27,13 +27,15 @@
 		//echo $this->Html->meta('icon');
 		echo $this->Html->css('bootstrap.min');
 		echo $this->Html->css('bootstrap-responsive.min');
+		echo $this->Html->css('uniform');
+		echo $this->Html->css('select2'); //enhanced selects
 		echo $this->Html->css('unicorn.main');
 		echo $this->Html->css('unicorn.grey',
 				null,
 				array('class' => 'skin-color'));
 		echo $this->Html->css('datepicker');//just for this project I gonna put the calendar here
 		echo $this->Html->css('jquery.gritter');//growl-like notifications
-		echo $this->Html->css('select2'); //enhanced selects
+		
 	?>
 </head>
 <body>

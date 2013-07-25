@@ -30,7 +30,7 @@
 		<div class="widget-content nopadding">
 			<?php 
 				/////////////////START - SETTINGS BUTTON CANCEL /////////////////
-				$url=array('action'=>'index_in');
+				$url=array('action'=>'index_out');
 				$parameters = $this->passedArgs;
 				if(!isset($parameters['search'])){
 					unset($parameters['document_code']);
@@ -75,8 +75,8 @@
 				echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));	
 			}
 			?>
-			<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Entrada Almacen</a>
-			<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Entrada Almacen</a>
+			<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Salida Almacen</a>
+			<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Salida Almacen</a>
 			
 		</div>
 	</div>
