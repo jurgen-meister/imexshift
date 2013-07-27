@@ -6,10 +6,9 @@ $(document).ready(function(){
 
 	var globalPeriod = $('#globalPeriod').text(); // this value is obtained from the main template.
 	var arrayItemsAlreadySaved = []; 
+	startEventsWhenExistsItems();
 	
 	var arrayWarehouseItemsAlreadySaved = []; 
-	
-	startEventsWhenExistsItems();
 	
 	var arrayCostsAlreadySaved = []; 
 	startEventsWhenExistsCosts();
@@ -559,19 +558,19 @@ row +='<td><span id="spaStock'+itemId+'">'+stock+'</span></td>';
 		$('#tablaPays > tbody:last').append(row);
 	}
 	
-	// (GC Ztep 2) function to fill Items list when (saved in modal)
+	// Triggered when Guardar Modal button is pressed (creates a row on the table of items)
 	function addItem(){
 		var quantity = $('#txtModalQuantity').val();
 		var itemId = $('#cbxModalItems').val();
 		var itemCodeName = $('#cbxModalItems option:selected').text();
 		var salePrice = $('#txtModalPrice').val();
-var warehouseId = $('#cbxModalWarehouses').val();		
-var warehouse = $('#cbxModalWarehouses option:selected').text();
-var stock = $('#txtModalStock').val();
-var cifPrice = 0.00;
-var exCifPrice = 0.00;
-	var subtotal = Number(quantity) * Number(salePrice);
-	var total = parseFloat($('#total').text()) + Number(subtotal);
+		var warehouseId = $('#cbxModalWarehouses').val();		
+		var warehouse = $('#cbxModalWarehouses option:selected').text();
+		var stock = $('#txtModalStock').val();
+		var cifPrice = 0.00;	//temp var
+		var exCifPrice = 0.00;	//temp var
+		var subtotal = Number(quantity) * Number(salePrice);
+		var total = parseFloat($('#total').text()) + Number(subtotal);
 
 		var error = validateItem(itemCodeName, quantity, parseFloat(salePrice).toFixed(2)/*, ''*/); 
 		if(error == ''){

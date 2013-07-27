@@ -157,6 +157,7 @@
 					'label' => 'Cliente:',
 					'id'=>'cbxCustomers',
 					'selected' => $customerId,
+					'class'=>'input-xlarge',
 					'disabled'=>$disable
 				));
 				
@@ -164,6 +165,7 @@
 					echo $this->BootstrapForm->input('sal_employee_id', array(
 						'required' => 'required',
 						'label' => 'Encargado:',
+						'class'=>'input-xlarge',
 						'id'=>'cbxEmployees'
 					));
 
@@ -172,6 +174,7 @@
 						'required' => 'required',
 						'label' => 'NIT - Nombre:',
 						'id'=>'cbxTaxNumbers',
+						'class'=>'input-xlarge',
 						'disabled'=>$disable
 					));
 				echo '</div>';
@@ -181,6 +184,7 @@
 					'label' => 'Vendedor:',
 					'id'=>'cbxSalesman',
 					'selected' => $admUserId,
+					'class'=>'input-xlarge',
 					'disabled'=>$disable
 				));
 				
@@ -319,7 +323,7 @@
 					<h3 id="myModalLabel">Cantidad Item</h3>
 				  </div>
 				  
-				  <div class="modal-body form-horizontal">
+				  <div class="modal-body">
 					<!--<p>One fine body…</p>-->
 					<?php
 					echo '<div id="boxModalInitiateItemPrice">';
@@ -327,7 +331,7 @@
 						echo $this->BootstrapForm->input('inv_warehouse_id', array(				
 						'label' => 'Almacén:',
 						'id'=>'cbxModalWarehouses',
-						'class'=>'input-xlarge'
+						'class'=>'span6'
 						));
 					
 						echo '<div id="boxModalItemPriceStock">';
@@ -335,9 +339,9 @@
 							echo $this->BootstrapForm->input('items_id', array(				
 							'label' => 'Item:',
 							'id'=>'cbxModalItems',
-							'class'=>'input-xlarge'
+							'class'=>'span12'
 							));
-
+								
 							echo '<div id="boxModalPrice">';
 								$price='';
 								echo $this->BootstrapForm->input('sale_price', array(				
@@ -357,7 +361,7 @@
 								'value'=>$stock,
 								'disabled'=>'disabled',
 								'style'=>'background-color:#EEEEEE',
-								'class'=>'input-small',
+								'class'=>'span3',
 								'maxlength'=>'15'
 								));
 							echo '</div>';	
@@ -369,7 +373,7 @@
 					echo $this->BootstrapForm->input('quantity', array(				
 					'label' => 'Cantidad:',
 					'id'=>'txtModalQuantity',
-					'class'=>'input-small',
+					'class'=>'span3',
 					'maxlength'=>'10'
 					));
 					?>
@@ -377,7 +381,6 @@
 				  </div>
 				  
 				  <div class="modal-footer">
-					 <!-- Ztep 0 Save button from modal triggers btnModalAddItem -->
 					<a href='#' class="btn btn-primary" id="btnModalAddItem">Guardar</a>
 					<a href='#' class="btn btn-primary" id="btnModalEditItem">Guardar</a>
 					<button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
