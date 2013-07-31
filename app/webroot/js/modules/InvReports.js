@@ -3,8 +3,6 @@ $(document).ready(function(){
 	var path = window.location.pathname;
 	var arr = path.split('/');
 	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
-	
-			 
 	////////////////////////////////////// START - INITIAL ACTIONS /////////////////////////////////////////
 	$('select').select2();
 	$("#txtReportStartDate, #txtReportFinishDate").datepicker({
@@ -19,11 +17,92 @@ $(document).ready(function(){
 	$('#cbxReportGroupTypes').change(function(){
 		getGroupItemsAndFilters();
 	});
+	$('#btnGenerateReport').click(function(){
+		var startDate = $('#txtReportStartDate').val();
+		var finishDate = $('#txtReportFinishDate').val();
+		var movementType= $('#cbxReportMovementTypes').val();
+		//var warehouses = getSelectedMultiSelect('#cbxReportWarehouses');
+		var warehouses = $('#cbxReportWarehouses').val();
+		var items = getSelectedCheckboxes();
+		var groupBy = $('#cbxReportGroupTypes').val();
+		var error = validate(startDate, finishDate, movementType, warehouses, items);
+		if(error === ''){
+			var DATA = {
+						startDate:startDate,
+						finishDate:finishDate,
+						movementType:movementType,
+						warehouses:warehouses,
+						items:items,
+						groupBy:groupBy
+					   };
+			ajax_generate_report(DATA);
+			$('#boxMessage').html('');
+		}else{
+			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
+		}
+	});
+	
 	////////////////////////////////////// END - EVENTS /////////////////////////////////////////
 	
 	
 	////////////////////////////////////// START - FUNCTIONS /////////////////////////////////////////
-	function startDataTable(){
+   function getGroupItemsAndFilters(){
+		ajax_get_group_items_and_filters();
+   }
+   
+   function validate(startDate, finishDate, movementType, warehouses, items, groupBy){
+	   var  error='';
+	   if(startDate === ''){error+='<li> El campo "Fecha Inicio" esta vacio </li>';}
+	   if(finishDate === ''){error+='<li> El campo "Fecha Fin" esta vacio </li>';}
+	   startDate = startDate.split("/");
+	   finishDate = finishDate.split("/");
+	   if(error === ''){
+		    if(validateSameYearOnly(startDate, finishDate) === 1){
+				error+='<li> La "Fecha Inicio" y "Fecha Fin" deben ser del mismo año </li>';
+			}else{
+				if(validateGreaterThanStartDate(startDate, finishDate) === 1){error+='<li> La "Fecha Inicio" es mayor a la "Fecha Fin" </li>';}
+			}
+	   }
+	   if(movementType === ''){error+='<li> El campo "Tipo Movimiento" esta vacio </li>';}
+	   if(warehouses.length === 0){error+='<li> El campo "Almacen" esta vacio </li>';}
+	   if(items.length === 0){error+='<li> Debe elegir al menos un "Item" </li>';}
+	   if(groupBy === ''){error+='<li> El campo "Agrupar por" esta vacio </li>';}
+	   return error;
+   }
+   
+   function getSelectedCheckboxes(){
+	   var selected = new Array();
+	   $(".data-table tbody input:checkbox:checked").each(function() {
+			selected.push($(this).val());
+	   });
+	   return selected;
+   }
+   
+   function getSelectedMultiSelect(id){
+		var selected = new Array();
+	    $("form "+id+" option:selected").each(function () {
+			selected.push($(this).val());
+		});
+		return selected;
+   }
+   
+   function validateGreaterThanStartDate(startDate, finishDate){
+		for(var i = 2; i >= 0; i--){
+			if(startDate[i] > finishDate[i]){
+				return 1;//error
+			}
+		}
+		return 0;//ok
+   }
+   
+   function validateSameYearOnly(startDate, finishDate){
+	   if(startDate[2] !== finishDate[2]){
+		   return 1;//error
+	   }
+	   return 0;//ok
+   }
+   
+   function startDataTable(){
 	   $('.data-table').dataTable({
 			"bJQueryUI": true,
 			//"sPaginationType": "full_numbers",
@@ -55,19 +134,43 @@ $(document).ready(function(){
 		});	
    }
    
-   function getGroupItemsAndFilters(){
-		ajax_get_group_items_and_filters();
-   }
+    function open_in_new_tab(url)
+	{
+	  var win=window.open(url, '_blank');
+	  win.focus();
+	}
+   
 ////////////////////////////////////// END - FUNCTIONS /////////////////////////////////////////
 	
 //////////////////////////////////// START - AJAX ///////////////////////////////////////////////
+
+	function ajax_generate_report(dataSent){ //Report
+		$.ajax({
+            type:"POST",
+			async:false, // the key to open new windows when success
+            url:moduleController + "ajax_generate_report",			
+            data:dataSent,
+			beforeSend: function(){
+				$('#boxProcessing').text('Procesando...');
+			},
+            success: function(data){
+				open_in_new_tab(moduleController+'report_movements_pdf.pdf');
+				$('#boxProcessing').text('');
+			},
+			error:function(data){
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#boxProcessing').text('');
+			}
+        });
+	}
+	
 	function ajax_get_group_items_and_filters(){ //Report
 		$.ajax({
             type:"POST",
             url:moduleController + "ajax_get_group_items_and_filters",			
             data:{type: $('#cbxReportGroupTypes').val()},
 			beforeSend: function(){
-				$('#boxMessage').text('Procesando...');
+				$('#boxProcessing').text('Procesando...');
 			},
             success: function(data){
 				$('#boxGroupItemsAndFilters').html(data);
@@ -80,11 +183,11 @@ $(document).ready(function(){
 					});
 					ajax_get_group_items(selected);
 				});
-				$('#boxMessage').text('');
+				$('#boxProcessing').text('');
 			},
 			error:function(data){
 				showGrowlMessage('error', 'Vuelva a intentarlo.');
-				$('#boxMessage').text('');
+				$('#boxProcessing').text('');
 			}
         });
 	}
@@ -95,33 +198,21 @@ $(document).ready(function(){
             url:moduleController + "ajax_get_group_items",			
             data:{type: $('#cbxReportGroupTypes').val(), selected: selected},
 			beforeSend: function(){
-				$('#boxMessage').text('Procesando...');
+				$('#boxProcessing').text('Procesando...');
 			},
             success: function(data){
 				$('#boxGroupItems').html(data);
 				startDataTable();
-				$('#boxMessage').text('');
+				$('#boxProcessing').text('');
 			},
 			error:function(data){
 				showGrowlMessage('error', 'Vuelva a intentarlo.');
-				$('#boxMessage').text('');
+				$('#boxProcessing').text('');
 			}
         });
 	}
+	
 	//////////////////////////////////// END - AJAX ///////////////////////////////////////////////
-	
-	/*
-	//A simple Test
-	$('form #cbxReportWarehouses').change(function(){
-		var str = "YOU SELECTED :";
-		$("form #cbxReportWarehouses option:selected").each(function () {
-		//str += $(this).text() + " ";
-		str += $(this).val() + " ";
-		});
-	   alert(str);
-	});
-	*/
-	
 	
 //END SCRIPT	
 });

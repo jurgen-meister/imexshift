@@ -27,7 +27,7 @@ if(isset($group)){
 	<tbody>
 	<?php foreach($item as $val){ ?>	
 	<tr>
-		<td><input type="checkbox" checked="checked" /></td>
+		<td><input type="checkbox" checked="checked" value="<?php echo $val['InvItem']['id'];?>" /></td>
 		<td><?php echo '[ '.$val['InvItem']['code'].' ] '.$val['InvItem']['name'];?></td>
 		<td><?php echo $val['InvBrand']['name'];?></td>
 		<td><?php echo $val['InvCategory']['name'];?></td>

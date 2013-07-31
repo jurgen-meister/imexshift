@@ -10,9 +10,10 @@
 		<div class="widget-content nopadding">
 			<?php 
 				/////////////////START - SETTINGS BUTTON CANCEL /////////////////
-				echo $this->Html->link('<i class="icon-cog icon-white"></i> Generar Reporte', array('action' => 'view_document_movement_pdf', '69.pdf'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo', 'id'=>'btnPrint', 'target'=>'_blank')); 
+				//echo $this->Html->link('<i class="icon-cog icon-white"></i> Generar Reporte', array('#'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo', 'id'=>'btnPrint')); 
 			?>
-			
+			<a href="#" id="btnGenerateReport" class="btn btn-primary"><i class="icon-cog icon-white"></i> Generar Reporte</a>
+			<div id="boxMessage"></div>
 		</div>
 	</div>
 	<!-- //////////////////////////// End - buttons /////////////////////////////////-->
@@ -49,7 +50,7 @@
 							'id'=>'cbxReportMovementTypes',
 							'type'=>'select',
 							'class'=>'span4',  	
-							'options'=>array('TODAS LAS ENTRADAS', 'Entradas de compras', 'Entradas de apertura', 'Entradas otras', 'TODAS LAS SALIDAS', 'Salidas de ventas', 'Salidas otras')  
+							'options'=>array('TODAS LAS ENTRADAS', 'Entradas de compras', 'Entradas de apertura', 'Entradas otras', 'TODAS LAS SALIDAS', 'Salidas de ventas', 'Salidas otras', 'ENTRADAS Y SALIDAS', 'TRANSFERENCIAS')  
 						  ));
 						echo '</div>';
 						  
@@ -58,9 +59,9 @@
 							'label' => '* Almacen:',
 							'id'=>'cbxReportWarehouses',
 							'type'=>'select',
-							'multiple'=>'multiple',
+							//'multiple'=>'multiple',
 							'options'=>$warehouse,
-							'selected'=>  array_keys($warehouse),
+							//'selected'=>  array_keys($warehouse),
 							'class'=>'span6'  
 						  ));
 						echo '</div>';
@@ -77,7 +78,7 @@
 				?>
 			</form>
 			
-			<div id="boxMessage" align="center"></div>
+			<div id="boxProcessing" align="center"></div>
 			<div id="boxGroupItemsAndFilters">
 				<table class="table table-bordered data-table with-check">
 					<thead>
@@ -92,7 +93,7 @@
 					<tbody>
 					<?php foreach($item as $val){ ?>	
 					<tr>
-						<td><input type="checkbox" checked="checked" /></td>
+						<td><input type="checkbox" checked="checked" value="<?php echo $val['InvItem']['id'];?>" /></td>
 						<td><?php echo '[ '.$val['InvItem']['code'].' ] '.$val['InvItem']['name'];?></td>
 						<td><?php echo $val['InvBrand']['name'];?></td>
 						<td><?php echo $val['InvCategory']['name'];?></td>
