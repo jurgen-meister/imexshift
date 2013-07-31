@@ -12,7 +12,7 @@
 				/////////////////START - SETTINGS BUTTON CANCEL /////////////////
 				//echo $this->Html->link('<i class="icon-cog icon-white"></i> Generar Reporte', array('#'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo', 'id'=>'btnPrint')); 
 			?>
-			<a href="#" id="btnGenerateReport" class="btn btn-primary"><i class="icon-cog icon-white"></i> Generar Reporte</a>
+			<a href="#" id="btnGenerateReport" class="btn btn-primary noPrint "><i class="icon-cog icon-white"></i> Generar Reporte</a>
 			<div id="boxMessage"></div>
 		</div>
 	</div>

@@ -154,7 +154,8 @@ $(document).ready(function(){
 				$('#boxProcessing').text('Procesando...');
 			},
             success: function(data){
-				open_in_new_tab(moduleController+'report_movements_pdf.pdf');
+				//open_in_new_tab(moduleController+'report_movements_pdf.pdf');
+				open_in_new_tab(moduleController+'prueba');
 				$('#boxProcessing').text('');
 			},
 			error:function(data){
