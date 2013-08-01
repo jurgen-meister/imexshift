@@ -55,6 +55,9 @@
 				<!-- ////////////////////////// START - VIEWS CONTENT(CORE) //////////////////-->
 				<div class="span1"></div>
 					<div class="span10" id="content-print">
+						<div style="text-align:right;">
+							<a href="#" id="btnPrint" class="btn btn-primary noPrint"><i class="icon-print icon-white"></i> Imprimir</a>
+						</div>
 							<?php echo $this->fetch('content'); ?>
 					</div>
 				<div class="span1"></div>

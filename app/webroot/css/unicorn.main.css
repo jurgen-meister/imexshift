@@ -211,11 +211,11 @@ a:hover {
 
 /*Start - Printing Bittion*/
 
-#background-print {
-    background: none repeat scroll 0 0 #444444;
-    
-}
+
 @media screen{ /*only for screen, on print will dissapear*/
+	#background-print {
+		background: none repeat scroll 0 0 #444444;
+	}
 	#content-print{
 		background: none repeat scroll 0 0 #fff;
 		padding-top: 25px;
