@@ -21,17 +21,21 @@ $(document).ready(function(){
 		var startDate = $('#txtReportStartDate').val();
 		var finishDate = $('#txtReportFinishDate').val();
 		var movementType= $('#cbxReportMovementTypes').val();
-		//var warehouses = getSelectedMultiSelect('#cbxReportWarehouses');
+		//var warehouses = getSelectedMultiSelect('#cbxReportWarehouses');//when it was multiple
 		var warehouses = $('#cbxReportWarehouses').val();
-		var items = getSelectedCheckboxes();
+		var currency = $('#cbxReportCurrency').val();
 		var groupBy = $('#cbxReportGroupTypes').val();
-		var error = validate(startDate, finishDate, movementType, warehouses, items);
+		var movementTypeName = $('#cbxReportMovementTypes option:selected').text();
+		var items = getSelectedCheckboxes();
+		var error = validate(startDate, finishDate, movementType, warehouses, currency, groupBy, items);
 		if(error === ''){
 			var DATA = {
 						startDate:startDate,
 						finishDate:finishDate,
 						movementType:movementType,
+						movementTypeName:movementTypeName,
 						warehouses:warehouses,
+						currency:currency,
 						items:items,
 						groupBy:groupBy
 					   };
@@ -50,23 +54,24 @@ $(document).ready(function(){
 		ajax_get_group_items_and_filters();
    }
    
-   function validate(startDate, finishDate, movementType, warehouses, items, groupBy){
+   function validate(startDate, finishDate, movementType, warehouses, currency, groupBy, items){
 	   var  error='';
 	   if(startDate === ''){error+='<li> El campo "Fecha Inicio" esta vacio </li>';}
 	   if(finishDate === ''){error+='<li> El campo "Fecha Fin" esta vacio </li>';}
 	   startDate = startDate.split("/");
 	   finishDate = finishDate.split("/");
 	   if(error === ''){
-		    if(validateSameYearOnly(startDate, finishDate) === 1){
+		    if(validateSameYearOnly(startDate[2], finishDate[2]) === 1){
 				error+='<li> La "Fecha Inicio" y "Fecha Fin" deben ser del mismo año </li>';
 			}else{
 				if(validateGreaterThanStartDate(startDate, finishDate) === 1){error+='<li> La "Fecha Inicio" es mayor a la "Fecha Fin" </li>';}
 			}
 	   }
-	   if(movementType === ''){error+='<li> El campo "Tipo Movimiento" esta vacio </li>';}
-	   if(warehouses.length === 0){error+='<li> El campo "Almacen" esta vacio </li>';}
-	   if(items.length === 0){error+='<li> Debe elegir al menos un "Item" </li>';}
+	   if(movementType === ''){error+='<li> El campo "Tipo de Movimiento" esta vacio </li>';}
+	   if(warehouses === 0){error+='<li> El campo "Almacen" esta vacio </li>';}
+	   if(currency === 0){error+='<li> El campo "Tipo de Cambio" esta vacio </li>';}
 	   if(groupBy === ''){error+='<li> El campo "Agrupar por" esta vacio </li>';}
+	   if(items.length === 0){error+='<li> Debe elegir al menos un "Item" </li>';}
 	   return error;
    }
    
@@ -87,17 +92,21 @@ $(document).ready(function(){
    }
    
    function validateGreaterThanStartDate(startDate, finishDate){
-		for(var i = 2; i >= 0; i--){
-			if(startDate[i] > finishDate[i]){
+		//Don't validate year 'cause is obligatory to be from the same year in other function
+	   if(startDate[1] > finishDate[1]){//month
+			return 1;//error
+		}
+		if(startDate[1] === finishDate[1]){//month
+			if(startDate[0] > finishDate[0]){//day
 				return 1;//error
 			}
 		}
 		return 0;//ok
    }
    
-   function validateSameYearOnly(startDate, finishDate){
-	   if(startDate[2] !== finishDate[2]){
-		   return 1;//error
+   function validateSameYearOnly(startYear, finishYear){
+	   if(startYear !== finishYear){
+		   return 1; //error
 	   }
 	   return 0;//ok
    }
@@ -108,7 +117,7 @@ $(document).ready(function(){
 			//"sPaginationType": "full_numbers",
 			"sDom": '<"">t<"F"f>i',
 			"sScrollY": "200px",
-			"bPaginate": false,
+			"bPaginate": false,			
 			"oLanguage": {
 				"sSearch": "Filtrar:",
 				 "sZeroRecords":  "No hay resultados que coincidan.",
@@ -116,7 +125,10 @@ $(document).ready(function(){
 				 "sInfo": "Encontrados _TOTAL_ Items",
 				 "sInfoEmpty": "Encontrados 0 Items",
 				 "sInfoFiltered": "(filtrado de _MAX_ Items)"
-			}
+			},
+			"aoColumnDefs": [
+			  { 'bSortable': false, 'aTargets': [ 0 ] }// do not sort first column
+			]
 		});
 		$('input[type=checkbox]').uniform();
 		$("#title-table-checkbox").click(function() {
@@ -154,8 +166,7 @@ $(document).ready(function(){
 				$('#boxProcessing').text('Procesando...');
 			},
             success: function(data){
-				//open_in_new_tab(moduleController+'report_movements_pdf.pdf');
-				open_in_new_tab(moduleController+'prueba');
+				open_in_new_tab(moduleController+'report');
 				$('#boxProcessing').text('');
 			},
 			error:function(data){

@@ -65,7 +65,7 @@ class InvMovementsController extends AppController {
 	//////////////////////////////////////////// END - PDF /////////////////////////////////////////////////
 	
 	//////////////////////////////////////////// START - REPORT ////////////////////////////////////////////////
-	public function report(){
+	public function report_generator(){
 		$this->loadModel("InvWarehouse");
 		$warehouse = $this->InvWarehouse->find('list');
 		$item = $this->_find_items();
@@ -128,150 +128,44 @@ class InvMovementsController extends AppController {
 			$this->set(compact("item"));
 		}
 	}
+
 	
 	public function ajax_generate_report(){
 		if($this->RequestHandler->isAjax()){
 			$startDate = $this->request->data['startDate'];
 			$finishDate = $this->request->data['finishDate'];
 			$movementType = $this->request->data['movementType'];
+			$movementTypeName = $this->request->data['movementTypeName'];
 			$warehouse = $this->request->data['warehouses'];
+			$currency = $this->request->data['currency'];
 			$items = $this->request->data['items'];
 			
 			//BEFORE WHEN SENDING
 			$this->Session->write('ReportMovement.startDate', $startDate);
 			$this->Session->write('ReportMovement.finishDate', $finishDate);
 			$this->Session->write('ReportMovement.movementType', $movementType);
+			$this->Session->write('ReportMovement.movementTypeName', $movementTypeName);
 			$this->Session->write('ReportMovement.warehouse', $warehouse);
+			$this->Session->write('ReportMovement.currency', $currency);
 			$this->Session->write('ReportMovement.items', $items);
 			echo 'success';
-			 
-		
-			/*
-			$movements = $this->InvMovement->InvMovementDetail->find('all', array(
-				'conditions'=>array(
-					'InvMovementDetail.inv_item_id'=>$items,
-					'InvMovement.inv_warehouse_id'=>$warehouse,
-					//'InvMovement.inv_movement_type_id'=>$movementType,
-					'InvMovement.date BETWEEN ? AND ?' => array($startDate,$finishDate)
-				),
-				'fields'=>array('InvMovement.id', 'InvMovement.code', 'InvMovementDetail.inv_item_id', 'InvMovementDetail.quantity', 'InvMovement.date'),
-				'order'=>array('InvMovementDetail.inv_item_id', 'InvMovement.id')
-			));
-			//debug($items);
-			//debug($movements);
-			$auxArray = array();
-			foreach($items as $item){
-				$totalQuantity = 0;
-				foreach($movements as $movement){
-					if($movement['InvMovementDetail']['inv_item_id'] == $item){
-						$auxArray[$item]['movements'][] = array(
-							'code'=>$movement['InvMovement']['code'],
-							'quantity'=> $movement['InvMovementDetail']['quantity'],
-							'date'=>date("d/m/Y", strtotime($movement['InvMovement']['date']))
-							);
-						$totalQuantity = $totalQuantity + $movement['InvMovementDetail']['quantity'];
-					}
-				}
-				//stock solo irian en IN AND OUT all
-				//$auxArray[$item]['stockFechaInicio']='algo va aqui';
-				//$auxArray[$item]['stockFechaFin']='algo va aqui';
-				//$auxArray[$item]['stockActual']='algo va aqui';
-				if($totalQuantity <> 0){
-					$auxArray[$item]['totalQuantity']=$totalQuantity;
-					$auxArray[$item]['brands']='algo va aqui';
-					$auxArray[$item]['categories']='algo va aqui';
-					$auxArray[$item]['codeName']='[ ECO-102 ] laptop';
-				}else{
-					$auxArray[$item]['codeName']='ESTA VACIO';
-				}
-			}
-			debug($auxArray);
-			$this->Session->write('ReportMovement', $auxArray);
-			*/
 		///END AJAX
 		}
 	}
 	
-	public function report_movements_pdf(){
-		//MAYBE - This whole process could go to the ajax function, so there could be a processing message blocking all the screen
-		
-		//put session data sent data into variables
-		$startDate = $this->Session->read('ReportMovement.startDate');
-		$finishDate = $this->Session->read('ReportMovement.finishDate');
-		$movementType = $this->Session->read('ReportMovement.movementType');//must fix values inside combobox then will work correctly plus many ifs
-		$warehouse = $this->Session->read('ReportMovement.warehouse');
-		$itemsIds = $this->Session->read('ReportMovement.items');
-		
-		////get specific data like names, codes, etc  (must see if I can send it through ajax) nevertheless query takes just 4ms with 280items
-		$this->loadModel('InvItem');
-		$this->InvItem->unbindModel(array('hasMany' => array('InvMovementDetail', 'PurDetail', 'SalDetail', 'InvItemsSupplier', 'InvPrice')));
-		$items = $this->InvItem->find('all', array(
-			'fields'=>array('InvItem.id', 'InvItem.code', 'InvItem.name', 'InvBrand.name', 'InvCategory.name'),
-			'conditions'=>array('InvItem.id'=>$itemsIds)
-		));
-		
-		
-		
-		////get all movements with filters sent
-		$this->InvMovement->InvMovementDetail->unbindModel(array('belongsTo' => array('InvItem')));
-		$movements = $this->InvMovement->InvMovementDetail->find('all', array(
-			'conditions'=>array(
-				'InvMovementDetail.inv_item_id'=>$itemsIds,
-				'InvMovement.inv_warehouse_id'=>$warehouse,
-				'InvMovement.date BETWEEN ? AND ?' => array($startDate, $finishDate)
-			),
-			'fields'=>array('InvMovement.id', 'InvMovement.code', 'InvMovementDetail.inv_item_id', 'InvMovementDetail.quantity', 'InvMovement.date'),
-			'order'=>array('InvMovementDetail.inv_item_id', 'InvMovement.id')
-		));
-		
-		//format data, grouping items with its respective movements
-			$auxArray = array();
-			foreach($items as $itemVal){
-				$item = $itemVal['InvItem']['id'];
-				$totalQuantity = 0;
-				
-				foreach($movements as $movement){
-					if($movement['InvMovementDetail']['inv_item_id'] == $item){
-						$auxArray[$item]['movements'][] = array(
-							'code'=>$movement['InvMovement']['code'],
-							'quantity'=> $movement['InvMovementDetail']['quantity'],
-							'date'=>date("d/m/Y", strtotime($movement['InvMovement']['date']))
-
-							);
-						$totalQuantity = $totalQuantity + $movement['InvMovementDetail']['quantity'];
-					}
-				}
-			
-				//stock solo irian en IN AND OUT all
-				//$auxArray[$item]['stockFechaInicio']='algo va aqui';
-				//$auxArray[$item]['stockFechaFin']='algo va aqui';
-				//$auxArray[$item]['stockActual']='algo va aqui';
-					$auxArray[$item]['totalQuantity']=$totalQuantity;
-					$auxArray[$item]['brands']=$itemVal['InvBrand']['name'];
-					$auxArray[$item]['categories']=$itemVal['InvCategory']['name'];
-					$auxArray[$item]['codeName']='[ '. $itemVal['InvItem']['code'].' ] '.$itemVal['InvItem']['name'];
-				if($totalQuantity == 0){
-					$auxArray[$item]['movements']=array();
-				}
-			}
-			//debug($auxArray);
-			//$this->Session->write('ReportMovement', $auxArray);
-			//$this->set(compact('catch', 'auxArray'));
-			$this->set(compact('auxArray'));
-	}
 	
-	public function prueba(){
+	public function report(){
 		$this->layout = 'print';
 		//put session data sent data into variables
 		$startDate = $this->Session->read('ReportMovement.startDate');
 		$finishDate = $this->Session->read('ReportMovement.finishDate');
-		$movementType = $this->Session->read('ReportMovement.movementType');//must fix values inside combobox then will work correctly plus many ifs
-		$movementTypeName = 'TODAS LAS ENTRADAS';
+		$movementType = $this->Session->read('ReportMovement.movementType');
+		$movementTypeName = $this->Session->read('ReportMovement.movementTypeName');
 		$warehouse = $this->Session->read('ReportMovement.warehouse');
 		$warehouseName = 'SAN PEDRO';
 		$itemsIds = $this->Session->read('ReportMovement.items');
-		$currencyName = 'BOLIVIANOS';
-		$documentHeader = array('startDate'=>$startDate, 'finishDate'=>$finishDate, 'movementTypeName'=>$movementTypeName, 'warehouseName'=>$warehouseName, 'currencyName'=>$currencyName);
+		$currency = $this->Session->read('ReportMovement.currency');
+		$documentHeader = array('startDate'=>$startDate, 'finishDate'=>$finishDate, 'movementTypeName'=>$movementTypeName, 'warehouseName'=>$warehouseName, 'currency'=>$currency);
 		
 		////get specific data like names, codes, etc  (must see if I can send it through ajax) nevertheless query takes just 4ms with 280items
 		$this->loadModel('InvItem');
@@ -280,6 +174,40 @@ class InvMovementsController extends AppController {
 			'fields'=>array('InvItem.id', 'InvItem.code', 'InvItem.name', 'InvBrand.name', 'InvCategory.name'),
 			'conditions'=>array('InvItem.id'=>$itemsIds)
 		));
+		////////Conditions Extra
+		$conditionMovementType =array('InvMovement.inv_movement_type_id'=>$movementType);
+		switch ($movementType) {
+			case 0://TODAS LAS ENTRADAS
+				$conditionMovementType = array('InvMovement.inv_movement_type_id'=>array(1,4,5,6));//I put like this 'cause don't want to do an extra association with InvMovementType for better perfomance
+				break;
+			case 999://TODAS LAS SALIDAS
+				$conditionMovementType = array('InvMovement.inv_movement_type_id'=>array(2,3,7));
+				break;
+			case 1000://ENTRADAS Y SALIDAS
+				$conditionMovementType = array();
+				break;
+			case 1001://TRASPASOS ENTRE ALMACENES
+				$conditionMovementType = array('InvMovement.inv_movement_type_id'=>array(3,4));
+				break;
+		}
+		////////Fields
+		$staticData = array('InvMovement.id', 'InvMovement.code', 'InvMovement.document_code', 'InvMovement.date', 'InvMovementDetail.inv_item_id', 'InvMovementDetail.quantity');
+		$prices = array();
+		switch($currency){
+			case 'BOLIVIANOS':
+				$prices = array('InvMovementDetail.fob_price', 'InvMovementDetail.cif_price', 'InvMovementDetail.sale_price');
+				$fob = 'fob_price';
+				$cif = 'cif_price';
+				$sale = 'sale_price';
+				break;
+			case 'DOLARES AMERICANOS':
+				$prices = array('InvMovementDetail.ex_fob_price', 'InvMovementDetail.ex_cif_price', 'InvMovementDetail.ex_sale_price');
+				$fob = 'ex_fob_price';
+				$cif = 'ex_cif_price';
+				$sale = 'ex_sale_price';
+				break;
+		}
+		$fields = array_merge($staticData, $prices);
 		
 		
 		
@@ -289,9 +217,10 @@ class InvMovementsController extends AppController {
 			'conditions'=>array(
 				'InvMovementDetail.inv_item_id'=>$itemsIds,
 				'InvMovement.inv_warehouse_id'=>$warehouse,
-				'InvMovement.date BETWEEN ? AND ?' => array($startDate, $finishDate)
+				'InvMovement.date BETWEEN ? AND ?' => array($startDate, $finishDate),
+				$conditionMovementType
 			),
-			'fields'=>array('InvMovement.id', 'InvMovement.code', 'InvMovement.date', 'InvMovementDetail.inv_item_id', 'InvMovementDetail.quantity', 'InvMovementDetail.fob_price', 'InvMovementDetail.cif_price', 'InvMovementDetail.sale_price'),
+			'fields'=>$fields,
 			'order'=>array('InvMovementDetail.inv_item_id', 'InvMovement.id')
 		));
 		
@@ -300,33 +229,34 @@ class InvMovementsController extends AppController {
 			foreach($items as $itemVal){
 				$item = $itemVal['InvItem']['id'];
 				$totalQuantity = 0;
-				$totalFob = 0;
-				$totalCif = 0;
-				$totalSale = 0;
+				//$totalFob = 0;
+				//$totalCif = 0;
+				//$totalSale = 0;
 				$totalFobQuantity = 0;
 				$totalCifQuantity = 0;
 				$totalSaleQuantity = 0;
 				foreach($movements as $movement){
 					if($movement['InvMovementDetail']['inv_item_id'] == $item){
-						$fobQuantity = $movement['InvMovementDetail']['quantity'] * $movement['InvMovementDetail']['fob_price'];
-						$cifQuantity = $movement['InvMovementDetail']['quantity'] * $movement['InvMovementDetail']['cif_price'];
-						$saleQuantity = $movement['InvMovementDetail']['quantity'] * $movement['InvMovementDetail']['sale_price'];
+						$fobQuantity = $movement['InvMovementDetail']['quantity'] * $movement['InvMovementDetail'][$fob];
+						$cifQuantity = $movement['InvMovementDetail']['quantity'] * $movement['InvMovementDetail'][$cif];
+						$saleQuantity = $movement['InvMovementDetail']['quantity'] * $movement['InvMovementDetail'][$sale];
 						$auxArray[$item]['movements'][] = array(
 							'code'=>$movement['InvMovement']['code'],
+							'document_code'=>$movement['InvMovement']['document_code'],
 							'quantity'=> $movement['InvMovementDetail']['quantity'],
 							'date'=>date("d/m/Y", strtotime($movement['InvMovement']['date'])),
 							'quantity'=> $movement['InvMovementDetail']['quantity'],
-							'fob'=> $movement['InvMovementDetail']['fob_price'],
-							'cif'=> $movement['InvMovementDetail']['cif_price'],
-							'sale'=> $movement['InvMovementDetail']['sale_price'],
+							'fob'=> $movement['InvMovementDetail'][$fob],
+							'cif'=> $movement['InvMovementDetail'][$cif],
+							'sale'=> $movement['InvMovementDetail'][$sale],
 							'fobQuantity'=>number_format($fobQuantity,2),
 							'cifQuantity'=>number_format($cifQuantity,2),
 							'saleQuantity'=>number_format($saleQuantity,2)
 							);
 						$totalQuantity = $totalQuantity + $movement['InvMovementDetail']['quantity'];
-						$totalFob = $totalFob + $movement['InvMovementDetail']['fob_price'];
-						$totalCif = $totalCif + $movement['InvMovementDetail']['cif_price'];
-						$totalSale = $totalSale + $movement['InvMovementDetail']['sale_price'];
+						//$totalFob = $totalFob + $movement['InvMovementDetail'][$fob];
+						//$totalCif = $totalCif + $movement['InvMovementDetail'][$cif];
+						//$totalSale = $totalSale + $movement['InvMovementDetail'][$sale];
 						$totalFobQuantity = $totalFobQuantity + $fobQuantity;
 						$totalCifQuantity = $totalCifQuantity + $cifQuantity;
 						$totalSaleQuantity = $totalSaleQuantity + $saleQuantity;
@@ -338,11 +268,11 @@ class InvMovementsController extends AppController {
 				//$auxArray[$item]['stockFechaFin']='algo va aqui';
 				//$auxArray[$item]['stockActual']='algo va aqui';
 					$auxArray[$item]['totalQuantity']=$totalQuantity;
-					$auxArray[$item]['totalFob']=number_format($totalFob,2);
+					//$auxArray[$item]['totalFob']=number_format($totalFob,2);
 					$auxArray[$item]['totalFobQuantity']=number_format($totalFobQuantity,2);
-					$auxArray[$item]['totalCif']=number_format($totalCif,2);
+					//$auxArray[$item]['totalCif']=number_format($totalCif,2);
 					$auxArray[$item]['totalCifQuantity']=number_format($totalCifQuantity,2);
-					$auxArray[$item]['totalSale']=number_format($totalSale,2);
+					//$auxArray[$item]['totalSale']=number_format($totalSale,2);
 					$auxArray[$item]['totalSaleQuantity']=number_format($totalSaleQuantity,2);
 					$auxArray[$item]['brands']=$itemVal['InvBrand']['name'];
 					$auxArray[$item]['categories']=$itemVal['InvCategory']['name'];
@@ -354,103 +284,7 @@ class InvMovementsController extends AppController {
 			$this->set(compact('auxArray', 'documentHeader'));
 	}
 	
-	public function prueba2(){
-		//debug($this->InvMovement->InvMovementDetail->find('all', array('conditions'=>array('InvMovementDetail.inv_item_id'=>9, 'InvMovement.inv_warehouse_id'=>1))));
-		
-		$this->loadModel('InvItem');
-		$this->InvItem->unbindModel(array('hasMany' => array('InvMovementDetail', 'PurDetail', 'SalDetail', 'InvItemsSupplier', 'InvPrice')));
-		$hose = $this->InvItem->find('all', array('fields'=>array('InvItem.id', 'InvItem.code', 'InvItem.name', 'InvBrand.name', 'InvCategory.name')));
-		debug($hose);
-		//$items = array(9,10,11,12,13,14,15);
-		//$items = array(9);
-		//$this->loadModel('InvItem');
-		$items = $this->InvItem->find('list', array('fields'=>array('InvItem.id', 'InvItem.id'))); 
-		
-		$this->InvMovement->InvMovementDetail->unbindModel(array('belongsTo' => array('InvItem')));
-		$movements = $this->InvMovement->InvMovementDetail->find('all', array(
-			'conditions'=>array(
-				'InvMovementDetail.inv_item_id'=>$items,
-				'InvMovement.inv_warehouse_id'=>1,
-				'InvMovement.date BETWEEN ? AND ?' => array('01/07/2013','31/07/2013')
-			),
-			'fields'=>array('InvMovement.id', 'InvMovement.code', 'InvMovementDetail.inv_item_id', 'InvMovementDetail.quantity', 'InvMovement.date'/*, 'InvItem.code', 'InvItem.name'*/),
-			'order'=>array('InvMovementDetail.inv_item_id', 'InvMovement.id')
-		));
-		debug($movements);
-		$auxArray = array();
-		foreach($items as $item){
-			$totalQuantity = 0;
-			foreach($movements as $movement){
-				if($movement['InvMovementDetail']['inv_item_id'] == $item){
-					$auxArray[$item]['movements'][] = array(
-						'code'=>$movement['InvMovement']['code'],
-						'quantity'=> $movement['InvMovementDetail']['quantity'],
-						'date'=>date("d/m/Y", strtotime($movement['InvMovement']['date']))
-						
-						);
-					$totalQuantity = $totalQuantity + $movement['InvMovementDetail']['quantity'];
-				}
-			}
-			//stock solo irian en IN AND OUT all
-			//$auxArray[$item]['stockFechaInicio']='algo va aqui';
-			//$auxArray[$item]['stockFechaFin']='algo va aqui';
-			//$auxArray[$item]['stockActual']='algo va aqui';
-			$auxArray[$item]['totalQuantity']=$totalQuantity;
-			$auxArray[$item]['brands']='algo va aqui';
-			$auxArray[$item]['categories']='algo va aqui';
-			$auxArray[$item]['codeName']='[ ECO-102 ] laptop';
-		}
-		
-		debug($auxArray);
-		/*
-		//debug($array);
-		///////////////////////
-		$this->InvMovement->InvMovementDetail->unbindModel(array(
-			'belongsTo' => array('InvItem')
-		));
-		
-		$this->InvMovement->InvMovementDetail->bindModel(array(
-			'hasOne'=>array(
-				'InvMovementType'=>array(
-					'foreignKey'=>false,
-					'conditions'=> array('InvMovement.inv_movement_type_id = InvMovementType.id')
-				)
-				
-			)
-		));
-		
-		$ins = $this->InvMovement->InvMovementDetail->find('all', array(
-			'fields'=>array('InvMovementDetail.inv_item_id', 'SUM(InvMovementDetail.quantity)'),
-			'conditions'=>array('InvMovementType.status'=>'entrada'),
-			'group'=>'InvMovementDetail.inv_item_id',
-			'order'=>array('InvMovementDetail.inv_item_id')
-		));
-		debug($ins);	
-		///////////////////////////////////////////////////////
-		$this->InvMovement->InvMovementDetail->unbindModel(array(
-			'belongsTo' => array('InvItem')
-		));
-		
-		$this->InvMovement->InvMovementDetail->bindModel(array(
-			'hasOne'=>array(
-				'InvMovementType'=>array(
-					'foreignKey'=>false,
-					'conditions'=> array('InvMovement.inv_movement_type_id = InvMovementType.id')
-				)
-				
-			)
-		));
-		
-		$outs = $this->InvMovement->InvMovementDetail->find('all', array(
-			'fields'=>array('InvMovementDetail.inv_item_id', 'SUM(InvMovementDetail.quantity)'),
-			'conditions'=>array('InvMovementType.status'=>'salida'),
-			'group'=>'InvMovementDetail.inv_item_id',
-			'order'=>array('InvMovementDetail.inv_item_id')
-		));
-		debug($outs);	
-		 * 
-		 */
-	}
+	
 		//////////////////////////////////////////// END - REPORT /////////////////////////////////////////////////
 	
 	
@@ -1254,7 +1088,7 @@ class InvMovementsController extends AppController {
 						$code2 = $this->_generate_code('ENT');
 						$arrayMovementDestination['code'] = $code2;
 						
-						$documentCode = $this->_generate_document_code_transfer('TRA-ALM');
+						$documentCode = $this->_generate_document_code_transfer('TRA');
 						$arrayMovement['document_code'] = $documentCode;
 						$arrayMovementDestination['document_code'] = $documentCode;
 						
@@ -1544,14 +1378,15 @@ class InvMovementsController extends AppController {
 		}
 		
 		$quantity = $movements + 1; 
-		$code = 'MOV-'.$period.'-'.$keyword.'-'.$quantity;
+		$code = $keyword.'-'.$period.'-'.$quantity;
 		return $code;
 	}
 	
 	private function _generate_document_code_transfer($keyword){
 		$period = $this->Session->read('Period.name');
-		if($keyword == 'TRA-ALM'){$idMovementType = 3;}
-		if($period <> ''){
+		$idMovementType = 0;
+		if($keyword == 'TRA'){$idMovementType = 3;}
+		if($period <> '' AND $idMovementType <> 0){
 			try{
 				$transfers = $this->InvMovement->find('count', array('conditions'=>array('InvMovement.inv_movement_type_id'=>$idMovementType))); 
 			}catch(Exception $e){
@@ -1562,7 +1397,7 @@ class InvMovementsController extends AppController {
 		}
 		
 		$quantity = $transfers + 1; 
-		$code = 'MOV-'.$period.'-'.$keyword.'-'.$quantity;
+		$code = $keyword.'-'.$period.'-'.$quantity;
 		return $code;
 	}
 	

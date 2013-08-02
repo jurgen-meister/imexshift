@@ -166,7 +166,7 @@
 				//debug($warehouses);				
 				echo $this->BootstrapForm->input('warehouseOrigin', array(
 					'required' => 'required',
-					'label' => 'Almacen Origen:',
+					'label' => 'Almacen Origen (Salida):',
 					'id'=>'cbxWarehouses',
 					'options'=>$warehouses,
 					'value'=>$warehouseOut,
@@ -176,7 +176,7 @@
 				
 				echo $this->BootstrapForm->input('warehouseDestination', array(
 					'required' => 'required',
-					'label' => 'Almacen Destino:',
+					'label' => 'Almacen Destino (Entrada):',
 					'id'=>'cbxWarehouses2',
 					'options'=>$warehouses,
 					'value'=>$warehouseIn,
@@ -209,8 +209,8 @@
 							<thead>
 								<tr>
 									<th>Item (unidad)</th>
-									<th>Stock Origen</th>
-									<th>Stock Destino</th>
+									<th>Stock Origen (Salida)</th>
+									<th>Stock Destino (Entrada)</th>
 									<th>Cantidad</th>
 									<?php if($documentState == 'PENDANT' OR $documentState == ''){ ?>
 									<th class="columnItemsButtons"></th>
