@@ -119,7 +119,8 @@ $(document).ready(function(){
 			//"sPaginationType": "full_numbers",
 			"sDom": '<"">t<"F"f>i',
 			"sScrollY": "200px",
-			"bPaginate": false,			
+			"bPaginate": false,
+			"aaSorting":[], //on start sorting setting to empty
 			"oLanguage": {
 				"sSearch": "Filtrar:",
 				 "sZeroRecords":  "No hay resultados que coincidan.",

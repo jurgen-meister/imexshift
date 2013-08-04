@@ -74,15 +74,16 @@ class InvMovementsController extends AppController {
 	
 	private function _find_items($type = 'none', $selected = array()){
 		$conditions = array();
-		$order = array('InvItem.name');
+		$order = array('InvItem.code');
+		
 		switch ($type){
 			case 'category':
 				$conditions = array('InvItem.inv_category_id'=>$selected);
-				$order = array('InvCategory.name');
+				//$order = array('InvCategory.name');
 				break;
 			case 'brand':
 				$conditions = array('InvItem.inv_brand_id'=>$selected);
-				$order = array('InvBrand.name');
+				//$order = array('InvBrand.name');
 				break;
 		}
 			
@@ -177,20 +178,22 @@ class InvMovementsController extends AppController {
 		$this->InvItem->unbindModel(array('hasMany' => array('InvMovementDetail', 'PurDetail', 'SalDetail', 'InvItemsSupplier', 'InvPrice')));
 		$items = $this->InvItem->find('all', array(
 			'fields'=>array('InvItem.id', 'InvItem.code', 'InvItem.name', 'InvBrand.name', 'InvCategory.name'),
-			'conditions'=>array('InvItem.id'=>$itemsIds)
+			'conditions'=>array('InvItem.id'=>$itemsIds),
+			'order'=>array('InvItem.code')
 		));
 		
 		////////Conditions Extra
-		$conditionMovementType =array('InvMovement.inv_movement_type_id'=>$movementType);
+		$conditionMovementType =array();
 		$statusField='';
 		switch ($movementType) {
-			case 0://TODAS LAS ENTRADAS
+			case 998://TODAS LAS ENTRADAS
 				$conditionMovementType = array('InvMovement.inv_movement_type_id'=>array(1,4,5,6));//I put like this 'cause don't want to do an extra association with InvMovementType for better perfomance
 				break;
 			case 999://TODAS LAS SALIDAS
 				$conditionMovementType = array('InvMovement.inv_movement_type_id'=>array(2,3,7));
 				break;
 			case 1000://ENTRADAS Y SALIDAS
+				$startDateStocks = $this->_get_stocks_enhanced($itemsIds, $warehouse, $startDate, '<');//before starDate, 'cause it will be added or substracted with movements quantities
 				$conditionMovementType = array();
 				//will need to bind this model, to order INs and OUT and to add and substract quantities
 				$this->InvMovement->InvMovementDetail->bindModel(array(
@@ -206,6 +209,9 @@ class InvMovementsController extends AppController {
 				break;
 			case 1001://TRASPASOS ENTRE ALMACENES
 				$conditionMovementType = array('InvMovement.inv_movement_type_id'=>array(3,4));
+				break;
+			default:
+				$conditionMovementType =array('InvMovement.inv_movement_type_id'=>$movementType);
 				break;
 		}
 		
@@ -240,24 +246,19 @@ class InvMovementsController extends AppController {
 				$conditionMovementType
 			),
 			'fields'=>$fields,
-			'order'=>array('InvMovementDetail.inv_item_id', 'InvMovement.id')
+			'order'=>array('InvMovement.date')
 		));
 		
 		//get stocks from all selected items from startDate and finishDate
-		$startDateStocks = $this->_get_stocks_enhanced($itemsIds, $warehouse, $startDate);
-		if($startDate == $finishDate){
-			$finishDateStocks = $startDateStocks;
-		}else{
-			$finishDateStocks = $this->_get_stocks_enhanced($itemsIds, $warehouse, $finishDate);
-		}
-		
-		
+
 		////////////////////////////////////////////////////////////////////////////////////////////////////
 		//format data, grouping items with its respective movements
 		$auxArray = array();
 		foreach($items as $itemVal){//items sent
 			$item = $itemVal['InvItem']['id'];
 			$totalQuantity = 0;
+			$totalQuantityIN = 0;
+			$totalQuantityOUT = 0;
 			$totalFobQuantity = 0;
 			$totalCifQuantity = 0;
 			$totalSaleQuantity = 0;
@@ -266,7 +267,9 @@ class InvMovementsController extends AppController {
 					$fobQuantity = $movement['InvMovementDetail']['quantity'] * $movement['InvMovementDetail'][$fob];
 					$cifQuantity = $movement['InvMovementDetail']['quantity'] * $movement['InvMovementDetail'][$cif];
 					$saleQuantity = $movement['InvMovementDetail']['quantity'] * $movement['InvMovementDetail'][$sale];
-					if(isset($movement['InvMovementType']['status'])){$status = $movement['InvMovementType']['status'];}
+					if(isset($movement['InvMovementType']['status'])){
+						$status = $movement['InvMovementType']['status'];
+					}
 					$auxArray[$item]['movements'][] = array(
 						'code'=>$movement['InvMovement']['code'],
 						'document_code'=>$movement['InvMovement']['document_code'],
@@ -281,26 +284,35 @@ class InvMovementsController extends AppController {
 						'saleQuantity'=>number_format($saleQuantity,2),
 						'status'=> $status
 						);
-					$totalQuantity = $totalQuantity + $movement['InvMovementDetail']['quantity'];
+					/////////////
+					if($status == 'salida'){
+						$totalQuantity = $totalQuantity + $movement['InvMovementDetail']['quantity'] * (-1);
+						$totalQuantityOUT = $totalQuantityOUT  + $movement['InvMovementDetail']['quantity'];
+					}else{
+						$totalQuantity = $totalQuantity + $movement['InvMovementDetail']['quantity'];
+						$totalQuantityIN = $totalQuantityIN  + $movement['InvMovementDetail']['quantity'];
+					}
+					////////////
 					$totalFobQuantity = $totalFobQuantity + $fobQuantity;
 					$totalCifQuantity = $totalCifQuantity + $cifQuantity;
 					$totalSaleQuantity = $totalSaleQuantity + $saleQuantity;
 				}
 			}
 
-			//stock startDate and FinishDate (I thinks this will only go in compound INS and OUTS report)
-			foreach ($startDateStocks as $startDateStock){
-				if($startDateStock['InvMovementDetail']['inv_item_id'] == $item){
-					$auxArray[$item]['startDateStock']=$startDateStock[0]['stock'];
-				}
-			}
-			foreach ($finishDateStocks as $finishDateStock){
-				if($finishDateStock['InvMovementDetail']['inv_item_id'] == $item){
-					$auxArray[$item]['finishDateStock']=$finishDateStock[0]['stock'];
-				}
-			}
+			
 			///////////////////////// Sum Quantities	
 				$auxArray[$item]['totalQuantity']=$totalQuantity;
+				if($status <> ''){
+					//stock startDate
+					foreach ($startDateStocks as $startDateStock){
+						if($startDateStock['InvMovementDetail']['inv_item_id'] == $item){
+							$auxArray[$item]['startDateStock']=$startDateStock[0]['stock'];
+						}
+					}
+					$auxArray[$item]['finishDateStock']=$totalQuantity + $startDateStock[0]['stock'];
+					$auxArray[$item]['totalQuantityIN']=$totalQuantityIN;
+					$auxArray[$item]['totalQuantityOUT']=$totalQuantityOUT;
+				}
 				$auxArray[$item]['totalFobQuantity']=number_format($totalFobQuantity,2);
 				$auxArray[$item]['totalCifQuantity']=number_format($totalCifQuantity,2);
 				$auxArray[$item]['totalSaleQuantity']=number_format($totalSaleQuantity,2);
@@ -317,7 +329,7 @@ class InvMovementsController extends AppController {
 	}
 	
 	
-	private function _get_stocks_enhanced($items, $warehouse, $limitDate){
+	private function _get_stocks_enhanced($items, $warehouse, $limitDate, $dateOperator = '<='){
 		$this->InvMovement->InvMovementDetail->unbindModel(array('belongsTo' => array('InvItem')));
 		$this->InvMovement->InvMovementDetail->bindModel(array(
 			'hasOne'=>array(
@@ -331,7 +343,7 @@ class InvMovementsController extends AppController {
 		$dateRanges = array();
 		if($limitDate <> ''){
 			//$dateRanges = array('InvMovement.date BETWEEN ? AND ?' => array($startDate, $finishDate));
-			$dateRanges = array('InvMovement.date <=' => $limitDate);
+			$dateRanges = array('InvMovement.date '.$dateOperator => $limitDate);
 		}
 		
 		$movements = $this->InvMovement->InvMovementDetail->find('all', array(

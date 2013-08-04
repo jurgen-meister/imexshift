@@ -50,7 +50,7 @@
 							'id'=>'cbxReportMovementTypes',
 							'type'=>'select',
 							'class'=>'span4',  	
-							'options'=>array(0=>'TODAS LAS ENTRADAS', 1=>'Entradas de compra', 5=>'Entradas de apertura',4=>'Entradas de traspaso', 6=>'Entradas otras', 999=>'TODAS LAS SALIDAS', 2=>'Salidas de venta', 3=>'Salidas de traspaso', 7=>'Salidas otras', 1000=>'ENTRADAS Y SALIDAS', 1001=>'TRASPASOS ENTRE ALMACENES')  
+							'options'=>array(1000=>'ENTRADAS Y SALIDAS', 998=>'TODAS LAS ENTRADAS', 1=>'Entradas de compra', 5=>'Entradas de apertura',4=>'Entradas de traspaso', 6=>'Entradas otras', 999=>'TODAS LAS SALIDAS', 2=>'Salidas de venta', 3=>'Salidas de traspaso', 7=>'Salidas otras', 1001=>'TRASPASOS ENTRE ALMACENES')  
 						  ));
 						echo '</div>';
 						  
