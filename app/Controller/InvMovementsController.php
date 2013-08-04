@@ -214,7 +214,7 @@ class InvMovementsController extends AppController {
 				$conditionMovementType =array('InvMovement.inv_movement_type_id'=>$movementType);
 				break;
 		}
-		
+		//debug($startDateStocks);
 		////////Fields
 		$staticData = array('InvMovement.id', 'InvMovement.code', 'InvMovement.document_code', 'InvMovement.date', 'InvMovementDetail.inv_item_id', 'InvMovementDetail.quantity', $statusField);
 		$prices = array();
@@ -302,9 +302,11 @@ class InvMovementsController extends AppController {
 			
 			///////////////////////// Sum Quantities	
 				$auxArray[$item]['totalQuantity']=$totalQuantity;
-				if($status <> ''){
+				//debug($status);
+				if($movementType == 1000){
 					//stock startDate
 					foreach ($startDateStocks as $startDateStock){
+						
 						if($startDateStock['InvMovementDetail']['inv_item_id'] == $item){
 							$auxArray[$item]['startDateStock']=$startDateStock[0]['stock'];
 						}

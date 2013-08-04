@@ -37,6 +37,7 @@
 ?>
 	
 <?php 
+$movementsCount = count($val['movements']);
 $thQuantity = '<th>Cant. <br> (Uni)</th>';
 $trMovementColspan = 10;
 $tdTotalColspan = 3;
@@ -45,10 +46,13 @@ if($documentHeader['movementType'] == 1000){//IN AND OUTS
 	$initialStock = $val['startDateStock'];
 	$thQuantity = '<th>Cant. Ent <br>(Uni)</th><th>Cant. Sal<br>(Uni)</th><th>Stock <br> (Uni)</th>';
 	$trMovementColspan=12;
-	//$tdTotalQuantityColspan=5;
+	$finalStock = $val['finishDateStock'];
+	if($movementsCount == 0){
+		$finalStock = $initialStock;
+	}
 	$stocksRow = '<tr>';
 	$stocksRow .= '<td><span style="font-weight:bold;">Stock Inicial: </span>'.$initialStock.'</td>';
-	$stocksRow .= '<td><span style="font-weight:bold;">Stock Final: </span>'.$val['finishDateStock'].'</td>';
+	$stocksRow .= '<td><span style="font-weight:bold;">Stock Final: </span>'.$finalStock.'</td>';
 	$stocksRow .= '</tr>';
 }
 ?>
@@ -67,7 +71,7 @@ if($documentHeader['movementType'] == 1000){//IN AND OUTS
 	
 
 
-	<?php if(count($val['movements']) > 0){ ?>
+	<?php if($movementsCount > 0){ ?>
 	<table class="report-table" border="1" style="border-collapse:collapse; width:100%;">
 								<thead>
 									<tr> <th style="width:100%" colspan="<?php echo $trMovementColspan;?>">Movimientos</th></tr>
