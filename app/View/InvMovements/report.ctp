@@ -46,18 +46,30 @@
 			<td><span style="font-weight:bold;">Categoria: </span><?php echo $val['categories']; ?></td>
 			<td><span style="font-weight:bold;">Marca: </span><?php echo $val['brands']; ?></td>
 		</tr>
+		<tr>
+			<td><span style="font-weight:bold;">Stock Fecha Inicio: </span><?php echo $val['startDateStock']; ?></td>
+			<td><span style="font-weight:bold;">Stock Fecha Fin: </span><?php echo $val['finishDateStock']; ?></td>
+		</tr>
 	</table>	
 		
-	
+	<?php
+	$codeTitle = 'Codigo';
+	$thCodeOut = '';
+	if($documentHeader['movementType'] == 1000){
+		$codeTitle = 'Codigo Entrada';
+		$thCodeOut = '<th>Codigo Salida</th>';
+	}
+	?>
 	
 	<?php if(count($val['movements']) > 0){ ?>
 	<table class="report-table" border="1" style="border-collapse:collapse; width:100%;">
 								<thead>
-									<tr> <th style="width:100%" colspan="10">Movimientos</th></tr>
+									<tr> <th style="width:100%" colspan="11">Movimientos</th></tr>
 										
 									<tr>
 										<th>Fecha</th>
-										<th>Codigo</th>
+										<th><?php echo $codeTitle;?></th>
+										<?php echo $thCodeOut;?>
 										<th>Codigo Ref</th>
 										<th>Cant (Uni)</th>
 										<th>P.FOB <?php echo $currencyAbbr ; ?></th>
@@ -72,7 +84,22 @@
 									<?php foreach($val['movements'] as $movement){?>
 									<tr>
 										<td ><?php echo $movement['date'];?></td>
-										<td ><?php echo $movement['code'];?></td>
+										
+										<?php
+											if($documentHeader['movementType'] == 1000){//ENTRADAS y SALIDAS
+												if($movement['status'] == 'entrada'){
+													$codeIN = $movement['code'];
+													$codeOUT = ' - ';
+												}else{
+													$codeIN = ' - ';
+													$codeOUT = $movement['code'];
+												}
+												echo "<td>". $codeIN . "</td>";
+												echo "<td>". $codeOUT . "</td>";
+											}else{
+												echo "<td>". $movement['code'] . "</td>";
+											}
+										?>
 										<td ><?php echo $movement['document_code'];?></td>
 										<td style="text-align:center;font-weight:bold;"><?php echo $movement['quantity'];?></td>
 										<td style="text-align:center"><?php echo $movement['fob'];?></td>

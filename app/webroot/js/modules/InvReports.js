@@ -23,6 +23,7 @@ $(document).ready(function(){
 		var movementType= $('#cbxReportMovementTypes').val();
 		//var warehouses = getSelectedMultiSelect('#cbxReportWarehouses');//when it was multiple
 		var warehouses = $('#cbxReportWarehouses').val();
+		var warehouseName = $('#cbxReportWarehouses option:selected').text();
 		var currency = $('#cbxReportCurrency').val();
 		var groupBy = $('#cbxReportGroupTypes').val();
 		var movementTypeName = $('#cbxReportMovementTypes option:selected').text();
@@ -35,6 +36,7 @@ $(document).ready(function(){
 						movementType:movementType,
 						movementTypeName:movementTypeName,
 						warehouses:warehouses,
+						warehouseName:warehouseName,
 						currency:currency,
 						items:items,
 						groupBy:groupBy

@@ -137,6 +137,7 @@ class InvMovementsController extends AppController {
 			$movementType = $this->request->data['movementType'];
 			$movementTypeName = $this->request->data['movementTypeName'];
 			$warehouse = $this->request->data['warehouses'];
+			$warehouseName = $this->request->data['warehouseName'];
 			$currency = $this->request->data['currency'];
 			$items = $this->request->data['items'];
 			
@@ -146,6 +147,7 @@ class InvMovementsController extends AppController {
 			$this->Session->write('ReportMovement.movementType', $movementType);
 			$this->Session->write('ReportMovement.movementTypeName', $movementTypeName);
 			$this->Session->write('ReportMovement.warehouse', $warehouse);
+			$this->Session->write('ReportMovement.warehouseName', $warehouseName);
 			$this->Session->write('ReportMovement.currency', $currency);
 			$this->Session->write('ReportMovement.items', $items);
 			echo 'success';
@@ -155,17 +157,20 @@ class InvMovementsController extends AppController {
 	
 	
 	public function report(){
+		//special ctp template for printing due DOMPdf colapses generating too many pages
 		$this->layout = 'print';
+		
 		//put session data sent data into variables
 		$startDate = $this->Session->read('ReportMovement.startDate');
 		$finishDate = $this->Session->read('ReportMovement.finishDate');
 		$movementType = $this->Session->read('ReportMovement.movementType');
 		$movementTypeName = $this->Session->read('ReportMovement.movementTypeName');
 		$warehouse = $this->Session->read('ReportMovement.warehouse');
-		$warehouseName = 'SAN PEDRO';
+		$warehouseName = $this->Session->read('ReportMovement.warehouseName');;
 		$itemsIds = $this->Session->read('ReportMovement.items');
 		$currency = $this->Session->read('ReportMovement.currency');
-		$documentHeader = array('startDate'=>$startDate, 'finishDate'=>$finishDate, 'movementTypeName'=>$movementTypeName, 'warehouseName'=>$warehouseName, 'currency'=>$currency);
+		$documentHeader = array('startDate'=>$startDate, 'finishDate'=>$finishDate, 'movementTypeName'=>$movementTypeName, 'movementType'=>$movementType ,'warehouseName'=>$warehouseName, 'currency'=>$currency);
+		$status = '';
 		
 		////get specific data like names, codes, etc  (must see if I can send it through ajax) nevertheless query takes just 4ms with 280items
 		$this->loadModel('InvItem');
@@ -174,8 +179,10 @@ class InvMovementsController extends AppController {
 			'fields'=>array('InvItem.id', 'InvItem.code', 'InvItem.name', 'InvBrand.name', 'InvCategory.name'),
 			'conditions'=>array('InvItem.id'=>$itemsIds)
 		));
+		
 		////////Conditions Extra
 		$conditionMovementType =array('InvMovement.inv_movement_type_id'=>$movementType);
+		$statusField='';
 		switch ($movementType) {
 			case 0://TODAS LAS ENTRADAS
 				$conditionMovementType = array('InvMovement.inv_movement_type_id'=>array(1,4,5,6));//I put like this 'cause don't want to do an extra association with InvMovementType for better perfomance
@@ -185,13 +192,25 @@ class InvMovementsController extends AppController {
 				break;
 			case 1000://ENTRADAS Y SALIDAS
 				$conditionMovementType = array();
+				//will need to bind this model, to order INs and OUT and to add and substract quantities
+				$this->InvMovement->InvMovementDetail->bindModel(array(
+					'hasOne'=>array(
+						'InvMovementType'=>array(
+							'foreignKey'=>false,
+							'conditions'=> array('InvMovement.inv_movement_type_id = InvMovementType.id')
+						)
+
+					)
+				));
+				$statusField = 'InvMovementType.status';
 				break;
 			case 1001://TRASPASOS ENTRE ALMACENES
 				$conditionMovementType = array('InvMovement.inv_movement_type_id'=>array(3,4));
 				break;
 		}
+		
 		////////Fields
-		$staticData = array('InvMovement.id', 'InvMovement.code', 'InvMovement.document_code', 'InvMovement.date', 'InvMovementDetail.inv_item_id', 'InvMovementDetail.quantity');
+		$staticData = array('InvMovement.id', 'InvMovement.code', 'InvMovement.document_code', 'InvMovement.date', 'InvMovementDetail.inv_item_id', 'InvMovementDetail.quantity', $statusField);
 		$prices = array();
 		switch($currency){
 			case 'BOLIVIANOS':
@@ -209,14 +228,14 @@ class InvMovementsController extends AppController {
 		}
 		$fields = array_merge($staticData, $prices);
 		
-		
-		
 		////get all movements with filters sent
 		$this->InvMovement->InvMovementDetail->unbindModel(array('belongsTo' => array('InvItem')));
+		
 		$movements = $this->InvMovement->InvMovementDetail->find('all', array(
 			'conditions'=>array(
 				'InvMovementDetail.inv_item_id'=>$itemsIds,
 				'InvMovement.inv_warehouse_id'=>$warehouse,
+				'InvMovement.lc_state'=>'APPROVED',
 				'InvMovement.date BETWEEN ? AND ?' => array($startDate, $finishDate),
 				$conditionMovementType
 			),
@@ -224,66 +243,125 @@ class InvMovementsController extends AppController {
 			'order'=>array('InvMovementDetail.inv_item_id', 'InvMovement.id')
 		));
 		
+		//get stocks from all selected items from startDate and finishDate
+		$startDateStocks = $this->_get_stocks_enhanced($itemsIds, $warehouse, $startDate);
+		if($startDate == $finishDate){
+			$finishDateStocks = $startDateStocks;
+		}else{
+			$finishDateStocks = $this->_get_stocks_enhanced($itemsIds, $warehouse, $finishDate);
+		}
+		
+		
+		////////////////////////////////////////////////////////////////////////////////////////////////////
 		//format data, grouping items with its respective movements
-			$auxArray = array();
-			foreach($items as $itemVal){
-				$item = $itemVal['InvItem']['id'];
-				$totalQuantity = 0;
-				//$totalFob = 0;
-				//$totalCif = 0;
-				//$totalSale = 0;
-				$totalFobQuantity = 0;
-				$totalCifQuantity = 0;
-				$totalSaleQuantity = 0;
-				foreach($movements as $movement){
-					if($movement['InvMovementDetail']['inv_item_id'] == $item){
-						$fobQuantity = $movement['InvMovementDetail']['quantity'] * $movement['InvMovementDetail'][$fob];
-						$cifQuantity = $movement['InvMovementDetail']['quantity'] * $movement['InvMovementDetail'][$cif];
-						$saleQuantity = $movement['InvMovementDetail']['quantity'] * $movement['InvMovementDetail'][$sale];
-						$auxArray[$item]['movements'][] = array(
-							'code'=>$movement['InvMovement']['code'],
-							'document_code'=>$movement['InvMovement']['document_code'],
-							'quantity'=> $movement['InvMovementDetail']['quantity'],
-							'date'=>date("d/m/Y", strtotime($movement['InvMovement']['date'])),
-							'quantity'=> $movement['InvMovementDetail']['quantity'],
-							'fob'=> $movement['InvMovementDetail'][$fob],
-							'cif'=> $movement['InvMovementDetail'][$cif],
-							'sale'=> $movement['InvMovementDetail'][$sale],
-							'fobQuantity'=>number_format($fobQuantity,2),
-							'cifQuantity'=>number_format($cifQuantity,2),
-							'saleQuantity'=>number_format($saleQuantity,2)
-							);
-						$totalQuantity = $totalQuantity + $movement['InvMovementDetail']['quantity'];
-						//$totalFob = $totalFob + $movement['InvMovementDetail'][$fob];
-						//$totalCif = $totalCif + $movement['InvMovementDetail'][$cif];
-						//$totalSale = $totalSale + $movement['InvMovementDetail'][$sale];
-						$totalFobQuantity = $totalFobQuantity + $fobQuantity;
-						$totalCifQuantity = $totalCifQuantity + $cifQuantity;
-						$totalSaleQuantity = $totalSaleQuantity + $saleQuantity;
-					}
-				}
-			
-				//stock solo irian en IN AND OUT all
-				//$auxArray[$item]['stockFechaInicio']='algo va aqui';
-				//$auxArray[$item]['stockFechaFin']='algo va aqui';
-				//$auxArray[$item]['stockActual']='algo va aqui';
-					$auxArray[$item]['totalQuantity']=$totalQuantity;
-					//$auxArray[$item]['totalFob']=number_format($totalFob,2);
-					$auxArray[$item]['totalFobQuantity']=number_format($totalFobQuantity,2);
-					//$auxArray[$item]['totalCif']=number_format($totalCif,2);
-					$auxArray[$item]['totalCifQuantity']=number_format($totalCifQuantity,2);
-					//$auxArray[$item]['totalSale']=number_format($totalSale,2);
-					$auxArray[$item]['totalSaleQuantity']=number_format($totalSaleQuantity,2);
-					$auxArray[$item]['brands']=$itemVal['InvBrand']['name'];
-					$auxArray[$item]['categories']=$itemVal['InvCategory']['name'];
-					$auxArray[$item]['codeName']='[ '. $itemVal['InvItem']['code'].' ] '.$itemVal['InvItem']['name'];
-				if($totalQuantity == 0){
-					$auxArray[$item]['movements']=array();
+		$auxArray = array();
+		foreach($items as $itemVal){//items sent
+			$item = $itemVal['InvItem']['id'];
+			$totalQuantity = 0;
+			$totalFobQuantity = 0;
+			$totalCifQuantity = 0;
+			$totalSaleQuantity = 0;
+			foreach($movements as $movement){//movements
+				if($movement['InvMovementDetail']['inv_item_id'] == $item){
+					$fobQuantity = $movement['InvMovementDetail']['quantity'] * $movement['InvMovementDetail'][$fob];
+					$cifQuantity = $movement['InvMovementDetail']['quantity'] * $movement['InvMovementDetail'][$cif];
+					$saleQuantity = $movement['InvMovementDetail']['quantity'] * $movement['InvMovementDetail'][$sale];
+					if(isset($movement['InvMovementType']['status'])){$status = $movement['InvMovementType']['status'];}
+					$auxArray[$item]['movements'][] = array(
+						'code'=>$movement['InvMovement']['code'],
+						'document_code'=>$movement['InvMovement']['document_code'],
+						'quantity'=> $movement['InvMovementDetail']['quantity'],
+						'date'=>date("d/m/Y", strtotime($movement['InvMovement']['date'])),
+						'quantity'=> $movement['InvMovementDetail']['quantity'],
+						'fob'=> $movement['InvMovementDetail'][$fob],
+						'cif'=> $movement['InvMovementDetail'][$cif],
+						'sale'=> $movement['InvMovementDetail'][$sale],
+						'fobQuantity'=>number_format($fobQuantity,2),
+						'cifQuantity'=>number_format($cifQuantity,2),
+						'saleQuantity'=>number_format($saleQuantity,2),
+						'status'=> $status
+						);
+					$totalQuantity = $totalQuantity + $movement['InvMovementDetail']['quantity'];
+					$totalFobQuantity = $totalFobQuantity + $fobQuantity;
+					$totalCifQuantity = $totalCifQuantity + $cifQuantity;
+					$totalSaleQuantity = $totalSaleQuantity + $saleQuantity;
 				}
 			}
-			$this->set(compact('auxArray', 'documentHeader'));
+
+			//stock startDate and FinishDate (I thinks this will only go in compound INS and OUTS report)
+			foreach ($startDateStocks as $startDateStock){
+				if($startDateStock['InvMovementDetail']['inv_item_id'] == $item){
+					$auxArray[$item]['startDateStock']=$startDateStock[0]['stock'];
+				}
+			}
+			foreach ($finishDateStocks as $finishDateStock){
+				if($finishDateStock['InvMovementDetail']['inv_item_id'] == $item){
+					$auxArray[$item]['finishDateStock']=$finishDateStock[0]['stock'];
+				}
+			}
+			///////////////////////// Sum Quantities	
+				$auxArray[$item]['totalQuantity']=$totalQuantity;
+				$auxArray[$item]['totalFobQuantity']=number_format($totalFobQuantity,2);
+				$auxArray[$item]['totalCifQuantity']=number_format($totalCifQuantity,2);
+				$auxArray[$item]['totalSaleQuantity']=number_format($totalSaleQuantity,2);
+				$auxArray[$item]['brands']=$itemVal['InvBrand']['name'];
+				$auxArray[$item]['categories']=$itemVal['InvCategory']['name'];
+				$auxArray[$item]['codeName']='[ '. $itemVal['InvItem']['code'].' ] '.$itemVal['InvItem']['name'];
+			if($totalQuantity == 0){
+				$auxArray[$item]['movements']=array();
+			}
+		}
+		$this->set(compact('auxArray', 'documentHeader'));
+	
+	//END FUNCTION	
 	}
 	
+	
+	private function _get_stocks_enhanced($items, $warehouse, $limitDate){
+		$this->InvMovement->InvMovementDetail->unbindModel(array('belongsTo' => array('InvItem')));
+		$this->InvMovement->InvMovementDetail->bindModel(array(
+			'hasOne'=>array(
+				'InvMovementType'=>array(
+					'foreignKey'=>false,
+					'conditions'=> array('InvMovement.inv_movement_type_id = InvMovementType.id')
+				)
+				
+			)
+		));
+		$dateRanges = array();
+		if($limitDate <> ''){
+			//$dateRanges = array('InvMovement.date BETWEEN ? AND ?' => array($startDate, $finishDate));
+			$dateRanges = array('InvMovement.date <=' => $limitDate);
+		}
+		
+		$movements = $this->InvMovement->InvMovementDetail->find('all', array(
+			'fields'=>array(
+				"InvMovementDetail.inv_item_id", 
+				"(SUM(CASE WHEN \"InvMovementType\".\"status\" = 'entrada' AND \"InvMovement\".\"lc_state\" = 'APPROVED' THEN \"InvMovementDetail\".\"quantity\" ELSE 0 END))-
+				(SUM(CASE WHEN \"InvMovementType\".\"status\" = 'salida' AND \"InvMovement\".\"lc_state\" = 'APPROVED' THEN \"InvMovementDetail\".\"quantity\" ELSE 0 END)) AS stock"
+				),
+			'conditions'=>array(
+				'InvMovement.inv_warehouse_id'=>$warehouse,
+				'InvMovementDetail.inv_item_id'=>$items,
+				$dateRanges
+				),
+			'group'=>array('InvMovementDetail.inv_item_id'),
+			'order'=>array('InvMovementDetail.inv_item_id')
+		));
+		//the array format is like this:
+		/*
+		array(
+			(int) 0 => array(
+				'InvMovementDetail' => array(
+					'inv_item_id' => (int) 9
+				),
+				(int) 0 => array(
+					'stock' => '20'
+				)
+			),...etc,etc
+		)	*/
+		return $movements;
+	}
 	
 		//////////////////////////////////////////// END - REPORT /////////////////////////////////////////////////
 	
