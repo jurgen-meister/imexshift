@@ -54,15 +54,25 @@
 						  ));
 						echo '</div>';
 						  
-						echo '<div class="row-fluid">';
+						echo '<div class="row-fluid" id="boxWarehouse">';
 						  echo $this->BootstrapForm->input('warehouse', array(
 							'label' => '* Almacen:',
-							'id'=>'cbxReportWarehouses',
+							'id'=>'cbxReportWarehouse',
 							'type'=>'select',
 							//'multiple'=>'multiple',
 							'options'=>$warehouse,
 							//'selected'=>  array_keys($warehouse),
 							'class'=>'span6'  
+						  ));
+						echo '</div>';
+						
+						echo '<div class="row-fluid" id="boxWarehouse2" style="display:none;">';
+						  echo $this->BootstrapForm->input('warehouse2', array(
+							'label' => '* Almacen Destino (Entrada):',
+							'id'=>'cbxReportWarehouse2',
+							'type'=>'select',
+							'options'=>$warehouse,
+							'class'=>'span6',
 						  ));
 						echo '</div>';
 						

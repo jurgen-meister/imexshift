@@ -4,11 +4,13 @@ $(document).ready(function(){
 	var arr = path.split('/');
 	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 	////////////////////////////////////// START - INITIAL ACTIONS /////////////////////////////////////////
+	
 	$('select').select2();
 	$("#txtReportStartDate, #txtReportFinishDate").datepicker({
 		showButtonPanel: true
 	});
 	startDataTable();
+	
 	////////////////////////////////////// END - INITIAL ACTIONS /////////////////////////////////////////
 	
 	
@@ -17,29 +19,49 @@ $(document).ready(function(){
 	$('#cbxReportGroupTypes').change(function(){
 		getGroupItemsAndFilters();
 	});
+	
+	$('#cbxReportMovementTypes').change(function(){
+        if($(this).val() === '1001'){
+			$('#boxWarehouse2').show();
+			//$('#boxWarehouse2').find('label').css({"color":"red","border":"2px solid red"});
+			$('#boxWarehouse').find('label').text('* Almacen Origen (Salida):');
+		}else{
+			$('#boxWarehouse2').hide();
+			$('#boxWarehouse').find('label').text('Almacen:');
+		}
+	});
+	
 	$('#btnGenerateReport').click(function(){
 		var startDate = $('#txtReportStartDate').val();
 		var finishDate = $('#txtReportFinishDate').val();
 		var movementType= $('#cbxReportMovementTypes').val();
-		//var warehouses = getSelectedMultiSelect('#cbxReportWarehouses');//when it was multiple
-		var warehouses = $('#cbxReportWarehouses').val();
-		var warehouseName = $('#cbxReportWarehouses option:selected').text();
+		//var warehouse = getSelectedMultiSelect('#cbxReportWarehouse');//when it was multiple
+		var warehouse = $('#cbxReportWarehouse').val();
+		var warehouseName = $('#cbxReportWarehouse option:selected').text();
 		var currency = $('#cbxReportCurrency').val();
 		var groupBy = $('#cbxReportGroupTypes').val();
 		var movementTypeName = $('#cbxReportMovementTypes option:selected').text();
 		var items = getSelectedCheckboxes();
-		var error = validate(startDate, finishDate, movementType, warehouses, currency, groupBy, items);
+		var warehouse2 = 'non-existent';
+		var warehouseName2 = 'non-existent';
+		if($('#boxWarehouse2').css('display') === 'block'){
+			warehouse2 = $('#cbxReportWarehouse2').val();
+			warehouseName2 = $('#cbxReportWarehouse2 option:selected').text();
+		}
+		var error = validate(startDate, finishDate, movementType, warehouse, warehouse2, currency, groupBy, items);
 		if(error === ''){
 			var DATA = {
 						startDate:startDate,
 						finishDate:finishDate,
 						movementType:movementType,
 						movementTypeName:movementTypeName,
-						warehouses:warehouses,
+						warehouse:warehouse,
 						warehouseName:warehouseName,
 						currency:currency,
-						items:items,
-						groupBy:groupBy
+						groupBy:groupBy,
+						warehouse2:warehouse2,
+						warehouseName2:warehouseName2,
+						items:items
 					   };
 			ajax_generate_report(DATA);
 			$('#boxMessage').html('');
@@ -56,7 +78,7 @@ $(document).ready(function(){
 		ajax_get_group_items_and_filters();
    }
    
-   function validate(startDate, finishDate, movementType, warehouses, currency, groupBy, items){
+   function validate(startDate, finishDate, movementType, warehouse, warehouse2, currency, groupBy, items){
 	   var  error='';
 	   if(startDate === ''){error+='<li> El campo "Fecha Inicio" esta vacio </li>';}
 	   if(finishDate === ''){error+='<li> El campo "Fecha Fin" esta vacio </li>';}
@@ -70,8 +92,18 @@ $(document).ready(function(){
 			}
 	   }
 	   if(movementType === ''){error+='<li> El campo "Tipo de Movimiento" esta vacio </li>';}
-	   if(warehouses === 0){error+='<li> El campo "Almacen" esta vacio </li>';}
-	   if(currency === 0){error+='<li> El campo "Tipo de Cambio" esta vacio </li>';}
+	   if(warehouse === ''){
+		   if(warehouse2 === 'non-existent'){
+			   error+='<li> El campo "Almacen" esta vacio </li>';
+		   }else{
+			   error+='<li> El campo "Almacen Origen (Salida)" esta vacio </li>';
+		   }
+	   }
+	   if(warehouse2 !== 'non-existent'){
+			if(warehouse2 === ''){error+='<li> El campo "Almacen Destino  (Salida)" esta vacio </li>';}
+			if(warehouse2 === warehouse){error+='<li> El "Almacen Origen (Salida)" no puede ser igual que el "Almacen Destino (Entrada)" </li>';}
+	   }
+	   if(currency === ''){error+='<li> El campo "Tipo de Cambio" esta vacio </li>';}
 	   if(groupBy === ''){error+='<li> El campo "Agrupar por" esta vacio </li>';}
 	   if(items.length === 0){error+='<li> Debe elegir al menos un "Item" </li>';}
 	   return error;

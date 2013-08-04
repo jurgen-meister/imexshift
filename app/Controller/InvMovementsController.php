@@ -133,24 +133,18 @@ class InvMovementsController extends AppController {
 	
 	public function ajax_generate_report(){
 		if($this->RequestHandler->isAjax()){
-			$startDate = $this->request->data['startDate'];
-			$finishDate = $this->request->data['finishDate'];
-			$movementType = $this->request->data['movementType'];
-			$movementTypeName = $this->request->data['movementTypeName'];
-			$warehouse = $this->request->data['warehouses'];
-			$warehouseName = $this->request->data['warehouseName'];
-			$currency = $this->request->data['currency'];
-			$items = $this->request->data['items'];
-			
-			//BEFORE WHEN SENDING
-			$this->Session->write('ReportMovement.startDate', $startDate);
-			$this->Session->write('ReportMovement.finishDate', $finishDate);
-			$this->Session->write('ReportMovement.movementType', $movementType);
-			$this->Session->write('ReportMovement.movementTypeName', $movementTypeName);
-			$this->Session->write('ReportMovement.warehouse', $warehouse);
-			$this->Session->write('ReportMovement.warehouseName', $warehouseName);
-			$this->Session->write('ReportMovement.currency', $currency);
-			$this->Session->write('ReportMovement.items', $items);
+			//SETTING DATA
+			$this->Session->write('ReportMovement.startDate', $this->request->data['startDate']);
+			$this->Session->write('ReportMovement.finishDate', $this->request->data['finishDate']);
+			$this->Session->write('ReportMovement.movementType', $this->request->data['movementType']);
+			$this->Session->write('ReportMovement.movementTypeName', $this->request->data['movementTypeName']);
+			$this->Session->write('ReportMovement.warehouse', $this->request->data['warehouse']);
+			$this->Session->write('ReportMovement.warehouseName', $this->request->data['warehouseName']);
+			$this->Session->write('ReportMovement.currency', $this->request->data['currency']);
+			$this->Session->write('ReportMovement.items', $this->request->data['items']);
+			//for transfer
+			$this->Session->write('ReportMovement.warehouse2', $this->request->data['warehouse2']);
+			$this->Session->write('ReportMovement.warehouseName2', $this->request->data['warehouseName2']);
 			echo 'success';
 		///END AJAX
 		}
@@ -161,16 +155,33 @@ class InvMovementsController extends AppController {
 		//special ctp template for printing due DOMPdf colapses generating too many pages
 		$this->layout = 'print';
 		
+		//Check if session variables are set otherwise redirect
+		if(!$this->Session->check('ReportMovement')){
+			$this->redirect(array('action' => 'report_generator'));
+		}
+		
 		//put session data sent data into variables
 		$startDate = $this->Session->read('ReportMovement.startDate');
 		$finishDate = $this->Session->read('ReportMovement.finishDate');
 		$movementType = $this->Session->read('ReportMovement.movementType');
 		$movementTypeName = $this->Session->read('ReportMovement.movementTypeName');
 		$warehouse = $this->Session->read('ReportMovement.warehouse');
-		$warehouseName = $this->Session->read('ReportMovement.warehouseName');;
+		$warehouseName = $this->Session->read('ReportMovement.warehouseName');
 		$itemsIds = $this->Session->read('ReportMovement.items');
 		$currency = $this->Session->read('ReportMovement.currency');
-		$documentHeader = array('startDate'=>$startDate, 'finishDate'=>$finishDate, 'movementTypeName'=>$movementTypeName, 'movementType'=>$movementType ,'warehouseName'=>$warehouseName, 'currency'=>$currency);
+		//transfer
+		$warehouse2 = $this->Session->read('ReportMovement.warehouse2');
+		$warehouseName2 = $this->Session->read('ReportMovement.warehouseName2');
+		
+		$documentHeader = array(
+			'startDate'=>$startDate, 
+			'finishDate'=>$finishDate, 
+			'movementTypeName'=>$movementTypeName, 
+			'movementType'=>$movementType ,
+			'warehouseName'=>$warehouseName, 
+			'warehouseName2'=>$warehouseName2, 
+			'currency'=>$currency
+		);
 		$status = '';
 		
 		////get specific data like names, codes, etc  (must see if I can send it through ajax) nevertheless query takes just 4ms with 280items
@@ -311,7 +322,8 @@ class InvMovementsController extends AppController {
 							$auxArray[$item]['startDateStock']=$startDateStock[0]['stock'];
 						}
 					}
-					$auxArray[$item]['finishDateStock']=$totalQuantity + $startDateStock[0]['stock'];
+					//debug($startDateStock[0]['stock']);
+					$auxArray[$item]['finishDateStock']=$totalQuantity + $auxArray[$item]['startDateStock'];
 					$auxArray[$item]['totalQuantityIN']=$totalQuantityIN;
 					$auxArray[$item]['totalQuantityOUT']=$totalQuantityOUT;
 				}

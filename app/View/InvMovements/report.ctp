@@ -2,20 +2,34 @@
 <hr style="height: 2px; color: #000; background-color: #000;">
 <div style="font-size: 20px; font-weight: bold; text-align:center; text-decoration: underline;">MOVIMIENTOS DE ALMACEN: <?php echo strtoupper($documentHeader['movementTypeName']);?></div>
 <br>
+<?php 
+$thWarehouseName2 = '';
+$tdWarehouseName2 = '';
+$widthTdsHeader = '25%';
+$thWarehouseName = 'Almacen';
+if ($documentHeader['warehouseName2'] <> 'non-existent'){
+	$thWarehouseName2 = '<th style="width:20%">Almacen Destino (Entrada):</td>';
+	$tdWarehouseName2 = '<td>'.$documentHeader['warehouseName2'].'</td>';
+	$widthTdsHeader = '20%';
+	$thWarehouseName = 'Almacen Origen (Salida):';
+}
+?>
 <table class="report-table" border="0" style="border-collapse:collapse; width:100%;">
 	<thead>
 	<tr style="text-align:center">
-		<th style="width:25%">Fecha Inicio:</th>
-		<th style="width:25%">Fecha Fin:</th>
-		<th style="width:25%">Almacen:</th>
-		<th style="width:25%">Tipo de Cambio:</th>
+		<th style="width:<?php echo $widthTdsHeader;?>">Fecha Inicio:</th>
+		<th style="width:<?php echo $widthTdsHeader;?>">Fecha Fin:</th>
+		<th style="width:<?php echo $widthTdsHeader;?>"><?php echo $thWarehouseName;?></th>
+		<?php echo $thWarehouseName2;?>
+		<th style="width:<?php echo $widthTdsHeader;?>">Tipo de Cambio:</th>
 	</tr>
 	</thead>
 	<tbody>
 		<tr style="text-align:center">
 			<td><?php echo $documentHeader['startDate'];?></td>
 			<td><?php echo $documentHeader['finishDate'];?></td>
-			<td><?php echo $documentHeader['warehouseName'];?></td>
+			<td><?php echo strtoupper($documentHeader['warehouseName']);?></td>
+			<?php echo $tdWarehouseName2;?>
 			<td><?php echo $documentHeader['currency'];?></td>
 		</tr>
 	</tbody>
