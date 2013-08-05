@@ -67,11 +67,11 @@
 					<td style="text-align:left;"><?php echo $movement['document_code'];?></td>
 					<td style="font-weight:bold;"><?php echo $movement['quantity'];?></td>
 					<td ><?php echo $movement['fob'];?></td>
-					<td style="font-weight:bold;"><?php echo $movement['fobQuantity'];?></td>
+					<td style="font-weight:bold;"><?php echo number_format($movement['fobQuantity'],2);?></td>
 					<td ><?php echo $movement['cif'];?></td>
-					<td style="font-weight:bold;"><?php echo $movement['cifQuantity'];?></td>
+					<td style="font-weight:bold;"><?php echo number_format($movement['cifQuantity'],2);?></td>
 					<td ><?php echo $movement['sale'];?></td>
-					<td style="font-weight:bold;"><?php echo $movement['saleQuantity'];?></td>
+					<td style="font-weight:bold;"><?php echo number_format($movement['saleQuantity'],2);?></td>
 				</tr>
 				<?php $quantityTotal = $quantityTotal + $movement['quantity'];?>
 				<?php }?>
@@ -79,11 +79,11 @@
 					<td colspan="3" style="text-align:right; padding-right: 10px">Total: </td>
 					<td ><?php echo $quantityTotal; ?></td>
 					<td ></td>
-					<td ><?php echo $val['TotalMovements']['fobQuantityTotal']; ?></td>
+					<td ><?php echo number_format($val['TotalMovements']['fobQuantityTotal'],2); ?></td>
 					<td ></td>
-					<td ><?php echo $val['TotalMovements']['cifQuantityTotal']; ?></td>
+					<td ><?php echo number_format($val['TotalMovements']['cifQuantityTotal'],2); ?></td>
 					<td ></td>
-					<td ><?php echo $val['TotalMovements']['saleQuantityTotal']; ?></td>
+					<td ><?php echo number_format($val['TotalMovements']['saleQuantityTotal'],2); ?></td>
 				</tr>
 		<?php }else{?>
 				<thead>

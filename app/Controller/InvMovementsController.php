@@ -65,7 +65,7 @@ class InvMovementsController extends AppController {
 	//////////////////////////////////////////// END - PDF /////////////////////////////////////////////////
 	
 	//////////////////////////////////////////// START - REPORT ////////////////////////////////////////////////
-	public function report_generator(){
+	public function vreport_generator(){
 		$this->loadModel("InvWarehouse");
 		$warehouse = $this->InvWarehouse->find('list');
 		$item = $this->_find_items();
@@ -238,9 +238,9 @@ class InvMovementsController extends AppController {
 						'fob'=> $movement['InvMovementDetail'][$currencyFieldPrefix.'fob_price'],
 						'cif'=> $movement['InvMovementDetail'][$currencyFieldPrefix.'cif_price'],
 						'sale'=> $movement['InvMovementDetail'][$currencyFieldPrefix.'sale_price'],
-						'fobQuantity'=>number_format($fobQuantity,2),
-						'cifQuantity'=>number_format($cifQuantity,2),
-						'saleQuantity'=>number_format($saleQuantity,2),
+						'fobQuantity'=>$fobQuantity,
+						'cifQuantity'=>$cifQuantity,
+						'saleQuantity'=>$saleQuantity,
 						'warehouse'=>$movement['InvMovement']['inv_warehouse_id']
 					);
 					if(isset($movement['InvMovementType']['status'])){
@@ -255,9 +255,9 @@ class InvMovementsController extends AppController {
 			$auxArray[ $item['InvItem']['id'] ]['Item']['category']=$item['InvCategory']['name'];
 			$auxArray[ $item['InvItem']['id'] ]['Item']['id']=$item['InvItem']['id'];
 			//Totals
-			$auxArray[ $item['InvItem']['id'] ]['TotalMovements']['fobQuantityTotal'] = number_format($fobQuantityTotal,2);
-			$auxArray[ $item['InvItem']['id'] ]['TotalMovements']['cifQuantityTotal'] = number_format($cifQuantityTotal,2);
-			$auxArray[ $item['InvItem']['id'] ]['TotalMovements']['saleQuantityTotal'] = number_format($saleQuantityTotal,2);
+			$auxArray[ $item['InvItem']['id'] ]['TotalMovements']['fobQuantityTotal'] = $fobQuantityTotal;
+			$auxArray[ $item['InvItem']['id'] ]['TotalMovements']['cifQuantityTotal'] = $cifQuantityTotal;
+			$auxArray[ $item['InvItem']['id'] ]['TotalMovements']['saleQuantityTotal'] = $saleQuantityTotal;
 			////I don't calculate total quantity here 'cause could vary in every report, it will be done in the report views
 		}
 		return $auxArray;
