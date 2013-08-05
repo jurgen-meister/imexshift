@@ -201,7 +201,17 @@ $(document).ready(function(){
 				$('#boxProcessing').text('Procesando...');
 			},
             success: function(data){
-				open_in_new_tab(moduleController+'report');
+				switch(data){
+					case '1000'://INS AND OUTS
+						open_in_new_tab(moduleController+'vreport_ins_and_outs');
+						break;
+					case '1001'://TRANSFERS
+						open_in_new_tab(moduleController+'vreport_transfers');
+						break;
+					default://INS OR OUTS	
+						open_in_new_tab(moduleController+'vreport_ins_or_outs');
+						break;	
+				}
 				$('#boxProcessing').text('');
 			},
 			error:function(data){
