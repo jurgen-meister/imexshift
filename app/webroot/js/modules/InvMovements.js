@@ -218,25 +218,6 @@ $(document).ready(function(){
 			showBittionAlertModal({content:'¿Está seguro de eliminar este item?'});
 			$('#bittionBtnYes').click(function(){
 				ajax_save_movement('DELETE', 'PENDANT', objectTableRowSelected, []);
-				/*
-				//var itemId = objectTableRowSelected.find('#txtItemId').val();//$('#cbxModalItems').val();
-				if(arr[3] === 'save_in'){//0
-					//ajax_save_item('DELETEITEM', 0, itemId, '', '', '', '', objectTableRowSelected);
-					ajax_save_movement('save_in', 'DELETE', 'PENDANT', objectTableRowSelected);
-				}
-				if(arr[3] === 'save_purchase_in'){//1
-					ajax_save_movement('save_purchase_in', 'DELETE', 'PENDANT', objectTableRowSelected);
-				}
-				if(arr[3] === 'save_out'){//0
-					ajax_save_movement('save_out', 'DELETE', 'PENDANT', objectTableRowSelected);
-				}
-				if(arr[3] === 'save_sale_out'){//2
-					ajax_save_movement('save_sale_out', 'DELETE', 'PENDANT', objectTableRowSelected);
-				}
-				if(arr[3] === 'save_warehouse_transfer'){//2
-					ajax_save_movement('save_warehouse_transfer', 'DELETE', 'PENDANT', objectTableRowSelected);
-				}
-				*/
 			});
 		}else{
 			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
@@ -260,30 +241,12 @@ $(document).ready(function(){
 	}
 
 	function editItem(){
-		var itemId = $('#cbxModalItems').val();
+		//var itemId = $('#cbxModalItems').val();
 		var quantity = $('#txtModalQuantity').val();
 		var itemCodeName = $('#cbxModalItems option:selected').text();
 		var error = validateItem(itemCodeName, quantity, ''); 
 		if(error === ''){
 			ajax_save_movement('EDIT', 'PENDANT', '', []);
-			/*
-			if(arr[3] === 'save_in'){//0
-				//ajax_save_item('EDITITEM', 0, itemId, quantity, itemCodeName, '', '','');
-				ajax_save_movement('save_in', 'EDIT', 'PENDANT', '');
-			}
-			if(arr[3] === 'save_purchase_in'){//1
-				ajax_save_movement('save_purchase_in', 'EDIT', 'PENDANT', '');
-			}
-			if(arr[3] === 'save_out'){//0
-				ajax_save_movement('save_out', 'EDIT', 'PENDANT', '');
-			}
-			if(arr[3] === 'save_sale_out'){//2
-				ajax_save_movement('save_sale_out', 'EDIT', 'PENDANT', '');
-			}
-			if(arr[3] === 'save_warehouses_transfer'){//2
-				ajax_save_movement('save_warehouses_transfer', 'EDIT', 'PENDANT', '');
-			}
-			*/
 		}else{
 			$('#boxModalValidateItem').html('<ul>'+error+'</ul>');
 		}
@@ -291,7 +254,7 @@ $(document).ready(function(){
 
 	function addItem(){
 		
-		var itemId = $('#cbxModalItems').val();
+		//var itemId = $('#cbxModalItems').val();
 		var quantity = $('#txtModalQuantity').val();
 		var itemCodeName = $('#cbxModalItems option:selected').text();//
 		var stock = $('#txtModalStock').val();
@@ -303,25 +266,6 @@ $(document).ready(function(){
 		var error = validateItem(itemCodeName, quantity, ''); 
 		if(error === ''){
 			ajax_save_movement('ADD', 'PENDANT', '', []);
-			/*
-			if(arr[3] === 'save_in'){//0
-				//ajax_save_item('ADDITEM', 0, itemId, quantity, itemCodeName, stock, stock2,'');
-				ajax_save_movement('save_in', 'ADD', 'PENDANT', '');
-			}
-			if(arr[3] === 'save_purchase_in'){//1
-				ajax_save_movement('save_purchase_in', 'ADD', 'PENDANT', '');
-			}
-			if(arr[3] === 'save_out'){//0
-				ajax_save_movement('save_out', 'ADD', 'PENDANT', '');
-			}
-			if(arr[3] === 'save_sale_out'){//2
-				ajax_save_movement('save_sale_out', 'ADD', 'PENDANT', '');
-			}
-			//transfer goes here
-			if(arr[3] === 'save_warehouses_transfer'){
-				ajax_save_movement('save_warehouses_transfer', 'ADD', 'PENDANT', '');
-			}
-			*/
 		}else{
 			$('#boxModalValidateItem').html('<ul>'+error+'</ul>');
 		}
@@ -400,25 +344,6 @@ $(document).ready(function(){
 		var error = validateBeforeSaveAll(arrayItemsDetails);
 		if( error === ''){
 			ajax_save_movement('DEFAULT', 'PENDANT', '', []);
-			//I send [{0:0}] 'cause don't not need to update stock in PENDANT 
-			/*
-			if(arr[3] === 'save_in'){
-				//ajax_save_movement([{0:0}], 'ENT', 0, 'PENDANT');
-				ajax_save_movement('save_in', 'DEFAULT', 'PENDANT', '');
-			}
-			if(arr[3] === 'save_purchase_in'){
-				ajax_save_movement('save_purchase_in', 'DEFAULT', 'PENDANT', '');
-			}
-			if(arr[3] === 'save_out'){
-				ajax_save_movement('save_out', 'DEFAULT', 'PENDANT', '');
-			}
-			if(arr[3] === 'save_sale_out'){
-				ajax_save_movement('save_sale_out', 'DEFAULT', 'PENDANT', '');
-			}
-			if(arr[3] === 'save_warehouses_transfer'){
-				ajax_save_movement('save_warehouses_transfer', 'DEFAULT', 'PENDANT', '');
-			}
-			*/
 		}else{
 			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
 		}
@@ -440,23 +365,6 @@ $(document).ready(function(){
 			var error = validateBeforeSaveAll(arrayForValidate);
 			if( error === ''){
 				ajax_save_movement('DEFAULT', 'APPROVED', '', arrayForValidate);
-				/*
-				if(arr[3] === 'save_in'){
-					ajax_save_movement(arrayItemsDetails, 'ENT', 0, 'APPROVED');
-				}
-				if(arr[3] === 'save_purchase_in'){
-					ajax_save_movement(arrayItemsDetails, 'ENT', 1, 'APPROVED');
-				}
-				if(arr[3] === 'save_out'){
-					ajax_save_movement(arrayItemsDetails, 'SAL', 0, 'APPROVED');
-				}
-				if(arr[3] === 'save_sale_out'){
-					ajax_save_movement(arrayItemsDetails, 'SAL', 2, 'APPROVED');
-				}
-				if(arr[3] === 'save_warehouses_transfer'){
-					ajax_save_warehouses_transfer(arrayItemsDetails, 'APPROVED');
-				}
-				*/
 			}else{
 				$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
 			}
@@ -472,23 +380,6 @@ $(document).ready(function(){
 			var arrayForValidate = [];
 			arrayForValidate = getItemsDetails();
 			ajax_save_movement('DEFAULT', 'CANCELLED', '', arrayForValidate);
-			/*
-			if(arr[3] === 'save_in'){
-				ajax_save_movement(arrayItemsDetails, 'ENT', 0, 'CANCELLED');
-			}
-			if(arr[3] === 'save_purchase_in'){
-				ajax_save_movement(arrayItemsDetails, 'ENT', 1, 'CANCELLED');
-			}
-			if(arr[3] === 'save_out'){
-				ajax_save_movement(arrayItemsDetails, 'SAL', 0, 'CANCELLED');
-			}
-			if(arr[3] === 'save_sale_out'){
-				ajax_save_movement(arrayItemsDetails, 'SAL', 2, 'CANCELLED');
-			}
-			if(arr[3] === 'save_warehouses_transfer'){
-				ajax_save_warehouses_transfer(arrayItemsDetails, 'CANCELLED');
-			}
-			*/
 			hideBittionAlertModal();
 		});
 	}
@@ -651,26 +542,11 @@ $(document).ready(function(){
 		var stock = 0;
 		var stock2 = '';//otherwise create one more column on details table
 		
-		//for validate
-		//var arrayForValidate = [];
-		
 		//Movement setup variables
 		if((ACTION !== 'save_in') || (ACTION !== 'save_out')){
 			documentCode = $('#txtDocumentCode').val();
 			movementTypeId = $('#cbxMovementTypes').val();
 		}
-		/*
-		if((ACTION === 'save_in') || (ACTION === 'save_purchase_in')){
-			if(STATE === 'APPROVED'){
-				arrayForValidate = [];
-			}
-		}
-		if((ACTION === 'save_out') || (ACTION === 'save_sale_out')){
-			if(STATE === 'CANCELLED'){
-				arrayForValidate = [];
-			}
-		}
-		*/
 		
 		if((ACTION === 'save_purchase_in' || ACTION === 'save_sale_out') && (movementId === '')  && (movementId === '')){
 			arrayForValidate = getItemsDetails();
@@ -764,9 +640,7 @@ $(document).ready(function(){
 		if ($('#btnAddItem').length > 0){//existe
 			$('#btnAddItem').hide();
 		}
-		//if ($('#txtDocumentCode').length > 0){//existe
-		//	$('#txtDocumentCode').attr('disabled','disabled');
-		//}
+		
 		if (ACTION === 'save_in' || ACTION === 'save_out'){
 			$('#cbxMovementTypes').attr('disabled','disabled');
 		}else{
@@ -849,7 +723,6 @@ $(document).ready(function(){
 						break;
 					case 'VALIDATION':
 						setOnValidation(dataReceived, ACTION);
-						//alert('jfjfjfj');
 						break;
 					case 'ERROR':
 						setOnError();
@@ -881,11 +754,9 @@ $(document).ready(function(){
             beforeSend: showProcessing(),
             success: function(data){
 				$('#processing').text('');
-				//$('#itemSaveError').text('');
 				$('#boxModalIntiateItemStock').html(data);
 				$('#txtModalQuantity').val('');  
 				initiateModal();
-				//if($('#txtModalStock').length > 0){
 				
 				$('#cbxModalItems').bind("change",function(){ //must be binded 'cause dropbox is loaded by a previous ajax'
 					ajax_update_stock_modal();
@@ -895,14 +766,11 @@ $(document).ready(function(){
 				if($('#cbxWarehouses2').length > 0){
 					$('#txtModalStock2').keypress(function(){return false;});	
 				}
-				//}
 				
 				$('#cbxModalItems').select2();
-				//$('#cbxModalItems').css('z-index', '9999999');
 
 			},
 			error:function(data){
-				//$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
 				showGrowlMessage('error', 'Vuelva a intentarlo.');
 				$('#processing').text('');
 			}

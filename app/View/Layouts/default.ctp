@@ -35,7 +35,9 @@
 				array('class' => 'skin-color'));
 		echo $this->Html->css('datepicker');//just for this project I gonna put the calendar here
 		echo $this->Html->css('jquery.gritter');//growl-like notifications
-		
+		//media for print 
+		//echo $this->Html->css(array('bootstrap.min'), 'stylesheet', array('media' => 'all'));//supposedly default for print properties bootstrap but is not working
+		echo $this->Html->css('print');//my print working 
 	?>
 </head>
 <body>
@@ -44,7 +46,7 @@
 		<h1>IMEXPORT SRL</h1>
 	</div>
 
-	<div id="user-nav" class="navbar navbar-inverse">
+	<div id="user-nav" class="navbar navbar-inverse"> 
 		<?php if($logged_in):?>
 			<ul class="nav btn-group">
 				
@@ -105,7 +107,7 @@
 	
 	<!-- MENU -->
 	<div id="sidebar">
-		<a href="#" class="visible-phone"><i class="icon icon-home"></i> Dashboard</a>
+		<!--<a href="#" class="visible-phone"><i class="icon icon-home"></i> Dashboard</a>-->
 		<?php echo $this->Session->read('Menu');?>
 		
 	</div>

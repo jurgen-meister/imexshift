@@ -10,9 +10,10 @@
 		<div class="widget-content nopadding">
 			<?php 
 				/////////////////START - SETTINGS BUTTON CANCEL /////////////////
-				echo $this->Html->link('<i class="icon-cog icon-white"></i> Generar Reporte', array('action' => 'view_document_movement_pdf', '69.pdf'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo', 'id'=>'btnPrint', 'target'=>'_blank')); 
+				//echo $this->Html->link('<i class="icon-cog icon-white"></i> Generar Reporte', array('#'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo', 'id'=>'btnPrint')); 
 			?>
-			
+			<a href="#" id="btnGenerateReport" class="btn btn-primary noPrint "><i class="icon-cog icon-white"></i> Generar Reporte</a>
+			<div id="boxMessage"></div>
 		</div>
 	</div>
 	<!-- //////////////////////////// End - buttons /////////////////////////////////-->
@@ -45,22 +46,44 @@
 						
 						echo '<div class="row-fluid">';
 						  echo $this->BootstrapForm->input('movement_type', array(
-							'label' => '* Tipo Movimiento:',
+							'label' => '* Tipo de Movimiento:',
 							'id'=>'cbxReportMovementTypes',
 							'type'=>'select',
 							'class'=>'span4',  	
-							'options'=>array('TODAS LAS ENTRADAS', 'Entradas de compras', 'Entradas de apertura', 'Entradas otras', 'TODAS LAS SALIDAS', 'Salidas de ventas', 'Salidas otras')  
+							'options'=>array(1000=>'ENTRADAS Y SALIDAS', 998=>'TODAS LAS ENTRADAS', 1=>'Entradas de compra', 5=>'Entradas de apertura',4=>'Entradas de traspaso', 6=>'Entradas otras', 999=>'TODAS LAS SALIDAS', 2=>'Salidas de venta', 3=>'Salidas de traspaso', 7=>'Salidas otras', 1001=>'TRASPASOS ENTRE ALMACENES')  
 						  ));
 						echo '</div>';
 						  
-						echo '<div class="row-fluid">';
+						echo '<div class="row-fluid" id="boxWarehouse">';
 						  echo $this->BootstrapForm->input('warehouse', array(
 							'label' => '* Almacen:',
-							'id'=>'cbxReportWarehouses',
+							'id'=>'cbxReportWarehouse',
 							'type'=>'select',
-							'multiple'=>'multiple',
+							//'multiple'=>'multiple',
 							'options'=>$warehouse,
-							'selected'=>  array_keys($warehouse),
+							//'selected'=>  array_keys($warehouse),
+							'class'=>'span6'  
+						  ));
+						echo '</div>';
+						
+						echo '<div class="row-fluid" id="boxWarehouse2" style="display:none;">';
+						  echo $this->BootstrapForm->input('warehouse2', array(
+							'label' => '* Almacen a Comparar:',
+							'id'=>'cbxReportWarehouse2',
+							'type'=>'select',
+							'options'=>$warehouse,
+							'class'=>'span6',
+						  ));
+						echo '</div>';
+						
+						echo '<div class="row-fluid">';
+						  echo $this->BootstrapForm->input('currency', array(
+							'label' => '* Tipo de Cambio:',
+							'id'=>'cbxReportCurrency',
+							'type'=>'select',
+							//'multiple'=>'multiple',
+							'options'=>array('BOLIVIANOS'=>'Bolivianos', 'DOLARES AMERICANOS'=>'Dolares Americanos'),
+							//'selected'=>  array_keys($warehouse),
 							'class'=>'span6'  
 						  ));
 						echo '</div>';
@@ -77,7 +100,7 @@
 				?>
 			</form>
 			
-			<div id="boxMessage" align="center"></div>
+			<div id="boxProcessing" align="center"></div>
 			<div id="boxGroupItemsAndFilters">
 				<table class="table table-bordered data-table with-check">
 					<thead>
@@ -92,7 +115,7 @@
 					<tbody>
 					<?php foreach($item as $val){ ?>	
 					<tr>
-						<td><input type="checkbox" checked="checked" /></td>
+						<td><input type="checkbox" checked="checked" value="<?php echo $val['InvItem']['id'];?>" /></td>
 						<td><?php echo '[ '.$val['InvItem']['code'].' ] '.$val['InvItem']['name'];?></td>
 						<td><?php echo $val['InvBrand']['name'];?></td>
 						<td><?php echo $val['InvCategory']['name'];?></td>

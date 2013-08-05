@@ -209,6 +209,23 @@ a:hover {
     border-top-left-radius: 8px;
 }
 
+/*Start - Printing Bittion*/
+
+
+@media screen{ /*only for screen, on print will dissapear*/
+	#background-print {
+		background: none repeat scroll 0 0 #444444;
+	}
+	#content-print{
+		background: none repeat scroll 0 0 #fff;
+		padding-top: 25px;
+		padding-left: 25px;
+		padding-right: 25px;
+	}
+}
+
+/*End - Printing Bittion*/
+
 #content-header {
 	background-image: -webkit-gradient(linear, 0 0%, 0 100%, from(#FFFFFF), to(#EEEEEE));
 	background-image: -webkit-linear-gradient(top, #FFFFFF 0%, #EEEEEE 100%);
