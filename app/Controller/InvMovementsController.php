@@ -172,7 +172,7 @@ class InvMovementsController extends AppController {
 		
 		//Check if session variables are set otherwise redirect
 		if(!$this->Session->check('ReportMovement')){
-			$this->redirect(array('action' => 'report_generator'));
+			$this->redirect(array('action' => 'vreport_generator'));
 		}
 		
 		//put session data sent data into variables
@@ -284,7 +284,7 @@ class InvMovementsController extends AppController {
 				break;
 			case 1000://ENTRADAS Y SALIDAS
 				$values['bindMovementType'] = 1;
-				$initialStocks = $this->_get_stocks_enhanced($initialData['items'], $initialData['warehouse'], $initialData['startDate'], '<');//before starDate, 'cause it will be added or substracted with movements quantities
+				$initialStocks = $this->_get_stocks($initialData['items'], $initialData['warehouse'], $initialData['startDate'], '<');//before starDate, 'cause it will be added or substracted with movements quantities
 				break;
 			case 1001://TRASPASOS ENTRE ALMACENES
 				$values['bindMovementType'] = 1;
@@ -347,58 +347,7 @@ class InvMovementsController extends AppController {
 		));
 	}
 	
-	
-	
-	
-	
-	
-	private function _get_stocks_enhanced($items, $warehouse, $limitDate, $dateOperator = '<='){
-		$this->InvMovement->InvMovementDetail->unbindModel(array('belongsTo' => array('InvItem')));
-		$this->InvMovement->InvMovementDetail->bindModel(array(
-			'hasOne'=>array(
-				'InvMovementType'=>array(
-					'foreignKey'=>false,
-					'conditions'=> array('InvMovement.inv_movement_type_id = InvMovementType.id')
-				)
-				
-			)
-		));
-		$dateRanges = array();
-		if($limitDate <> ''){
-			//$dateRanges = array('InvMovement.date BETWEEN ? AND ?' => array($startDate, $finishDate));
-			$dateRanges = array('InvMovement.date '.$dateOperator => $limitDate);
-		}
-		
-		$movements = $this->InvMovement->InvMovementDetail->find('all', array(
-			'fields'=>array(
-				"InvMovementDetail.inv_item_id", 
-				"(SUM(CASE WHEN \"InvMovementType\".\"status\" = 'entrada' AND \"InvMovement\".\"lc_state\" = 'APPROVED' THEN \"InvMovementDetail\".\"quantity\" ELSE 0 END))-
-				(SUM(CASE WHEN \"InvMovementType\".\"status\" = 'salida' AND \"InvMovement\".\"lc_state\" = 'APPROVED' THEN \"InvMovementDetail\".\"quantity\" ELSE 0 END)) AS stock"
-				),
-			'conditions'=>array(
-				'InvMovement.inv_warehouse_id'=>$warehouse,
-				'InvMovementDetail.inv_item_id'=>$items,
-				$dateRanges
-				),
-			'group'=>array('InvMovementDetail.inv_item_id'),
-			'order'=>array('InvMovementDetail.inv_item_id')
-		));
-		//the array format is like this:
-		/*
-		array(
-			(int) 0 => array(
-				'InvMovementDetail' => array(
-					'inv_item_id' => (int) 9
-				),
-				(int) 0 => array(
-					'stock' => '20'
-				)
-			),...etc,etc
-		)	*/
-		return $movements;
-	}
-	
-		//////////////////////////////////////////// END - REPORT /////////////////////////////////////////////////
+	//////////////////////////////////////////// END - REPORT /////////////////////////////////////////////////
 	
 	
 	
@@ -1113,10 +1062,18 @@ class InvMovementsController extends AppController {
 			$warehouse2 = $this->request->data['warehouse2'];//if it's warehouse_transfer is IN
 			$transfer = $this->request->data['transfer'];
 			
-			$stock = $this->_find_stock($item, $warehouse);//if it's warehouse_transfer is OUT
+			/////////////////for new stock method 
+			$items = array($item);
+			$stocks = $this->_get_stocks($items, $warehouse);//get all the stocks
+			///////////////////
+			
+			//$stock = $this->_find_stock($item, $warehouse);//if it's warehouse_transfer is OUT
+			$stock = $this->_find_item_stock($stocks, $item);
 			$stock2 ='';
 			if($transfer == 'warehouses_transfer'){
-				$stock2 = $this->_find_stock($item, $warehouse2);//if it's warehouse_transfer is IN	
+				$stocks2 = $this->_get_stocks($items, $warehouse2);//get all the stocks
+				//$stock2 = $this->_find_stock($item, $warehouse2);//if it's warehouse_transfer is IN	
+				$stock2 = $this->_find_item_stock($stocks2, $item);
 			}
 			
 			$this->set(compact('stock', 'stock2', 'transfer'));
@@ -1335,22 +1292,82 @@ class InvMovementsController extends AppController {
 	
 	
 	//////////////////////////////////////////// START - PRIVATE ///////////////////////////////////////////////
+	private function _get_stocks($items, $warehouse, $limitDate = '', $dateOperator = '<='){
+		$this->InvMovement->InvMovementDetail->unbindModel(array('belongsTo' => array('InvItem')));
+		$this->InvMovement->InvMovementDetail->bindModel(array(
+			'hasOne'=>array(
+				'InvMovementType'=>array(
+					'foreignKey'=>false,
+					'conditions'=> array('InvMovement.inv_movement_type_id = InvMovementType.id')
+				)
+				
+			)
+		));
+		$dateRanges = array();
+		if($limitDate <> ''){
+			$dateRanges = array('InvMovement.date '.$dateOperator => $limitDate);
+		}
+		
+		$movements = $this->InvMovement->InvMovementDetail->find('all', array(
+			'fields'=>array(
+				"InvMovementDetail.inv_item_id", 
+				"(SUM(CASE WHEN \"InvMovementType\".\"status\" = 'entrada' AND \"InvMovement\".\"lc_state\" = 'APPROVED' THEN \"InvMovementDetail\".\"quantity\" ELSE 0 END))-
+				(SUM(CASE WHEN \"InvMovementType\".\"status\" = 'salida' AND \"InvMovement\".\"lc_state\" = 'APPROVED' THEN \"InvMovementDetail\".\"quantity\" ELSE 0 END)) AS stock"
+				),
+			'conditions'=>array(
+				'InvMovement.inv_warehouse_id'=>$warehouse,
+				'InvMovementDetail.inv_item_id'=>$items,
+				$dateRanges
+				),
+			'group'=>array('InvMovementDetail.inv_item_id'),
+			'order'=>array('InvMovementDetail.inv_item_id')
+		));
+		//the array format is like this:
+		/*
+		array(
+			(int) 0 => array(
+				'InvMovementDetail' => array(
+					'inv_item_id' => (int) 9
+				),
+				(int) 0 => array(
+					'stock' => '20'
+				)
+			),...etc,etc
+		)	*/
+		return $movements;
+	}
+	
+	private function _find_item_stock($stocks, $item){
+		foreach($stocks as $stock){//find required stock inside stocks array 
+			if($item == $stock['InvMovementDetail']['inv_item_id']){
+				return $stock[0]['stock'];
+			}
+		}
+	}
+	
 	
 	private function _get_movements_details($idMovement){
 		$movementDetails = $this->InvMovement->InvMovementDetail->find('all', array(
 			'conditions'=>array('InvMovementDetail.inv_movement_id'=>$idMovement),
 			'fields'=>array('InvItem.name', 'InvItem.code', 'InvMovementDetail.quantity', 'InvItem.id', 'InvMovement.inv_warehouse_id')
 			));
+		///////////for new stock method
+		$items = array();
+		foreach ($movementDetails as $value) {//get a clean items arrays
+			$items[$value['InvItem']['id']] = $value['InvItem']['id'];
+		}
+		$stocks = $this->_get_stocks($items, $movementDetails[0]['InvMovement']['inv_warehouse_id']);//get all the stocks
+		///////////////////
 		$formatedMovementDetails = array();
 		foreach ($movementDetails as $key => $value) {
 			$formatedMovementDetails[$key] = array(
 				'itemId'=>$value['InvItem']['id'],
 				'item'=>'[ '. $value['InvItem']['code'].' ] '.$value['InvItem']['name'],
-				'stock'=> $this->_find_stock($value['InvItem']['id'], $value['InvMovement']['inv_warehouse_id']),//llamar funcion
+				//'stock'=> $this->_find_stock($value['InvItem']['id'], $value['InvMovement']['inv_warehouse_id']),//llamar funcion
+				'stock'=>$this->_find_item_stock($stocks, $value['InvItem']['id']),
 				'cantidad'=>$value['InvMovementDetail']['quantity']//llamar cantidad
 				);
 		}
-		
 		return $formatedMovementDetails;
 	}
 	
@@ -1364,7 +1381,6 @@ class InvMovementsController extends AppController {
 			$formatedMovementDetails[$key] = array(
 				'itemId'=>$value['InvItem']['id'],
 				'item'=>'[ '. $value['InvItem']['code'].' ] '.$value['InvItem']['name'],
-				//'stock'=> $this->_find_stock($value['InvItem']['id'], $value['InvMovement']['inv_warehouse_id']),//llamar funcion
 				'cantidad'=>$value['InvMovementDetail']['quantity']//llamar cantidad
 				);
 		}
@@ -1379,11 +1395,19 @@ class InvMovementsController extends AppController {
 		'conditions'=>array('PurDetail.pur_purchase_id'=>$idPurchase),
 		'fields'=>array('InvItem.name', 'InvItem.code', 'PurDetail.quantity', 'InvItem.id')
 		));
+		/////////////////for new stock method
+		$items = array();
+		foreach ($purchaseDetails as $value) {//get a clean items arrays
+			$items[$value['InvItem']['id']] = $value['InvItem']['id'];
+		}
+		$stocks = $this->_get_stocks($items, $idWarehouse);//get all the stocks
+		///////////////////
 		$formatedPurchaseDetails = array();
 		foreach ($purchaseDetails as $key => $value) {
 			
 			if($state == 'nuevo'){
-				$stock = $this->_find_stock($value['InvItem']['id'], $idWarehouse);
+				//$stock = $this->_find_stock($value['InvItem']['id'], $idWarehouse);
+				$stock = $this->_find_item_stock($stocks, $value['InvItem']['id']);
 			}
 			$formatedPurchaseDetails[$key] = array(
 				'itemId'=>$value['InvItem']['id'],
@@ -1404,11 +1428,19 @@ class InvMovementsController extends AppController {
 		'conditions'=>array('SalDetail.sal_sale_id'=>$idSale),
 		'fields'=>array('InvItem.name', 'InvItem.code', 'SalDetail.quantity', 'InvItem.id')
 		));
+		/////////////////for new stock method
+		$items = array();
+		foreach ($saleDetails as $value) {//get a clean items arrays
+			$items[$value['InvItem']['id']] = $value['InvItem']['id'];
+		}
+		$stocks = $this->_get_stocks($items, $idWarehouse);//get all the stocks
+		///////////////////
 		$formatedSaleDetails = array();
 		foreach ($saleDetails as $key => $value) {
 			
 			if($state == 'nuevo'){
-				$stock = $this->_find_stock($value['InvItem']['id'], $idWarehouse);
+				//$stock = $this->_find_stock($value['InvItem']['id'], $idWarehouse);
+				$stock = $this->_find_item_stock($stocks, $value['InvItem']['id']);
 			}
 			$formatedSaleDetails[$key] = array(
 				'itemId'=>$value['InvItem']['id'],
@@ -1516,9 +1548,17 @@ class InvMovementsController extends AppController {
 	
 	private function _validateItemsStocksOut($arrayItemsDetails, $warehouse){
 		$strItemsStockErrorSuccess = '';
+		/////////////////for new stock method 
+		$items = array();
+		foreach ($arrayItemsDetails as $value) {//get a clean items arrays
+			$items[$value['inv_item_id']] = $value['inv_item_id'];
+		}
+		$stocks = $this->_get_stocks($items, $warehouse);//get all the stocks
+		///////////////////
 		$cont=0;
 		for($i = 0; $i<count($arrayItemsDetails); $i++){
-				$updatedStock = $this->_find_stock($arrayItemsDetails[$i]['inv_item_id'], $warehouse);
+				//$updatedStock = $this->_find_stock($arrayItemsDetails[$i]['inv_item_id'], $warehouse);
+				$updatedStock = $this->_find_item_stock($stocks, $arrayItemsDetails[$i]['inv_item_id']);
 				if($updatedStock < $arrayItemsDetails[$i]['quantity']){
 					$strItemsStockErrorSuccess .= $arrayItemsDetails[$i]['inv_item_id'].'=>error:'.$updatedStock.','; //error
 					$cont++;
@@ -1532,8 +1572,16 @@ class InvMovementsController extends AppController {
 	private function _createStringItemsStocksUpdated($arrayItemsDetails, $idWarehouse){
 		////////////////////////////////////////////INICIO-CREAR CADENA ITEMS STOCK ACUTALIZADOS//////////////////////////////
 			$strItemsStock = '';
+			/////////////////for new stock method 
+			$items = array();
+			foreach ($arrayItemsDetails as $value) {//get a clean items arrays
+				$items[$value['inv_item_id']] = $value['inv_item_id'];
+			}
+			$stocks = $this->_get_stocks($items, $idWarehouse);//get all the stocks
+			///////////////////
 			for($i = 0; $i<count($arrayItemsDetails); $i++){
-				$updatedStock = $this->_find_stock($arrayItemsDetails[$i]['inv_item_id'], $idWarehouse);
+				//$updatedStock = $this->_find_stock($arrayItemsDetails[$i]['inv_item_id'], $idWarehouse);
+				$updatedStock = $this->_find_item_stock($stocks, $arrayItemsDetails[$i]['inv_item_id']);
 				$strItemsStock .= $arrayItemsDetails[$i]['inv_item_id'].'=>'.$updatedStock.',';
 			}
 			////////////////////////////////////////////FIN-CREAR CADENA ITEMS STOCK ACUTALIZADOS/////////////////////////////////
