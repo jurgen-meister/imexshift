@@ -189,7 +189,7 @@ class InvMovementsController extends AppController {
 		
 		$currencyFieldPrefix = '';
 		$currencyAbbreviation = '(BS)';
-		if($initialData == 'DOLARES AMERICANOS'){
+		if(trim($initialData['currency']) == 'DOLARES AMERICANOS'){
 			$currencyFieldPrefix = 'ex_';
 			$currencyAbbreviation = '($US)';
 		}
@@ -207,7 +207,7 @@ class InvMovementsController extends AppController {
 		$this->set('itemsMovements', $itemsMovements);
 		//debug($settings['initialStocks']);
 		$this->set('initialStocks', $settings['initialStocks']);
-	
+		$this->Session->delete('ReportMovement');
 	//END FUNCTION	
 	}
 	
@@ -241,6 +241,7 @@ class InvMovementsController extends AppController {
 						'fobQuantity'=>number_format($fobQuantity,2),
 						'cifQuantity'=>number_format($cifQuantity,2),
 						'saleQuantity'=>number_format($saleQuantity,2),
+						'warehouse'=>$movement['InvMovement']['inv_warehouse_id']
 					);
 					if(isset($movement['InvMovementType']['status'])){
 						$auxArray[$item['InvItem']['id']]['Movements'][$counter]['status']=$movement['InvMovementType']['status'];
@@ -310,7 +311,7 @@ class InvMovementsController extends AppController {
 	
 	
 	private function _generate_report_movements($values, $conditions, $fields){
-		$staticFields = array('InvMovement.id', 'InvMovement.code', 'InvMovement.document_code', 'InvMovement.date', 'InvMovementDetail.inv_item_id', 'InvMovementDetail.quantity');
+		$staticFields = array('InvMovement.id', 'InvMovement.code', 'InvMovement.document_code', 'InvMovement.date', 'InvMovement.inv_warehouse_id', 'InvMovementDetail.inv_item_id', 'InvMovementDetail.quantity');
 		if(isset($values['bindMovementType']) AND $values['bindMovementType'] == 1){
 			$this->InvMovement->InvMovementDetail->bindModel(array(
 				'hasOne'=>array(
@@ -320,7 +321,7 @@ class InvMovementsController extends AppController {
 					)
 				)
 			));
-			$fields[] = 'InvMovementType.status';
+			$fields[] = 'InvMovementType.status'; 
 		}
 		$this->InvMovement->InvMovementDetail->unbindModel(array('belongsTo' => array('InvItem')));
 		return $this->InvMovement->InvMovementDetail->find('all', array(
@@ -331,7 +332,7 @@ class InvMovementsController extends AppController {
 						$conditions
 					),
 					'fields'=>  array_merge($staticFields, $fields),
-					'order'=>array('InvMovement.date')
+					'order'=>array('InvMovement.date', 'InvMovementDetail.id')
 				));
 	}
 	

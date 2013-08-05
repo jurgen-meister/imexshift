@@ -68,7 +68,7 @@
 						
 						echo '<div class="row-fluid" id="boxWarehouse2" style="display:none;">';
 						  echo $this->BootstrapForm->input('warehouse2', array(
-							'label' => '* Almacen Destino (Entrada):',
+							'label' => '* Almacen a Comparar:',
 							'id'=>'cbxReportWarehouse2',
 							'type'=>'select',
 							'options'=>$warehouse,

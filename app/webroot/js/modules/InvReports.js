@@ -23,11 +23,8 @@ $(document).ready(function(){
 	$('#cbxReportMovementTypes').change(function(){
         if($(this).val() === '1001'){
 			$('#boxWarehouse2').show();
-			//$('#boxWarehouse2').find('label').css({"color":"red","border":"2px solid red"});
-			$('#boxWarehouse').find('label').text('* Almacen Origen (Salida):');
 		}else{
 			$('#boxWarehouse2').hide();
-			$('#boxWarehouse').find('label').text('Almacen:');
 		}
 	});
 	
@@ -93,15 +90,11 @@ $(document).ready(function(){
 	   }
 	   if(movementType === ''){error+='<li> El campo "Tipo de Movimiento" esta vacio </li>';}
 	   if(warehouse === ''){
-		   if(warehouse2 === 'non-existent'){
 			   error+='<li> El campo "Almacen" esta vacio </li>';
-		   }else{
-			   error+='<li> El campo "Almacen Origen (Salida)" esta vacio </li>';
-		   }
 	   }
-	   if(warehouse2 !== 'non-existent'){
-			if(warehouse2 === ''){error+='<li> El campo "Almacen Destino  (Salida)" esta vacio </li>';}
-			if(warehouse2 === warehouse){error+='<li> El "Almacen Origen (Salida)" no puede ser igual que el "Almacen Destino (Entrada)" </li>';}
+	   if(warehouse2 !== 'non-existent'){//if exists
+			if(warehouse2 === ''){error+='<li> El campo "Almacen a Comparar" esta vacio </li>';}
+			if(warehouse2 === warehouse){error+='<li> El "Almacen" no puede ser igual que el "Almacen a Comparar" </li>';}
 	   }
 	   if(currency === ''){error+='<li> El campo "Tipo de Cambio" esta vacio </li>';}
 	   if(groupBy === ''){error+='<li> El campo "Agrupar por" esta vacio </li>';}
