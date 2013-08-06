@@ -100,8 +100,8 @@
 				echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));	
 			}
 			?>
-			<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Entrada Almacen</a>
-			<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Entrada Almacen</a>
+			<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"><i class=" icon-ok icon-white"></i> Aprobar Salida</a>
+			<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"><i class=" icon-remove icon-white"></i> Cancelar Salida</a>
 			
 		</div>
 	</div>
@@ -175,6 +175,7 @@
 					'required' => 'required',
 					'label' => 'Almacén:',
 					'id'=>'cbxWarehouses',
+					'class'=>'span4',
 					//'value'=>$invWarehouses,
 					'disabled'=>$disable,
 					//'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
@@ -189,6 +190,8 @@
 					'id'=>'txtDescription'
 				));
 				?>
+				</fieldset>
+				<?php echo $this->BootstrapForm->end();?>
 				<!-- ////////////////////////////////// FIN CAMPOS FORMULARIOS MOVIMIENTO /////////////////////////////////////// -->
 				
 				<!-- ////////////////////////////////// START MESSAGES /////////////////////////////////////// -->
@@ -197,15 +200,15 @@
 				<!-- ////////////////////////////////// END MESSAGES /////////////////////////////////////// -->
 				
 				<!-- ////////////////////////////////// INICIO - ITEMS /////////////////////////////////////// -->
-				<div class="row-fluid">
+
 						<?php //if($documentState == 'PENDANT' OR $documentState == ''){ ?>
 						<!--<a class="btn btn-primary" href='#' id="btnAddItem" title="Adicionar Item"><i class="icon-plus icon-white"></i></a>-->
 						<?php //} ?>
-
-						<table class="table table-bordered table-condensed table-striped table-hover" id="tablaItems">
+						<?php $limit = count($invMovementDetails); $counter = $limit;?>
+						<table class="table table-bordered table-condensed table-hover" id="tablaItems">
 							<thead>
 								<tr>
-									<th>Item (unidad)</th>
+									<th>Items ( <span id="countItems"><?php echo $limit;?> </span> )</th>
 									<th>Stock</th>
 									<th>Venta</th>
 									<th>Cantidad</th>
@@ -216,8 +219,8 @@
 							</thead>
 							<tbody>
 								<?php
-								for($i=0; $i<count($invMovementDetails); $i++){
-									echo '<tr>';
+								for($i=0; $i<$limit; $i++){
+									echo '<tr id="itemRow'.$invMovementDetails[$i]['itemId'].'" >';
 										echo '<td><span id="spaItemName'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['item'].'</span><input type="hidden" value="'.$invMovementDetails[$i]['itemId'].'" id="txtItemId" ></td>';
 										echo '<td><span id="spaStock'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['stock'].'</span></td>';
 										echo '<td><span id="spaQuantityDocument'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['cantidadVenta'].'</span></td>';
@@ -234,14 +237,11 @@
 								?>
 							</tbody>
 						</table>
-				</div>
+
 			<!-- ////////////////////////////////// FIN ITEMS /////////////////////////////////////// -->
 
 		
-	<!-- ////////////////////////////////// INICIO - FIN FORM ///////////////////////////////////// -->		
-	</fieldset>
-	<?php echo $this->BootstrapForm->end();?>
-	<!-- ////////////////////////////////// FIN - FIN FORM ///////////////////////////////////// -->
+
 	
 	<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
 		</div> <!-- Belongs to: <div class="widget-content nopadding"> -->
@@ -276,7 +276,7 @@
 						'id'=>'cbxModalItems',
 						'class'=>'span12',
 						));
-						//echo '<br>';
+						echo '<div style="margin-bottom:45px"></div>'; //fix space otherwise won't work 
 						$stock='';
 						echo '<div id="boxModalStock">';
 							echo $this->BootstrapForm->input('stock', array(				

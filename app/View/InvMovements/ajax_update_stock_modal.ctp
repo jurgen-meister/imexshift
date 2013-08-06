@@ -14,7 +14,6 @@
 		));
 		
 		if($transfer == 'warehouses_transfer'){
-			echo '<br>';
 			echo $this->BootstrapForm->input('stock2', array(				
 			'label' => 'Stock Destino:',
 			'id'=>'txtModalStock2',

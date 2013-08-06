@@ -1042,13 +1042,25 @@ class InvMovementsController extends AppController {
 					'NOT'=>array('InvItem.id'=>$itemsAlreadySaved)
 				),
 				'recursive'=>-1,
-				//'fields'=>array('InvItem.id', 'CONCAT(InvItem.code, '-', InvItem.name)')
+				'order'=>array('InvItem.code')
 			));
+			//debug($items);
+			
 			$firstItemListed = key($items);
-			$stock = $this->_find_stock($firstItemListed, $warehouse); //if it's warehouse_transfer is OUT
+			/////////////////for new stock method 
+			$stocks = $this->_get_stocks($firstItemListed, $warehouse);//get all the stocks
+			//debug($stocks);
+			///////////////////
+			//$stock = $this->_find_stock($firstItemListed, $warehouse); //if it's warehouse_transfer is OUT
+			$stock = $this->_find_item_stock($stocks, $firstItemListed);
 			$stock2 = '';
 			if($transfer == 'warehouses_transfer'){
-				$stock2 = $this->_find_stock($firstItemListed, $warehouse2);//if it's warehouse_transfer is IN	
+				//debug($warehouse2);
+				//debug($firstItemListed);
+				$stocks2 = $this->_get_stocks($firstItemListed, $warehouse2);
+				//debug($stocks2);
+				//$stock2 = $this->_find_stock($firstItemListed, $warehouse2);//if it's warehouse_transfer is IN	
+				$stock2 = $this->_find_item_stock($stocks2, $firstItemListed);
 			}
 			//debug($stock2);
 			$this->set(compact('items', 'stock', 'stock2', 'transfer'));
@@ -1063,15 +1075,14 @@ class InvMovementsController extends AppController {
 			$transfer = $this->request->data['transfer'];
 			
 			/////////////////for new stock method 
-			$items = array($item);
-			$stocks = $this->_get_stocks($items, $warehouse);//get all the stocks
+			$stocks = $this->_get_stocks($item, $warehouse);//get all the stocks
 			///////////////////
 			
 			//$stock = $this->_find_stock($item, $warehouse);//if it's warehouse_transfer is OUT
 			$stock = $this->_find_item_stock($stocks, $item);
 			$stock2 ='';
 			if($transfer == 'warehouses_transfer'){
-				$stocks2 = $this->_get_stocks($items, $warehouse2);//get all the stocks
+				$stocks2 = $this->_get_stocks($item, $warehouse2);//get all the stocks
 				//$stock2 = $this->_find_stock($item, $warehouse2);//if it's warehouse_transfer is IN	
 				$stock2 = $this->_find_item_stock($stocks2, $item);
 			}
@@ -1343,13 +1354,16 @@ class InvMovementsController extends AppController {
 				return $stock[0]['stock'];
 			}
 		}
+		//this fixes in case there isn't any item inside movement_details yet with a determinated warehouse
+		return 0;
 	}
 	
 	
 	private function _get_movements_details($idMovement){
 		$movementDetails = $this->InvMovement->InvMovementDetail->find('all', array(
 			'conditions'=>array('InvMovementDetail.inv_movement_id'=>$idMovement),
-			'fields'=>array('InvItem.name', 'InvItem.code', 'InvMovementDetail.quantity', 'InvItem.id', 'InvMovement.inv_warehouse_id')
+			'fields'=>array('InvItem.name', 'InvItem.code', 'InvMovementDetail.quantity', 'InvItem.id', 'InvMovement.inv_warehouse_id'),
+			'order'=>array('InvItem.code')
 			));
 		///////////for new stock method
 		$items = array();
@@ -1455,7 +1469,7 @@ class InvMovementsController extends AppController {
 	}
 	
 	
-	
+	/*
 	private function _find_stock($idItem, $idWarehouse){		
 		$movementsIn = $this->_get_quantity_movements_item($idItem, $idWarehouse, 'entrada');
 		$movementsOut = $this->_get_quantity_movements_item($idItem, $idWarehouse, 'salida');
@@ -1464,9 +1478,9 @@ class InvMovementsController extends AppController {
 		$stock = $add - $sub;
 		return $stock;
 	}
-	
+	*/
+	/*
 	private function _get_quantity_movements_item($idItem, $idWarehouse, $status){
-		//******************************************************************************//
 		//unbind for perfomance InvItem 'cause it isn't needed
 		$this->InvMovement->InvMovementDetail->unbindModel(array(
 			'belongsTo' => array('InvItem')
@@ -1481,7 +1495,6 @@ class InvMovementsController extends AppController {
 				
 			)
 		));
-		//******************************************************************************//
 		//Movements
 		$movements = $this->InvMovement->InvMovementDetail->find('all', array(
 			'fields'=>array('InvMovementDetail.inv_movement_id', 'InvMovementDetail.quantity'),
@@ -1496,7 +1509,8 @@ class InvMovementsController extends AppController {
 		$movementsCleaned = $this->_clean_nested_arrays($movements);
 		return $movementsCleaned;
 	}
-	
+	*/
+	/*
 	private function _clean_nested_arrays($array){
 		$clean = array();
 		foreach ($array as $key => $value) {
@@ -1504,6 +1518,7 @@ class InvMovementsController extends AppController {
 		}
 		return $clean;
 	}
+	*/
 	
 	private function _generate_code($keyword){
 		$period = $this->Session->read('Period.name');
