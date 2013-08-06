@@ -68,18 +68,50 @@ class InvItemsController extends AppController {
 		
 		$this->paginate = array(
 			'conditions' => array($filters),
-			'order' => array('InvItem.id' => 'asc'),
+			'order' => array('InvItem.code' => 'asc'),
 			'limit' => 15
 		);
 		////////////////////////////END - SETTING PAGINATING VARIABLES//////////////////////////////////////
 		$this->InvItem->recursive = 0;
 		
 		////////////////////////START - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
-		$this->set('invItems', $this->paginate('InvItem'));
+		
+		/////////////////Start - Stocks
+		$pagination = $this->paginate('InvItem');
+		$items = array();
+		foreach($pagination as $val){
+			$items[$val['InvItem']['id']] = $val['InvItem']['id'];
+		}
+		$stocks = $this->_get_stocks($items);
+		//the array format is like this:
+		/*
+		array(
+			(int) 0 => array(
+				'InvMovementDetail' => array(
+					'inv_item_id' => (int) 9
+				),
+				(int) 0 => array(
+					'stock' => '20'
+				)
+			),...etc,etc
+		)	*/
+		//debug($stocks);
+		foreach($pagination as $key => $val){
+				$pagination[$key]['InvItem']['stock'] = $this->_find_item_stock($stocks, $val['InvItem']['id']);
+				//debug( $this->_find_item_stock($stocks, $val['InvItem']['id']));
+		}
+		//debug($pagination);
+		////////////////End - Stocks		
+				
+		$this->set('invItems', $pagination);
 		$this->set('code', $code);
 		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
 	}
 
+	
+	
+	
+	
 /**
  * view method
  *
@@ -394,5 +426,57 @@ class InvItemsController extends AppController {
 		
 		return $formatedPrices;
 	}
+	
+	private function _get_stocks($items, $warehouse='', $limitDate = '', $dateOperator = '<='){
+		$this->loadModel('InvMovement');
+		$this->InvMovement->InvMovementDetail->unbindModel(array('belongsTo' => array('InvItem')));
+		$this->InvMovement->InvMovementDetail->bindModel(array(
+			'hasOne'=>array(
+				'InvMovementType'=>array(
+					'foreignKey'=>false,
+					'conditions'=> array('InvMovement.inv_movement_type_id = InvMovementType.id')
+				)
+				
+			)
+		));
+		$dateRanges = array();
+		if($limitDate <> ''){
+			$dateRanges = array('InvMovement.date '.$dateOperator => $limitDate);
+		}
+		
+		//variation added for InvItems
+		$contionWarehouse = array();
+		if($warehouse <> ''){
+			$contionWarehouse = array('InvMovement.inv_warehouse_id'=>$warehouse);  
+		}
+		//////////////////////
+		
+		$movements = $this->InvMovement->InvMovementDetail->find('all', array(
+			'fields'=>array(
+				"InvMovementDetail.inv_item_id", 
+				"(SUM(CASE WHEN \"InvMovementType\".\"status\" = 'entrada' AND \"InvMovement\".\"lc_state\" = 'APPROVED' THEN \"InvMovementDetail\".\"quantity\" ELSE 0 END))-
+				(SUM(CASE WHEN \"InvMovementType\".\"status\" = 'salida' AND \"InvMovement\".\"lc_state\" = 'APPROVED' THEN \"InvMovementDetail\".\"quantity\" ELSE 0 END)) AS stock"
+				),
+			'conditions'=>array(
+				'InvMovementDetail.inv_item_id'=>$items,
+				$contionWarehouse,
+				$dateRanges
+				),
+			'group'=>array('InvMovementDetail.inv_item_id'),
+			'order'=>array('InvMovementDetail.inv_item_id')
+		));
+		return $movements;
+	}
+	
+	private function _find_item_stock($stocks, $item){
+		foreach($stocks as $stock){//find required stock inside stocks array 
+			if($item == $stock['InvMovementDetail']['inv_item_id']){
+				return $stock[0]['stock'];
+			}
+		}
+		//this fixes in case there isn't any item inside movement_details yet with a determinated warehouse
+		return 0;
+	}
+	
 	//////////////////////////////////////////// END - PRIVATE /////////////////////////////////////////////////
 }

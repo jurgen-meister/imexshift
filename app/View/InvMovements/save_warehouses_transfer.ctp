@@ -93,8 +93,8 @@
 				echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));	
 			}
 			?>
-			<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Entrada Almacen</a>
-			<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Entrada Almacen</a>
+			<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"><i class=" icon-ok icon-white"></i> Aprobar Transferencia </a>
+			<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"><i class=" icon-remove icon-white"></i> Cancelar Transferencia </a>
 			
 		</div>
 	</div>
@@ -168,6 +168,7 @@
 					'required' => 'required',
 					'label' => 'Almacen Origen (Salida):',
 					'id'=>'cbxWarehouses',
+					'class'=>'span4',
 					'options'=>$warehouses,
 					'value'=>$warehouseOut,
 					'disabled'=>$disable,
@@ -178,6 +179,7 @@
 					'required' => 'required',
 					'label' => 'Almacen Destino (Entrada):',
 					'id'=>'cbxWarehouses2',
+					'class'=>'span4',
 					'options'=>$warehouses,
 					'value'=>$warehouseIn,
 					'disabled'=>$disable,
@@ -193,6 +195,8 @@
 					'id'=>'txtDescription'
 				));
 				?>
+				</fieldset>
+				<?php echo $this->BootstrapForm->end();?>
 				<!-- ////////////////////////////////// FIN CAMPOS FORMULARIOS MOVIMIENTO /////////////////////////////////////// -->
 				
 				<!-- ////////////////////////////////// START MESSAGES /////////////////////////////////////// -->
@@ -201,14 +205,14 @@
 				<!-- ////////////////////////////////// END MESSAGES /////////////////////////////////////// -->
 				
 				<!-- ////////////////////////////////// INICIO - ITEMS /////////////////////////////////////// -->
-				<div class="row-fluid">
 						<?php if($documentState == 'PENDANT' OR $documentState == ''){ ?>
 						<a class="btn btn-primary" href='#' id="btnAddItem" title="Adicionar Item"><i class="icon-plus icon-white"></i></a>
 						<?php } ?>
-						<table class="table table-bordered table-condensed table-striped table-hover" id="tablaItems">
+						<?php $limit = count($invMovementDetailsOut); $counter = $limit;?>
+						<table class="table table-bordered table-condensed table-hover" id="tablaItems">
 							<thead>
 								<tr>
-									<th>Item (unidad)</th>
+									<th>Items ( <span id="countItems"><?php echo $limit;?> </span> )</th>
 									<th>Stock Origen (Salida)</th>
 									<th>Stock Destino (Entrada)</th>
 									<th>Cantidad</th>
@@ -221,14 +225,14 @@
 								<?php
 								//debug($invMovementDetailsOut);
 								//debug($invMovementDetailsIn);
-								for($i=0; $i<count($invMovementDetailsOut); $i++){
-									echo '<tr>';
+								for($i=0; $i<$limit; $i++){
+									echo '<tr id="itemRow'.$invMovementDetailsOut[$i]['itemId'].'" >';
 										echo '<td><span id="spaItemName'.$invMovementDetailsOut[$i]['itemId'].'">'.$invMovementDetailsOut[$i]['item'].'</span><input type="hidden" value="'.$invMovementDetailsOut[$i]['itemId'].'" id="txtItemId" ></td>';
-										echo '<td><span id="spaStock'.$invMovementDetailsOut[$i]['itemId'].'">'.$invMovementDetailsOut[$i]['stock'].'</span></td>';
-										echo '<td><span id="spaStock2-'.$invMovementDetailsOut[$i]['itemId'].'">'.$invMovementDetailsIn[$i]['stock'].'</span></td>';
-										echo '<td><span id="spaQuantity'.$invMovementDetailsOut[$i]['itemId'].'">'.$invMovementDetailsOut[$i]['cantidad'].'</span></td>';
+										echo '<td style="text-align:center"><span id="spaStock'.$invMovementDetailsOut[$i]['itemId'].'">'.$invMovementDetailsOut[$i]['stock'].'</span></td>';
+										echo '<td style="text-align:center"><span id="spaStock2-'.$invMovementDetailsOut[$i]['itemId'].'">'.$invMovementDetailsIn[$i]['stock'].'</span></td>';
+										echo '<td style="text-align:center"><span id="spaQuantity'.$invMovementDetailsOut[$i]['itemId'].'">'.$invMovementDetailsOut[$i]['cantidad'].'</span></td>';
 										if($documentState == 'PENDANT' OR $documentState == ''){
-											echo '<td class="columnItemsButtons">';
+											echo '<td class="columnItemsButtons" style="text-align:center">';
 											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$invMovementDetailsOut[$i]['itemId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
 												
 												<a class="btn btn-danger" href="#" id="btnDeleteItem'.$invMovementDetailsOut[$i]['itemId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
@@ -239,14 +243,8 @@
 								?>
 							</tbody>
 						</table>
-				</div>
 			<!-- ////////////////////////////////// FIN ITEMS /////////////////////////////////////// -->
 						
-
-	<!-- ////////////////////////////////// INICIO - FIN FORM ///////////////////////////////////// -->		
-	</fieldset>
-	<?php echo $this->BootstrapForm->end();?>
-	<!-- ////////////////////////////////// FIN - FIN FORM ///////////////////////////////////// -->
 	
 	
 	<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
@@ -281,25 +279,29 @@
 						'id'=>'cbxModalItems',
 						'class'=>'span12',
 						));
-						//echo '<br>';
+						echo '<div style="margin-bottom:45px"></div>'; //fix space otherwise won't work 
 						$stock='';
 						echo '<div id="boxModalStock">';
-						
 							echo $this->BootstrapForm->input('stock', array(				
-							'label' => 'Stock:',
+							'label' => 'Stock Origen (Salida):',
 							'id'=>'txtModalStock',
 							'value'=>$stock,
 							'style'=>'background-color:#EEEEEE',
 							'class'=>'input-small',
 							'maxlength'=>'15'
 							));
-
+							echo $this->BootstrapForm->input('stock2', array(				
+							'label' => 'Stock Destino (Entrada):',
+							'id'=>'txtModalStock2',
+							//'value'=>$stock2,
+							'style'=>'background-color:#EEEEEE',
+							'class'=>'input-small',
+							'maxlength'=>'15'
+							));
+							
 						echo '</div>';		
-						//echo '<br>';
-
 						//////////////////////////////////////
 					echo '</div>';
-
 					echo $this->BootstrapForm->input('quantity', array(				
 					'label' => 'Cantidad:',
 					'id'=>'txtModalQuantity',

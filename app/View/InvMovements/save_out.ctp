@@ -75,8 +75,8 @@
 				echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));	
 			}
 			?>
-			<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Salida Almacen</a>
-			<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Salida Almacen</a>
+			<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"><i class=" icon-ok icon-white"></i> Aprobar Salida</a>
+			<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"><i class=" icon-remove icon-white"></i> Cancelar Salida</a>
 			
 		</div>
 	</div>
@@ -140,6 +140,7 @@
 					'required' => 'required',
 					'label' => 'Almacén:',
 					'id'=>'cbxWarehouses',
+					'class'=>'span4',
 					//'value'=>$invWarehouses,
 					'disabled'=>$disable,
 					//'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
@@ -148,6 +149,7 @@
 				echo $this->BootstrapForm->input('inv_movement_type_id', array(
 					'label' => 'Tipo Movimiento:',
 					'id'=>'cbxMovementTypes',
+					'class'=>'span4',
 					'disabled'=>$disable,
 					'required' => 'required',
 					//'helpInline' => /*$btnAddMovementType.*/'<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
@@ -160,6 +162,8 @@
 					'id'=>'txtDescription'
 				));
 				?>
+				</fieldset>
+				<?php echo $this->BootstrapForm->end();?>
 				<!-- ////////////////////////////////// END FORM MOVEMENT FIELDS /////////////////////////////////////// -->
 				
 					<!-- ////////////////////////////////// START MESSAGES /////////////////////////////////////// -->
@@ -168,48 +172,44 @@
 					<!-- ////////////////////////////////// END MESSAGES /////////////////////////////////////// -->
 				
 				<!-- ////////////////////////////////// START - MOVEMENT ITEMS DETAILS /////////////////////////////////////// -->
-				<div class="row-fluid">
+				
 						<?php if($documentState == 'PENDANT' OR $documentState == ''){ ?>
 						<a class="btn btn-primary" href='#' id="btnAddItem" title="Adicionar Item"><i class="icon-plus icon-white"></i></a>
 						<?php } ?>
-						<table class="table table-bordered table-condensed table-striped table-hover" id="tablaItems">
-							<thead>
-								<tr>
-									<th>Item (unidad)</th>
-									<th>Stock</th>
-									<th>Cantidad</th>
-									<?php if($documentState == 'PENDANT' OR $documentState == ''){ ?>
-									<th class="columnItemsButtons"></th>
-									<?php }?>
-								</tr>
-							</thead>
-							<tbody>
-								<?php
-								for($i=0; $i<count($invMovementDetails); $i++){
-									echo '<tr>';
-										echo '<td><span id="spaItemName'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['item'].'</span><input type="hidden" value="'.$invMovementDetails[$i]['itemId'].'" id="txtItemId" ></td>';
-										echo '<td><span id="spaStock'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['stock'].'</span></td>';
-										echo '<td><span id="spaQuantity'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['cantidad'].'</span></td>';
-										if($documentState == 'PENDANT' OR $documentState == ''){
-											echo '<td class="columnItemsButtons">';
-											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$invMovementDetails[$i]['itemId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
-												
-												<a class="btn btn-danger" href="#" id="btnDeleteItem'.$invMovementDetails[$i]['itemId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
-											echo '</td>';
-										}
-									echo '</tr>';								
-								}
-								?>
-							</tbody>
-						</table>
-				</div>
+						<?php $limit = count($invMovementDetails); $counter = $limit;?>
+							<table class="table table-bordered table-hover data-table" id="tablaItems">
+								<thead>
+									<tr>
+										<th>Items ( <span id="countItems"><?php echo $limit;?> </span> )</th>
+										<th>Stock</th>
+										<th>Cantidad</th>
+										<?php if($documentState == 'PENDANT' OR $documentState == ''){ ?>
+										<th class="columnItemsButtons"></th>
+										<?php }?>
+									</tr>
+								</thead>
+								<tbody>
+									<?php
+									for($i=0; $i<$limit; $i++){
+										echo '<tr id="itemRow'.$invMovementDetails[$i]['itemId'].'">';
+											echo '<td><span id="spaItemName'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['item'].'</span><input type="hidden" value="'.$invMovementDetails[$i]['itemId'].'" id="txtItemId" ></td>';
+											echo '<td style="text-align:center"><span id="spaStock'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['stock'].'</span></td>';
+											echo '<td style="text-align:center"><span id="spaQuantity'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['cantidad'].'</span></td>';
+											if($documentState == 'PENDANT' OR $documentState == ''){
+												echo '<td style="text-align:center" class="columnItemsButtons">';
+												echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$invMovementDetails[$i]['itemId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
+													<a class="btn btn-danger" href="#" id="btnDeleteItem'.$invMovementDetails[$i]['itemId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
+												echo '</td>';
+											}
+										echo '</tr>';								
+									}
+									?>
+								</tbody>
+							</table>
+				
 			<!-- ////////////////////////////////// END - MOVEMENT ITEMS DETAILS /////////////////////////////////////// -->
 
-				
-	<!-- ////////////////////////////////// INICIO - FIN FORM ///////////////////////////////////// -->		
-	</fieldset>
-	<?php echo $this->BootstrapForm->end();?>
-	<!-- ////////////////////////////////// END - END FORM ///////////////////////////////////// -->
+
 	
 	
 	<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
@@ -248,7 +248,7 @@
 						'class'=>'span12',
 						//'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
 						));
-						//echo '<br>';
+						echo '<div style="margin-bottom:45px"></div>'; //fix space otherwise won't work 
 						$stock='';
 						echo '<div id="boxModalStock">';
 							echo $this->BootstrapForm->input('stock', array(				

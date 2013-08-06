@@ -143,12 +143,13 @@ $(document).ready(function(){
 			"bJQueryUI": true,
 			//"sPaginationType": "full_numbers",
 			"sDom": '<"">t<"F"f>i',
-			"sScrollY": "200px",
+			"sScrollY": "240px",
+			//"bScrollCollapse": true,
 			"bPaginate": false,
 			"aaSorting":[], //on start sorting setting to empty
 			"oLanguage": {
 				"sSearch": "Filtrar:",
-				 "sZeroRecords":  "No hay resultados que coincidan.",
+				 "sZeroRecords":  "No se encontro nada.",
 				 //"sInfo":         "Ids from _START_ to _END_ of _TOTAL_ total" //when pagination exists
 				 "sInfo": "Encontrados _TOTAL_ Items",
 				 "sInfoEmpty": "Encontrados 0 Items",

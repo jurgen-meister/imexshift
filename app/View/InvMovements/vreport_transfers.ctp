@@ -85,11 +85,11 @@
 						<td style="text-align:left;"><?php echo $warehousesInOut[$warehouseIN];?></td>
 						<td style="font-weight:bold;"><?php echo $movement['quantity'];?></td>
 						<td ><?php echo $movement['fob'];?></td>
-						<td style="font-weight:bold;"><?php echo $movement['fobQuantity'];?></td>
+						<td style="font-weight:bold;"><?php echo number_format($movement['fobQuantity'],2);?></td>
 						<td ><?php echo $movement['cif'];?></td>
-						<td style="font-weight:bold;"><?php echo $movement['cifQuantity'];?></td>
+						<td style="font-weight:bold;"><?php echo number_format($movement['cifQuantity'],2);?></td>
 						<td ><?php echo $movement['sale'];?></td>
-						<td style="font-weight:bold;"><?php echo $movement['saleQuantity'];?></td>
+						<td style="font-weight:bold;"><?php echo number_format($movement['saleQuantity'],2);?></td>
 					</tr>
 					<?php $quantityTotal = $quantityTotal + $movement['quantity'];?>
 					<?php } $counter++;  //module?>
@@ -98,11 +98,11 @@
 						<td colspan="6" style="text-align:right; padding-right: 10px">Total: </td>
 						<td ><?php echo $quantityTotal; ?></td>
 						<td ></td>
-						<td ><?php echo number_format(($val['TotalMovements']['fobQuantityTotal']/2),2); ?></td>
+						<td ><?php echo number_format(($val['TotalMovements']['fobQuantityTotal'] / 2),2); ?></td>
 						<td ></td>
-						<td ><?php echo number_format(($val['TotalMovements']['cifQuantityTotal']/2),2); ?></td>
+						<td ><?php echo number_format(($val['TotalMovements']['cifQuantityTotal'] / 2),2); ?></td>
 						<td ></td>
-						<td ><?php echo number_format(($val['TotalMovements']['saleQuantityTotal']/2),2); ?></td>
+						<td ><?php echo number_format(($val['TotalMovements']['saleQuantityTotal'] / 2),2); ?></td>
 					</tr>
 		<?php }else{?>
 				<thead>

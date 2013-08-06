@@ -7,8 +7,9 @@ $(document).ready(function(){
 	var globalPeriod = $('#globalPeriod').text(); // this value is obtained from the main template.
 	var arrayItemsAlreadySaved = []; 
 	startEventsWhenExistsItems();
+	$('select').select2();
+	//startDataTable();
 	
-
 	//When exist items, it starts its events and fills arrayItemsAlreadySaved
 	function startEventsWhenExistsItems(){
 		var arrayAux = [];
@@ -21,6 +22,31 @@ $(document).ready(function(){
 			}
 		}
 	}
+
+///datatable not working when add o delete a row need to be with its own properties, not with the code written here
+/*
+function startDataTable(){
+	   $('.data-table').dataTable({
+			"bJQueryUI": true,
+			//"sPaginationType": "full_numbers",
+			"sDom": '<"">t<"F"f>i',
+			//"sDom": 'frtiS',
+			"sScrollY": "300px",
+			"bScrollCollapse": true,
+			"bPaginate": false,
+			"aaSorting":[], //on start sorting setting to empty
+			"oLanguage": {
+				"sSearch": "Filtrar:",
+				 "sZeroRecords":  "No se encontro nada.",
+				 //"sInfo":         "Ids from _START_ to _END_ of _TOTAL_ total" //when pagination exists
+				 "sInfo": "Encontrados _TOTAL_ Items",
+				 "sInfoEmpty": "Encontrados 0 Items",
+				 "sInfoFiltered": "(filtrado de _MAX_ Items)"
+			}
+		});
+   }
+*/
+
 
 	//validates before add item quantity
 	function validateItem(item, quantity, documentQuantity){
@@ -185,7 +211,8 @@ $(document).ready(function(){
 				$('#txtModalStock2').keypress(function(){return false;});
 			}
 			$('#cbxModalItems').empty();
-			$('#cbxModalItems').append('<option value="'+itemIdForEdit+'">'+objectTableRowSelected.find('td').text()+'</option>');
+			$('#cbxModalItems').append('<option value="'+itemIdForEdit+'" selected="selected" >'+objectTableRowSelected.find('td').text()+'</option>');
+			$('#cbxModalItems').select2();
 			initiateModal();
 		}else{
 			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
@@ -202,10 +229,11 @@ $(document).ready(function(){
 	}
 
 	function createEventClickDeleteItemButton(itemId){
-		$('#btnDeleteItem'+itemId).bind("click",function(){ //must be binded 'cause loaded live with javascript'
+		$('#btnDeleteItem'+itemId).bind("click",function(e){ //must be binded 'cause loaded live with javascript'
 					var objectTableRowSelected = $(this).closest('tr');
 					deleteItem(objectTableRowSelected);
-					return false; //avoid page refresh
+					//return false; //avoid page refresh
+					e.preventDefault();
 		});
 	}
 
@@ -218,6 +246,7 @@ $(document).ready(function(){
 			showBittionAlertModal({content:'¿Está seguro de eliminar este item?'});
 			$('#bittionBtnYes').click(function(){
 				ajax_save_movement('DELETE', 'PENDANT', objectTableRowSelected, []);
+				return false;
 			});
 		}else{
 			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
@@ -225,19 +254,20 @@ $(document).ready(function(){
 	}
 
 	function createRowItemTable(itemId, itemCodeName, stock, quantity, stock2){
-		var row = '<tr>';
+		var row = '<tr id="itemRow'+itemId+'" >';
 		row +='<td><span id="spaItemName'+itemId+'">'+itemCodeName+'</span><input type="hidden" value="'+itemId+'" id="txtItemId" ></td>';
-		row +='<td><span id="spaStock'+itemId+'">'+stock+'</span></td>';
+		row +='<td style="text-align:center"><span id="spaStock'+itemId+'">'+stock+'</span></td>';
 		if(stock2 !== ''){
-			row +='<td><span id="spaStock2-'+itemId+'">'+stock2+'</span></td>';
+			row +='<td style="text-align:center"><span id="spaStock2-'+itemId+'">'+stock2+'</span></td>';
 		}
-		row +='<td><span id="spaQuantity'+itemId+'">'+quantity+'</span></td>';
-		row +='<td class="columnItemsButtons">';
+		row +='<td style="text-align:center"><span id="spaQuantity'+itemId+'">'+quantity+'</span></td>';
+		row +='<td class="columnItemsButtons" style="text-align:center">';
 		row +='<a class="btn btn-primary" href="#" id="btnEditItem'+itemId+'" title="Editar"><i class="icon-pencil icon-white"></i></a> ';
 		row +='<a class="btn btn-danger" href="#" id="btnDeleteItem'+itemId+'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
 		row +='</td>';
 		row +='</tr>';
-		$('#tablaItems > tbody:last').append(row);
+		//$('#tablaItems > tbody:last').append(row);//insert at last
+		$('#tablaItems').prepend(row);//insert at the beginning	
 	}
 
 	function editItem(){
@@ -437,6 +467,7 @@ $(document).ready(function(){
    //Logic delete state pendant
    $('#btnLogicDelete').click(function(){
 	  deleteStatePendant(); 
+	  return false;
    });
    
 	//Call modal
@@ -504,6 +535,7 @@ $(document).ready(function(){
 	//************************************************************************//
 	//////////////////////////////////BEGIN-AJAX FUNCTIONS//////////////////////
 	////************************************************************************//
+	/*
 	function ajax_delete_item(){
 		$.ajax({
             type:"POST",
@@ -520,7 +552,7 @@ $(document).ready(function(){
 			}
 		});
 	}
-	
+	*/
 	
 	//*****************************************************************************************************************************//
 	function setOnData(ACTION, OPERATION, STATE, objectTableRowSelected, arrayForValidate){
@@ -596,7 +628,18 @@ $(document).ready(function(){
 		return DATA;
 	}
 	
-	
+	function highlightTemporally(id){
+		//$('#itemRow'+dataSent['itemId']).delay(8000).removeAttr('style');
+			$(id).fadeIn(4000).css("background-color","#FFFF66");
+			setTimeout(function() {
+				$(id).removeAttr('style');
+				//$('#itemRow'+itemId).animate({ background: '#fed900'}, "slow");
+				 //$('#itemRow'+itemId).fadeOut(400);
+				 //$('#itemRow'+itemId).fadeIn(4000).css("background-color","red");
+				 //$('#itemRow'+itemId).animate({ backgroundColor: "#f6f6f6" }, 'slow');
+			}, 4000);
+	}
+		
 	function setOnPendant(DATA, ACTION, OPERATION, STATE, objectTableRowSelected , itemId, itemCodeName, quantity, stock, stock2){
 		if($('#txtMovementIdHidden').val() === ''){
 			if(ACTION === 'save_warehouses_transfer'){
@@ -616,18 +659,23 @@ $(document).ready(function(){
 			createEventClickEditItemButton(itemId);
 			createEventClickDeleteItemButton(itemId);
 			arrayItemsAlreadySaved.push(itemId);  //push into array of the added item
+			$('#countItems').text(arrayItemsAlreadySaved.length);
 			$('#modalAddItem').modal('hide');
+			highlightTemporally('#itemRow'+itemId);
+			//$('.dataTables_scrollBody').scrollTop(0);//after add row scroll go back to the top to show created row, for datatable
 		}
 		if(OPERATION === 'EDIT'){
 			$('#spaQuantity'+itemId).text(parseInt(quantity,10));
 			$('#modalAddItem').modal('hide');
+			highlightTemporally('#itemRow'+itemId);
 		}
 		if(OPERATION === 'DELETE'){
 			arrayItemsAlreadySaved = jQuery.grep(arrayItemsAlreadySaved, function(value){
 				return value !== itemId;
 			});
-			objectTableRowSelected.remove();
 			hideBittionAlertModal();
+			objectTableRowSelected.remove();
+			$('#countItems').text(arrayItemsAlreadySaved.length);
 		}
 		showGrowlMessage('ok', 'Cambios guardados.');
 	}
@@ -789,7 +837,7 @@ $(document).ready(function(){
             type:"POST",
             url:moduleController + "ajax_update_stock_modal",			
             data:{warehouse: $('#cbxWarehouses').val(), item: $('#cbxModalItems').val(), transfer:transfer, warehouse2:warehouse2},
-            beforeSend: showProcessing(),
+            //beforeSend: showProcessing(), 
             success: function(data){
 				$('#processing').text("");
 				$('#boxModalStock').html(data);

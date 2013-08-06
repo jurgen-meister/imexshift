@@ -5,15 +5,15 @@
 		'id'=>'cbxModalItems',
 		'class'=>'span12',
 		));
-		echo '<br>';
+		echo '<div style="margin-bottom:45px"></div>'; //fix space otherwise won't work 
 		
 		echo '<div id="boxModalStock">';
 		if($transfer == 'warehouses_transfer'){
-			$labelStock = 'Stock Origen:';
+			$labelStock = 'Stock Origen (Salida):';
 		}else{
 			$labelStock = 'Stock:';
 		}
-		echo'<br>';
+		
 		echo $this->BootstrapForm->input('stock', array(
 		'label' => $labelStock,
 		'id'=>'txtModalStock',
@@ -24,9 +24,8 @@
 		));
 		
 		if($transfer == 'warehouses_transfer'){
-			echo '<br>';
 			echo $this->BootstrapForm->input('stock2', array(				
-			'label' => 'Stock Destino:',
+			'label' => 'Stock Destino (Entrada):',
 			'id'=>'txtModalStock2',
 			'value'=>$stock2,
 			'style'=>'background-color:#EEEEEE',
