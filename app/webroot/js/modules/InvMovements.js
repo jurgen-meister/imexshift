@@ -7,7 +7,7 @@ $(document).ready(function(){
 	var globalPeriod = $('#globalPeriod').text(); // this value is obtained from the main template.
 	var arrayItemsAlreadySaved = []; 
 	startEventsWhenExistsItems();
-	$('select').select2();
+	//$('select').select2(); 
 	//startDataTable();
 	
 	//When exist items, it starts its events and fills arrayItemsAlreadySaved
@@ -674,7 +674,10 @@ function startDataTable(){
 				return value !== itemId;
 			});
 			hideBittionAlertModal();
-			objectTableRowSelected.remove();
+			//objectTableRowSelected.remove();
+			objectTableRowSelected.fadeOut("slow", function() {
+				$(this).remove();
+			});
 			$('#countItems').text(arrayItemsAlreadySaved.length);
 		}
 		showGrowlMessage('ok', 'Cambios guardados.');
