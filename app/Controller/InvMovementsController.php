@@ -1094,6 +1094,7 @@ class InvMovementsController extends AppController {
 	
 	public function ajax_save_movement(){
 		if($this->RequestHandler->isAjax()){
+			$arrayMovement = array();
 			////////////////////////////////////////////START - RECIEVE AJAX////////////////////////////////////////////////////////
 			//Movement
 			$movementId = $this->request->data['movementId'];
@@ -1104,8 +1105,12 @@ class InvMovementsController extends AppController {
 			$documentCode ='';
 			If(isset($this->request->data['documentCode'])){$documentCode = $this->request->data['documentCode'];}
 			$warehouseId2 = $this->request->data['warehouseId2'];
-			$movementTypeId = 0;
-			if(isset($this->request->data['movementTypeId'])){$movementTypeId = $this->request->data['movementTypeId'];}
+			//$movementTypeId = 0;
+			if(isset($this->request->data['movementTypeId'])){
+				//$movementTypeId = $this->request->data['movementTypeId'];
+				$arrayMovement['inv_movement_type_id'] = $this->request->data['movementTypeId'];
+			}
+			
 			//Movement Details
 			$itemId = $this->request->data['itemId'];
 			$quantity = $this->request->data['quantity'];
@@ -1123,8 +1128,12 @@ class InvMovementsController extends AppController {
 			////////////////////////////////////////////END - RECIEVE AJAX////////////////////////////////////////////////////////
 			
 			////////////////////////////////////////////////START - SET DATA/////////////////////////////////////////////////////
-			$arrayMovement = array('date'=>$date, 'inv_warehouse_id'=>$warehouseId, 'description'=>$description, 'lc_state'=>$STATE);
-			
+			//$arrayMovement = array('date'=>$date, 'inv_warehouse_id'=>$warehouseId, 'description'=>$description, 'lc_state'=>$STATE);
+			$arrayMovement['date']=$date;
+			$arrayMovement['inv_warehouse_id']=$warehouseId;
+			$arrayMovement['description']=$description;
+			$arrayMovement['lc_state']=$STATE;
+					
 			if($ACTION == 'save_warehouses_transfer'){
 				$arrayMovementDestination = $arrayMovement; //IN(destination),OUT(origin)
 				$arrayMovementDestination['inv_warehouse_id'] = $warehouseId2;
@@ -1138,7 +1147,7 @@ class InvMovementsController extends AppController {
 				switch ($ACTION) {
 					case 'save_in':
 						$arrayMovement['document_code'] = 'NO';
-						$arrayMovement['inv_movement_type_id']=$movementTypeId;
+						//$arrayMovement['inv_movement_type_id']=$movementTypeId;
 						$code = $this->_generate_code('ENT');
 						$arrayMovement['code'] = $code;
 						break;
@@ -1151,7 +1160,7 @@ class InvMovementsController extends AppController {
 						break;
 					case 'save_out':
 						$arrayMovement['document_code'] = 'NO';
-						$arrayMovement['inv_movement_type_id']=$movementTypeId;
+						//$arrayMovement['inv_movement_type_id']=$movementTypeId;
 						$code = $this->_generate_code('SAL');
 						$arrayMovement['code'] = $code;
 						break;
@@ -1389,6 +1398,7 @@ class InvMovementsController extends AppController {
 		$movementDetails = $this->InvMovement->InvMovementDetail->find('all', array(
 			'conditions'=>array('InvMovementDetail.inv_movement_id'=>$idMovement),
 			'fields'=>array('InvItem.name', 'InvItem.code', 'InvMovementDetail.quantity', 'InvItem.id', 'InvMovement.inv_warehouse_id')
+			,'order'=>array('InvItem.code')
 			));
 		$formatedMovementDetails = array();
 		foreach ($movementDetails as $key => $value) {

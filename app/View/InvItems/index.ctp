@@ -50,7 +50,7 @@
 				<th><?php echo 'Marca';?></th>
 				<th><?php echo 'Categoría';?></th>
 <!--				<th><?php echo 'Nombre';?></th>   -->
-				<th style="width:30%"><?php echo 'Descipcion';?></th>
+				<th style="width:30%"><?php echo 'Descripción';?></th>
 				<th><?php echo 'Stock Global';?></th>
 				<th class="actions"><?php echo __('Acciones');?></th>
 			</tr>
