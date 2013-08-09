@@ -1222,54 +1222,24 @@ class InvMovementsController extends AppController {
 			}
 			////////////////////////////////////////////////END - SET DATA//////////////////////////////////////////////////////
 			
-			$validation['error'] = 0;
-			$strItemsStock = '';
 			////////////////////////////////////////////START- CORE SAVE////////////////////////////////////////////////////////
 			if($error == 0){
 				/////////////////////START - SAVE/////////////////////////////	
-					if(count($arrayForValidate) > 0){
-						if(($STATE == 'APPROVED') AND ($ACTION == 'save_out' OR $ACTION == 'save_sale_out')){
-							$validation=$this->_validateItemsStocksOut($arrayForValidate, $warehouseId);
-						}
-						if(($STATE == 'CANCELLED') AND ($ACTION == 'save_in' OR $ACTION == 'save_purchase_in')){
-							$validation=$this->_validateItemsStocksOut($arrayForValidate, $warehouseId);
-						}
-						if($ACTION == 'save_warehouses_transfer'){
-							if(($STATE == 'APPROVED')){
-								$validation=$this->_validateItemsStocksOut($arrayForValidate, $warehouseId);
-								$strItemsStock = '|'.$this->_createStringItemsStocksUpdated($arrayForValidate, $warehouseId2).'|APPROVED';
-							}
-							if($STATE == 'CANCELLED'){
-								$validation=$this->_validateItemsStocksOut($arrayForValidate, $warehouseId2);
-								$strItemsStock = '|'.$this->_createStringItemsStocksUpdated($arrayForValidate, $warehouseId).'|CANCELLED';
-							}
+						if($ACTION <> 'save_warehouses_transfer'){
+							$res = $this->InvMovement->saveMovement($dataMovement, $dataMovementDetail, $OPERATION, $ACTION, $arrayForValidate, $code);
+						}else{
+							$res = $this->InvMovement->saveMovementTransfer($dataTransfer, $OPERATION, $tokenTransfer, $arrayForValidate, $documentCode);
 						}
 						
-					}
-					if($validation['error'] == 0){
-						if($ACTION <> 'save_warehouses_transfer'){
-							$res = $this->InvMovement->saveMovement($dataMovement, $dataMovementDetail, $OPERATION, $ACTION);
-						}else{
-							$res = $this->InvMovement->saveMovementTransfer($dataTransfer, $OPERATION, $tokenTransfer);
-							$code = $documentCode;
+						if($res[0] == 'VALIDATION'){
+							echo 'VALIDATION|'.$res[1];
 						}
-						if($res <> 'error'){
-							$movementIdSaved = $res;
-							$strItemsStockDestination = '';
-							if($STATE == 'APPROVED' OR $STATE == 'CANCELLED'){
-								$strItemsStock = $this->_createStringItemsStocksUpdated($arrayForValidate, $warehouseId);
-								if($ACTION == 'save_warehouses_transfer'){
-									$strItemsStockDestination = '|'.$this->_createStringItemsStocksUpdated($arrayForValidate, $warehouseId2);
-								}
-							}
-							echo $STATE.'|'.$movementIdSaved.'|'.$code.'|'.$strItemsStock.$strItemsStockDestination;
-						}else{
+						if($res[0] == 'SUCCESS'){
+							echo $res[1];
+						}
+						if($res[0] == 'ERROR'){
 							echo 'ERROR|onSaving';
 						}
-					}else{
-							echo 'VALIDATION|'.$validation['itemsStocks'].$strItemsStock;
-					}
-
 				/////////////////////END - SAVE////////////////////////////////	
 			}else{
 				echo 'ERROR|onGeneratingParameters';
