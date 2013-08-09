@@ -1231,15 +1231,18 @@ class InvMovementsController extends AppController {
 							$res = $this->InvMovement->saveMovementTransfer($dataTransfer, $OPERATION, $tokenTransfer, $arrayForValidate, $documentCode);
 						}
 						
-						if($res[0] == 'VALIDATION'){
-							echo 'VALIDATION|'.$res[1];
+						switch ($res[0]) {
+							case 'SUCCESS':
+								echo $res[1];
+								break;
+							case 'VALIDATION':
+								echo 'VALIDATION|'.$res[1];
+								break;
+							case 'ERROR':
+								echo 'ERROR|onSaving';
+								break;
 						}
-						if($res[0] == 'SUCCESS'){
-							echo $res[1];
-						}
-						if($res[0] == 'ERROR'){
-							echo 'ERROR|onSaving';
-						}
+						
 				/////////////////////END - SAVE////////////////////////////////	
 			}else{
 				echo 'ERROR|onGeneratingParameters';
