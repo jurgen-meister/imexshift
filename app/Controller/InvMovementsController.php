@@ -423,7 +423,8 @@ class InvMovementsController extends AppController {
 		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
 		$this->paginate = array(
 			"conditions"=>array(
-				"InvMovement.lc_state !="=>"LOGIC_DELETED",
+				//"InvMovement.lc_state !="=>"LOGIC_DELETED",
+				"NOT"=>array("InvMovement.lc_state" => array("LOGIC_DELETED", "DRAFT")),
 				"to_char(InvMovement.date,'YYYY')"=> $period,
 				"InvMovementType.status"=> "entrada",
 				$filters
@@ -497,7 +498,8 @@ class InvMovementsController extends AppController {
 		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
 		$this->paginate = array(
 			"conditions"=>array(
-				"InvMovement.lc_state !="=>"LOGIC_DELETED",
+				//"InvMovement.lc_state !="=>"LOGIC_DELETED",
+				"NOT"=>array("InvMovement.lc_state" => array("LOGIC_DELETED", "DRAFT")),
 				"to_char(InvMovement.date,'YYYY')"=> $period,
 				"InvMovementType.status"=> "salida",
 				$filters
@@ -578,7 +580,11 @@ class InvMovementsController extends AppController {
 		}
 		//debug($paginatedCodes);
 		$movements = $this->InvMovement->find('all',array(
-			'conditions'=>array('InvMovement.inv_movement_type_id'=>1, 'InvMovement.document_code'=>$paginatedCodes,'NOT'=>array('InvMovement.lc_state'=>array('LOGIC_DELETED', 'CANCELLED'))),
+			'conditions'=>array(
+				'InvMovement.inv_movement_type_id'=>1,
+				'InvMovement.document_code'=>$paginatedCodes,
+				'NOT'=>array('InvMovement.lc_state'=>array('LOGIC_DELETED', 'CANCELLED', 'DRAFT'))
+			),
 			'fields'=>array('InvMovement.lc_state', 'InvMovement.document_code'),
 			'recursive'=>-1
 		));
@@ -663,7 +669,11 @@ class InvMovementsController extends AppController {
 		}
 		//debug($paginatedCodes);
 		$movements = $this->InvMovement->find('all',array(
-			'conditions'=>array('InvMovement.inv_movement_type_id'=>2, 'InvMovement.document_code'=>$paginatedCodes,'NOT'=>array('InvMovement.lc_state'=>array('LOGIC_DELETED', 'CANCELLED'))),
+			'conditions'=>array(
+				'InvMovement.inv_movement_type_id'=>2, 
+				'InvMovement.document_code'=>$paginatedCodes,
+				'NOT'=>array('InvMovement.lc_state'=>array('LOGIC_DELETED', 'CANCELLED', 'DRAFT'))
+			),
 			'fields'=>array('InvMovement.lc_state', 'InvMovement.document_code'),
 			'recursive'=>-1
 		));
@@ -903,8 +913,6 @@ class InvMovementsController extends AppController {
 	
 	public function save_warehouses_transfer(){
 		/////////////////////////////////////////START - VARIABLES DECLARATION///////////////////
-		$documentCode = '';
-		
 		$warehouseIn ='';
 		$warehouseOut ='';
 		$movementIdIn = '';
@@ -960,6 +968,7 @@ class InvMovementsController extends AppController {
 		$this->set(compact('warehouses','warehouseIn','warehouseOut', 'movementIdOut', 'date', 'invMovementDetailsOut', 'invMovementDetailsIn', 'documentState', 'documentCode'));
 	}
 	
+	
 	public function index_warehouses_transfer(){
 
 		///////////////////////////////////////START - CREATING VARIABLES//////////////////////////////////////
@@ -1002,7 +1011,8 @@ class InvMovementsController extends AppController {
 		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
 		$this->paginate = array(
 			'conditions'=>array(
-				"InvMovement.lc_state !="=>"LOGIC_DELETED",
+				//"InvMovement.lc_state !="=>"LOGIC_DELETED",
+				"NOT"=>array("InvMovement.lc_state" => array("LOGIC_DELETED", "DRAFT")),
 				"to_char(InvMovement.date,'YYYY')"=> $period,
 				"InvMovement.inv_movement_type_id"=> 3,//out
 				$filters
@@ -1021,7 +1031,8 @@ class InvMovementsController extends AppController {
 		}
 		$warehouseDestination = $this->InvMovement->find('all', array(
 				'conditions'=>array(
-					'InvMovement.lc_state !='=>'LOGIC_DELETED',
+					//'InvMovement.lc_state !='=>'LOGIC_DELETED',
+					"NOT"=>array("InvMovement.lc_state" => array("LOGIC_DELETED", "DRAFT")),
 					'InvMovement.document_code'=>$paginatedDocumentCodes,
 					'InvMovement.inv_movement_type_id'=> 4,//in
 					$filters
@@ -1477,7 +1488,7 @@ class InvMovementsController extends AppController {
 		if($period <> ''){
 			try{
 				$movements = $this->InvMovement->find('count', array(
-					'conditions'=>array('InvMovementType.status'=>$movementType)
+					'conditions'=>array('InvMovementType.status'=>$movementType, 'InvMovement.lc_state !='=>'DRAFT')
 				)); 
 			}catch(Exception $e){
 				return 'error';
