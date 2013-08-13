@@ -221,12 +221,15 @@ class InvMovementsController extends AppController {
 			$cifQuantityTotal = 0;
 			$saleQuantityTotal = 0;
 			$counter = 0;
+			
+			$forPricesSubQuery = 0; //before 'InvMovementDetail'
+			
 			//movements
 			foreach($movements as $movement){
 				if($item['InvItem']['id'] == $movement['InvMovementDetail']['inv_item_id']){
-					$fobQuantity = $movement['InvMovementDetail']['quantity'] * $movement['InvMovementDetail'][$currencyFieldPrefix.'fob_price'];
-					$cifQuantity = $movement['InvMovementDetail']['quantity'] * $movement['InvMovementDetail'][$currencyFieldPrefix.'cif_price'];
-					$saleQuantity = $movement['InvMovementDetail']['quantity'] * $movement['InvMovementDetail'][$currencyFieldPrefix.'sale_price'];
+					$fobQuantity = $movement['InvMovementDetail']['quantity'] * $movement[$forPricesSubQuery][$currencyFieldPrefix.'fob_price'];
+					$cifQuantity = $movement['InvMovementDetail']['quantity'] * $movement[$forPricesSubQuery][$currencyFieldPrefix.'cif_price'];
+					$saleQuantity = $movement['InvMovementDetail']['quantity'] * $movement[$forPricesSubQuery][$currencyFieldPrefix.'sale_price'];
 					$fobQuantityTotal = $fobQuantityTotal + $fobQuantity;
 					$cifQuantityTotal = $cifQuantityTotal + $cifQuantity;
 					$saleQuantityTotal = $saleQuantityTotal + $saleQuantity;
@@ -235,9 +238,9 @@ class InvMovementsController extends AppController {
 						'document_code'=>$movement['InvMovement']['document_code'],
 						'quantity'=> $movement['InvMovementDetail']['quantity'],
 						'date'=>date("d/m/Y", strtotime($movement['InvMovement']['date'])),
-						'fob'=> $movement['InvMovementDetail'][$currencyFieldPrefix.'fob_price'],
-						'cif'=> $movement['InvMovementDetail'][$currencyFieldPrefix.'cif_price'],
-						'sale'=> $movement['InvMovementDetail'][$currencyFieldPrefix.'sale_price'],
+						'fob'=> $movement[$forPricesSubQuery][$currencyFieldPrefix.'fob_price'],
+						'cif'=> $movement[$forPricesSubQuery][$currencyFieldPrefix.'cif_price'],
+						'sale'=> $movement[$forPricesSubQuery][$currencyFieldPrefix.'sale_price'],
 						'fobQuantity'=>$fobQuantity,
 						'cifQuantity'=>$cifQuantity,
 						'saleQuantity'=>$saleQuantity,
@@ -299,10 +302,16 @@ class InvMovementsController extends AppController {
 		$values['items']=$initialData['items'];//just for order
 		switch($initialData['currency']){
 			case 'BOLIVIANOS':
-				$fields = array('InvMovementDetail.fob_price', 'InvMovementDetail.cif_price', 'InvMovementDetail.sale_price');
+				//$fields = array('InvMovementDetail.fob_price', 'InvMovementDetail.cif_price', 'InvMovementDetail.sale_price');
+				$fields[]='(SELECT price FROM inv_prices where inv_item_id = "InvMovementDetail"."inv_item_id" AND date <= "InvMovement"."date" AND inv_price_type_id=1 order by date DESC, date_created DESC LIMIT 1) AS "fob_price"';
+				$fields[]='(SELECT price FROM inv_prices where inv_item_id = "InvMovementDetail"."inv_item_id" AND date <= "InvMovement"."date" AND inv_price_type_id=8 order by date DESC, date_created DESC LIMIT 1) AS "cif_price"';
+				$fields[]='(SELECT price FROM inv_prices where inv_item_id = "InvMovementDetail"."inv_item_id" AND date <= "InvMovement"."date" AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1) AS "sale_price"';
 				break;
 			case 'DOLARES AMERICANOS':
-				$fields = array('InvMovementDetail.ex_fob_price', 'InvMovementDetail.ex_cif_price', 'InvMovementDetail.ex_sale_price');
+				//$fields = array('InvMovementDetail.ex_fob_price', 'InvMovementDetail.ex_cif_price', 'InvMovementDetail.ex_sale_price');
+				$fields[]='(SELECT ex_price FROM inv_prices where inv_item_id = "InvMovementDetail"."inv_item_id" AND date <= "InvMovement"."date" AND inv_price_type_id=1 order by date DESC, date_created DESC LIMIT 1) AS "ex_fob_price"';
+				$fields[]='(SELECT ex_price FROM inv_prices where inv_item_id = "InvMovementDetail"."inv_item_id" AND date <= "InvMovement"."date" AND inv_price_type_id=8 order by date DESC, date_created DESC LIMIT 1) AS "ex_cif_price"';
+				$fields[]='(SELECT ex_price FROM inv_prices where inv_item_id = "InvMovementDetail"."inv_item_id" AND date <= "InvMovement"."date" AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1) AS "ex_sale_price"';
 				break;
 		}
 		
@@ -311,7 +320,15 @@ class InvMovementsController extends AppController {
 	
 	
 	private function _generate_report_movements($values, $conditions, $fields){
-		$staticFields = array('InvMovement.id', 'InvMovement.code', 'InvMovement.document_code', 'InvMovement.date', 'InvMovement.inv_warehouse_id', 'InvMovementDetail.inv_item_id', 'InvMovementDetail.quantity');
+		$staticFields = array(
+			'InvMovement.id',
+			'InvMovement.code',
+			'InvMovement.document_code',
+			'InvMovement.date',
+			'InvMovement.inv_warehouse_id',
+			'InvMovementDetail.inv_item_id',
+			'InvMovementDetail.quantity'
+			);
 		if(isset($values['bindMovementType']) AND $values['bindMovementType'] == 1){
 			$this->InvMovement->InvMovementDetail->bindModel(array(
 				'hasOne'=>array(
@@ -354,7 +371,6 @@ class InvMovementsController extends AppController {
 	//////////////////////////////////////////// START - INDEX ///////////////////////////////////////////////
 	
 	public function index_in() {
-		
 		//debug($this->request->params);
 		//debug($this->passedArgs);
 		///////////////////////////////////////START - CREATING VARIABLES//////////////////////////////////////
@@ -1452,56 +1468,6 @@ class InvMovementsController extends AppController {
 	}
 	
 	
-	/*
-	private function _find_stock($idItem, $idWarehouse){		
-		$movementsIn = $this->_get_quantity_movements_item($idItem, $idWarehouse, 'entrada');
-		$movementsOut = $this->_get_quantity_movements_item($idItem, $idWarehouse, 'salida');
-		$add = array_sum($movementsIn);
-		$sub = array_sum($movementsOut);
-		$stock = $add - $sub;
-		return $stock;
-	}
-	*/
-	/*
-	private function _get_quantity_movements_item($idItem, $idWarehouse, $status){
-		//unbind for perfomance InvItem 'cause it isn't needed
-		$this->InvMovement->InvMovementDetail->unbindModel(array(
-			'belongsTo' => array('InvItem')
-		));
-		//Add association for InvMovementType
-		$this->InvMovement->InvMovementDetail->bindModel(array(
-			'hasOne'=>array(
-				'InvMovementType'=>array(
-					'foreignKey'=>false,
-					'conditions'=> array('InvMovement.inv_movement_type_id = InvMovementType.id')
-				)
-				
-			)
-		));
-		//Movements
-		$movements = $this->InvMovement->InvMovementDetail->find('all', array(
-			'fields'=>array('InvMovementDetail.inv_movement_id', 'InvMovementDetail.quantity'),
-			'conditions'=>array(
-				'InvMovement.inv_warehouse_id'=>$idWarehouse,
-				'InvMovementDetail.inv_item_id'=>$idItem,
-				'InvMovementType.status'=>$status,
-				'InvMovement.lc_state'=>'APPROVED',
-				)
-		));
-		//Give format to nested array movements
-		$movementsCleaned = $this->_clean_nested_arrays($movements);
-		return $movementsCleaned;
-	}
-	*/
-	/*
-	private function _clean_nested_arrays($array){
-		$clean = array();
-		foreach ($array as $key => $value) {
-			$clean[$key] = $value['InvMovementDetail']['quantity'];
-		}
-		return $clean;
-	}
-	*/
 	
 	private function _generate_code($keyword){
 		$period = $this->Session->read('Period.name');
@@ -1585,6 +1551,8 @@ class InvMovementsController extends AppController {
 			////////////////////////////////////////////FIN-CREAR CADENA ITEMS STOCK ACUTALIZADOS/////////////////////////////////
 			return $strItemsStock;
 	}
+	
+	
 	//////////////////////////////////////////// END - PRIVATE /////////////////////////////////////////////////
 	
 	
@@ -1592,7 +1560,7 @@ class InvMovementsController extends AppController {
 	
 
 	//*******************************************************************************************************//
-	/////////////////////////////////////////// END - FUNCTIONS ///////////////////////////////////////////////
+	/////////////////////////////////////////// END - CLASS ///////////////////////////////////////////////
 	//*******************************************************************************************************//
 }
 
