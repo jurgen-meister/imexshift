@@ -6,7 +6,9 @@ $(document).ready(function(){
 	
 	var globalPeriod = $('#globalPeriod').text(); // this value is obtained from the main template.
 	var arrayItemsAlreadySaved = []; 
+	var itemsCounter = 0;
 	startEventsWhenExistsItems();
+	
 	//$('select').select2(); 
 	//startDataTable();
 	
@@ -18,11 +20,12 @@ $(document).ready(function(){
 			for(var i=0; i< arrayAux.length; i++){
 				 arrayItemsAlreadySaved[i] = arrayAux[i]['inv_item_id'];
 				 createEventClickEditItemButton(arrayAux[i]['inv_item_id']);
-				 createEventClickDeleteItemButton(arrayAux[i]['inv_item_id']);			 
+				 createEventClickDeleteItemButton(arrayAux[i]['inv_item_id']);	
+				 itemsCounter = itemsCounter + 1;  //like this cause iteration something++ apparently not supported by javascript, gave me NaN error
 			}
 		}
 	}
-
+//alert(itemsCounter);
 ///datatable not working when add o delete a row need to be with its own properties, not with the code written here
 /*
 function startDataTable(){
@@ -267,7 +270,7 @@ function startDataTable(){
 		row +='</td>';
 		row +='</tr>';
 		//$('#tablaItems > tbody:last').append(row);//insert at last
-		$('#tablaItems').prepend(row);//insert at the beginning	
+		$('#tablaItems tbody').prepend(row);//insert at the beginning	
 	}
 
 	function editItem(){
@@ -659,7 +662,10 @@ function startDataTable(){
 			createEventClickEditItemButton(itemId);
 			createEventClickDeleteItemButton(itemId);
 			arrayItemsAlreadySaved.push(itemId);  //push into array of the added item
-			$('#countItems').text(arrayItemsAlreadySaved.length);
+			///////////////////
+		   itemsCounter = itemsCounter + 1;
+			//////////////////
+			$('#countItems').text(itemsCounter);
 			$('#modalAddItem').modal('hide');
 			highlightTemporally('#itemRow'+itemId);
 			//$('.dataTables_scrollBody').scrollTop(0);//after add row scroll go back to the top to show created row, for datatable
@@ -678,7 +684,10 @@ function startDataTable(){
 			objectTableRowSelected.fadeOut("slow", function() {
 				$(this).remove();
 			});
-			$('#countItems').text(arrayItemsAlreadySaved.length);
+			/////////////////////////
+			itemsCounter = itemsCounter - 1;
+			////////////////////////
+			$('#countItems').text(itemsCounter);
 		}
 		showGrowlMessage('ok', 'Cambios guardados.');
 	}
