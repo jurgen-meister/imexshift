@@ -51,5 +51,11 @@ class SalCustomer extends AppModel {
 			'counterQuery' => ''
 		)
 	);
+	
+	public function saveCustomer(){
+		$dataSource = $this->getDataSource();
+		$dataSource->begin();
+		
+	}
 
 }

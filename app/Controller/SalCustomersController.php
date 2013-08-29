@@ -97,27 +97,52 @@ class SalCustomersController extends AppController {
  */
 	public function add() {
 		if ($this->request->is('post')) {
-			$this->SalCustomer->create();
-			if ($this->SalCustomer->save($this->request->data)) {
-				$this->Session->setFlash(
-					__('The %s has been saved', __('sal customer')),
-					'alert',
-					array(
-						'plugin' => 'TwitterBootstrap',
-						'class' => 'alert-success'
-					)
-				);
-				$this->redirect(array('action' => 'index'));
+			//$this->SalCustomer->create();
+			
+			$arrayCustomer = array(	'name'=>$this->request->data['name'],
+									'address'=>$this->request->data['address'],
+									'phone'=>$this->request->data['phone'],
+									'location'=>$this->request->data['location'],
+									'email'=>$this->request->data['email']);
+			
+			$arrayNit = array(	'nit'=>$this->request->data['nit'],
+								'name'=>$this->request->data['nitname']);
+			
+			$arrayEmployee = array(	'name'=>$this->request->data['empname'],
+									'phone'=>$this->request->data['empphone'],
+									'email'=>$this->request->data['empmail']);
+			
+			$data = array('SalCustomer'=>$arrayCustomer,'SalTaxNumber'=>$arrayNit,'SalEmployee'=>$arrayEmployee);
+			
+			
+			if($this->SalCustomer->saveCustomer($data)){
+				
 			} else {
-				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('sal customer')),
-					'alert',
-					array(
-						'plugin' => 'TwitterBootstrap',
-						'class' => 'alert-error'
-					)
-				);
+				
 			}
+				
+
+			
+//			if ($this->SalCustomer->save($this->request->data)) {
+//				$this->Session->setFlash(
+//					__('The %s has been saved', __('sal customer')),
+//					'alert',
+//					array(
+//						'plugin' => 'TwitterBootstrap',
+//						'class' => 'alert-success'
+//					)
+//				);
+//				$this->redirect(array('action' => 'index'));
+//			} else {
+//				$this->Session->setFlash(
+//					__('The %s could not be saved. Please, try again.', __('sal customer')),
+//					'alert',
+//					array(
+//						'plugin' => 'TwitterBootstrap',
+//						'class' => 'alert-error'
+//					)
+//				);
+//			}
 		}
 	}
 
