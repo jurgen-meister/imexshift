@@ -50,7 +50,7 @@
 					<i class="icon-th"></i>
 				</span>
 				<h5><?php echo $this->BootstrapPaginator->counter(array('format' => __('Página {:page} de {:pages}, mostrando {:current} registros de {:count} total, comenzando en {:start}, terminando en {:end}')));?></h5>
-		</div>
+			</div>
 			<div class="widget-content nopadding">
 		<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
 
@@ -61,7 +61,7 @@
 				<th><?php echo $this->BootstrapPaginator->sort('doc_code','Código');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('note_code','Código de Nota de Venta');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('SalEmployee.name','Cliente');?></th>			
+				<th><?php echo $this->BootstrapPaginator->sort('SalCustomer.name','Cliente');?></th>			
 				<th><?php echo $this->BootstrapPaginator->sort('lc_state', 'Estado Documento');?></th>				
 			</tr>
 		<?php foreach ($salSales as $salSale): ?>
