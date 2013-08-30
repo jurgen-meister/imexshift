@@ -97,20 +97,19 @@ class SalCustomersController extends AppController {
  */
 	public function add() {
 		if ($this->request->is('post')) {
-			//$this->SalCustomer->create();
+			//$this->SalCustomer->create();			
+			$arrayCustomer = array(	'name'=>$this->request->data['SalCustomer']['name'],
+									'address'=>$this->request->data['SalCustomer']['address'],
+									'phone'=>$this->request->data['SalCustomer']['phone'],
+									'location'=>$this->request->data['SalCustomer']['location'],
+									'email'=>$this->request->data['SalCustomer']['email']);
 			
-			$arrayCustomer = array(	'name'=>$this->request->data['name'],
-									'address'=>$this->request->data['address'],
-									'phone'=>$this->request->data['phone'],
-									'location'=>$this->request->data['location'],
-									'email'=>$this->request->data['email']);
+			$arrayNit = array(	'nit'=>$this->request->data['SalCustomer']['nit'],
+								'name'=>$this->request->data['SalCustomer']['nitname']);
 			
-			$arrayNit = array(	'nit'=>$this->request->data['nit'],
-								'name'=>$this->request->data['nitname']);
-			
-			$arrayEmployee = array(	'name'=>$this->request->data['empname'],
-									'phone'=>$this->request->data['empphone'],
-									'email'=>$this->request->data['empmail']);
+			$arrayEmployee = array(	'name'=>$this->request->data['SalCustomer']['empname'],
+									'phone'=>$this->request->data['SalCustomer']['empphone'],
+									'email'=>$this->request->data['SalCustomer']['empemail']);
 			
 			$data = array('SalCustomer'=>$arrayCustomer,'SalTaxNumber'=>$arrayNit,'SalEmployee'=>$arrayEmployee);
 			

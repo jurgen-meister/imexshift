@@ -52,10 +52,17 @@ class SalCustomer extends AppModel {
 		)
 	);
 	
-	public function saveCustomer(){
+	public function saveCustomer($data){
 		$dataSource = $this->getDataSource();
 		$dataSource->begin();
 		
+		$this->create();
+		
+		if($this->saveAll($data)){
+			return true;		
+		} else {
+		$dataSource->rollback();
+		return false;}
 	}
 
 }
