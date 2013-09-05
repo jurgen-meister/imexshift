@@ -310,17 +310,13 @@
 				<?php if($documentState == 'SINVOICE_PENDANT' OR $documentState == ''){ ?>
 					<a class="btn btn-primary" href='#' id="btnAddPay" title="Adicionar Pago"><i class="icon-plus icon-white"></i></a>
 				<?php } ?>
-						
-						<table class="table table-bordered table-striped table-hover" id="tablaPays">
+						<?php $limit2 = count($salPayments); $counter2 = $limit2;?>
+						<table class="table table-bordered table-hover data-table" id="tablaPays">
 							<thead>
 								<tr>
-									<th>Pago</th>
 									<th>Fecha Pago</th>
-									<th>Fecha Limite</th>
 									<th>Monto</th>
-									<th>Deuda</th>
 									<th>Descripcion</th>
-									<th>Estado</th>
 									<?php if($documentState == 'SINVOICE_PENDANT' OR $documentState == ''){ ?>
 									<th class="columnPaysButtons"></th>
 									<?php }?>
@@ -328,30 +324,26 @@
 							</thead>
 							<tbody>
 								<?php
-								$total = 0;
-								$debtAmount = 0;
-								for($i=0; $i<count($salPayments); $i++){
-									echo '<tr>';
-										echo '<td><span id="spaPayName'.$salPayments[$i]['payId'].'">'.$salPayments[$i]['pay'].'</span><input type="hidden" value="'.$salPayments[$i]['payId'].'" id="txtPayId" ></td>';
-										echo '<td><span id="spaDate'.$salPayments[$i]['payId'].'">'.$salPayments[$i]['date'].'</span></td>';
-										echo '<td><span id="spaDueDate'.$salPayments[$i]['payId'].'">'.$salPayments[$i]['dueDate'].'</span></td>';
-										echo '<td><span id="spaPaidAmount'.$salPayments[$i]['payId'].'">'.$salPayments[$i]['paidAmount'].'</span></td>';
-/*calculado ---> */						echo '<td><span id="spaDebtAmount'.$salPayments[$i]['payId'].'">'.$debtAmount.'</span></td>';
-										echo '<td><span id="spaDescription'.$salPayments[$i]['payId'].'">'.$salPayments[$i]['description'].'</span></td>';
-										echo '<td><span id="spaState'.$salPayments[$i]['payId'].'">'.$salPayments[$i]['state'].'</span></td>';
+								$total2 = '0.00';
+								for($i=0; $i<$limit2; $i++){
+									echo '<tr id="payRow'.$salPayments[$i]['dateId'].'" >';
+										echo '<td><span id="spaPayDate'.$salPayments[$i]['dateId'].'">'.$salPayments[$i]['payDate'].'</span><input  value="'.$salPayments[$i]['dateId'].'" id="txtPayDate" ></td>';
+										echo '<td><span id="spaPayAmount'.$salPayments[$i]['dateId'].'">'.$salPayments[$i]['payAmount'].'</span></td>';
+										echo '<td><span id="spaPayDescription'.$salPayments[$i]['dateId'].'">'.$salPayments[$i]['payDescription'].'</span></td>';
 										
 										if($documentState == 'SINVOICE_PENDANT' OR $documentState == ''){
 											echo '<td class="columnPaysButtons">';
-											echo '<a class="btn btn-primary" href="#" id="btnEditPay'.$salPayments[$i]['payId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
+											echo '<a class="btn btn-primary" href="#" id="btnEditPay'.$salPayments[$i]['dateId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
 												
-												<a class="btn btn-danger" href="#" id="btnDeletePay'.$salPayments[$i]['payId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
+												<a class="btn btn-danger" href="#" id="btnDeletePay'.$salPayments[$i]['dateId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
 											echo '</td>';
 										}
 									echo '</tr>';	
-									$total += $subtotal;
+									$total2 += $salPayments[$i]['payAmount'];
 								}?>
 							</tbody>
 						</table>
+					
 				<div class="row-fluid"> <!-- vers si borrar este row-fluid creo q si -->
 					
 					<?php if($documentState == 'SINVOICE_APPROVED'){ ?>
@@ -360,7 +352,7 @@
 							<h4>Total:</h4>	
 						</div>
 						<div class="span1">
-							<h4 id="total" ><?php echo $total.' $us'; ?></h4>
+							<h4 id="total" ><?php echo $total2.' Bs'; ?></h4>
 						</div>
 					<?php }  else { ?>
 						<div class="span8">	</div>
@@ -368,7 +360,7 @@
 							<h4>Total:</h4>	
 						</div>
 						<div class="span3">
-							<h4 id="total" ><?php echo $total.' $us'; ?></h4>
+							<h4 id="total" ><?php echo $total2.' Bs'; ?></h4>
 						</div>
 					<?php }?>
 					
@@ -472,57 +464,33 @@
 					<h3 id="myModalLabel">Pagos</h3>
 				  </div>
 				  
-				  <div class="modal-body form-horizontal">
+				  <div class="modal-body">
 					<!--<p>One fine body…</p>-->
 					<?php
-					echo '<div id="boxModalInitiatePay">';
-						//////////////////////////////////////
-
-						echo $this->BootstrapForm->input('pays_id', array(				
-							'label' => 'Pagos:',
-							'id'=>'cbxModalPays',
-							'class'=>'input-xlarge'
-							));
-						echo '<br>';
-					echo '</div>';
+					echo '<div class="control-group" id="boxModalInitiatePay">';
+					$datePay = '';
 					echo $this->BootstrapForm->input('date', array(	
-							'label' => 'Fecha Pago:',
+							'label' => 'Fecha:',
 							'id'=>'txtModalDate',
+							'value'=>$datePay,
+							'class'=>'span3',
+							'maxlength'=>'15'
 							));
-					echo '<br>';
-					
-					echo $this->BootstrapForm->input('due_date', array(				
-							'label' => 'Fecha Limite:',
-							'id'=>'txtModalDueDate',
-							));
-					echo '<br>';
+					echo '</div>';
 					
 					echo $this->BootstrapForm->input('amount', array(				
 							'label' => 'Monto Pagado:',
 							'id'=>'txtModalPaidAmount',
-							'style'=>'background-color:#EEEEEE',
-							'class'=>'input-small',
+							'class'=>'span3',
 							'maxlength'=>'15'
 							));
-					echo '<br>';
 					
 					echo $this->BootstrapForm->input('description', array(				
 							'label' => 'Descripcion:',
 							'id'=>'txtModalDescription',
-							'style'=>'background-color:#EEEEEE',
-							'class'=>'input-small',
-							'maxlength'=>'15'
+							'class'=>'span9',
+							'rows' => 2
 							));
-					echo '<br>';
-					
-					echo $this->BootstrapForm->input('state', array(				
-							'label' => 'Estado:',
-							'id'=>'txtModalState',
-							'style'=>'background-color:#EEEEEE',
-							'class'=>'input-small',
-							'maxlength'=>'15'
-							));
-					echo '<br>';
 
 					?>
 					  <div id="boxModalValidatePay" class="alert-error"></div> 

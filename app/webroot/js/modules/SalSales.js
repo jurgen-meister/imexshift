@@ -8,17 +8,12 @@ $(document).ready(function(){
 	
 	var arrayItemsAlreadySaved = []; 
 	var arrayWarehouseItemsAlreadySaved = []; 
+//var itemsCounter = 0;
 	startEventsWhenExistsItems();
-	
-	var arrayCostsAlreadySaved = []; 
-	startEventsWhenExistsCosts();
 	
 	var arrayPaysAlreadySaved = []; 
 	startEventsWhenExistsPays();
-	
-	
-	
-	
+
 	//gets a list of the item ids in the document details
 	function itemsListWhenExistsItems(){
 		var arrayAux = [];
@@ -62,20 +57,8 @@ $(document).ready(function(){
 				 arrayItemsAlreadySaved[i] = arrayAux[i]['inv_item_id'];
 				 arrayWarehouseItemsAlreadySaved[i] = arrayAux[i]['inv_warehouse_id'];
 				 createEventClickEditItemButton(arrayAux[i]['inv_item_id'],arrayAux[i]['inv_warehouse_id']);
-				 createEventClickDeleteItemButton(arrayAux[i]['inv_item_id'],arrayAux[i]['inv_warehouse_id']);			 
-			}
-		}
-	}
-		
-	//When exist costs, it starts its events and fills arrayCostsAlreadySaved
-	function startEventsWhenExistsCosts(){		/*STANDBY*/
-		var arrayAux = [];
-		arrayAux = getCostsDetails();
-		if(arrayAux[0] != 0){
-			for(var i=0; i< arrayAux.length; i++){
-				 arrayCostsAlreadySaved[i] = arrayAux[i]['inv_price_type_id'];
-				 createEventClickEditCostButton(arrayAux[i]['inv_price_type_id']);
-				 createEventClickDeleteCostButton(arrayAux[i]['inv_price_type_id']);			 
+				 createEventClickDeleteItemButton(arrayAux[i]['inv_item_id'],arrayAux[i]['inv_warehouse_id']);	
+// itemsCounter = itemsCounter + 1;				 
 			}
 		}
 	}
@@ -86,9 +69,9 @@ $(document).ready(function(){
 		arrayAux = getPaysDetails();
 		if(arrayAux[0] != 0){
 			for(var i=0; i< arrayAux.length; i++){
-				 arrayPaysAlreadySaved[i] = arrayAux[i]['pur_payment_type_id'];
-				 createEventClickEditPayButton(arrayAux[i]['pur_payment_type_id']);
-				 createEventClickDeletePayButton(arrayAux[i]['pur_payment_type_id']);			 
+				 arrayPaysAlreadySaved[i] = arrayAux[i]['date'];
+				 createEventClickEditPayButton(arrayAux[i]['date']);
+				 createEventClickDeletePayButton(arrayAux[i]['date']);			 
 			}
 		}
 	}
@@ -148,7 +131,7 @@ $(document).ready(function(){
 		return error;
 	}
 	
-	function validatePay(pay, amount/*, documentQuantity*/){
+	function validatePay(payDate, payAmount){
 		var error = '';
 //		if(quantity == ''){
 //			error+='<li>El campo "Cantidad" no puede estar vacio</li>'; 
@@ -165,17 +148,17 @@ $(document).ready(function(){
 ////			}
 //		}
 		
-		if(amount == ''){
+		if(payAmount == ''){
 			error+='<li>El campo "Monto Pagado" no puede estar vacio</li>'; 
 		}else{
 //o si puede ser cero el precio?			
-			if(parseFloat(amount).toFixed(2) == 0){
+			if(parseFloat(payAmount).toFixed(2) == 0){
 				
 				error+='<li>El campo "Monto Pagado" no puede ser cero</li>'; 
 			}
 		}
 		
-		if(pay == ''){error+='<li>El campo "Pagos" no puede estar vacio</li>';}
+//		if(pay == ''){error+='<li>El campo "Pagos" no puede estar vacio</li>';}
 		
 		return error;
 	}
@@ -280,24 +263,19 @@ $(document).ready(function(){
 		}
 	}
 	
-	function initiateModalAddCost(){
-		if(arrayCostsAlreadySaved.length == 0){  //For fix undefined index
-			arrayCostsAlreadySaved = [0] //if there isn't any row, the array must have at least one field 0 otherwise it sends null
-		}
-		$('#btnModalAddCost').show();
-		$('#btnModalEditCost').hide();
-		$('#boxModalValidateCost').html('');//clear error message
-		ajax_initiate_modal_add_cost(arrayCostsAlreadySaved);
-	}
-	
 	function initiateModalAddPay(){
-		if(arrayPaysAlreadySaved.length == 0){  //For fix undefined index
-			arrayPaysAlreadySaved = [0] //if there isn't any row, the array must have at least one field 0 otherwise it sends null
+		var error = validateBeforeSaveAll([{0:0}]);//I send [{0:0}] 'cause it doesn't care to validate if arrayItemsDetails is empty or not
+		if( error === ''){
+			if(arrayPaysAlreadySaved.length === 0){  //For fix undefined index
+				arrayPaysAlreadySaved = [0] //if there isn't any row, the array must have at least one field 0 otherwise it sends null
+			}
+			$('#btnModalAddPay').show();
+			$('#btnModalEditPay').hide();
+			$('#boxModalValidatePay').html('');//clear error message
+			ajax_initiate_modal_add_pay(arrayPaysAlreadySaved);
+		}else{
+			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
 		}
-		$('#btnModalAddPay').show();
-		$('#btnModalEditPay').hide();
-		$('#boxModalValidatePay').html('');//clear error message
-		ajax_initiate_modal_add_pay(arrayPaysAlreadySaved);
 	}
 	
 	function initiateModalEditItem(objectTableRowSelected){
@@ -374,52 +352,22 @@ $(document).ready(function(){
         });
 	}
 	
-	
-	
-	function initiateModalEditCost(objectTableRowSelected){
-		var costIdForEdit = objectTableRowSelected.find('#txtCostId').val();  //
-		$('#btnModalAddCost').hide();
-		$('#btnModalEditCost').show();
-		$('#boxModalValidateCost').html('');//clear error message
-//		$('#txtModalQuantity').val(objectTableRowSelected.find('#spaQuantity'+itemIdForEdit).text());
-		$('#txtModalAmount').val(objectTableRowSelected.find('#spaAmount'+costIdForEdit).text());
-//		$('#txtModalPrice').keypress(function(){return false;});
-//		if ($('#txtModalQuantityDocument').length > 0){//existe
-//			$('#txtModalQuantityDocument').val(objectTableRowSelected.find('#spaQuantityDocument'+itemIdForEdit).text());
-//			$('#txtModalQuantityDocument').keypress(function(){return false;});
-//		}
-	/*	if($('#cbxWarehouses2').length > 0){
-			$('#txtModalStock2').val(objectTableRowSelected.find('#spaStock2-'+itemIdForEdit).text());
-			$('#txtModalStock2').keypress(function(){return false;});
-		}*/
-		$('#cbxModalCosts').empty();
-		$('#cbxModalCosts').append('<option value="'+costIdForEdit+'">'+objectTableRowSelected.find('td:first').text()+'</option>');
-		initiateModalCost();
-	}
-	
 	function initiateModalEditPay(objectTableRowSelected){
-		var payIdForEdit = objectTableRowSelected.find('#txtPayId').val();  //
-		$('#btnModalAddPay').hide();
-		$('#btnModalEditPay').show();
-		$('#boxModalValidatePay').html('');//clear error message
-//		$('#txtModalQuantity').val(objectTableRowSelected.find('#spaQuantity'+itemIdForEdit).text());
-		$('#txtModalDate').val(objectTableRowSelected.find('#spaDate'+payIdForEdit).text());
-		$('#txtModalDueDate').val(objectTableRowSelected.find('#spaDueDate'+payIdForEdit).text());
-		$('#txtModalPaidAmount').val(objectTableRowSelected.find('#spaPaidAmount'+payIdForEdit).text());
-		$('#txtModalDescription').val(objectTableRowSelected.find('#spaDescription'+payIdForEdit).text());
-		$('#txtModalState').val(objectTableRowSelected.find('#spaState'+payIdForEdit).text());
-//		$('#txtModalPrice').keypress(function(){return false;});
-//		if ($('#txtModalQuantityDocument').length > 0){//existe
-//			$('#txtModalQuantityDocument').val(objectTableRowSelected.find('#spaQuantityDocument'+itemIdForEdit).text());
-//			$('#txtModalQuantityDocument').keypress(function(){return false;});
-//		}
-	/*	if($('#cbxWarehouses2').length > 0){
-			$('#txtModalStock2').val(objectTableRowSelected.find('#spaStock2-'+itemIdForEdit).text());
-			$('#txtModalStock2').keypress(function(){return false;});
-		}*/
-		$('#cbxModalPays').empty();
-		$('#cbxModalPays').append('<option value="'+payIdForEdit+'">'+objectTableRowSelected.find('td:first').text()+'</option>');
-		initiateModalPay();
+		var error = validateBeforeSaveAll([{0:0}]);//I send [{0:0}] 'cause it doesn't care to validate if arrayItemsDetails is empty or not
+		if( error === ''){
+			var payIdForEdit = objectTableRowSelected.find('#txtPayDate').val();  //
+			$('#btnModalAddPay').hide();
+			$('#btnModalEditPay').show();
+			$('#boxModalValidatePay').html('');//clear error message
+			$('#txtModalDate').val(objectTableRowSelected.find('#spaPayDate'+payIdForEdit).text());
+			$('#txtModalPaidAmount').val(objectTableRowSelected.find('#spaPayAmount'+payIdForEdit).text());
+			$('#txtModalDescription').val(objectTableRowSelected.find('#spaPayDescription'+payIdForEdit).text());
+//			$('#cbxModalPays').empty();
+//			$('#cbxModalPays').append('<option value="'+payIdForEdit+'">'+objectTableRowSelected.find('td:first').text()+'</option>');
+			initiateModalPay();
+		}else{
+			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
+		}	
 	}
 	
 	function createEventClickEditItemButton(itemId,warehouseId){
@@ -491,43 +439,16 @@ $(document).ready(function(){
 		}
 	}
 	
-	function createEventClickEditCostButton(costId){
-			$('#btnEditCost'+costId).bind("click",function(){ //must be binded 'cause loaded live with javascript'
-					var objectTableRowSelected = $(this).closest('tr')
-					initiateModalEditCost(objectTableRowSelected);
-					return false; //avoid page refresh
-			});
-	}
-	
-	function createEventClickDeleteCostButton(costId){
-		$('#btnDeleteCost'+costId).bind("click",function(){ //must be binded 'cause loaded live with javascript'
-					var objectTableRowSelected = $(this).closest('tr')
-					deleteCost(objectTableRowSelected);
-					return false; //avoid page refresh
-		});
-	}
-	
-	function deleteCost(objectTableRowSelected){
-		if(confirm('Esta seguro de Eliminar el costo?')){	
-
-			var costIdForDelete = objectTableRowSelected.find('#txtCostId').val();  //
-			arrayCostsAlreadySaved = jQuery.grep(arrayCostsAlreadySaved, function(value){
-				return value != costIdForDelete;
-			});
-			objectTableRowSelected.remove();
-		}
-	}
-	
-	function createEventClickEditPayButton(payId){
-			$('#btnEditPay'+payId).bind("click",function(){ //must be binded 'cause loaded live with javascript'
+	function createEventClickEditPayButton(dateId){
+			$('#btnEditPay'+dateId).bind("click",function(){ //must be binded 'cause loaded live with javascript'
 					var objectTableRowSelected = $(this).closest('tr')
 					initiateModalEditPay(objectTableRowSelected);
 					return false; //avoid page refresh
 			});
 	}
 	
-	function createEventClickDeletePayButton(payId){
-		$('#btnDeletePay'+payId).bind("click",function(){ //must be binded 'cause loaded live with javascript'
+	function createEventClickDeletePayButton(dateId){
+		$('#btnDeletePay'+dateId).bind("click",function(){ //must be binded 'cause loaded live with javascript'
 					var objectTableRowSelected = $(this).closest('tr')
 					deletePay(objectTableRowSelected);
 					return false; //avoid page refresh
@@ -535,20 +456,32 @@ $(document).ready(function(){
 	}
 	
 	function deletePay(objectTableRowSelected){
-		if(confirm('Esta seguro de Eliminar el pago?')){	
-
-			var payIdForDelete = objectTableRowSelected.find('#txtPayId').val();  //
-			arrayPaysAlreadySaved = jQuery.grep(arrayPaysAlreadySaved, function(value){
-				return value != payIdForDelete;
+		var arrayPaysDetails = getPaysDetails();
+		var error = validateBeforeSaveAll([{0:0}]);//Send [{0:0}] 'cause I won't use arrayItemsDetails classic validation, I will use it differently for this case (as done below)
+		if(arrayPaysDetails.length === 1){error+='<li> Debe existir al menos 1 "Pago" </li>';}
+		if( error === ''){
+			showBittionAlertModal({content:'¿Está seguro de eliminar este pago?'});
+			$('#bittionBtnYes').click(function(){
+				ajax_save_movement('DELETE_PAY', 'SINVOICE_PENDANT', objectTableRowSelected, []);
+				return false;
 			});
-			objectTableRowSelected.remove();
+		}else{
+			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
 		}
+//		if(confirm('Esta seguro de Eliminar el pago?')){	
+//
+//			var payIdForDelete = objectTableRowSelected.find('#txtPayId').val();  //
+//			arrayPaysAlreadySaved = jQuery.grep(arrayPaysAlreadySaved, function(value){
+//				return value != payIdForDelete;
+//			});
+//			objectTableRowSelected.remove();
+//		}
 	}
 	
 	// (GC Ztep 3) function to fill Items list when saved in modal triggered by addItem() //type="hidden"
 	function createRowItemTable(itemId, itemCodeName, salePrice, quantity, warehouse, warehouseId, stock, subtotal){
 		var row = '<tr id="itemRow'+itemId+'w'+warehouseId+'" >';
-		row +='<td><span id="spaItemName'+itemId+'">'+itemCodeName+'</span><input  value="'+itemId+'" id="txtItemId" ></td>';
+		row +='<td><span id="spaItemName'+itemId+'">'+itemCodeName+'</span><input type="hidden" value="'+itemId+'" id="txtItemId" ></td>';
 		row +='<td><span id="spaSalePrice'+itemId+'w'+warehouseId+'">'+salePrice+'</span></td>';
 		row +='<td><span id="spaQuantity'+itemId+'w'+warehouseId+'">'+quantity+'</span></td>';
 		row +='<td><span id="spaWarehouse'+itemId+'">'+warehouse+'</span><input type="hidden" value="'+warehouseId+'" id="txtWarehouseId'+itemId+'" ></td>';
@@ -562,33 +495,14 @@ $(document).ready(function(){
 		$('#tablaItems').prepend(row);
 	}
 	
-	function createRowCostTable(costId, costCodeName, amount/*, quantity, subtotal*/){
-		var row = '<tr>';
-		row +='<td><span id="spaCostName'+costId+'">'+costCodeName+'</span><input type="hidden" value="'+costId+'" id="txtCostId" ></td>';
-		row +='<td><span id="spaAmount'+costId+'">'+amount+'</span></td>';
-//		row +='<td><span id="spaQuantity'+itemId+'">'+quantity+'</span></td>';
-//		row +='<td><span id="spaSubtotal'+itemId+'">'+subtotal+'</span></td>';
-		row +='<td class="columnCostsButtons">';
-		row +='<a class="btn btn-primary" href="#" id="btnEditCost'+costId+'" title="Editar"><i class="icon-pencil icon-white"></i></a> ';
-		row +='<a class="btn btn-danger" href="#" id="btnDeleteCost'+costId+'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
-		row +='</td>';
-		row +='</tr>'
-		$('#tablaCosts > tbody:last').append(row);
-	}
-	//payId, payCodeName, payDate, payDueDate, parseFloat(amount).toFixed(2), description, state
-	//genera el codigo HTML para la creacion de una fila de la tabla de Pagos
-	function createRowPayTable(payId, payCodeName, payDate, payDueDate, amount, debtAmount, description, state/*, quantity, subtotal*/){
-		var row = '<tr>';
-		row +='<td><span id="spaPayName'+payId+'">'+payCodeName+'</span><input type="hidden" value="'+payId+'" id="txtPayId" ></td>';
-		row +='<td><span id="spaDate'+payId+'">'+payDate+'</span></td>';
-		row +='<td><span id="spaDueDate'+payId+'">'+payDueDate+'</span></td>';
-		row +='<td><span id="spaPaidAmount'+payId+'">'+amount+'</span></td>';
-		row +='<td><span id="spaDebtAmount'+payId+'">'+debtAmount+'</span></td>';
-		row +='<td><span id="spaDescription'+payId+'">'+description+'</span></td>';
-		row +='<td><span id="spaState'+payId+'">'+state+'</span></td>';
+	function createRowPayTable(dateId, payDate, payAmount, payDescription){
+		var row = '<tr id="payRow'+dateId+'" >';
+		row +='<td><span id="spaPayDate'+dateId+'">'+payDate+'</span><input  value="'+dateId+'" id="txtPayDate" ></td>';
+		row +='<td><span id="spaPayAmount'+dateId+'">'+payAmount+'</span></td>';
+		row +='<td><span id="spaPayDescription'+dateId+'">'+payDescription+'</span></td>';
 		row +='<td class="columnPaysButtons">';
-		row +='<a class="btn btn-primary" href="#" id="btnEditPay'+payId+'" title="Editar"><i class="icon-pencil icon-white"></i></a> ';
-		row +='<a class="btn btn-danger" href="#" id="btnDeletePay'+payId+'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
+		row +='<a class="btn btn-primary" href="#" id="btnEditPay'+dateId+'" title="Editar"><i class="icon-pencil icon-white"></i></a> ';
+		row +='<a class="btn btn-danger" href="#" id="btnDeletePay'+dateId+'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
 		row +='</td>';
 		row +='</tr>'
 		$('#tablaPays > tbody:last').append(row);
@@ -615,8 +529,13 @@ $(document).ready(function(){
 		var quantity = 0;
 //		var cifPrice = 0.00;	//temp var
 //		var exCifPrice = 0.00;	//temp var
-		
 		var subtotal = 0.00;
+		
+		var dateId = '';
+		var payDate = '';
+		var payAmount = 0;
+		var payDescription = '';
+		
 	//	var total = 0.00;
 		//only used for ADD
 		var warehouse = '';
@@ -637,13 +556,19 @@ $(document).ready(function(){
 //			warehouseId2 = $('#cbxWarehouses2').val();
 //		}	
 		//SaleDetails(Item) setup variables
-		if(OPERATION === 'ADD' || OPERATION === 'EDIT'){
+		if(OPERATION === 'ADD' || OPERATION === 'EDIT' || OPERATION === 'ADD_PAY' || OPERATION === 'EDIT_PAY'){
 			warehouseId = $('#cbxModalWarehouses').val();		
 			itemId = $('#cbxModalItems').val();
 			salePrice = $('#txtModalPrice').val();
 			quantity = $('#txtModalQuantity').val();
 
-//			
+			if(OPERATION === 'ADD_PAY' || OPERATION === 'EDIT_PAY'){
+				payDate = $('#txtModalDate').val();
+				var myDate = payDate.split('/');
+				dateId = myDate[2]+"-"+myDate[1]+"-"+myDate[0];
+				payAmount = $('#txtModalPaidAmount').val();
+				payDescription = $('#txtModalDescription').val();
+			}
 //			total = parseFloat($('#total').text()) + Number(subtotal);
 			if(OPERATION === 'ADD'){
 				warehouse = $('#cbxModalWarehouses option:selected').text();
@@ -654,9 +579,14 @@ $(document).ready(function(){
 				subtotal = Number(quantity) * Number(salePrice);
 			}
 		}
+			
 		if(OPERATION === 'DELETE'){
 			itemId = objectTableRowSelected.find('#txtItemId').val();
 			warehouseId = objectTableRowSelected.find('#txtWarehouseId'+itemId).val();
+		}
+		
+		if(OPERATION === 'DELETE_PAY'){
+			payDate/*dateId*/ = objectTableRowSelected.find('#txtPayDate').val();
 		}
 		//setting data
 		DATA ={	'purchaseId':purchaseId
@@ -677,10 +607,14 @@ $(document).ready(function(){
 				,'quantity':quantity	
 //				,'cifPrice':cifPrice
 //				,'exCifPrice':exCifPrice
-				
 				,'subtotal':subtotal
 			//	,'total':total
 				
+				,'dateId':dateId
+				,'payDate':payDate
+				,'payAmount':payAmount
+				,'payDescription':payDescription
+		
 				,'ACTION':ACTION
 				,'OPERATION':OPERATION
 				,'STATE':STATE
@@ -705,7 +639,7 @@ $(document).ready(function(){
 			}, 4000);
 	}
 	
-	function setOnPendant(DATA, ACTION, OPERATION, STATE, objectTableRowSelected, warehouseId, warehouse, itemId, itemCodeName, salePrice, stock, quantity, subtotal){
+	function setOnPendant(DATA, ACTION, OPERATION, STATE, objectTableRowSelected, warehouseId, warehouse, itemId, itemCodeName, salePrice, stock, quantity, subtotal, dateId, payDate, payAmount, payDescription){
 		if($('#txtPurchaseIdHidden').val() === ''){
 //			if(ACTION === 'save_warehouses_transfer'){
 //				$('#txtDocumentCode').val(DATA[2]);
@@ -727,32 +661,36 @@ $(document).ready(function(){
 			arrayItemsAlreadySaved.push(itemId);  //push into array of the added item
 			arrayWarehouseItemsAlreadySaved.push(warehouseId);  //push into array of the added warehouses	
 			$('#countItems').text(arrayItemsAlreadySaved.length);
-//			var subtotalw = Number(quantity) * Number(salePrice);
-//			$('#spaSubtotal'+itemId).text(parseFloat().toFixed(2));
-//			var total = $('#total').text();
-//			var total = getTotal()
 			$('#total').text(parseFloat(getTotal()).toFixed(2)+' Bs.');
-			
 			$('#modalAddItem').modal('hide');
 			highlightTemporally('#itemRow'+itemId+'w'+warehouseId);
+		}	
+		if(OPERATION === 'ADD_PAY'){
+			createRowPayTable(dateId, payDate, parseFloat(payAmount).toFixed(2), payDescription);
+			createEventClickEditPayButton(dateId);
+			createEventClickDeletePayButton(dateId);
+			arrayPaysAlreadySaved.push(dateId);  //push into array of the added date
+			$('#modalAddPay').modal('hide');
+			highlightTemporally('#payRow'+dateId);
 		}
 		if(OPERATION === 'EDIT'){
 			$('#spaQuantity'+itemId+'w'+warehouseId).text(parseInt(quantity,10));
 			$('#spaSalePrice'+itemId+'w'+warehouseId).text(parseFloat(salePrice).toFixed(2));	
 			$('#spaSubtotal'+itemId+'w'+warehouseId).text(parseFloat(Number(quantity) * Number(salePrice)).toFixed(2));
-		//	$('#total').text(parseFloat(total).toFixed(2)+' Bs.');
 			$('#total').text(parseFloat(getTotal()).toFixed(2)+' Bs.');
 			$('#modalAddItem').modal('hide');
 			highlightTemporally('#itemRow'+itemId+'w'+warehouseId);
+		}	
+		if(OPERATION === 'EDIT_PAY'){	
+			$('#spaPayDate'+dateId).text(payDate);
+			$('#spaPayAmount'+dateId).text(parseFloat(payAmount).toFixed(2));
+			$('#spaPayDescription'+dateId).text(payDescription);
+			$('#modalAddPay').modal('hide');
+			highlightTemporally('#payRow'+dateId);
 		}
 		if(OPERATION === 'DELETE'){					
-			var itemIdForDelete = objectTableRowSelected.find('#txtItemId').val();  //
-			//	this should be a function
-			subtotal = $('#spaSubtotal'+itemIdForDelete+'w'+warehouseId).text();	
-	//		total = parseFloat($('#total').text()) - Number(subtotal);
-			//	this should be a function
-	//		$('#total').text(parseFloat(total).toFixed(2)+' Bs.');			
-			
+			var itemIdForDelete = objectTableRowSelected.find('#txtItemId').val();
+			subtotal = $('#spaSubtotal'+itemIdForDelete+'w'+warehouseId).text();		
 			hideBittionAlertModal();
 			
 			objectTableRowSelected.fadeOut("slow", function() {
@@ -762,7 +700,18 @@ $(document).ready(function(){
 			warehouseListWhenExistsItems();
 			$('#countItems').text(arrayItemsAlreadySaved.length-1);	//because arrayItemsAlreadySaved updates after all is done
 			$('#total').text(parseFloat(getTotal()-subtotal).toFixed(2)+' Bs.');
+		}
+		if(OPERATION === 'DELETE_PAY'){						
+			//-----------------------------------------------------------------------------------------------------------------
+			arrayPaysAlreadySaved = jQuery.grep(arrayPaysAlreadySaved, function(value){
+				return value !== dateId;
+			});
+			//-----------------------------------------------------------------------------------------------------------------
+			hideBittionAlertModal();
 			
+			objectTableRowSelected.fadeOut("slow", function() {
+				$(this).remove();
+			});
 		}
 		showGrowlMessage('ok', 'Cambios guardados.');
 	}
@@ -824,7 +773,7 @@ $(document).ready(function(){
 						setOnCancelled(STATE);
 						break;
 					case 'SINVOICE_PENDANT':
-						setOnPendant(dataReceived, ACTION, OPERATION, STATE, objectTableRowSelected, dataSent['warehouseId'], dataSent['warehouse'], dataSent['itemId'], dataSent['itemCodeName'], dataSent['salePrice'], dataSent['stock'], dataSent['quantity'], dataSent['subtotal']);
+						setOnPendant(dataReceived, ACTION, OPERATION, STATE, objectTableRowSelected, dataSent['warehouseId'], dataSent['warehouse'], dataSent['itemId'], dataSent['itemCodeName'], dataSent['salePrice'], dataSent['stock'], dataSent['quantity'], dataSent['subtotal'], dataSent['dateId'], dataSent['payDate'], dataSent['payAmount'], dataSent['payDescription']);
 						break;
 					case 'SINVOICE_APPROVED':
 						setOnApproved(dataReceived, STATE, ACTION);
@@ -922,67 +871,34 @@ $(document).ready(function(){
 			$('#boxModalValidateItem').html('<ul>'+error+'</ul>');
 		}
 	}
-		
-		
-		
-	function addCost(){
-//		var quantity = $('#txtModalQuantity').val();
-		var costId = $('#cbxModalCosts').val();
-		var costCodeName = $('#cbxModalCosts option:selected').text();
-		var amount = $('#txtModalAmount').val();
-//	var subtotal = ((quantity) * (price));
-		var error = validateCost(costCodeName, parseFloat(amount).toFixed(2)/*, ''*/); 
-		if(error == ''){
-			
-			createRowCostTable(costId, costCodeName, parseFloat(amount).toFixed(2)/*, parseInt(quantity,10)*//*, stock2*//*, subtotal*/);
-			createEventClickEditCostButton(costId);
-			createEventClickDeleteCostButton(costId);
-			arrayCostsAlreadySaved.push(costId);  //push into array of the added item
-			$('#modalAddCost').modal('hide');
-		}else{
-			$('#boxModalValidateCost').html('<ul>'+error+'</ul>');
-		}
-	}
 	
 	function addPay(){
-		var payId = $('#cbxModalPays').val();
-		var payCodeName = $('#cbxModalPays option:selected').text();
 		var payDate = $('#txtModalDate').val();
-		var payDueDate = $('#txtModalDueDate').val();
-		var amount = $('#txtModalPaidAmount').val();
-		var description = $('#txtModalDescription').val();
-		var state = $('#txtModalState').val();
-		var debtAmount = 0;
-//	var subtotal = ((quantity) * (price));
-		var error = validatePay(payCodeName, parseFloat(amount).toFixed(2)/*, ''*/); 
+		var payAmount = $('#txtModalPaidAmount').val();
+//		var payDescription = $('#txtModalDescription').val();
+		var error = validatePay(payDate, parseFloat(payAmount).toFixed(2));  
 		if(error == ''){
-			
-			createRowPayTable(payId, payCodeName, payDate, payDueDate, parseFloat(amount).toFixed(2), parseFloat(debtAmount).toFixed(2), description, state/*, subtotal*/);
-			createEventClickEditPayButton(payId);
-			createEventClickDeletePayButton(payId);
-			arrayPaysAlreadySaved.push(payId);  //push into array of the added item
-			$('#modalAddPay').modal('hide');
+			if(arr[3] == 'save_invoice'){
+				ajax_save_movement('ADD_PAY', 'SINVOICE_PENDANT', '', []);
+			}
 		}else{
 			$('#boxModalValidatePay').html('<ul>'+error+'</ul>');
 		}
 	}
 	
-	function editCost(){
-		var costId = $('#cbxModalCosts').val();
-//		var quantity = $('#txtModalQuantity').val();
-		var costCodeName = $('#cbxModalCosts option:selected').text();
-var amount = $('#txtModalAmount').val();
-//var subtotal = ((quantity) * (price));
-		var error = validateCost(costCodeName,/* quantity,*/ parseFloat(amount).toFixed(2)/*, ''*/); 
+	function editPay(){
+		var payDate = $('#txtModalDate').val();
+		var payAmount = $('#txtModalPaidAmount').val();
+		
+		var error = validatePay(payDate, parseFloat(payAmount).toFixed(2));  
 		if(error == ''){
-//			$('#spaQuantity'+itemId).text(parseInt(quantity,10));
-			$('#spaAmount'+costId).text(parseFloat(amount).toFixed(2));
-//			$('#spaSubtotal'+itemId).text(parseFloat(subtotal).toFixed(2));
-			$('#modalAddCost').modal('hide');
+			if(arr[3] == 'save_invoice'){
+				ajax_save_movement('EDIT_PAY', 'SINVOICE_PENDANT', '', []);
+			}
 		}else{
-			$('#boxModalValidateCost').html('<ul>'+error+'</ul>');
+			$('#boxModalValidateItem').html('<ul>'+error+'</ul>');
 		}
-	}	
+	}
 	
 	function getTotal(){
 		var arrayAux = [];
@@ -1035,63 +951,20 @@ var exRate = $('#txtExRate').val();
 		return arrayItemsDetails; 		
 	}
 	
-	//get all costs for save a invoice
-	function getCostsDetails(){		
-		var arrayCostsDetails = [];
-		var costId = '';
-		var costAmount = '';
-//		var itemQuantity = '';
-//		var itemQuantityDocument = '';
-		
-		$('#tablaCosts tbody tr').each(function(){		
-			costId = $(this).find('#txtCostId').val();
-			costAmount = $(this).find('#spaAmount'+costId).text();
-//			itemQuantity = $(this).find('#spaQuantity'+itemId).text();
-	
-//			if ($('#spaQuantityDocument'+itemId).length > 0){//exists
-//				itemQuantityDocument = $(this).find('#spaQuantityDocument'+itemId).text();
-//			}
-			
-			arrayCostsDetails.push({'inv_price_type_id':costId, 'amount':costAmount/*, 'quantity':itemQuantity, 'quantity_document':itemQuantityDocument*//*, 'stock2':itemStock2*/});
-			
-		});
-		
-		if(arrayCostsDetails.length == 0){  //For fix undefined index
-			arrayCostsDetails = [0] //if there isn't any row, the array must have at least one field 0 otherwise it sends null
-		}
-		
-		return arrayCostsDetails; 		
-	}
-	
 	function getPaysDetails(){		
 		var arrayPaysDetails = [];
-		var payId = '';
+		var dateId = '';
 		var payDate = '';
-		var payDueDate = '';
 		var payAmount = '';
-//		var payDebtAmount = '';
 		var payDescription = '';
-		var payState = '';
-//		var itemQuantity = '';
-//		var itemQuantityDocument = '';
 		
 		$('#tablaPays tbody tr').each(function(){		
-			payId = $(this).find('#txtPayId').val();
-		//	costAmount = $(this).find('#spaAmount'+costId).text();
-			payDate = $(this).find('#spaDate'+payId).text();
-			payDueDate = $(this).find('#spaDueDate'+payId).text();
-			payAmount = $(this).find('#spaPaidAmount'+payId).text();
-//			payDebtAmount = $(this).find('#spaDebtAmount'+payId).text();
-			payDescription = $(this).find('#spaDescription'+payId).text();
-			payState = $(this).find('#spaState'+payId).text();
-//			itemQuantity = $(this).find('#spaQuantity'+itemId).text();
-	
-//			if ($('#spaQuantityDocument'+itemId).length > 0){//exists
-//				itemQuantityDocument = $(this).find('#spaQuantityDocument'+itemId).text();
-//			}
+			dateId = $(this).find('#txtPayDate').val();
+			payDate = $(this).find('#spaPayDate'+dateId).text();
+			payAmount = $(this).find('#spaPayAmount'+dateId).text();
+			payDescription = $(this).find('#spaPayDescription'+dateId).text();
 			
-			arrayPaysDetails.push({'pur_payment_type_id':payId, 'date':payDate, 'due_date':payDueDate, 'amount':payAmount,'description':payDescription, 'lc_state':payState  /*, 'quantity':itemQuantity, 'quantity_document':itemQuantityDocument*//*, 'stock2':itemStock2*/});
-			
+			arrayPaysDetails.push({'date':dateId, 'amount':payAmount,'description':payDescription});
 		});
 		
 		if(arrayPaysDetails.length == 0){  //For fix undefined index
@@ -1363,21 +1236,6 @@ var exRate = $('#txtExRate').val();
 		return false; //avoid page refresh
 	});
 	
-	$('#btnAddCost').click(function(){
-		initiateModalAddCost();
-		return false; //avoid page refresh
-	});
-	$('#btnModalAddCost').click(function(){
-		addCost();
-		return false; //avoid page refresh
-	});
-	
-	//edit an existing item quantity
-	$('#btnModalEditCost').click(function(){
-		editCost();
-		return false; //avoid page refresh
-	});
-	
 	//function triggered when PAYS plus icon is clicked
 	$('#btnAddPay').click(function(){
 		initiateModalAddPay();
@@ -1386,6 +1244,12 @@ var exRate = $('#txtExRate').val();
 	
 	$('#btnModalAddPay').click(function(){
 		addPay();
+		return false; //avoid page refresh
+	});
+	
+	//edit an existing item quantity
+	$('#btnModalEditPay').click(function(){
+		editPay();
 		return false; //avoid page refresh
 	});
 	////////////////
@@ -1858,17 +1722,19 @@ changeLabelDocumentState('NOTE_CANCELLED'); //#UNICORN
             success: function(data){
 				$('#processing').text('');
 				$('#boxModalInitiatePay').html(data);
-				$('#txtModalDate').val('');  
-				$('#txtModalDueDate').val('');  
+			//	$('#txtModalDate').val('');  
+			//	$('#txtModalDueDate').val('');  
 				$('#txtModalPaidAmount').val('');  
 				$('#txtModalDescription').val('');  
-				$('#txtModalState').val(''); 
+			//	$('#txtModalState').val(''); 
 				initiateModalPay()
 /*				$('#cbxModalCosts').bind("change",function(){ //must be binded 'cause dropbox is loaded by a previous ajax'
 					ajax_update_amount();
 				});
 *///				$('#txtModalPrice').keypress(function(){return false;});
-				
+				$("#txtModalDate").datepicker({
+					showButtonPanel: true
+				});
 			},
 			error:function(data){
 				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
