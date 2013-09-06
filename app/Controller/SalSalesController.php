@@ -1806,9 +1806,18 @@ class SalSalesController extends AppController {
 	
 		public function ajax_initiate_modal_add_pay(){
 		if($this->RequestHandler->isAjax()){
-		//				$cost = $this->request->data['cost'];
 			$paysAlreadySaved = $this->request->data['paysAlreadySaved'];
+			$payDebt = $this->request->data['payDebt'];
+//			debug($payDebt);
 			$datePay=date('d/m/Y');
+//			$debt = $this->SalSale->SalPayment->find('list', array(
+//					'fields'=>array('SalPayment.amount'),
+//					'conditions'=>array(
+//						'SalPayment.date'=>$paysAlreadySaved
+//				),
+//				'recursive'=>-1
+//			));
+//	debug($debt);
 //			$warehouse = $this->request->data['warehouse'];
 		//	$supplier = $this->request->data['supplier'];
 //	//		$itemsBySupplier = $this->PurPurchase->InvSupplier->InvItemsSupplier->find('list', array(
@@ -1861,7 +1870,7 @@ class SalSalesController extends AppController {
 //			$amount = $amountDirty['PurPrice']['amount'];
 //		}
 				
-			$this->set(compact('pays', 'datePay'/*, 'amount'*/));
+			$this->set(compact('pays', 'datePay', 'payDebt'/*, 'amount'*/));
 		}
 	}
 	

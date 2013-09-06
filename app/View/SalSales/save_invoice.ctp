@@ -352,7 +352,7 @@
 							<h4>Total:</h4>	
 						</div>
 						<div class="span1">
-							<h4 id="total" ><?php echo $total2.' Bs'; ?></h4>
+							<h4 id="total2" ><?php echo number_format($total2, 2, '.', '').' Bs.'; ?></h4>
 						</div>
 					<?php }  else { ?>
 						<div class="span8">	</div>
@@ -360,7 +360,7 @@
 							<h4>Total:</h4>	
 						</div>
 						<div class="span3">
-							<h4 id="total" ><?php echo $total2.' Bs'; ?></h4>
+							<h4 id="total2" ><?php echo number_format($total2, 2, '.', '').' Bs.'; ?></h4>
 						</div>
 					<?php }?>
 					
@@ -465,25 +465,27 @@
 				  </div>
 				  
 				  <div class="modal-body">
-					<!--<p>One fine body…</p>-->
+					<!-- class="control-group"--> 
 					<?php
-					echo '<div class="control-group" id="boxModalInitiatePay">';
-					$datePay = '';
-					echo $this->BootstrapForm->input('date', array(	
-							'label' => 'Fecha:',
-							'id'=>'txtModalDate',
-							'value'=>$datePay,
-							'class'=>'span3',
-							'maxlength'=>'15'
-							));
+					echo '<div id="boxModalInitiatePay">';
+						$datePay = '';
+						echo $this->BootstrapForm->input('date', array(	
+								'label' => 'Fecha:',
+								'id'=>'txtModalDate',
+								'value'=>$datePay,
+								'class'=>'span3',
+								'maxlength'=>'15'
+								));
+//					
+						$payDebt = '';
+						echo $this->BootstrapForm->input('amount', array(				
+								'label' => 'Monto a Pagar:',
+								'id'=>'txtModalPaidAmount',
+								'value'=>$payDebt,
+								'class'=>'span3',
+								'maxlength'=>'15'
+								));
 					echo '</div>';
-					
-					echo $this->BootstrapForm->input('amount', array(				
-							'label' => 'Monto Pagado:',
-							'id'=>'txtModalPaidAmount',
-							'class'=>'span3',
-							'maxlength'=>'15'
-							));
 					
 					echo $this->BootstrapForm->input('description', array(				
 							'label' => 'Descripcion:',

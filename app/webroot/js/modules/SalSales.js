@@ -13,7 +13,20 @@ $(document).ready(function(){
 	
 	var arrayPaysAlreadySaved = []; 
 	startEventsWhenExistsPays();
-
+	
+//	var payPaid = 0;
+	var payDebt = 0;
+//	var payTotal = 0; 
+	startEventsWhenExistsDebts();
+	
+	function startEventsWhenExistsDebts(){		
+		payDebt =0;
+		var	payPaid = getTotalPay();
+		var payTotal = getTotal();
+		payDebt = Number(payTotal) - Number(payPaid);
+		return payDebt
+	}
+	
 	//gets a list of the item ids in the document details
 	function itemsListWhenExistsItems(){
 		var arrayAux = [];
@@ -97,64 +110,32 @@ $(document).ready(function(){
 		return error;
 	}
 	
-	
-	
-	function validateCost(cost, amount/*, documentQuantity*/){
+	function validatePay(payDate, payAmount){
 		var error = '';
-//		if(quantity == ''){
-//			error+='<li>El campo "Cantidad" no puede estar vacio</li>'; 
-//		}else{
-//			if(parseInt(quantity, 10) == 0){
-//				
-//				error+='<li>El campo "Cantidad" no puede ser cero</li>'; 
-//			}
-//			
-////			if ($('#txtModalQuantityDocument').length > 0){//existe
-////				if(parseInt(quantity, 10) > $('#txtModalQuantityDocument').val()){
-////					error+='<li>La "Cantidad" de entrada no puede ser mayor a la "Compra"</li>'; 
-////				}
-////			}
-//		}
-		
-		if(amount == ''){
-			error+='<li>El campo "Monto" no puede estar vacio</li>'; 
+		if(payDate == ''){
+			error+='<li>El campo "Fecha" no puede estar vacio</li>'; 
 		}else{
-//o si puede ser cero el precio?			
-			if(parseFloat(amount).toFixed(2) == 0){
-				
-				error+='<li>El campo "Monto" no puede ser cero</li>'; 
+			var arrayAux = [];
+			var myDate = payDate.split('/');
+			var dateId = myDate[2]+"-"+myDate[1]+"-"+myDate[0];
+			arrayAux = getPaysDetails();
+			if(arrayAux[0] != 0){
+				for(var i=0; i< arrayAux.length; i++){
+					if(dateId == (arrayAux[i]['date'])){
+						error+='<li>La "Fecha" ya existe</li>'; 
+					}  
+				}
 			}
 		}
 		
-		if(cost == ''){error+='<li>El campo "Costo" no puede estar vacio</li>';}
-		
-		return error;
-	}
-	
-	function validatePay(payDate, payAmount){
-		var error = '';
-//		if(quantity == ''){
-//			error+='<li>El campo "Cantidad" no puede estar vacio</li>'; 
-//		}else{
-//			if(parseInt(quantity, 10) == 0){
-//				
-//				error+='<li>El campo "Cantidad" no puede ser cero</li>'; 
-//			}
-//			
-////			if ($('#txtModalQuantityDocument').length > 0){//existe
-////				if(parseInt(quantity, 10) > $('#txtModalQuantityDocument').val()){
-////					error+='<li>La "Cantidad" de entrada no puede ser mayor a la "Compra"</li>'; 
-////				}
-////			}
-//		}
-		
 		if(payAmount == ''){
-			error+='<li>El campo "Monto Pagado" no puede estar vacio</li>'; 
+			error+='<li>El campo "Monto a Pagar" no puede estar vacio</li>'; 
 		}else{
-//o si puede ser cero el precio?			
+			if(payAmount > payDebt){
+				error+='<li>El campo "Monto a Pagar" no puede ser mayor a la deuda</li>'; 
+			}
 			if(parseFloat(payAmount).toFixed(2) == 0){
-				
-				error+='<li>El campo "Monto Pagado" no puede ser cero</li>'; 
+				error+='<li>El campo "Monto a Pagar" no puede ser cero</li>'; 
 			}
 		}
 		
@@ -272,7 +253,7 @@ $(document).ready(function(){
 			$('#btnModalAddPay').show();
 			$('#btnModalEditPay').hide();
 			$('#boxModalValidatePay').html('');//clear error message
-			ajax_initiate_modal_add_pay(arrayPaysAlreadySaved);
+			ajax_initiate_modal_add_pay(arrayPaysAlreadySaved,payDebt);
 		}else{
 			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
 		}
@@ -458,7 +439,7 @@ $(document).ready(function(){
 	function deletePay(objectTableRowSelected){
 		var arrayPaysDetails = getPaysDetails();
 		var error = validateBeforeSaveAll([{0:0}]);//Send [{0:0}] 'cause I won't use arrayItemsDetails classic validation, I will use it differently for this case (as done below)
-		if(arrayPaysDetails.length === 1){error+='<li> Debe existir al menos 1 "Pago" </li>';}
+	//	if(arrayPaysDetails.length === 1){error+='<li> Debe existir al menos 1 "Pago" </li>';}
 		if( error === ''){
 			showBittionAlertModal({content:'¿Está seguro de eliminar este pago?'});
 			$('#bittionBtnYes').click(function(){
@@ -586,7 +567,7 @@ $(document).ready(function(){
 		}
 		
 		if(OPERATION === 'DELETE_PAY'){
-			payDate/*dateId*/ = objectTableRowSelected.find('#txtPayDate').val();
+			payDate = objectTableRowSelected.find('#txtPayDate').val();
 		}
 		//setting data
 		DATA ={	'purchaseId':purchaseId
@@ -670,6 +651,8 @@ $(document).ready(function(){
 			createEventClickEditPayButton(dateId);
 			createEventClickDeletePayButton(dateId);
 			arrayPaysAlreadySaved.push(dateId);  //push into array of the added date
+$('#total2').text(parseFloat(getTotalPay()).toFixed(2)+' Bs.');	
+//payPaid = parseFloat(getTotalPay()).toFixed(2);
 			$('#modalAddPay').modal('hide');
 			highlightTemporally('#payRow'+dateId);
 		}
@@ -685,6 +668,8 @@ $(document).ready(function(){
 			$('#spaPayDate'+dateId).text(payDate);
 			$('#spaPayAmount'+dateId).text(parseFloat(payAmount).toFixed(2));
 			$('#spaPayDescription'+dateId).text(payDescription);
+$('#total2').text(parseFloat(getTotalPay()).toFixed(2)+' Bs.');	
+//payPaid = parseFloat(getTotalPay()).toFixed(2);
 			$('#modalAddPay').modal('hide');
 			highlightTemporally('#payRow'+dateId);
 		}
@@ -704,14 +689,17 @@ $(document).ready(function(){
 		if(OPERATION === 'DELETE_PAY'){						
 			//-----------------------------------------------------------------------------------------------------------------
 			arrayPaysAlreadySaved = jQuery.grep(arrayPaysAlreadySaved, function(value){
-				return value !== dateId;
+				return value !== payDate;
 			});
 			//-----------------------------------------------------------------------------------------------------------------
+subtotal = $('#spaPayAmount'+payDate).text();			
 			hideBittionAlertModal();
 			
 			objectTableRowSelected.fadeOut("slow", function() {
 				$(this).remove();
 			});
+$('#total2').text(parseFloat(getTotalPay()-subtotal).toFixed(2)+' Bs.');
+//payPaid = parseFloat(getTotalPay()-subtotal).toFixed(2);
 		}
 		showGrowlMessage('ok', 'Cambios guardados.');
 	}
@@ -873,6 +861,7 @@ $(document).ready(function(){
 	}
 	
 	function addPay(){
+//		var payId = $('#txtPayDate').val();
 		var payDate = $('#txtModalDate').val();
 		var payAmount = $('#txtModalPaidAmount').val();
 //		var payDescription = $('#txtModalDescription').val();
@@ -909,6 +898,20 @@ $(document).ready(function(){
 				 var salePrice = (arrayAux[i]['sale_price']);
 				 var quantity = (arrayAux[i]['quantity']);
 				 total = total + (salePrice*quantity);
+			}
+		}
+		return total; 	
+	}
+	
+	function getTotalPay(){
+		var arrayAux = [];
+		var total = 0;
+		arrayAux = getPaysDetails();
+		if(arrayAux[0] != 0){
+			for(var i=0; i< arrayAux.length; i++){
+				 var amount = (arrayAux[i]['amount']);
+//				 var quantity = (arrayAux[i]['quantity']);
+				 total = total + Number(amount);
 			}
 		}
 		return total; 	
@@ -1238,6 +1241,7 @@ var exRate = $('#txtExRate').val();
 	
 	//function triggered when PAYS plus icon is clicked
 	$('#btnAddPay').click(function(){
+		startEventsWhenExistsDebts();
 		initiateModalAddPay();
 		return false; //avoid page refresh
 	});
@@ -1686,52 +1690,18 @@ changeLabelDocumentState('NOTE_CANCELLED'); //#UNICORN
         });
 	}
 	
-	
-		
-	
-	function ajax_initiate_modal_add_cost(costsAlreadySaved){
-		 $.ajax({
-            type:"POST",
-            url:moduleController + "ajax_initiate_modal_add_cost",			
-  /*data*/  data:{costsAlreadySaved: costsAlreadySaved/*, supplier: $('#cbxSuppliers').val()*//*, transfer:transfer, warehouse2:warehouse2*/},
-            beforeSend: showProcessing(),
-            success: function(data){
-				$('#processing').text('');
-				$('#boxModalInitiateCost').html(data);
-				$('#txtModalAmount').val('');  
-				initiateModalCost()
-/*				$('#cbxModalCosts').bind("change",function(){ //must be binded 'cause dropbox is loaded by a previous ajax'
-					ajax_update_amount();
-				});
-*///				$('#txtModalPrice').keypress(function(){return false;});
-				
-			},
-			error:function(data){
-				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
-				$('#processing').text('');
-			}
-        });
-	}
-	
-	function ajax_initiate_modal_add_pay(paysAlreadySaved){
+	function ajax_initiate_modal_add_pay(paysAlreadySaved,payDebt){
 		 $.ajax({
             type:"POST",
             url:moduleController + "ajax_initiate_modal_add_pay",			
-  /*data*/  data:{paysAlreadySaved: paysAlreadySaved/*, supplier: $('#cbxSuppliers').val()*//*, transfer:transfer, warehouse2:warehouse2*/},
+		    data:{paysAlreadySaved: paysAlreadySaved,
+					payDebt: payDebt},
             beforeSend: showProcessing(),
             success: function(data){
 				$('#processing').text('');
-				$('#boxModalInitiatePay').html(data);
-			//	$('#txtModalDate').val('');  
-			//	$('#txtModalDueDate').val('');  
-				$('#txtModalPaidAmount').val('');  
+				$('#boxModalInitiatePay').html(data); 
 				$('#txtModalDescription').val('');  
-			//	$('#txtModalState').val(''); 
 				initiateModalPay()
-/*				$('#cbxModalCosts').bind("change",function(){ //must be binded 'cause dropbox is loaded by a previous ajax'
-					ajax_update_amount();
-				});
-*///				$('#txtModalPrice').keypress(function(){return false;});
 				$("#txtModalDate").datepicker({
 					showButtonPanel: true
 				});
