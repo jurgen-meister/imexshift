@@ -10,15 +10,15 @@
 				$documentStateColor = '';
 				$documentStateName = 'SIN ESTADO';
 				break;
-			case 'INVOICE_PENDANT':
+			case 'SINVOICE_PENDANT':
 				$documentStateColor = 'label-warning';
 				$documentStateName = 'FACTURA PENDIENTE';
 				break;
-			case 'INVOICE_APPROVED':
+			case 'SINVOICE_APPROVED':
 				$documentStateColor = 'label-success';
 				$documentStateName = 'FACTURA APROBADA';
 				break;
-			case 'INVOICE_CANCELLED':
+			case 'SINVOICE_CANCELLED':
 				$documentStateColor = 'label-important';
 				$documentStateName = 'FACTURA CANCELADA';
 				break;
@@ -46,22 +46,22 @@
 								$displayApproved = 'none';
 								$displayCancelled = 'none';
 								break;
-							case 'INVOICE_PENDANT':
+							case 'SINVOICE_PENDANT':
 								$displayApproved = 'inline';
 								$displayCancelled = 'none';
 								break;
-							case 'INVOICE_APPROVED':
+							case 'SINVOICE_APPROVED':
 								$displayApproved = 'none';
 								$displayCancelled = 'inline';
 								break;
-							case 'INVOICE_CANCELLED':
+							case 'SINVOICE_CANCELLED':
 								$displayApproved = 'none';
 								$displayCancelled = 'none';
 								break;
 						}
 			?>
 			<?php
-			if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){
+			if($documentState == 'SINVOICE_PENDANT' OR $documentState == ''){
 				echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));	
 			}
 			?>
@@ -83,8 +83,7 @@
 		</div>
 	</div>
 	<!-- //////////////////////////// End - buttons /////////////////////////////////-->
-	
-	
+
 	<div class="widget-box">
 		<div class="widget-title">
 			<span class="icon">
@@ -96,7 +95,6 @@
 		<div class="widget-content nopadding">
 			
 	<!-- //******************************** END - #UNICORN  WRAP FORM BOX PART 1/2 *************************************** -->
-
 	
 	<!-- ////////////////////////////////// START - FORM STARTS ///////////////////////////////////// -->
 		<?php echo $this->BootstrapForm->create('SalSale', array('class' => 'form-horizontal'));?>
@@ -108,9 +106,8 @@
 				<?php
 				//////////////////////////////////START - block when APPROVED or CANCELLED///////////////////////////////////////////////////
 				$disable = 'disabled';
-				$disable2 = 'disabled';
 				
-				if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){
+				if($documentState == 'SINVOICE_PENDANT' OR $documentState == ''){
 					$disable = 'enabled';
 				}
 				
@@ -126,7 +123,7 @@
 					'id'=>'txtCode',
 					'label'=>'Código:',
 					'style'=>'background-color:#EEEEEE',
-					'disabled'=>$disable2,
+					'disabled'=>$disable,
 					'placeholder'=>'El sistema generará el código'
 				));
 				
@@ -134,19 +131,20 @@
 					'id'=>'txtOriginCode',
 					'label'=>'Documento Origen:',
 					'style'=>'background-color:#EEEEEE',
-					'disabled'=>$disable2,
+					'disabled'=>$disable,
 					'value'=>$originCode
-				));
-				
-				echo $this->BootstrapForm->input('note_code', array(
-					'id'=>'txtNoteCode',
-					'label' => 'No. Nota de Remision:'
 				));
 				
 				echo $this->BootstrapForm->input('generic_code', array(
 					'id'=>'txtGenericCode',
 					'value'=>$genericCode,
 					'type'=>'hidden'
+				));
+				
+				echo $this->BootstrapForm->input('note_code', array(
+					'id'=>'txtNoteCode',
+					'label' => 'No. Nota de Remision:',
+					'disabled'=>$disable
 				));
 				
 				echo $this->BootstrapForm->input('date_in', array(
@@ -163,6 +161,7 @@
 					'label' => 'Cliente:',
 					'id'=>'cbxCustomers',
 					'selected' => $customerId,
+					'class'=>'input-xlarge',
 					'disabled'=>$disable
 				));
 				
@@ -170,13 +169,16 @@
 					echo $this->BootstrapForm->input('sal_employee_id', array(
 						'required' => 'required',
 						'label' => 'Encargado:',
-						'id'=>'cbxEmployees'
+						'id'=>'cbxEmployees',
+						'class'=>'input-xlarge',
+						'disabled'=>$disable
 					));
 
 					echo $this->BootstrapForm->input('sal_tax_number_id', array(
 						'required' => 'required',
 						'label' => 'NIT - Nombre:',
 						'id'=>'cbxTaxNumbers',
+						'class'=>'input-xlarge',
 						'disabled'=>$disable
 					));
 				echo '</div>';
@@ -186,6 +188,7 @@
 					'label' => 'Vendedor:',
 					'id'=>'cbxSalesman',
 					'selected' => $admUserId,
+					'class'=>'input-xlarge',
 					'disabled'=>$disable
 				));
 
@@ -201,7 +204,8 @@
 						'label' => 'Tipo de Cambio:',
 						'value'=>$exRate,
 						'disabled'=>'disabled',
-						'id'=>'txtExRate'
+						'id'=>'txtExRate',
+						'type'=>'text'
 					));
 				echo '</div>';
 				?>
@@ -234,41 +238,42 @@
 		<div class="widget-content tab-content">
 			<div id="tab1" class="tab-pane active">
 				<!-- ////////////////////////////////// START - INVOICE ITEMS DETAILS /////////////////////////////////////// -->
-				<?php if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){ ?>
+				<?php if($documentState == 'SINVOICE_PENDANT' OR $documentState == ''){ ?>
 					<a class="btn btn-primary" href='#' id="btnAddItem" title="Adicionar Item"><i class="icon-plus icon-white"></i></a>
 				<?php } ?>
-						
-						<table class="table table-bordered table-striped table-hover" id="tablaItems">
+						<?php $limit = count($salDetails); $counter = $limit;?>
+						<table class="table table-bordered table-hover data-table" id="tablaItems">
 							<thead>
 								<tr>
-									<th>Item</th>
+									<th>Item ( <span id="countItems"><?php echo $limit;?> </span> )</th>
 									<th>Precio Unitario</th>
 									<th>Cantidad</th>
 									<th>Almacen</th>
 									<th>Stock</th>
 									<th>Subtotal</th>
-									<?php if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){ ?>
+									<?php if($documentState == 'SINVOICE_PENDANT' OR $documentState == ''){ ?>
 									<th class="columnItemsButtons"></th>
 									<?php }?>
 								</tr>
 							</thead>
 							<tbody>
 								<?php
-								$total = 0;
-								for($i=0; $i<count($salDetails); $i++){
+								$total = '0.00';
+								for($i=0; $i<$limit; $i++){
 									$subtotal = ($salDetails[$i]['cantidad'])*($salDetails[$i]['salePrice']);
-									echo '<tr>';																							//type="hidden" txtWarehouseId
+									echo '<tr id="itemRow'.$salDetails[$i]['itemId'].'w'.$salDetails[$i]['warehouseId'].'">';	//REVISAR SI NECESITA O NO WAREHOUSEId																						//type="hidden" txtWarehouseId
 										echo '<td><span id="spaItemName'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['item'].'</span><input type="hidden" value="'.$salDetails[$i]['itemId'].'" id="txtItemId" ></td>';
-										echo '<td><span id="spaSalePrice'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['salePrice'].'</span></td>';
-										echo '<td><span id="spaQuantity'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['cantidad'].'</span></td>';
+										echo '<td><span id="spaSalePrice'.$salDetails[$i]['itemId'].'w'.$salDetails[$i]['warehouseId'].'">'.$salDetails[$i]['salePrice'].'</span></td>';
+										echo '<td><span id="spaQuantity'.$salDetails[$i]['itemId'].'w'.$salDetails[$i]['warehouseId'].'">'.$salDetails[$i]['cantidad'].'</span></td>';
 										echo '<td><span id="spaWarehouse'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['warehouse'].'</span><input type="hidden" value="'.$salDetails[$i]['warehouseId'].'" id="txtWarehouseId'.$salDetails[$i]['itemId'].'" ></td>';
 										echo '<td><span id="spaStock'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['stock'].'</span></td>';
-										echo '<td><span id="spaSubtotal'.$salDetails[$i]['itemId'].'">'.$subtotal.'</span></td>';
-										if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){
+										echo '<td><span id="spaSubtotal'.$salDetails[$i]['itemId'].'w'.$salDetails[$i]['warehouseId'].'">'.number_format($subtotal, 2, '.', '').'</span></td>';
+										
+										if($documentState == 'SINVOICE_PENDANT' OR $documentState == ''){
 											echo '<td class="columnItemsButtons">';
-											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$salDetails[$i]['itemId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
+											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$salDetails[$i]['itemId'].'w'.$salDetails[$i]['warehouseId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
 												
-												<a class="btn btn-danger" href="#" id="btnDeleteItem'.$salDetails[$i]['itemId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
+												<a class="btn btn-danger" href="#" id="btnDeleteItem'.$salDetails[$i]['itemId'].'w'.$salDetails[$i]['warehouseId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
 											echo '</td>';
 										}
 									echo '</tr>';	
@@ -279,13 +284,13 @@
 					
 				<div class="row-fluid"> <!-- vers si borrar este row-fluid creo q si -->
 					
-					<?php if($documentState == 'INVOICE_APPROVED'){ ?>
+					<?php if($documentState == 'SINVOICE_APPROVED'){ ?>
 						<div class="span10">	</div>
 						<div class="span1">
 							<h4>Total:</h4>	
 						</div>
 						<div class="span1">
-							<h4 id="total" ><?php echo $total.' $us'; ?></h4>
+							<h4 id="total" ><?php echo number_format($total, 2, '.', '').' Bs.'; ?></h4>
 						</div>
 					<?php }  else { ?>
 						<div class="span8">	</div>
@@ -293,7 +298,7 @@
 							<h4>Total:</h4>	
 						</div>
 						<div class="span3">
-							<h4 id="total" ><?php echo $total.' $us'; ?></h4>
+							<h4 id="total" ><?php echo number_format($total, 2, '.', '').' Bs.'; ?></h4>
 						</div>
 					<?php }?>
 					
@@ -302,60 +307,52 @@
 			</div>
 			<div id="tab2" class="tab-pane">
 				<!-- ////////////////////////////////// START - INVOICE PAY DETAILS /////////////////////////////////////// -->
-				<?php if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){ ?>
+				<?php if($documentState == 'SINVOICE_PENDANT' OR $documentState == ''){ ?>
 					<a class="btn btn-primary" href='#' id="btnAddPay" title="Adicionar Pago"><i class="icon-plus icon-white"></i></a>
 				<?php } ?>
-						
-						<table class="table table-bordered table-striped table-hover" id="tablaPays">
+						<?php $limit2 = count($salPayments); $counter2 = $limit2;?>
+						<table class="table table-bordered table-hover data-table" id="tablaPays">
 							<thead>
 								<tr>
-									<th>Pago</th>
 									<th>Fecha Pago</th>
-									<th>Fecha Limite</th>
 									<th>Monto</th>
-									<th>Deuda</th>
 									<th>Descripcion</th>
-									<th>Estado</th>
-									<?php if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){ ?>
+									<?php if($documentState == 'SINVOICE_PENDANT' OR $documentState == ''){ ?>
 									<th class="columnPaysButtons"></th>
 									<?php }?>
 								</tr>
 							</thead>
 							<tbody>
 								<?php
-								$total = 0;
-								$debtAmount = 0;
-								for($i=0; $i<count($salPayments); $i++){
-									echo '<tr>';
-										echo '<td><span id="spaPayName'.$salPayments[$i]['payId'].'">'.$salPayments[$i]['pay'].'</span><input type="hidden" value="'.$salPayments[$i]['payId'].'" id="txtPayId" ></td>';
-										echo '<td><span id="spaDate'.$salPayments[$i]['payId'].'">'.$salPayments[$i]['date'].'</span></td>';
-										echo '<td><span id="spaDueDate'.$salPayments[$i]['payId'].'">'.$salPayments[$i]['dueDate'].'</span></td>';
-										echo '<td><span id="spaPaidAmount'.$salPayments[$i]['payId'].'">'.$salPayments[$i]['paidAmount'].'</span></td>';
-/*calculado ---> */						echo '<td><span id="spaDebtAmount'.$salPayments[$i]['payId'].'">'.$debtAmount.'</span></td>';
-										echo '<td><span id="spaDescription'.$salPayments[$i]['payId'].'">'.$salPayments[$i]['description'].'</span></td>';
-										echo '<td><span id="spaState'.$salPayments[$i]['payId'].'">'.$salPayments[$i]['state'].'</span></td>';
+								$total2 = '0.00';
+								for($i=0; $i<$limit2; $i++){
+									echo '<tr id="payRow'.$salPayments[$i]['dateId'].'" >';
+										echo '<td><span id="spaPayDate'.$salPayments[$i]['dateId'].'">'.$salPayments[$i]['payDate'].'</span><input  value="'.$salPayments[$i]['dateId'].'" id="txtPayDate" ></td>';
+										echo '<td><span id="spaPayAmount'.$salPayments[$i]['dateId'].'">'.$salPayments[$i]['payAmount'].'</span></td>';
+										echo '<td><span id="spaPayDescription'.$salPayments[$i]['dateId'].'">'.$salPayments[$i]['payDescription'].'</span></td>';
 										
-										if($documentState == 'INVOICE_PENDANT' OR $documentState == ''){
+										if($documentState == 'SINVOICE_PENDANT' OR $documentState == ''){
 											echo '<td class="columnPaysButtons">';
-											echo '<a class="btn btn-primary" href="#" id="btnEditPay'.$salPayments[$i]['payId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
+											echo '<a class="btn btn-primary" href="#" id="btnEditPay'.$salPayments[$i]['dateId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
 												
-												<a class="btn btn-danger" href="#" id="btnDeletePay'.$salPayments[$i]['payId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
+												<a class="btn btn-danger" href="#" id="btnDeletePay'.$salPayments[$i]['dateId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
 											echo '</td>';
 										}
 									echo '</tr>';	
-									$total += $subtotal;
+									$total2 += $salPayments[$i]['payAmount'];
 								}?>
 							</tbody>
 						</table>
+					
 				<div class="row-fluid"> <!-- vers si borrar este row-fluid creo q si -->
 					
-					<?php if($documentState == 'INVOICE_APPROVED'){ ?>
+					<?php if($documentState == 'SINVOICE_APPROVED'){ ?>
 						<div class="span10">	</div>
 						<div class="span1">
 							<h4>Total:</h4>	
 						</div>
 						<div class="span1">
-							<h4 id="total" ><?php echo $total.' $us'; ?></h4>
+							<h4 id="total2" ><?php echo number_format($total2, 2, '.', '').' Bs.'; ?></h4>
 						</div>
 					<?php }  else { ?>
 						<div class="span8">	</div>
@@ -363,7 +360,7 @@
 							<h4>Total:</h4>	
 						</div>
 						<div class="span3">
-							<h4 id="total" ><?php echo $total.' $us'; ?></h4>
+							<h4 id="total2" ><?php echo number_format($total2, 2, '.', '').' Bs.'; ?></h4>
 						</div>
 					<?php }?>
 					
@@ -391,49 +388,63 @@
 					<h3 id="myModalLabel">Cantidad Item</h3>
 				  </div>
 				  
-				  <div class="modal-body form-horizontal">
+				  <div class="modal-body">
 					<!--<p>One fine body…</p>-->
 					<?php
 					echo '<div id="boxModalInitiateItemPrice">';
 						//////////////////////////////////////
-
-						echo $this->BootstrapForm->input('items_id', array(				
-						'label' => 'Item:',
-						'id'=>'cbxModalItems',
-						'class'=>'input-xlarge',
-						'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+						echo $this->BootstrapForm->input('inv_warehouse_id', array(				
+						'label' => 'Almacén:',
+						'id'=>'cbxModalWarehouses',
+						'class'=>'span6'
 						));
-						echo '<br>';
-						$price='';
-						echo '<div id="boxModalPrice">';
-							echo $this->BootstrapForm->input('price', array(				
-							'label' => 'P/U s_o:',
-							'id'=>'txtModalPrice',
-							'value'=>$price,
-							'style'=>'background-color:#EEEEEE',
-							'class'=>'input-small',
-							'maxlength'=>'15'
-							));
+					
+						echo '<div id="boxModalItemPriceStock">';
+							//////////////////////////////////////
+							echo $this->BootstrapForm->input('items_id', array(				
+							'label' => 'Item:',
+							'id'=>'cbxModalItems',
+							'class'=>'span12'
+							));	
+							echo '<div id="boxModalPrice">';
+								$price='';
+								echo $this->BootstrapForm->input('sale_price', array(				
+								'label' => 'Precio Unitario:',
+								'id'=>'txtModalPrice',
+								'value'=>$price,
+								'class'=>'input-small',
+								'maxlength'=>'15'
+								));
+							echo '</div>';	
 
-						echo '</div>';		
-						echo '<br>';
-
+							echo '<div id="boxModalStock">';
+								$stock='';
+								echo $this->BootstrapForm->input('stock', array(				
+								'label' => 'Stock:',
+								'id'=>'txtModalStock',
+								'value'=>$stock,
+								'disabled'=>'disabled',
+								'style'=>'background-color:#EEEEEE',
+								'class'=>'span3',
+								'maxlength'=>'15'
+								));
+							echo '</div>';	
+							//////////////////////////////////////
+						echo '</div>';
 						//////////////////////////////////////
 					echo '</div>';
 
 					echo $this->BootstrapForm->input('quantity', array(				
 					'label' => 'Cantidad:',
 					'id'=>'txtModalQuantity',
-					'class'=>'input-small',
-					'maxlength'=>'10',
-					'helpInline' => '<span class="label label-important">' . ('Obligatorio') . '</span>&nbsp;'
+					'class'=>'span3',
+					'maxlength'=>'10'
 					));
 					?>
 					  <div id="boxModalValidateItem" class="alert-error"></div> 
 				  </div>
 				  
 				  <div class="modal-footer">
-					 <!-- Ztep 0 Save button from modal triggers btnModalAddItem -->
 					<a href='#' class="btn btn-primary" id="btnModalAddItem">Guardar</a>
 					<a href='#' class="btn btn-primary" id="btnModalEditItem">Guardar</a>
 					<button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
@@ -453,57 +464,35 @@
 					<h3 id="myModalLabel">Pagos</h3>
 				  </div>
 				  
-				  <div class="modal-body form-horizontal">
-					<!--<p>One fine body…</p>-->
+				  <div class="modal-body">
+					<!-- class="control-group"--> 
 					<?php
 					echo '<div id="boxModalInitiatePay">';
-						//////////////////////////////////////
-
-						echo $this->BootstrapForm->input('pays_id', array(				
-							'label' => 'Pagos:',
-							'id'=>'cbxModalPays',
-							'class'=>'input-xlarge'
-							));
-						echo '<br>';
+						$datePay = '';
+						echo $this->BootstrapForm->input('date', array(	
+								'label' => 'Fecha:',
+								'id'=>'txtModalDate',
+								'value'=>$datePay,
+								'class'=>'span3',
+								'maxlength'=>'15'
+								));
+//					
+						$payDebt = '';
+						echo $this->BootstrapForm->input('amount', array(				
+								'label' => 'Monto a Pagar:',
+								'id'=>'txtModalPaidAmount',
+								'value'=>$payDebt,
+								'class'=>'span3',
+								'maxlength'=>'15'
+								));
 					echo '</div>';
-					echo $this->BootstrapForm->input('date', array(	
-							'label' => 'Fecha Pago:',
-							'id'=>'txtModalDate',
-							));
-					echo '<br>';
-					
-					echo $this->BootstrapForm->input('due_date', array(				
-							'label' => 'Fecha Limite:',
-							'id'=>'txtModalDueDate',
-							));
-					echo '<br>';
-					
-					echo $this->BootstrapForm->input('amount', array(				
-							'label' => 'Monto Pagado:',
-							'id'=>'txtModalPaidAmount',
-							'style'=>'background-color:#EEEEEE',
-							'class'=>'input-small',
-							'maxlength'=>'15'
-							));
-					echo '<br>';
 					
 					echo $this->BootstrapForm->input('description', array(				
 							'label' => 'Descripcion:',
 							'id'=>'txtModalDescription',
-							'style'=>'background-color:#EEEEEE',
-							'class'=>'input-small',
-							'maxlength'=>'15'
+							'class'=>'span9',
+							'rows' => 2
 							));
-					echo '<br>';
-					
-					echo $this->BootstrapForm->input('state', array(				
-							'label' => 'Estado:',
-							'id'=>'txtModalState',
-							'style'=>'background-color:#EEEEEE',
-							'class'=>'input-small',
-							'maxlength'=>'15'
-							));
-					echo '<br>';
 
 					?>
 					  <div id="boxModalValidatePay" class="alert-error"></div> 

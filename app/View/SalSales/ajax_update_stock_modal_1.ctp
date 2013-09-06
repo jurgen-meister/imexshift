@@ -5,7 +5,7 @@
 				'value'=>$stock,
 				'disabled'=>'disabled',
 				'style'=>'background-color:#EEEEEE',
-				'class'=>'input-small',
+				'class'=>'span3',
 				'maxlength'=>'15'
 			));		
 ?>

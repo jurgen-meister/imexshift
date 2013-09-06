@@ -18,18 +18,18 @@
 			<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-search', 'novalidate' => true));?>
 			<fieldset>
 						<?php
-						echo $this->BootstrapForm->input('code', array(				
+						echo $this->BootstrapForm->input('doc_code', array(				
 										//'label' => 'Codigo Entrada:',
 										'id'=>'txtCode',
-//										'value'=>$code,
-										'placeholder'=>'Codigo Entrada'
+										'value'=>$doc_code,
+										'placeholder'=>'Codigo'
 										));
 						?>
 						<?php
-						echo $this->BootstrapForm->input('document_code', array(				
+						echo $this->BootstrapForm->input('note_code', array(				
 								'id'=>'txtCodeDocument',
-//								'value'=>$document_code,
-								'placeholder'=>'Codigo Documento'
+								'value'=>$note_code,
+								'placeholder'=>'Codigo Orden de Compra'
 								));
 						?>
 
@@ -50,7 +50,7 @@
 					<i class="icon-th"></i>
 				</span>
 				<h5><?php echo $this->BootstrapPaginator->counter(array('format' => __('Página {:page} de {:pages}, mostrando {:current} registros de {:count} total, comenzando en {:start}, terminando en {:end}')));?></h5>
-		</div>
+			</div>
 			<div class="widget-content nopadding">
 		<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
 
@@ -59,7 +59,7 @@
 			<tr>
 				<th><?php echo '#';?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('doc_code', 'Código');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('note_code', 'Código de Proforma');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('note_code', 'Código de Orden de Compra');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('InvSupplier.name','Proveedor');?></th>			
 				<th><?php echo $this->BootstrapPaginator->sort('lc_state', 'Estado Documento');?></th>				

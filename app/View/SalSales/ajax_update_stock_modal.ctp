@@ -3,7 +3,7 @@
 			'label' => 'Precio Unitario:',
 			'id'=>'txtModalPrice',
 			'value'=>$price,
-			'class'=>'input-small',
+			'class'=>'span3',
 			'maxlength'=>'15'
 		));
 ?>

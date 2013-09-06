@@ -15,21 +15,21 @@
 			</div>
 			<div class="widget-content nopadding">
 			<!-- ////////////////////////////////////////INCIO - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
-			<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-search', 'novalidate' => true));?>
+			<?php echo $this->BootstrapForm->create('SalSale', array('class' => 'form-search', 'novalidate' => true));?>
 			<fieldset>
 						<?php
-						echo $this->BootstrapForm->input('code', array(				
+						echo $this->BootstrapForm->input('doc_code', array(				
 										//'label' => 'Codigo Entrada:',
 										'id'=>'txtCode',
-//										'value'=>$code,
-										'placeholder'=>'Codigo Entrada'
+										'value'=>$doc_code,
+										'placeholder'=>'Codigo'
 										));
 						?>
 						<?php
-						echo $this->BootstrapForm->input('document_code', array(				
-								'id'=>'txtCodeDocument',
-//								'value'=>$document_code,
-								'placeholder'=>'Codigo Documento'
+						echo $this->BootstrapForm->input('note_code', array(				
+								'id'=>'txtNoteCode',
+								'value'=>$note_code,
+								'placeholder'=>'Codigo de Nota de Venta'
 								));
 						?>
 
@@ -49,9 +49,8 @@
 				<span class="icon">
 					<i class="icon-th"></i>
 				</span>
-				<h5><?php echo $this->BootstrapPaginator->counter(array('format' => __('Página {:page} de {:pages}, mostrando {:current} registros de {:count} total, comenzando en {:start}, terminando en {:end}')));?>
-		</h5>
-					</div>
+				<h5><?php echo $this->BootstrapPaginator->counter(array('format' => __('Página {:page} de {:pages}, mostrando {:current} registros de {:count} total, comenzando en {:start}, terminando en {:end}')));?></h5>
+			</div>
 			<div class="widget-content nopadding">
 		<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
 
@@ -64,7 +63,7 @@
 				<th><?php echo $this->BootstrapPaginator->sort('note_code','Código de Factura de Compra');?></th>
 		<!--	<th><?php echo $this->BootstrapPaginator->sort('note_code', 'Código de Proforma');?></th>	-->
 				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('SalEmployee.name','Cliente');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('SalCustomer.name','Cliente');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('lc_state', 'Estado Documento');?></th>					
 			</tr>
 		<?php foreach ($salSales as $salSale): ?>
@@ -75,19 +74,19 @@
 				<td><?php echo h($salSale['SalSale']['note_code']); ?>&nbsp;</td>
 		<!--	<td><?php echo h($salSale['SalSale']['note_code']); ?>&nbsp;</td>		-->
 				<td><?php echo date("d/m/Y", strtotime($salSale['SalSale']['date'])); ?>&nbsp;</td>
-				<td><?php echo h($salSale['SalEmployee']['name']); ?>&nbsp;</td>	
+				<td><?php echo h($salSale['SalCustomer']['name']); ?>&nbsp;</td>	
 				<td><?php 
 						$documentState = $salSale['SalSale']['lc_state'];
 						switch ($documentState){
-							case 'INVOICE_PENDANT':
+							case 'SINVOICE_PENDANT':
 								$stateColor = 'btn-warning';
 								$stateName = 'Factura Pendiente';
 								break;
-							case 'INVOICE_APPROVED':
+							case 'SINVOICE_APPROVED':
 								$stateColor = 'btn-success';
 								$stateName = 'Factura Aprobada';
 								break;
-							case 'INVOICE_CANCELLED':
+							case 'SINVOICE_CANCELLED':
 								$stateColor = 'btn-danger';
 								$stateName = 'Factura Cancelada';
 								break;						

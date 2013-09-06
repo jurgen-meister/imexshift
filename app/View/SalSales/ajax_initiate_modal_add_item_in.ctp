@@ -2,7 +2,7 @@
 		echo $this->BootstrapForm->input('inv_warehouse_id', array(				
 		'label' => 'Almacén:',
 		'id'=>'cbxModalWarehouses',
-		'class'=>'input-xlarge'
+		'class'=>'span6'
 		));
 
 		echo '<div id="boxModalItemPriceStock">';
@@ -10,15 +10,16 @@
 			echo $this->BootstrapForm->input('items_id', array(				
 			'label' => 'Item:',
 			'id'=>'cbxModalItems',
-			'class'=>'input-xlarge'
+			'class'=>'span12'
 			));
-
+			echo '<br>';
+			echo '<br>';
 			echo '<div id="boxModalPrice">';
 				echo $this->BootstrapForm->input('sale_price', array(				
 				'label' => 'Precio Unitario:',
 				'id'=>'txtModalPrice',
 				'value'=>$price,
-				'class'=>'input-small',
+				'class'=>'span3',
 				'maxlength'=>'15'
 				));
 			echo '</div>';	
@@ -30,7 +31,7 @@
 				'value'=>$stock,
 				'disabled'=>'disabled',	
 				'style'=>'background-color:#EEEEEE',
-				'class'=>'input-small',
+				'class'=>'span3',
 				'maxlength'=>'15'
 				));
 			echo '</div>';	

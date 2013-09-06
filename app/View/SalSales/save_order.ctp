@@ -107,11 +107,7 @@
 				//////////////////////////////////START - block when APPROVED or CANCELLED///////////////////////////////////////////////////
 				$disable = 'disabled';
 
-				if($documentState == 'NOTE_PENDANT'){
-					$disable = 'enabled';	
-				}
-				
-				if($documentState == ''){
+				if($documentState == 'NOTE_PENDANT' OR $documentState == ''){
 					$disable = 'enabled';
 				}
 				
@@ -135,12 +131,12 @@
 					'id'=>'txtGenericCode',
 					'value'=>$genericCode,
 					'type'=>'hidden'
-				
 				));
 				
 				echo $this->BootstrapForm->input('note_code', array(
 					'id'=>'txtNoteCode',
-					'label' => 'No. Nota de Remision:'
+					'label' => 'No. Nota de Remision:',
+					'disabled'=>$disable
 				));
 				
 				echo $this->BootstrapForm->input('date_in', array(
@@ -157,6 +153,7 @@
 					'label' => 'Cliente:',
 					'id'=>'cbxCustomers',
 					'selected' => $customerId,
+					'class'=>'input-xlarge',
 					'disabled'=>$disable
 				));
 				
@@ -164,7 +161,9 @@
 					echo $this->BootstrapForm->input('sal_employee_id', array(
 						'required' => 'required',
 						'label' => 'Encargado:',
-						'id'=>'cbxEmployees'
+						'class'=>'input-xlarge',
+						'id'=>'cbxEmployees',
+						'disabled'=>$disable
 					));
 
 
@@ -172,6 +171,7 @@
 						'required' => 'required',
 						'label' => 'NIT - Nombre:',
 						'id'=>'cbxTaxNumbers',
+						'class'=>'input-xlarge',
 						'disabled'=>$disable
 					));
 				echo '</div>';
@@ -181,6 +181,7 @@
 					'label' => 'Vendedor:',
 					'id'=>'cbxSalesman',
 					'selected' => $admUserId,
+					'class'=>'input-xlarge',
 					'disabled'=>$disable
 				));
 				
@@ -234,11 +235,11 @@
 				<?php if($documentState == 'NOTE_PENDANT' OR $documentState == ''){ ?>
 					<a class="btn btn-primary" href='#' id="btnAddItem" title="Adicionar Item"><i class="icon-plus icon-white"></i></a>
 				<?php } ?>
-						
-						<table class="table table-bordered table-striped table-hover" id="tablaItems">
+						<?php $limit = count($salDetails); $counter = $limit;?>
+						<table class="table table-bordered table-hover data-table" id="tablaItems">
 							<thead>
 								<tr>
-									<th>Item</th>
+									<th>Item ( <span id="countItems"><?php echo $limit;?> </span> )</th>
 									<th>Precio Unitario</th>
 									<th>Cantidad</th>
 									<th>Almacen</th>
@@ -251,23 +252,22 @@
 							</thead>
 							<tbody>
 								<?php
-								$total = 0;
-								for($i=0; $i<count($salDetails); $i++){
+								$total = '0.00';
+								for($i=0; $i<$limit; $i++){
 									$subtotal = ($salDetails[$i]['cantidad'])*($salDetails[$i]['salePrice']);
-									echo '<tr>';																							//type="hidden" txtWarehouseId
-										echo '<td><span id="spaItemName'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['item'].'</span><input type="hidden" value="'.$salDetails[$i]['itemId'].'" id="txtItemId" ></td>';
-										echo '<td><span id="spaSalePrice'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['salePrice'].'</span><input  value="'.$salDetails[$i]['cifPrice'].'" id="txtCifPrice" ><input  value="'.$salDetails[$i]['exCifPrice'].'" id="txtCifExPrice" ></td>';
-										echo '<td><span id="spaQuantity'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['cantidad'].'</span></td>';
+									echo '<tr id="itemRow'.$salDetails[$i]['itemId'].'w'.$salDetails[$i]['warehouseId'].'">';	//REVISAR SI NECESITA O NO WAREHOUSEId																						//type="hidden" txtWarehouseId
+										echo '<td><span id="spaItemName'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['item'].'</span><input  value="'.$salDetails[$i]['itemId'].'" id="txtItemId" ></td>';
+										echo '<td><span id="spaSalePrice'.$salDetails[$i]['itemId'].'w'.$salDetails[$i]['warehouseId'].'">'.$salDetails[$i]['salePrice'].'</span></td>';
+										echo '<td><span id="spaQuantity'.$salDetails[$i]['itemId'].'w'.$salDetails[$i]['warehouseId'].'">'.$salDetails[$i]['cantidad'].'</span></td>';
 										echo '<td><span id="spaWarehouse'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['warehouse'].'</span><input type="hidden" value="'.$salDetails[$i]['warehouseId'].'" id="txtWarehouseId'.$salDetails[$i]['itemId'].'" ></td>';
 										echo '<td><span id="spaStock'.$salDetails[$i]['itemId'].'">'.$salDetails[$i]['stock'].'</span></td>';
-										echo '<td><span id="spaSubtotal'.$salDetails[$i]['itemId'].'">'.$subtotal.'</span></td>';
-										
+										echo '<td><span id="spaSubtotal'.$salDetails[$i]['itemId'].'w'.$salDetails[$i]['warehouseId'].'">'.number_format($subtotal, 2, '.', '').'</span></td>';
 										
 										if($documentState == 'NOTE_PENDANT' OR $documentState == ''){
 											echo '<td class="columnItemsButtons">';
-											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$salDetails[$i]['itemId'].''.$salDetails[$i]['warehouseId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
+											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$salDetails[$i]['itemId'].'w'.$salDetails[$i]['warehouseId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
 												
-												<a class="btn btn-danger" href="#" id="btnDeleteItem'.$salDetails[$i]['itemId'].''.$salDetails[$i]['warehouseId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
+												<a class="btn btn-danger" href="#" id="btnDeleteItem'.$salDetails[$i]['itemId'].'w'.$salDetails[$i]['warehouseId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
 											echo '</td>';
 										}
 									echo '</tr>';	
@@ -284,7 +284,7 @@
 							<h4>Total:</h4>	
 						</div>
 						<div class="span1">
-							<h4 id="total" ><?php echo $total.' Bs.'; ?></h4>
+							<h4 id="total" ><?php echo number_format($total, 2, '.', '').' Bs.'; ?></h4>
 						</div>
 					<?php }  else { ?>
 						<div class="span8">	</div>
@@ -292,7 +292,7 @@
 							<h4>Total:</h4>	
 						</div>
 						<div class="span3">
-							<h4 id="total" ><?php echo $total.' Bs.'; ?></h4>
+							<h4 id="total" ><?php echo number_format($total, 2, '.', '').' Bs.'; ?></h4>
 						</div>
 					<?php }?>
 					
@@ -319,7 +319,7 @@
 					<h3 id="myModalLabel">Cantidad Item</h3>
 				  </div>
 				  
-				  <div class="modal-body form-horizontal">
+				  <div class="modal-body">
 					<!--<p>One fine body…</p>-->
 					<?php
 					echo '<div id="boxModalInitiateItemPrice">';
@@ -327,7 +327,7 @@
 						echo $this->BootstrapForm->input('inv_warehouse_id', array(				
 						'label' => 'Almacén:',
 						'id'=>'cbxModalWarehouses',
-						'class'=>'input-xlarge'
+						'class'=>'span6'
 						));
 					
 						echo '<div id="boxModalItemPriceStock">';
@@ -335,9 +335,8 @@
 							echo $this->BootstrapForm->input('items_id', array(				
 							'label' => 'Item:',
 							'id'=>'cbxModalItems',
-							'class'=>'input-xlarge'
-							));
-
+							'class'=>'span12'
+							));	
 							echo '<div id="boxModalPrice">';
 								$price='';
 								echo $this->BootstrapForm->input('sale_price', array(				
@@ -357,7 +356,7 @@
 								'value'=>$stock,
 								'disabled'=>'disabled',
 								'style'=>'background-color:#EEEEEE',
-								'class'=>'input-small',
+								'class'=>'span3',
 								'maxlength'=>'15'
 								));
 							echo '</div>';	
@@ -369,7 +368,7 @@
 					echo $this->BootstrapForm->input('quantity', array(				
 					'label' => 'Cantidad:',
 					'id'=>'txtModalQuantity',
-					'class'=>'input-small',
+					'class'=>'span3',
 					'maxlength'=>'10'
 					));
 					?>
@@ -377,7 +376,6 @@
 				  </div>
 				  
 				  <div class="modal-footer">
-					 <!-- Ztep 0 Save button from modal triggers btnModalAddItem -->
 					<a href='#' class="btn btn-primary" id="btnModalAddItem">Guardar</a>
 					<a href='#' class="btn btn-primary" id="btnModalEditItem">Guardar</a>
 					<button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
