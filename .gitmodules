@@ -4,4 +4,4 @@
 [submodule "app/Plugin/TwitterBootstrap"]
         path = app/Plugin/TwitterBootstrap
         #url = git://github.com/slywalker/TwitterBootstrap.git
-        url = git://github.com/slywalker/cakephp-plugin-boost_cake
+        url = git://github.com/slywalker/cakephp-plugin-boost_cake.git
