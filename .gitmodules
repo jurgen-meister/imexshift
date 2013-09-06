@@ -3,5 +3,5 @@
         url = git://github.com/uzyn/cakephp-composer.git
 [submodule "app/Plugin/TwitterBootstrap"]
         path = app/Plugin/TwitterBootstrap
-        #url = git://github.com/slywalker/TwitterBootstrap.git
-        url = git://github.com/slywalker/cakephp-plugin-boost_cake.git
+        url = git://github.com/slywalker/TwitterBootstrap.git
+        
