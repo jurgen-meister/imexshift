@@ -740,6 +740,7 @@ class SalSalesController extends AppController {
 					$arrayMovement2['lc_state']='DRAFT';
 					$arrayMovement3['lc_state']='DRAFT';
 					$arrayMovement4['lc_state']='DRAFT';
+//					debug($arrayMovement3['lc_state']);
 				}
 			}elseif(($ACTION == 'save_invoice' && $OPERATION == 'ADD_PAY') || ($ACTION == 'save_invoice' && $OPERATION == 'EDIT_PAY') || ($ACTION == 'save_invoice' && $OPERATION == 'DELETE_PAY')){
 				$arrayPayDetails = array('sal_payment_type_id'=>1, 

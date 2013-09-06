@@ -96,7 +96,6 @@
 			
 	<!-- //******************************** END - #UNICORN  WRAP FORM BOX PART 1/2 *************************************** -->
 
-	
 	<!-- ////////////////////////////////// START - FORM STARTS ///////////////////////////////////// -->
 		<?php echo $this->BootstrapForm->create('PurPurchase', array('class' => 'form-horizontal'));?>
 		<fieldset>
@@ -108,9 +107,9 @@
 				//////////////////////////////////START - block when APPROVED or CANCELLED///////////////////////////////////////////////////
 				$disable = 'disabled';
 				$supplier_disable = 'disabled';
-				
+
 				if($documentState == 'ORDER_PENDANT'){
-					$disable = 'enabled';	
+					$disable = 'enabled';
 					$supplier_disable = 'disabled';
 				}
 				
@@ -130,7 +129,6 @@
 				echo $this->BootstrapForm->input('doc_code', array(
 					'id'=>'txtCode',
 					'label'=>'Código:',
-					'autocomplete'=>'off',
 					'style'=>'background-color:#EEEEEE',
 					'disabled'=>$disable,
 					'placeholder'=>'El sistema generará el código',
@@ -139,20 +137,17 @@
 				echo $this->BootstrapForm->input('generic_code', array(
 					'id'=>'txtGenericCode',
 					'value'=>$genericCode,
-					'type'=>'hidden'
-				
+					'type'=>'hidden'				
 				));
 				
 				echo $this->BootstrapForm->input('note_code', array(
 					'id'=>'txtNoteCode',
-					'autocomplete'=>'off',
-					'label' => 'No. Factura Proforma:'
+					'label' => 'No. Factura Proforma:',
+					'disabled'=>$disable,
 				));
 				
 				echo $this->BootstrapForm->input('date_in', array(
-					'required' => 'required',
 					'label' => 'Fecha:',
-					'autocomplete'=>'off',
 					'id'=>'txtDate',
 					'value'=>$date,
 					'disabled'=>$disable,
@@ -160,7 +155,6 @@
 				));
 				
 				echo $this->BootstrapForm->input('inv_supplier_id', array(
-					'required' => 'required',
 					'label' => 'Proveedor:',
 					'id'=>'cbxSuppliers',
 					'disabled'=>$supplier_disable
@@ -172,6 +166,7 @@
 					'disabled'=>$disable,
 					'id'=>'txtDescription'
 				));
+				
 				echo '<div id="boxExRate">';
 					echo $this->BootstrapForm->input('ex_rate', array(
 						'label' => 'Tipo de Cambio:',
@@ -191,7 +186,6 @@
 					<div id="processing"></div>
 					<!-- ////////////////////////////////// END MESSAGES /////////////////////////////////////// -->
 							
-
 	<!-- ////////////////////////////////// START - END FORM ///////////////////////////////////// -->		
 	</fieldset>
 	<?php echo $this->BootstrapForm->end();?>
@@ -216,11 +210,11 @@
 				<?php if($documentState == 'ORDER_PENDANT' OR $documentState == ''){ ?>
 					<a class="btn btn-primary" href='#' id="btnAddItem" title="Adicionar Item"><i class="icon-plus icon-white"></i></a>
 				<?php } ?>
-
-						<table class="table table-bordered table-striped table-hover" id="tablaItems">
+						<?php $limit = count($purDetails); $counter = $limit;?>
+						<table class="table table-bordered table-hover data-table" id="tablaItems">
 							<thead>
 								<tr>
-									<th>Item</th>
+									<th>Item ( <span id="countItems"><?php echo $limit;?> </span> )</th>
 									<th>Precio Unitario</th>
 									<th>Cantidad</th>
 									<th>Subtotal</th>
@@ -231,14 +225,15 @@
 							</thead>
 							<tbody>
 								<?php
-								$total = 0;
-								for($i=0; $i<count($purDetails); $i++){
+								$total = '0.00';
+								for($i=0; $i<$limit; $i++){
 									$subtotal = ($purDetails[$i]['cantidad'])*($purDetails[$i]['exFobPrice']);
-									echo '<tr>';
-										echo '<td><span id="spaItemName'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['item'].'</span><input type="hidden" value="'.$purDetails[$i]['itemId'].'" id="txtItemId" ></td>';
+									echo '<tr id="itemRow'.$purDetails[$i]['itemId'].'">';
+										echo '<td><span id="spaItemName'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['item'].'</span><input  value="'.$purDetails[$i]['itemId'].'" id="txtItemId" ></td>';
 										echo '<td><span id="spaExFobPrice'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['exFobPrice'].'</span></td>';
 										echo '<td><span id="spaQuantity'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['cantidad'].'</span></td>';
-										echo '<td><span id="spaSubtotal'.$purDetails[$i]['itemId'].'">'.$subtotal.'</span></td>';
+										echo '<td><span id="spaSubtotal'.$purDetails[$i]['itemId'].'">'.number_format($subtotal, 2, '.', '').'</span></td>';
+										
 										if($documentState == 'ORDER_PENDANT' OR $documentState == ''){
 											echo '<td class="columnItemsButtons">';
 											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$purDetails[$i]['itemId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
@@ -260,7 +255,7 @@
 							<h4>Total:</h4>	
 						</div>
 						<div class="span1">
-							<h4 id="total" ><?php echo $total.' $us'; ?></h4>
+							<h4 id="total" ><?php echo number_format($total, 2, '.', '').' $us.'; ?></h4>
 						</div>
 					<?php }  else { ?>
 						<div class="span8">	</div>
@@ -268,7 +263,7 @@
 							<h4>Total:</h4>	
 						</div>
 						<div class="span3">
-							<h4 id="total" ><?php echo $total.' $us'; ?></h4>
+							<h4 id="total" ><?php echo number_format($total, 2, '.', '').' $us.'; ?></h4>
 						</div>
 					<?php }?>
 					
@@ -295,39 +290,34 @@
 					<h3 id="myModalLabel">Cantidad Item</h3>
 				  </div>
 				  
-				  <div class="modal-body form-horizontal">
+				  <div class="modal-body">
 					<!--<p>One fine body…</p>-->
 					<?php
 					echo '<div id="boxModalInitiateItemPrice">';
 						//////////////////////////////////////
-
 						echo $this->BootstrapForm->input('items_id', array(				
 						'label' => 'Item:',
 						'id'=>'cbxModalItems',
-						'class'=>'input-xlarge'
+						'class'=>'span12'
 						));
-				//		echo '<br>';
+						
 						$price='';
 						echo '<div id="boxModalPrice">';
 							echo $this->BootstrapForm->input('ex_fob_price', array(				
 							'label' => 'Precio Unitario:',
 							'id'=>'txtModalPrice',
 							'value'=>$price,
-			//				'style'=>'background-color:#EEEEEE',
 							'class'=>'input-small',
 							'maxlength'=>'15'
 							));
-
 						echo '</div>';		
-				//		echo '<br>';
-
 						//////////////////////////////////////
 					echo '</div>';
 
 					echo $this->BootstrapForm->input('quantity', array(				
 					'label' => 'Cantidad:',
 					'id'=>'txtModalQuantity',
-					'class'=>'input-small',
+					'class'=>'span3',
 					'maxlength'=>'10'
 					));
 					?>
