@@ -973,18 +973,18 @@ class SalSalesController extends AppController {
 				if(($rest3 === 0) && ($rest4 === 0) && ($arrayMovement3['id'] !== null) && ($arrayMovement4['id'] !== null)){
 					$draftId3 = $arrayMovement3['id'];
 					$draftId4 = $arrayMovement4['id'];
-					echo "<br>1<br>";
+//					echo "<br>1<br>";
 //					debug($draftId3);
 //					debug($draftId4);
 				}elseif(($rest3 === 0) && ($arrayMovement3['id'] !== null)){
 					$draftId3 = $arrayMovement3['id'];
 //					$draftId4 = null;
-					echo "<br>2<br>";
+//					echo "<br>2<br>";
 //					debug($draftId3);
 				}elseif(($rest4 === 0) && ($arrayMovement4['id'] !== null)){
 					$draftId4 = $arrayMovement4['id'];
 //					$draftId3 = null;
-					echo "<br>3<br>";
+//					echo "<br>3<br>";
 //					debug($draftId4);
 				}
 //				else{
@@ -1641,9 +1641,10 @@ class SalSalesController extends AppController {
 					$this->loadModel('InvMovement');
 					$arrayMovement5 = $this->InvMovement->find('all', array(
 						'fields'=>array(
-							'InvMovement.id'
-							,'InvMovement.date'
-							,'InvMovement.description'
+							'InvMovement.id',
+//							,'InvMovement.date'
+//							,'InvMovement.description'
+							'InvMovement.inv_warehouse_id'
 							),
 						'conditions'=>array(
 								'InvMovement.document_code'=>$genCode
@@ -1654,14 +1655,14 @@ class SalSalesController extends AppController {
 					if($arrayMovement5 <> null){
 						for($i=0;$i<count($arrayMovement5);$i++){
 							$arrayMovement5[$i]['InvMovement']['lc_state'] = 'DRAFT';
-							$arrayMovement5[$i]['InvMovement']['code'] = 'NO'; //not sure to put this
+//							$arrayMovement5[$i]['InvMovement']['code'] = 'NO'; //not sure to put this
 						}
 					}
 					if($arrayMovement5 <> null){
 						$dataMovement5 = $arrayMovement5;
 					}
 					if($arrayMovement5 <> null){
-						$res5 = $this->InvMovement->saveMovement($dataMovement5, null, null, null);
+						$res5 = $this->InvMovement->saveMovement($dataMovement5, null, 'UPDATEHEAD', null, null, null);
 					}
 				}
 		}
