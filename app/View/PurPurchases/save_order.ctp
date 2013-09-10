@@ -154,11 +154,11 @@
 					'maxlength'=>'0'
 				));
 				
-				echo $this->BootstrapForm->input('inv_supplier_id', array(
-					'label' => 'Proveedor:',
-					'id'=>'cbxSuppliers',
-					'disabled'=>$supplier_disable
-				));
+//				echo $this->BootstrapForm->input('inv_supplier_id', array(
+//					'label' => 'Proveedor:',
+//					'id'=>'cbxSuppliers',
+//					'disabled'=>$supplier_disable
+//				));
 				
 				echo $this->BootstrapForm->input('description', array(
 					'rows' => 2,
@@ -217,6 +217,7 @@
 									<th>Item ( <span id="countItems"><?php echo $limit;?> </span> )</th>
 									<th>Precio Unitario</th>
 									<th>Cantidad</th>
+									<th>Proveedor</th>
 									<th>Subtotal</th>
 									<?php if($documentState == 'ORDER_PENDANT' OR $documentState == ''){ ?>
 									<th class="columnItemsButtons"></th>
@@ -228,17 +229,18 @@
 								$total = '0.00';
 								for($i=0; $i<$limit; $i++){
 									$subtotal = ($purDetails[$i]['cantidad'])*($purDetails[$i]['exFobPrice']);
-									echo '<tr id="itemRow'.$purDetails[$i]['itemId'].'">';
+									echo '<tr id="itemRow'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">';
 										echo '<td><span id="spaItemName'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['item'].'</span><input  value="'.$purDetails[$i]['itemId'].'" id="txtItemId" ></td>';
-										echo '<td><span id="spaExFobPrice'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['exFobPrice'].'</span></td>';
-										echo '<td><span id="spaQuantity'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['cantidad'].'</span></td>';
-										echo '<td><span id="spaSubtotal'.$purDetails[$i]['itemId'].'">'.number_format($subtotal, 2, '.', '').'</span></td>';
+										echo '<td><span id="spaExFobPrice'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">'.$purDetails[$i]['exFobPrice'].'</span></td>';
+										echo '<td><span id="spaQuantity'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">'.$purDetails[$i]['cantidad'].'</span></td>';
+										echo '<td><span id="spaSupplier'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['supplier'].'</span><input  value="'.$purDetails[$i]['supplierId'].'" id="txtSupplierId'.$purDetails[$i]['itemId'].'" ></td>';
+										echo '<td><span id="spaSubtotal'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">'.number_format($subtotal, 2, '.', '').'</span></td>';
 										
 										if($documentState == 'ORDER_PENDANT' OR $documentState == ''){
 											echo '<td class="columnItemsButtons">';
-											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$purDetails[$i]['itemId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
+											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
 
-												<a class="btn btn-danger" href="#" id="btnDeleteItem'.$purDetails[$i]['itemId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
+												<a class="btn btn-danger" href="#" id="btnDeleteItem'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
 											echo '</td>';
 										}
 									echo '</tr>';	
@@ -293,24 +295,35 @@
 				  <div class="modal-body">
 					<!--<p>One fine body…</p>-->
 					<?php
+					
+					
 					echo '<div id="boxModalInitiateItemPrice">';
 						//////////////////////////////////////
-						echo $this->BootstrapForm->input('items_id', array(				
-						'label' => 'Item:',
-						'id'=>'cbxModalItems',
-						'class'=>'span12'
+						echo $this->BootstrapForm->input('inv_supplier_id', array(
+						'label' => 'Proveedor:',
+						'id'=>'cbxModalSuppliers',
+						'class'=>'span6'
 						));
 						
-						$price='';
-						echo '<div id="boxModalPrice">';
-							echo $this->BootstrapForm->input('ex_fob_price', array(				
-							'label' => 'Precio Unitario:',
-							'id'=>'txtModalPrice',
-							'value'=>$price,
-							'class'=>'input-small',
-							'maxlength'=>'15'
+						echo '<div id="boxModalItemPriceStock">';
+							//////////////////////////////////////
+							echo $this->BootstrapForm->input('items_id', array(				
+							'label' => 'Item:',
+							'id'=>'cbxModalItems',
+							'class'=>'span12'
 							));
-						echo '</div>';		
+							echo '<div id="boxModalPrice">';
+								$price='';
+								echo $this->BootstrapForm->input('ex_fob_price', array(				
+								'label' => 'Precio Unitario:',
+								'id'=>'txtModalPrice',
+								'value'=>$price,
+								'class'=>'span3',
+								'maxlength'=>'15'
+								));
+							echo '</div>';		
+							//////////////////////////////////////
+						echo '</div>';
 						//////////////////////////////////////
 					echo '</div>';
 

@@ -61,7 +61,7 @@
 				<th><?php echo $this->BootstrapPaginator->sort('doc_code', 'Código');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('note_code', 'Código de Orden de Compra');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('InvSupplier.name','Proveedor');?></th>			
+<!--				<th><?php echo $this->BootstrapPaginator->sort('InvSupplier.name','Proveedor');?></th>		-->	
 				<th><?php echo $this->BootstrapPaginator->sort('lc_state', 'Estado Documento');?></th>				
 			</tr>
 		<?php foreach ($purPurchases as $purPurchase): ?>
@@ -70,7 +70,7 @@
 				<td><?php echo h($purPurchase['PurPurchase']['doc_code']); ?>&nbsp;</td>
 				<td><?php echo h($purPurchase['PurPurchase']['note_code']); ?>&nbsp;</td>
 				<td><?php echo date("d/m/Y", strtotime($purPurchase['PurPurchase']['date'])); ?>&nbsp;</td>
-				<td><?php echo h($purPurchase['InvSupplier']['name']); ?>&nbsp;</td>		
+<!--				<td><?php echo h($purPurchase['InvSupplier']['name']); ?>&nbsp;</td>		-->
 				<td><?php 
 						$documentState = $purPurchase['PurPurchase']['lc_state'];
 						switch ($documentState){

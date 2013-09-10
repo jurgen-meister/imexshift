@@ -412,7 +412,7 @@
 								'label' => 'Precio Unitario:',
 								'id'=>'txtModalPrice',
 								'value'=>$price,
-								'class'=>'input-small',
+								'class'=>'span3',
 								'maxlength'=>'15'
 								));
 							echo '</div>';	
@@ -492,6 +492,11 @@
 							'id'=>'txtModalDescription',
 							'class'=>'span9',
 							'rows' => 2
+							));
+					
+					echo $this->BootstrapForm->input('amount_hidden', array(				
+							'id'=>'txtModalAmountHidden',
+//							'type'=>'hidden'
 							));
 
 					?>

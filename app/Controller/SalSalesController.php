@@ -185,7 +185,6 @@ class SalSalesController extends AppController {
 		if(isset($this->passedArgs['id'])){
 			$id = $this->passedArgs['id'];
 		}
-
 		$this->loadModel('AdmParameter');
 		$currency = $this->AdmParameter->AdmParameterDetail->find('first', array(
 			//	'fields'=>array('AdmParameterDetail.id'),
@@ -293,7 +292,6 @@ class SalSalesController extends AppController {
 		if($id <> null){
 			$date = date("d/m/Y", strtotime($this->request->data['SalSale']['date']));
 			$salDetails = $this->_get_movements_details($id);
-	//		$purPrices = $this->_get_costs_details($id);
 			$salPayments = $this->_get_pays_details($id);
 			$documentState =$this->request->data['SalSale']['lc_state'];
 			$genericCode = $this->request->data['SalSale']['code'];
@@ -523,7 +521,7 @@ class SalSalesController extends AppController {
 			));
 			if($priceDirty==array()){
 			$price = 0;
-			}  else {
+			}else{
 			
 			$price = $priceDirty['InvPrice']['price'];
 			}

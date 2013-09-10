@@ -53,7 +53,7 @@ class PurPurchasesController extends AppController {
 		
 		
 		
-		$invSuppliers = $this->PurPurchase->InvSupplier->find('list');
+//		$invSuppliers = $this->PurPurchase->InvSupplier->find('list');
 		
 		$this->PurPurchase->recursive = -1;
 		$this->request->data = $this->PurPurchase->read(null, $id);
@@ -104,7 +104,7 @@ class PurPurchasesController extends AppController {
 			
 			
 		}
-		$this->set(compact('invSuppliers', 'id', 'date', 'purDetails', 'documentState', 'genericCode', 'exRate'));
+		$this->set(compact(/*'invSuppliers', */'id', 'date', 'purDetails', 'documentState', 'genericCode', 'exRate'));
 	}
 	
 	public function save_invoice(){
@@ -126,7 +126,7 @@ class PurPurchasesController extends AppController {
 //		debug($currencyId);
 		
 		
-		$invSuppliers = $this->PurPurchase->InvSupplier->find('list');
+//		$invSuppliers = $this->PurPurchase->InvSupplier->find('list');
 				
 		$this->PurPurchase->recursive = -1;
 		$this->request->data = $this->PurPurchase->read(null, $id);
@@ -149,7 +149,8 @@ class PurPurchasesController extends AppController {
 			$originDocCode = $this->PurPurchase->find('first', array(
 				'fields'=>array('PurPurchase.doc_code'),
 				'conditions'=>array(
-					'PurPurchase.code'=>$genericCode
+					'PurPurchase.code'=>$genericCode,
+					'PurPurchase.lc_state LIKE'=> '%ORDER%'
 					)
 			));
 			$originCode = $originDocCode['PurPurchase']['doc_code'];
@@ -160,7 +161,7 @@ class PurPurchasesController extends AppController {
 		}
 		
 			
-		$this->set(compact('invSuppliers', 'id', 'date', 'purDetails', 'purPrices', 'purPayments', 'documentState', 'genericCode', 'originCode', 'exRate'));
+		$this->set(compact(/*'invSuppliers', */'id', 'date', 'purDetails', 'purPrices', 'purPayments', 'documentState', 'genericCode', 'originCode', 'exRate'));
 //debug($this->request->data);
 	}
 	//START - AJAX START - AJAX START - AJAX START - AJAX START - AJAX START - AJAX START - AJAX
@@ -169,24 +170,34 @@ class PurPurchasesController extends AppController {
 		if($this->RequestHandler->isAjax()){
 						
 			$itemsAlreadySaved = $this->request->data['itemsAlreadySaved'];
-//			$warehouse = $this->request->data['warehouse'];
-			$supplier = $this->request->data['supplier'];
-			$itemsBySupplier = $this->PurPurchase->InvSupplier->InvItemsSupplier->find('list', array(
+			$supplierItemsAlreadySaved = $this->request->data['supplierItemsAlreadySaved'];
+			
+			//$supplier = $this->request->data['supplier'];
+			$invSuppliers = $this->PurPurchase->PurDetail->InvItem->InvItemsSupplier->InvSupplier->find('list');
+//			debug($invSuppliers);
+			$supplier = key($invSuppliers);
+			$itemsBySupplier = $this->PurPurchase->PurDetail->InvItem->InvItemsSupplier->find('list', array(
 				'fields'=>array('InvItemsSupplier.inv_item_id'),
 				'conditions'=>array(
 					'InvItemsSupplier.inv_supplier_id'=>$supplier
 				),
 				'recursive'=>-1
-			)); 
-//debug($itemsBySupplier);			
+			)); 	
+			
+			$itemsAlreadyTakenFromSupplier = [];
+			for($i=0; $i<count($itemsAlreadySaved); $i++){
+				if($supplierItemsAlreadySaved[$i] == $supplier){
+					$itemsAlreadyTakenFromSupplier[] = $itemsAlreadySaved[$i];
+				}	
+			}
+//			debug($itemsAlreadyTakenFromSupplier);			
 			$items = $this->PurPurchase->PurDetail->InvItem->find('list', array(
 				'conditions'=>array(
-					'NOT'=>array('InvItem.id'=>$itemsAlreadySaved)
-					
+					'NOT'=>array('InvItem.id'=>$itemsAlreadyTakenFromSupplier)
 					,'InvItem.id'=>$itemsBySupplier
 				),
-				'recursive'=>-1
-				//'fields'=>array('InvItem.id', 'CONCAT(InvItem.code, '-', InvItem.name)')
+				'recursive'=>-1,
+				'order'=>array('InvItem.code')
 			));
 //debug($supplier);			
 //debug($items);
@@ -208,10 +219,62 @@ class PurPurchasesController extends AppController {
 			$price = $priceDirty['InvPrice']['price'];
 		}
 				
-			$this->set(compact('items', 'price'));
+			$this->set(compact('items', 'price', 'invSuppliers', 'supplier'));
 		}
 	}
 	
+	public function ajax_update_items_modal(){
+		if($this->RequestHandler->isAjax()){
+			$itemsAlreadySaved = $this->request->data['itemsAlreadySaved'];
+			$supplierItemsAlreadySaved = $this->request->data['supplierItemsAlreadySaved'];
+			$supplier = $this->request->data['supplier'];
+			
+			$itemsBySupplier = $this->PurPurchase->PurDetail->InvItem->InvItemsSupplier->find('list', array(
+				'fields'=>array('InvItemsSupplier.inv_item_id'),
+				'conditions'=>array(
+					'InvItemsSupplier.inv_supplier_id'=>$supplier
+				),
+				'recursive'=>-1
+			)); 	
+			
+			$itemsAlreadyTakenFromSupplier = [];
+			for($i=0; $i<count($itemsAlreadySaved); $i++){
+				if($supplierItemsAlreadySaved[$i] == $supplier){
+					$itemsAlreadyTakenFromSupplier[] = $itemsAlreadySaved[$i];
+				}	
+			}
+			
+			$items = $this->PurPurchase->PurDetail->InvItem->find('list', array(
+				'conditions'=>array(
+					'NOT'=>array('InvItem.id'=>$itemsAlreadyTakenFromSupplier)
+					,'InvItem.id'=>$itemsBySupplier
+				),
+				'recursive'=>-1,
+				'order'=>array('InvItem.code')
+			));
+//			debug($items);
+			$item = key($items);
+			//////////////////////CAMBIAR POR EL ALGORITMO QUE SACA EL PRECIO PRORRATEADO////////////////
+			$priceDirty = $this->PurPurchase->PurDetail->InvItem->InvPrice->find('first', array(
+			'fields'=>array('InvPrice.price'),
+			'order' => array('InvPrice.date_created' => 'desc'),
+			'conditions'=>array(
+				'InvPrice.inv_item_id'=>$item
+				)
+			));
+			if($priceDirty==array()){
+			$price = 0;
+			}  else {
+			
+			$price = $priceDirty['InvPrice']['price'];
+			}
+			//////////////////////CAMBIAR POR EL ALGORITMO QUE SACA EL PRECIO PRORRATEADO////////////////
+			//$stock = $this->_find_stock($item, $warehouse);
+//			$stocks = $this->_get_stocks($item, $warehouse);
+//			$stock = $this->_find_item_stock($stocks, $item);
+			$this->set(compact('items', 'price'/*, 'stock'*/));
+		}
+	}
 	
 	public function ajax_initiate_modal_add_cost(){
 		if($this->RequestHandler->isAjax()){
@@ -347,15 +410,7 @@ class PurPurchasesController extends AppController {
 	public function ajax_update_stock_modal(){
 		if($this->RequestHandler->isAjax()){
 			$item = $this->request->data['item'];
-//			$warehouse = $this->request->data['warehouse']; //if it's warehouse_transfer is OUT
-//			$warehouse2 = $this->request->data['warehouse2'];//if it's warehouse_transfer is IN
-//			$transfer = $this->request->data['transfer'];
-			
-//			$stock = $this->_find_stock($item, $warehouse);//if it's warehouse_transfer is OUT
-//			$stock2 ='';
-//			if($transfer == 'warehouses_transfer'){
-//				$stock2 = $this->_find_stock($item, $warehouse2);//if it's warehouse_transfer is IN	
-//			}
+			//////////////////////CAMBIAR POR EL ALGORITMO QUE SACA EL PRECIO PRORRATEADO////////////////
 			$priceDirty = $this->PurPurchase->PurDetail->InvItem->InvPrice->find('first', array(
 			'fields'=>array('InvPrice.price'),
 			'order' => array('InvPrice.date_created' => 'desc'),
@@ -365,10 +420,11 @@ class PurPurchasesController extends AppController {
 			));
 			if($priceDirty==array()){
 			$price = 0;
-		}  else {
+			}else{
 			
 			$price = $priceDirty['InvPrice']['price'];
-		}
+			}
+			//////////////////////CAMBIAR POR EL ALGORITMO QUE SACA EL PRECIO PRORRATEADO////////////////
 			$this->set(compact('price'));
 		}
 	}
@@ -472,7 +528,8 @@ class PurPurchasesController extends AppController {
 			$movementCode = $this->request->data['movementCode'];
 			$noteCode = $this->request->data['noteCode'];
 			$date = $this->request->data['date'];
-			$supplier = $this->request->data['supplier'];
+			$supplierId = $this->request->data['supplierId'];
+//			debug($supplier);
 //			$employee = $this->request->data['employee'];
 //			$taxNumber = $this->request->data['taxNumber'];
 //			$admProfileId = $this->request->data['salesman'];
@@ -521,7 +578,7 @@ class PurPurchasesController extends AppController {
 //			$arrayMovement['sal_employee_id']=$employee;
 //			$arrayMovement['sal_tax_number_id']=$taxNumber;
 //			$arrayMovement['salesman_id']=$salesman;
-			$arrayMovement['inv_supplier_id']=$supplier;
+			$arrayMovement['inv_supplier_id']=$supplierId;
 			$arrayMovement['description']=$description;
 			$arrayMovement['ex_rate']=$exRate;
 			$arrayMovement['lc_state']=$STATE;
@@ -532,7 +589,7 @@ class PurPurchasesController extends AppController {
 //				$arrayMovement2['sal_employee_id']=$employee;
 //				$arrayMovement2['sal_tax_number_id']=$taxNumber;
 //				$arrayMovement2['salesman_id']=$salesman;
-				$arrayMovement2['inv_supplier_id']=$supplier;
+				$arrayMovement2['inv_supplier_id']=$supplierId;
 				$arrayMovement2['description']=$description;
 				$arrayMovement2['ex_rate']=$exRate;
 				//header for movement
@@ -567,7 +624,7 @@ class PurPurchasesController extends AppController {
 //					$arrayMovement4['lc_state']='PENDANT';//ESTO ESTA SOBREESCRITO POR LO Q DIGA $arrayMovement5
 				}
 			}			
-			$arrayMovementDetails = array( 
+			$arrayMovementDetails = array('inv_supplier_id'=>$supplierId,  
 										'inv_item_id'=>$itemId,
 										'ex_fob_price'=>$exFobPrice, 'fob_price'=>$fobPrice,
 										'quantity'=>$quantity, 
@@ -1632,7 +1689,7 @@ class PurPurchasesController extends AppController {
 			'conditions'=>array(
 				'PurDetail.pur_purchase_id'=>$idMovement
 				),
-			'fields'=>array('InvItem.name', 'InvItem.code', 'PurDetail.ex_fob_price', 'PurDetail.quantity', 'InvItem.id'/*, 'PurPurchase.inv_supplier_id','InvPrice.price'*/)
+			'fields'=>array('InvItem.name', 'InvItem.code', 'PurDetail.ex_fob_price', 'PurDetail.quantity','PurDetail.inv_supplier_id', 'InvItem.id', 'InvSupplier.name','InvSupplier.id',)
 			));
 		
 		$formatedMovementDetails = array();
@@ -1651,7 +1708,9 @@ class PurPurchasesController extends AppController {
 				'itemId'=>$value['InvItem']['id'],
 				'item'=>'[ '. $value['InvItem']['code'].' ] '.$value['InvItem']['name'],
 				'exFobPrice'=>$value['PurDetail']['ex_fob_price'],//llamar precio
-				'cantidad'=>$value['PurDetail']['quantity']//llamar cantidad
+				'cantidad'=>$value['PurDetail']['quantity'],//llamar cantidad
+				'supplierId'=>$value['InvSupplier']['id'],
+				'supplier'=>$value['InvSupplier']['name'],//llamar almacen
 				);
 		}
 //debug($formatedMovementDetails);		
@@ -1689,37 +1748,25 @@ class PurPurchasesController extends AppController {
 	}
 	
 	public function _get_pays_details($idMovement){
-		$movementDetails = $this->PurPurchase->PurPayment->find('all', array(
+		$paymentDetails = $this->PurPurchase->PurPayment->find('all', array(
 			'conditions'=>array(
 				'PurPayment.pur_purchase_id'=>$idMovement
 				),
-			'fields'=>array('PurPaymentType.name', 'PurPayment.date', 'PurPayment.due_date', 'PurPayment.amount', 'PurPayment.description', 'PurPayment.lc_state', 'PurPaymentType.id')
+			'fields'=>array('PurPayment.date', 'PurPayment.amount', 'PurPayment.description')
 			));
 		
-		$formatedMovementDetails = array();
-		foreach ($movementDetails as $key => $value) {
-			// gets the first price in the list of the item prices
-//			$priceDirty = $this->PurPurchase->PurDetail->InvItem->InvPrice->find('first', array(
-//					'fields'=>array('InvPrice.price'),
-//					'order' => array('InvPrice.date_created' => 'desc'),
-//					'conditions'=>array(
-//						'InvPrice.inv_item_id'=>$value['InvItem']['id']
-//						)
-//				));
-				//$price = $priceDirty['InvPrice']['price'];
-			
-			$formatedMovementDetails[$key] = array(
-				'payId'=>$value['PurPaymentType']['id'],
-				'pay'=>$value['PurPaymentType']['name'],
-				'date'=>$value['PurPayment']['date'],
-				'dueDate'=>$value['PurPayment']['due_date'],
-				'paidAmount'=>$value['PurPayment']['amount'], //paidAmount ?
-				'description'=>$value['PurPayment']['description'],
-				'state'=>$value['PurPayment']['lc_state']
+		$formatedPaymentDetails = array();
+		foreach ($paymentDetails as $key => $value) {
+			$formatedPaymentDetails[$key] = array(
+				'dateId'=>$value['PurPayment']['date'],//llamar precio
+				//'payDate'=>strftime("%A, %d de %B de %Y", strtotime($value['SalPayment']['date'])),
+				'payDate'=>strftime("%d/%m/%Y", strtotime($value['PurPayment']['date'])),
+				'payAmount'=>$value['PurPayment']['amount'],//llamar cantidad
+				'payDescription'=>$value['PurPayment']['description']
 				);
 		}
-//debug($formatedMovementDetails);		
-		return $formatedMovementDetails;
+//debug($formatedPaymentDetails);		strftime("%A, %d de %B de %Y", $value['SalPayment']['date'])
+		return $formatedPaymentDetails;
 	}
 /**
  * index method
@@ -1780,7 +1827,7 @@ class PurPurchasesController extends AppController {
 				$filters
 			 ),
 			"recursive"=>0,
-			"fields"=>array("PurPurchase.id", "PurPurchase.code", "PurPurchase.doc_code", "PurPurchase.date", "PurPurchase.note_code",/*"InvMovement.inv_movement_type_id","InvMovementType.name", */"PurPurchase.inv_supplier_id", "InvSupplier.name", "PurPurchase.lc_state"),
+			"fields"=>array("PurPurchase.id", "PurPurchase.code", "PurPurchase.doc_code", "PurPurchase.date", "PurPurchase.note_code", /*"PurPurchase.inv_supplier_id", "InvSupplier.name",*/ "PurPurchase.lc_state"),
 			"order"=> array("PurPurchase.id"=>"desc"),
 			"limit" => 15,
 		);
@@ -1857,7 +1904,7 @@ class PurPurchasesController extends AppController {
 				$filters
 			 ),
 			"recursive"=>0,
-			"fields"=>array("PurPurchase.id", "PurPurchase.code", "PurPurchase.doc_code", "PurPurchase.date", "PurPurchase.note_code","PurPurchase.inv_supplier_id", "InvSupplier.name", "PurPurchase.lc_state"),
+			"fields"=>array("PurPurchase.id", "PurPurchase.code", "PurPurchase.doc_code", "PurPurchase.date", "PurPurchase.note_code",/*"PurPurchase.inv_supplier_id", "InvSupplier.name",*/ "PurPurchase.lc_state"),
 			"order"=> array("PurPurchase.id"=>"desc"),
 			"limit" => 15,
 		);

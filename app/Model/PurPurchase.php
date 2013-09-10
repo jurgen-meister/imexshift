@@ -16,16 +16,16 @@ class PurPurchase extends AppModel {
  * @var array
  */
 	public $validate = array(
-		'inv_supplier_id' => array(
-			'notempty' => array(
-				'rule' => array('notempty'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
-			),
-		),
+//		'inv_supplier_id' => array(
+//			'notempty' => array(
+//				'rule' => array('notempty'),
+//				//'message' => 'Your custom message here',
+//				//'allowEmpty' => false,
+//				//'required' => false,
+//				//'last' => false, // Stop validation after this rule
+//				//'on' => 'create', // Limit validation to 'create' or 'update' operations
+//			),
+//		),
 		'code' => array(
 			'notempty' => array(
 				'rule' => array('notempty'),
@@ -55,15 +55,15 @@ class PurPurchase extends AppModel {
  *
  * @var array
  */
-	public $belongsTo = array(
-		'InvSupplier' => array(
-			'className' => 'InvSupplier',
-			'foreignKey' => 'inv_supplier_id',
-			'conditions' => '',
-			'fields' => '',
-			'order' => ''
-		)
-	);
+//	public $belongsTo = array(
+//		'InvSupplier' => array(
+//			'className' => 'InvSupplier',
+//			'foreignKey' => 'inv_supplier_id',
+//			'conditions' => '',
+//			'fields' => '',
+//			'order' => ''
+//		)
+//	);
 
 /**
  * hasMany associations
