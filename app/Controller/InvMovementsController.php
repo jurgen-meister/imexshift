@@ -367,6 +367,169 @@ class InvMovementsController extends AppController {
 	//////////////////////////////////////////// END - REPORT /////////////////////////////////////////////////
 	
 	
+	//////////////////////////////////////////// START - GRAPHICS /////////////////////////////////////////////////
+	public function vgraphics(){
+		$warehousesClean = $this->InvMovement->InvWarehouse->find("list");
+		//array_unshift($warehouses, "TODOS");// doesn't work 'cause change key values to an order 1,2,3,etc
+		$warehouses[0]="TODOS";
+		foreach ($warehousesClean as $key => $value) {
+			$warehouses[$key] = $value;
+		}
+		//debug($warehouses);
+		$this->loadModel("AdmPeriod");
+		$years = $this->AdmPeriod->find("list", array(
+			"order"=>array("name"=>"desc"),
+			"fields"=>array("name", "name")
+			)
+		);
+		
+		$this->loadModel("InvItem");
+		
+		$itemsClean = $this->InvItem->find("list", array('order'=>array('InvItem.code')));
+		$items[0]="TODOS";
+		foreach ($itemsClean as $key => $value) {
+			$items[$key] = $value;
+		}
+		
+//		debug($items);
+		//array_unshift($items, "TODOS"); // doesn't work 'cause change key values to an order 1,2,3,etc
+		$this->set(compact("warehouses", "years", "items"));
+		//debug($this->_get_bars_items_quantity_and_time("entrada", "2013", 0, 0));
+	}
+	
+	public function ajax_get_graphics_data(){
+		if($this->RequestHandler->isAjax()){
+			$year = $this->request->data['year'];
+			$warehouse = $this->request->data['warehouse'];
+			$item = $this->request->data['item'];
+			$string = $this->_get_pie_items_quantity_and_type("entrada", $year, $warehouse, $item).",";
+			$string .= $this->_get_pie_items_quantity_and_type("salida", $year, $warehouse, $item).",";
+			$string .= $this->_get_bars_items_quantity_and_time("entrada", $year, $warehouse, $item).",";
+			$string .= $this->_get_bars_items_quantity_and_time("salida", $year, $warehouse, $item);
+			echo $string;
+		}
+//		$string = 'Compras-88|Traspasos-33|Aperturas-45|Otros-225,';
+//		$string .= 'Compras-50|Traspasos-25|Aperturas-75|Otros-15,';
+//		$string .= '45|133|12|54|64|22|31|45|87|600|543|34,';
+//		$string .= '30|54|12|114|64|100|98|80|10|50|169|222';
+	}
+	
+	private function _get_pie_items_quantity_and_type($status, $year, $warehouse, $item){
+		$conditionWarehouse = null;
+		$conditionItem = null;
+		$dataString = "";
+		
+		if($warehouse > 0){
+			$conditionWarehouse = array("InvMovement.inv_warehouse_id"=>$warehouse);
+		}
+		
+		if($item > 0){
+			$conditionItem = array("InvMovementDetail.inv_item_id" => $item);
+		}
+		
+		// get types
+		$types = $this->InvMovement->InvMovementType->find("list", array(
+			"conditions"=>array("InvMovementType.status"=>$status)
+		));
+		
+		
+		//get items, types and sum quantities
+		$this->InvMovement->InvMovementDetail->bindModel(array(
+				'hasOne'=>array(
+					'InvMovementType'=>array(
+						'foreignKey'=>false,
+						'conditions'=> array('InvMovement.inv_movement_type_id = InvMovementType.id')
+					)
+				)
+			));
+		$this->InvMovement->InvMovementDetail->unbindModel(array('belongsTo' => array('InvItem')));
+		$data = $this->InvMovement->InvMovementDetail->find('all', array(
+			"fields"=>array("InvMovementType.name", "SUM(InvMovementDetail.quantity)"),
+			'group'=>array('InvMovementType.name'),
+			"conditions"=>array(
+				"InvMovementType.status"=>$status,
+				"to_char(InvMovement.date,'YYYY')"=>$year,
+				"InvMovement.lc_state"=>"APPROVED",
+				$conditionWarehouse,
+				$conditionItem
+			)
+		));
+		
+		//format data on string to response ajax request
+		foreach ($types as $type) {
+			$exist = 0;
+			foreach ($data as $value) {
+				if($type == $value['InvMovementType']['name']){
+					$dataString .= $type."-".$value[0]['sum']."|";
+					//debug($dataString);
+					$exist++;
+				}
+			}
+			if($exist == 0){
+				$dataString .= $type."-0|";
+			}
+		}
+		
+		return substr($dataString, 0, -1); // remove last character "|"
+	}
+	
+	private function _get_bars_items_quantity_and_time($status, $year, $warehouse, $item){
+		$conditionWarehouse = null;
+		$conditionItem = null;
+		$dataString = "";
+		
+		if($warehouse > 0){
+			$conditionWarehouse = array("InvMovement.inv_warehouse_id"=>$warehouse);
+		}
+		
+		if($item > 0){
+			$conditionItem = array("InvMovementDetail.inv_item_id" => $item);
+		}
+		
+		//get items, types and sum quantities
+		$this->InvMovement->InvMovementDetail->bindModel(array(
+				'hasOne'=>array(
+					'InvMovementType'=>array(
+						'foreignKey'=>false,
+						'conditions'=> array('InvMovement.inv_movement_type_id = InvMovementType.id')
+					)
+				)
+			));
+		$this->InvMovement->InvMovementDetail->unbindModel(array('belongsTo' => array('InvItem')));
+		$data = $this->InvMovement->InvMovementDetail->find('all', array(
+			"fields"=>array("to_char(\"InvMovement\".\"date\",'mm') AS month", "SUM(InvMovementDetail.quantity)"),
+			'group'=>array("to_char(InvMovement.date,'mm')"),
+			"conditions"=>array(
+				"InvMovementType.status"=>$status,
+				"to_char(InvMovement.date,'YYYY')"=>$year,
+				"InvMovement.lc_state"=>"APPROVED",
+				$conditionWarehouse,
+				$conditionItem
+			)
+		));
+		
+		//format data on string to response ajax request
+		$months = array(1,2,3,4,5,6,7,8,9,10,11,12);
+		
+		foreach ($months as $month) {
+			$exist = 0;
+			foreach ($data as $value) {
+				if($month == (int)$value[0]['month']){
+					$dataString .= $value[0]['sum']."|";
+					//debug($dataString);
+					$exist++;
+				}
+			}
+			if($exist == 0){
+				$dataString .= "0|";
+			}
+		}
+		
+		return substr($dataString, 0, -1);
+	}
+	
+	//////////////////////////////////////////// END - GRAPHICS  /////////////////////////////////////////////////
+	
 	
 	//////////////////////////////////////////// START - INDEX ///////////////////////////////////////////////
 	
