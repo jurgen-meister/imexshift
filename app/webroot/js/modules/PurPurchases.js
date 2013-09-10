@@ -96,9 +96,9 @@ $(document).ready(function(){
 		arrayAux = getPaysDetails();
 		if(arrayAux[0] != 0){
 			for(var i=0; i< arrayAux.length; i++){
-				 arrayPaysAlreadySaved[i] = arrayAux[i]['pur_payment_type_id'];
-				 createEventClickEditPayButton(arrayAux[i]['pur_payment_type_id']);
-				 createEventClickDeletePayButton(arrayAux[i]['pur_payment_type_id']);			 
+				arrayPaysAlreadySaved[i] = arrayAux[i]['date'];
+				createEventClickEditPayButton(arrayAux[i]['date']);
+				createEventClickDeletePayButton(arrayAux[i]['date']);			 
 			}
 		}
 		/*else{
@@ -549,8 +549,8 @@ $(document).ready(function(){
 		}
 	}
 	
-	function createEventClickEditPayButton(payId){
-			$('#btnEditPay'+payId).bind("click",function(){ //must be binded 'cause loaded live with javascript'
+	function createEventClickEditPayButton(dateId){
+			$('#btnEditPay'+dateId).bind("click",function(){ //must be binded 'cause loaded live with javascript'
 					var objectTableRowSelected = $(this).closest('tr')
 					startEventsWhenExistsDebts();
 					initiateModalEditPay(objectTableRowSelected);
@@ -558,8 +558,8 @@ $(document).ready(function(){
 			});
 	}
 	
-	function createEventClickDeletePayButton(payId){
-		$('#btnDeletePay'+payId).bind("click",function(){ //must be binded 'cause loaded live with javascript'
+	function createEventClickDeletePayButton(dateId){
+		$('#btnDeletePay'+dateId).bind("click",function(){ //must be binded 'cause loaded live with javascript'
 					var objectTableRowSelected = $(this).closest('tr')
 					deletePay(objectTableRowSelected);
 					return false; //avoid page refresh
@@ -979,7 +979,7 @@ $(document).ready(function(){
 				ajax_save_movement('EDIT_PAY', 'PINVOICE_PENDANT', '', []);
 			}
 		}else{
-			$('#boxModalValidateItem').html('<ul>'+error+'</ul>');
+			$('#boxModalValidatePay').html('<ul>'+error+'</ul>');
 		}
 	}	
 		
@@ -1115,21 +1115,18 @@ var amount = $('#txtModalAmount').val();
 	
 	function getPaysDetails(){		
 		var arrayPaysDetails = [];
-		var payId = '';
+		var dateId = '';
 		var payDate = '';
-		var payDueDate = '';
 		var payAmount = '';
 		var payDescription = '';
-		var payState = '';
 		
 		$('#tablaPays tbody tr').each(function(){		
-			payId = $(this).find('#txtPayId').val();
-			payDate = $(this).find('#spaDate'+payId).text();
-			payAmount = $(this).find('#spaPaidAmount'+payId).text();
-			payDescription = $(this).find('#spaDescription'+payId).text();
+			dateId = $(this).find('#txtPayDate').val();
+			payDate = $(this).find('#spaPayDate'+dateId).text();
+			payAmount = $(this).find('#spaPayAmount'+dateId).text();
+			payDescription = $(this).find('#spaPayDescription'+dateId).text();
 			
-			arrayPaysDetails.push({'date':payDate, 'amount':payAmount,'description':payDescription});
-			
+			arrayPaysDetails.push({'date':dateId, 'amount':payAmount,'description':payDescription});
 		});
 		
 		if(arrayPaysDetails.length == 0){  //For fix undefined index
