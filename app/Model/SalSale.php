@@ -176,9 +176,9 @@ class SalSale extends AppModel {
 				case 'EDIT_PAY':
 					if($this->SalPayment->updateAll(array('SalPayment.amount'=>$dataPayDetail['SalPayment']['amount'], 
 															'SalPayment.description'=>"'".$dataPayDetail['SalPayment']['description']."'", 
-														//	'SalPayment.sal_payment_type_id'=>$dataPayDetail['SalPayment']['sal_payment_type_id'],									
 															'SalPayment.ex_amount'=>$dataPayDetail['SalPayment']['ex_amount']),
 								/*array conditions*/array('SalPayment.sal_sale_id'=>$dataPayDetail['SalPayment']['sal_sale_id'], 
+														'SalPayment.sal_payment_type_id'=>$dataPayDetail['SalPayment']['sal_payment_type_id'],
 														'SalPayment.date'=>$dataPayDetail['SalPayment']['date']))){
 						$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
 					}

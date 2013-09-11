@@ -230,7 +230,7 @@
 								for($i=0; $i<$limit; $i++){
 									$subtotal = ($purDetails[$i]['cantidad'])*($purDetails[$i]['exFobPrice']);
 									echo '<tr id="itemRow'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">';
-										echo '<td><span id="spaItemName'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['item'].'</span><input  value="'.$purDetails[$i]['itemId'].'" id="txtItemId" ></td>';
+										echo '<td><span id="spaItemName'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['item'].'</span><input type="hidden" value="'.$purDetails[$i]['itemId'].'" id="txtItemId" ></td>';
 										echo '<td><span id="spaExFobPrice'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">'.$purDetails[$i]['exFobPrice'].'</span></td>';
 										echo '<td><span id="spaQuantity'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">'.$purDetails[$i]['cantidad'].'</span></td>';
 										echo '<td><span id="spaSupplier'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['supplier'].'</span><input  value="'.$purDetails[$i]['supplierId'].'" id="txtSupplierId'.$purDetails[$i]['itemId'].'" ></td>';

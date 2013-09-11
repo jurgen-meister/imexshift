@@ -234,10 +234,10 @@
 								for($i=0; $i<$limit; $i++){
 									$subtotal = ($purDetails[$i]['cantidad'])*($purDetails[$i]['exFobPrice']);
 									echo '<tr id="itemRow'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">';
-										echo '<td><span id="spaItemName'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['item'].'</span><input  value="'.$purDetails[$i]['itemId'].'" id="txtItemId" ></td>';
+										echo '<td><span id="spaItemName'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['item'].'</span><input type="hidden" value="'.$purDetails[$i]['itemId'].'" id="txtItemId" ></td>';
 										echo '<td><span id="spaExFobPrice'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">'.$purDetails[$i]['exFobPrice'].'</span></td>';
 										echo '<td><span id="spaQuantity'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">'.$purDetails[$i]['cantidad'].'</span></td>';
-										echo '<td><span id="spaSupplier'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['supplier'].'</span><input  value="'.$purDetails[$i]['supplierId'].'" id="txtSupplierId'.$purDetails[$i]['itemId'].'" ></td>';
+										echo '<td><span id="spaSupplier'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['supplier'].'</span><input type="hidden" value="'.$purDetails[$i]['supplierId'].'" id="txtSupplierId'.$purDetails[$i]['itemId'].'" ></td>';
 										echo '<td><span id="spaSubtotal'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">'.number_format($subtotal, 2, '.', '').'</span></td>';
 										
 										if($documentState == 'PINVOICE_PENDANT' OR $documentState == ''){
@@ -297,8 +297,8 @@
 								$total3 = '0.00';
 								for($i=0; $i<$limit3; $i++){
 									echo '<tr id="payRow'.$purPrices[$i]['costId'].'" >';
-										echo '<td><span id="spaCostName'.$purPrices[$i]['costId'].'">'.$purPrices[$i]['costName'].'</span><input  value="'.$purPrices[$i]['costId'].'" id="txtCostId" ></td>';
-										echo '<td><span id="spaCostAmount'.$purPrices[$i]['costId'].'">'.$purPrices[$i]['costAmount'].'</span></td>';
+										echo '<td><span id="spaCostName'.$purPrices[$i]['costId'].'">'.$purPrices[$i]['costCodeName'].'</span><input type="hidden" value="'.$purPrices[$i]['costId'].'" id="txtCostId" ></td>';
+										echo '<td><span id="spaCostExAmount'.$purPrices[$i]['costId'].'">'.$purPrices[$i]['costExAmount'].'</span></td>';
 										
 										if($documentState == 'PINVOICE_PENDANT' OR $documentState == ''){
 											echo '<td class="columnCostsButtons">';
@@ -308,7 +308,7 @@
 											echo '</td>';
 										}
 									echo '</tr>';	
-									$total3 += $purPrices[$i]['costAmount'];
+									$total3 += $purPrices[$i]['costExAmount'];
 								}?>
 							</tbody>
 						</table>
@@ -321,7 +321,7 @@
 							<h4>Total:</h4>	
 						</div>
 						<div class="span1">
-							<h4 id="totalcost" ><?php echo number_format($total3, 2, '.', '').' Bs.'; ?></h4>
+							<h4 id="total3" ><?php echo number_format($total3, 2, '.', '').' $us.'; ?></h4>
 						</div>
 					<?php }  else { ?>
 						<div class="span8">	</div>
@@ -329,7 +329,7 @@
 							<h4>Total:</h4>	
 						</div>
 						<div class="span3">
-							<h4 id="totalcost" ><?php echo number_format($total3, 2, '.', '').' Bs.'; ?></h4>
+							<h4 id="total3" ><?php echo number_format($total3, 2, '.', '').' $us.'; ?></h4>
 						</div>
 					<?php }?>
 					
@@ -358,7 +358,7 @@
 								$total2 = '0.00';
 								for($i=0; $i<$limit2; $i++){
 									echo '<tr id="payRow'.$purPayments[$i]['dateId'].'" >';
-										echo '<td><span id="spaPayDate'.$purPayments[$i]['dateId'].'">'.$purPayments[$i]['payDate'].'</span><input  value="'.$purPayments[$i]['dateId'].'" id="txtPayDate" ></td>';
+										echo '<td><span id="spaPayDate'.$purPayments[$i]['dateId'].'">'.$purPayments[$i]['payDate'].'</span><input type="hidden" value="'.$purPayments[$i]['dateId'].'" id="txtPayDate" ></td>';
 										echo '<td><span id="spaPayAmount'.$purPayments[$i]['dateId'].'">'.$purPayments[$i]['payAmount'].'</span></td>';
 										echo '<td><span id="spaPayDescription'.$purPayments[$i]['dateId'].'">'.$purPayments[$i]['payDescription'].'</span></td>';
 										
@@ -484,7 +484,7 @@
 					<h3 id="myModalLabel">Montos</h3>
 				  </div>
 				  
-				  <div class="modal-body form-horizontal">
+				  <div class="modal-body">
 					<!--<p>One fine body…</p>-->
 					<?php
 					echo '<div id="boxModalInitiateCost">';
@@ -493,14 +493,13 @@
 						'id'=>'cbxModalCosts',
 						'class'=>'span12',
 						));
-						echo '<br>';
 					echo '</div>';
 					echo $this->BootstrapForm->input('amount', array(				
 							'label' => 'Monto:',
-							'id'=>'txtModalCostAmount',
+							'id'=>'txtModalCostExAmount',
 							'class'=>'span3',
 							'maxlength'=>'15'
-							));
+						));
 					?>
 					  <div id="boxModalValidateCost" class="alert-error"></div> 
 				  </div>

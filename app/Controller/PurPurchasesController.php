@@ -557,11 +557,18 @@ class PurPurchasesController extends AppController {
 //			$exFobPrice =  $this->_get_price($itemId, $date, 'FOB', 'dolar');
 //			$fobPrice =  $exFobPrice * $exRate;//$this->_get_price($itemId, $date, 'FOB', 'bs');
 			$fobPrice = $exFobPrice * $exRate;
+			$total = $this->request->data['total'];
+			$totalCost = $this->request->data['totalCost'];
 			if (($ACTION == 'save_invoice' && $OPERATION == 'ADD_PAY') || ($ACTION == 'save_invoice' && $OPERATION == 'EDIT_PAY') || ($ACTION == 'save_invoice' && $OPERATION == 'DELETE_PAY')) {
 //				$dateId = $this->request->data['dateId'];
 				$payDate = $this->request->data['payDate'];
 				$payAmount = $this->request->data['payAmount'];
 				$payDescription = $this->request->data['payDescription'];
+			}
+			if (($ACTION == 'save_invoice' && $OPERATION == 'ADD_COST') || ($ACTION == 'save_invoice' && $OPERATION == 'EDIT_COST') || ($ACTION == 'save_invoice' && $OPERATION == 'DELETE_COST')) {
+//				$dateId = $this->request->data['dateId'];
+				$costId = $this->request->data['costId'];
+				$costExAmount = $this->request->data['costExAmount'];
 			}
 			//For validate before approve OUT or cancelled IN
 			$arrayForValidate = array();
@@ -613,7 +620,11 @@ class PurPurchasesController extends AppController {
 										'description'=>$payDescription,
 										'amount'=>$payAmount, 'ex_amount'=>($payAmount / $exRate)
 										);
-			}elseif ($ACTION == 'save_invoice') {
+			}elseif(($ACTION == 'save_invoice' && $OPERATION == 'ADD_COST') || ($ACTION == 'save_invoice' && $OPERATION == 'EDIT_COST') || ($ACTION == 'save_invoice' && $OPERATION == 'DELETE_COST')){
+				$arrayCostDetails = array('inv_price_type_id'=>$costId,
+										'ex_amount'=>$costExAmount, 'amount'=>($costExAmount * $exRate)
+										);
+			}elseif($ACTION == 'save_invoice') {
 				//header for movement
 				$arrayMovement3['date']=$date;
 				$arrayMovement3['inv_warehouse_id']=2;//EL ALTO 2 MANUALMENTE VER COMO ELEGIR ESTO
@@ -721,7 +732,7 @@ class PurPurchasesController extends AppController {
 						$movementDocCode2 = $this->_generate_doc_code('CFA');
 						$arrayMovement2['doc_code'] = $movementDocCode2;
 					}
-				}elseif ($ACTION == 'save_invoice' && $OPERATION != 'ADD_PAY' && $OPERATION != 'EDIT_PAY' && $OPERATION != 'DELETE_PAY') {
+				}elseif ($ACTION == 'save_invoice' && $OPERATION != 'ADD_PAY' && $OPERATION != 'EDIT_PAY' && $OPERATION != 'DELETE_PAY' && $OPERATION != 'ADD_COST' && $OPERATION != 'EDIT_COST' && $OPERATION != 'DELETE_COST') {
 					//movement id type 1(hay stock)
 					$arrayMovement3['id'] = $this->_get_doc_id(null, $movementCode, 1, 2);//$warehouseId);
 					if($arrayMovement3['id'] === null){//SI NO HAY EL DOCUMENTO (CON STOCK) SE CREA
@@ -931,11 +942,19 @@ class PurPurchasesController extends AppController {
 					$dataMovement6 = $arrayMovement6;
 				}	
 				$dataPayDetail = null;
+				$dataCostDetail = null;
 			}elseif (($ACTION == 'save_invoice' && $OPERATION == 'ADD_PAY') || ($ACTION == 'save_invoice' && $OPERATION == 'EDIT_PAY') || ($ACTION == 'save_invoice' && $OPERATION == 'DELETE_PAY')) {
 				$dataPayDetail = array('PurPayment'=> $arrayPayDetails);
 				if($arrayMovement5 <> null){
 					$dataMovement5 = $arrayMovement5;
 				}	
+				$dataCostDetail = null;
+			}elseif (($ACTION == 'save_invoice' && $OPERATION == 'ADD_COST') || ($ACTION == 'save_invoice' && $OPERATION == 'EDIT_COST') || ($ACTION == 'save_invoice' && $OPERATION == 'DELETE_COST')) {
+				$dataCostDetail = array('PurPrice'=> $arrayCostDetails);
+				if($arrayMovement5 <> null){
+					$dataMovement5 = $arrayMovement5;
+				}	
+				$dataPayDetail = null;
 			}elseif ($ACTION == 'save_invoice') {
 				$this->loadModel('InvMovement');
 				//for movement
@@ -950,6 +969,7 @@ class PurPurchasesController extends AppController {
 					$dataMovement6 = $arrayMovement6;
 				}	
 				$dataPayDetail = null;
+				$dataCostDetail = null;
 			}
 			$dataMovementDetail = array('PurDetail'=> $arrayMovementDetails);
 			
@@ -1007,10 +1027,13 @@ class PurPurchasesController extends AppController {
 //				debug($arrayPayDetails);
 //				debug($dataPayDetail);
 //				debug($supplier);
+//				debug($dataCostDetail);
+//				debug($total);
+//				debug($totalCost);
 					if($validation['error'] == 0){
-							$res = $this->PurPurchase->saveMovement($dataMovement, $dataMovementDetail, $OPERATION, $ACTION, $movementDocCode, $dataPayDetail);
+							$res = $this->PurPurchase->saveMovement($dataMovement, $dataMovementDetail, $OPERATION, $ACTION, $movementDocCode, $dataPayDetail, $dataCostDetail);
 							if ($ACTION == 'save_order'){
-								$res2 = $this->PurPurchase->saveMovement($dataMovement2, $dataMovementDetail, $OPERATION, $ACTION, $movementDocCode, null);
+								$res2 = $this->PurPurchase->saveMovement($dataMovement2, $dataMovementDetail, $OPERATION, $ACTION, $movementDocCode, null, null);
 								if(($OPERATION3 != 'DEFAULT')){
 									//used to insert/update type 1 detail movements 
 									//used to delete movement details type 1
@@ -1037,7 +1060,7 @@ class PurPurchasesController extends AppController {
 //									echo "fin6";
 								}
 								
-							}elseif ($ACTION == 'save_invoice' && $OPERATION != 'ADD_PAY' && $OPERATION != 'EDIT_PAY' && $OPERATION != 'DELETE_PAY') {
+							}elseif ($ACTION == 'save_invoice' && $OPERATION != 'ADD_PAY' && $OPERATION != 'EDIT_PAY' && $OPERATION != 'DELETE_PAY' && $OPERATION != 'ADD_COST' && $OPERATION != 'EDIT_COST' && $OPERATION != 'DELETE_COST') {
 								if(($OPERATION3 != 'DEFAULT')){
 									//used to insert/update type 1 detail movements 
 									//used to delete movement details type 1
@@ -1062,7 +1085,7 @@ class PurPurchasesController extends AppController {
 //								if((($OPERATION3 == 'DELETE' || $OPERATION4 == 'DELETE') && $arrayMovement6 <> null)){
 //									$res6 = $this->InvMovement->saveMovement($dataMovement6, null, 'DELETEHEAD', null);
 //								}
-							}elseif(($ACTION == 'save_invoice' && $OPERATION == 'ADD_PAY') || ($ACTION == 'save_invoice' && $OPERATION == 'EDIT_PAY') || ($ACTION == 'save_invoice' && $OPERATION == 'DELETE_PAY')){
+							}elseif(($ACTION == 'save_invoice' && $OPERATION == 'ADD_PAY') || ($ACTION == 'save_invoice' && $OPERATION == 'EDIT_PAY') || ($ACTION == 'save_invoice' && $OPERATION == 'DELETE_PAY') || ($ACTION == 'save_invoice' && $OPERATION == 'ADD_COST') || ($ACTION == 'save_invoice' && $OPERATION == 'EDIT_COST') || ($ACTION == 'save_invoice' && $OPERATION == 'DELETE_COST')){
 								if($arrayMovement5 <> null){
 									//used to update movements head
 									$res5 = $this->InvMovement->saveMovement($dataMovement5, null, 'UPDATEHEAD', null, null, null);
@@ -1722,7 +1745,7 @@ class PurPurchasesController extends AppController {
 			'conditions'=>array(
 				'PurPrice.pur_purchase_id'=>$idMovement
 				),
-			'fields'=>array('InvPriceType.name', 'PurPrice.amount', 'InvPriceType.id'/*, 'PurPurchase.inv_supplier_id','InvPrice.price'*/)
+			'fields'=>array('InvPriceType.name', 'PurPrice.ex_amount', 'InvPriceType.id'/*, 'PurPurchase.inv_supplier_id','InvPrice.price'*/)
 			));
 		
 		$formatedMovementDetails = array();
@@ -1739,8 +1762,8 @@ class PurPurchasesController extends AppController {
 			
 			$formatedMovementDetails[$key] = array(
 				'costId'=>$value['InvPriceType']['id'],
-				'cost'=>$value['InvPriceType']['name'],
-				'amount'=>$value['PurPrice']['amount']//llamar precio
+				'costCodeName'=>$value['InvPriceType']['name'],
+				'costExAmount'=>$value['PurPrice']['ex_amount']//llamar precio
 				);
 		}
 //debug($formatedMovementDetails);		

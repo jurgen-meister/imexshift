@@ -112,7 +112,7 @@ class PurPurchase extends AppModel {
 		)
 	);
 
-	public function saveMovement($dataMovement, $dataMovementDetail, $OPERATION, $ACTION, $movementDocCode, $dataPayDetail){
+	public function saveMovement($dataMovement, $dataMovementDetail, $OPERATION, $ACTION, $movementDocCode, $dataPayDetail, $dataCostDetail){
 		$dataSource = $this->getDataSource();
 		$dataSource->begin();
 		if(!$this->saveAll($dataMovement)){
@@ -123,6 +123,9 @@ class PurPurchase extends AppModel {
 				$dataMovementDetail['PurDetail']['pur_purchase_id']=$idMovement;
 				if($dataPayDetail != null){
 					$dataPayDetail['PurPayment']['pur_purchase_id']=$idMovement;
+				}
+				if($dataCostDetail != null){
+					$dataCostDetail['PurPrice']['pur_purchase_id']=$idMovement;
 				}
 		}
 		
@@ -141,6 +144,14 @@ class PurPurchase extends AppModel {
 						}
 					}
 					break;
+				case 'ADD_COST':	
+					if($dataCostDetail != null){
+						if(!$this->PurPrice->saveAll($dataCostDetail)){
+							$dataSource->rollback();
+							return 'error';
+						}
+					}
+					break;	
 				case 'EDIT':							//array fields
 					if($this->PurDetail->updateAll(array('PurDetail.ex_fob_price'=>$dataMovementDetail['PurDetail']['ex_fob_price'], 
 															'PurDetail.quantity'=>$dataMovementDetail['PurDetail']['quantity'], 
@@ -150,7 +161,7 @@ class PurPurchase extends AppModel {
 															'PurDetail.cif_price'=>$dataMovementDetail['PurDetail']['cif_price'],
 															'PurDetail.ex_cif_price'=>$dataMovementDetail['PurDetail']['ex_cif_price']*/), 
 								/*array conditions*/array('PurDetail.pur_purchase_id'=>$dataMovementDetail['PurDetail']['pur_purchase_id'], 
-//														'PurDetail.inv_warehouse_id'=>$dataMovementDetail['PurDetail']['inv_warehouse_id'], 
+														'PurDetail.inv_supplier_id'=>$dataMovementDetail['PurDetail']['inv_supplier_id'], 
 														'PurDetail.inv_item_id'=>$dataMovementDetail['PurDetail']['inv_item_id']))){
 						$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
 					}
@@ -162,9 +173,9 @@ class PurPurchase extends AppModel {
 				case 'EDIT_PAY':
 					if($this->PurPayment->updateAll(array('PurPayment.amount'=>$dataPayDetail['PurPayment']['amount'], 
 															'PurPayment.description'=>"'".$dataPayDetail['PurPayment']['description']."'", 
-														//	'PurPayment.sal_payment_type_id'=>$dataPayDetail['PurPayment']['sal_payment_type_id'],									
 															'PurPayment.ex_amount'=>$dataPayDetail['PurPayment']['ex_amount']),
 								/*array conditions*/array('PurPayment.pur_purchase_id'=>$dataPayDetail['PurPayment']['pur_purchase_id'], 
+														'PurPayment.pur_payment_type_id'=>$dataPayDetail['PurPayment']['pur_payment_type_id'],	
 														'PurPayment.date'=>$dataPayDetail['PurPayment']['date']))){
 						$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
 					}
@@ -173,6 +184,18 @@ class PurPurchase extends AppModel {
 						return 'error';
 					}
 					break;
+				case 'EDIT_COST':
+					if($this->PurPrice->updateAll(array('PurPrice.amount'=>$dataCostDetail['PurPrice']['amount'], 				
+															'PurPrice.ex_amount'=>$dataCostDetail['PurPrice']['ex_amount']),
+								/*array conditions*/array('PurPrice.pur_purchase_id'=>$dataCostDetail['PurPrice']['pur_purchase_id'], 
+														'PurPrice.inv_price_type_id'=>$dataCostDetail['PurPrice']['inv_price_type_id']))){
+						$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
+					}
+					if($rowsAffected == 0){
+						$dataSource->rollback();
+						return 'error';
+					}
+					break;	
 				case 'DELETE':
 					if(!$this->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$dataMovementDetail['PurDetail']['pur_purchase_id'],	
 //															'PurDetail.inv_supplier_id'=>$dataMovementDetail['PurDetail']['inv_supplier_id'], 
@@ -188,6 +211,13 @@ class PurPurchase extends AppModel {
 						return 'error';
 					}
 					break;
+				case 'DELETE_COST':
+					if(!$this->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$dataCostDetail['PurPrice']['pur_purchase_id'], 
+															'PurPrice.inv_price_type_id'=>$dataCostDetail['PurPrice']['inv_price_type_id']))){
+						$dataSource->rollback();
+						return 'error';
+					}
+					break;	
 			}		
 		$dataSource->commit();
 		return $idMovement;
