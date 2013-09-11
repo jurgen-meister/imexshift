@@ -67,6 +67,13 @@ class PurDetail extends AppModel {
 			'conditions' => '',
 			'fields' => '',
 			'order' => ''
+		),
+		'InvSupplier' => array(
+			'className' => 'InvSupplier',
+			'foreignKey' => 'inv_supplier_id',
+			'conditions' => '',
+			'fields' => '',
+			'order' => ''
 		)
 	);
 }

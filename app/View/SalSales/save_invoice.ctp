@@ -327,7 +327,7 @@
 								$total2 = '0.00';
 								for($i=0; $i<$limit2; $i++){
 									echo '<tr id="payRow'.$salPayments[$i]['dateId'].'" >';
-										echo '<td><span id="spaPayDate'.$salPayments[$i]['dateId'].'">'.$salPayments[$i]['payDate'].'</span><input  value="'.$salPayments[$i]['dateId'].'" id="txtPayDate" ></td>';
+										echo '<td><span id="spaPayDate'.$salPayments[$i]['dateId'].'">'.$salPayments[$i]['payDate'].'</span><input type="hidden" value="'.$salPayments[$i]['dateId'].'" id="txtPayDate" ></td>';
 										echo '<td><span id="spaPayAmount'.$salPayments[$i]['dateId'].'">'.$salPayments[$i]['payAmount'].'</span></td>';
 										echo '<td><span id="spaPayDescription'.$salPayments[$i]['dateId'].'">'.$salPayments[$i]['payDescription'].'</span></td>';
 										
@@ -412,7 +412,7 @@
 								'label' => 'Precio Unitario:',
 								'id'=>'txtModalPrice',
 								'value'=>$price,
-								'class'=>'input-small',
+								'class'=>'span3',
 								'maxlength'=>'15'
 								));
 							echo '</div>';	
@@ -492,6 +492,11 @@
 							'id'=>'txtModalDescription',
 							'class'=>'span9',
 							'rows' => 2
+							));
+					
+					echo $this->BootstrapForm->input('amount_hidden', array(				
+							'id'=>'txtModalAmountHidden',
+//							'type'=>'hidden'
 							));
 
 					?>

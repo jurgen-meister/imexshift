@@ -185,7 +185,6 @@ class SalSalesController extends AppController {
 		if(isset($this->passedArgs['id'])){
 			$id = $this->passedArgs['id'];
 		}
-
 		$this->loadModel('AdmParameter');
 		$currency = $this->AdmParameter->AdmParameterDetail->find('first', array(
 			//	'fields'=>array('AdmParameterDetail.id'),
@@ -293,7 +292,6 @@ class SalSalesController extends AppController {
 		if($id <> null){
 			$date = date("d/m/Y", strtotime($this->request->data['SalSale']['date']));
 			$salDetails = $this->_get_movements_details($id);
-	//		$purPrices = $this->_get_costs_details($id);
 			$salPayments = $this->_get_pays_details($id);
 			$documentState =$this->request->data['SalSale']['lc_state'];
 			$genericCode = $this->request->data['SalSale']['code'];
@@ -523,7 +521,7 @@ class SalSalesController extends AppController {
 			));
 			if($priceDirty==array()){
 			$price = 0;
-			}  else {
+			}else{
 			
 			$price = $priceDirty['InvPrice']['price'];
 			}
@@ -642,7 +640,7 @@ class SalSalesController extends AppController {
 				));
 				$price = $priceField['InvPrice']['price'];
 			}
-			if ($price == null){
+			if ($price === null){
 				$price = 0;
 			}
 		}else{
@@ -848,10 +846,10 @@ class SalSalesController extends AppController {
 						$arrayMovement4['document_code'] = $movementCode;
 						$arrayMovement4['code'] = 'NO';
 					}
-//					REVISAR SI ESTO SERVIA PARA ALGO |||||| REVISAR SI ESTO SERVIA PARA ALGO ||||| REVISAR SI ESTO SERVIA PARA ALGO  					
-//					if(($arrayMovement4['id'] <> null) && ($quantity <= $stock)){
-//						$OPERATION4 = 'DELETE';
-//					}
+//					Para eliminar el detalle que ocupaba la HEAD type 2 					
+					if(($arrayMovement4['id'] <> null) && ($quantity <= $stock)){
+						$OPERATION4 = 'DELETE';
+					}
 					if ($STATE == 'NOTE_APPROVED') {
 						//FOR INVOICE
 						$movementDocCode2 = $this->_generate_doc_code('VFA');
@@ -877,19 +875,21 @@ class SalSalesController extends AppController {
 //						$movementDocCode4 = $this->_generate_movement_code('SAL',null);
 //						$arrayMovement4['code'] = $movementDocCode4;//'NO';
 //					}
-//					REVISAR SI ESTO SERVIA PARA ALGO |||||| REVISAR SI ESTO SERVIA PARA ALGO ||||| REVISAR SI ESTO SERVIA PARA ALGO  
-//					if(($arrayMovement4['id'] <> null) && ($quantity <= $stock)){
-//						$OPERATION4 = 'DELETE';
-//					}
+//					Para eliminar el detalle que ocupaba la HEAD type 2
+					if(($arrayMovement4['id'] <> null) && ($quantity <= $stock)){
+						$OPERATION4 = 'DELETE';
+					}
 				}
 				if($movementDocCode3 == 'error'){$error++;}
 				if($movementDocCode4 == 'error'){$error++;}
 			}
 			//-------------------------FOR DELETING HEAD ON MOVEMENTS RELATED ON save_order--------------------------------
 //			if(($ACTION == 'save_order' && $OPERATION3 == 'DELETE') || ($ACTION == 'save_order' && $OPERATION4 == 'DELETE')){	
-			$arrayMovement6 = null;
-			if(($ACTION == 'save_order' && $OPERATION3 == 'DELETE' && $OPERATION4 == 'DELETE')){//TOMANDO EN CUENTA QUE SIEMPRE QUE $OPERATION3 == 'DELETE' TAMBIEN $OPERATION4 == 'DELETE' Y VICEVERSA
-				if (($arrayMovement3['id'] != null)||($arrayMovementDetails3['inv_item_id'] != null)){
+			$arrayMovement6 = null;	
+			$rest3 = null;
+			$rest4 = null;																		//VER SI ESTA V RESTRICCION NO INCLUYE OTRAS OPERACIONES MAS ??????????					
+			if(($ACTION == 'save_order' && $OPERATION3 == 'DELETE' && $OPERATION4 == 'DELETE')||($ACTION == 'save_order' && $OPERATION3 == 'EDIT' && $OPERATION4 == 'DELETE')){//TOMANDO EN CUENTA QUE SIEMPRE QUE $OPERATION3 == 'DELETE' TAMBIEN $OPERATION4 == 'DELETE' Y VICEVERSA
+				if (($arrayMovement3['id'] !== null && $arrayMovementDetails3['inv_item_id'] !== null && $OPERATION3 == 'DELETE') ){
 					$rest3 = $this->InvMovement->InvMovementDetail->find('count', array(
 						'conditions'=>array(
 							'NOT'=>array(
@@ -903,7 +903,7 @@ class SalSalesController extends AppController {
 						'recursive'=>0
 					));
 				}
-				if (($arrayMovement4['id'] != null)||($arrayMovementDetails4['inv_item_id'] != null)){
+				if (($arrayMovement4['id'] !== null && $arrayMovementDetails4['inv_item_id'] !== null && $OPERATION4 == 'DELETE')){
 					$rest4 = $this->InvMovement->InvMovementDetail->find('count', array(
 						'conditions'=>array(
 							'NOT'=>array(
@@ -917,15 +917,15 @@ class SalSalesController extends AppController {
 						'recursive'=>0
 					));
 				}	
-				if(($rest3 == 0) && ($rest4 == 0) && ($arrayMovement3['id'] != null) && ($arrayMovement4['id'] != null)){
+				if(($rest3 === 0) && ($rest4 === 0) && ($arrayMovement3['id'] !== null) && ($arrayMovement4['id'] !== null)){
 					$arrayMovement6 = array(
 						array('InvMovement.id' => array($arrayMovement3['id'],$arrayMovement4['id']))
 					);
-				}elseif(($rest3 == 0) && ($arrayMovement3['id'] != null)){
+				}elseif(($rest3 === 0) && ($arrayMovement3['id'] !== null)){
 					$arrayMovement6 = array(
 						array('InvMovement.id' => $arrayMovement3['id'])
 					);
-				}elseif(($rest4 == 0) && ($arrayMovement4['id'] != null)){
+				}elseif(($rest4 === 0) && ($arrayMovement4['id'] !== null)){
 					$arrayMovement6 = array(
 						 array('InvMovement.id' => $arrayMovement4['id'])
 					);
@@ -938,9 +938,9 @@ class SalSalesController extends AppController {
 //			-------------------------FOR UPDATING HEAD ON DELETED MOVEMENTS ON save_invoice--------------------------------
 //			if(($ACTION == 'save_invoice' && $OPERATION3 == 'DELETE') || ($ACTION == 'save_invoice' && $OPERATION4 == 'DELETE')){	
 			$draftId3 = null;
-			$draftId4 = null;
-			if(($ACTION == 'save_invoice' && $OPERATION3 == 'DELETE' && $OPERATION4 == 'DELETE')){//TOMANDO EN CUENTA QUE SIEMPRE QUE $OPERATION3 == 'DELETE' TAMBIEN $OPERATION4 == 'DELETE' Y VICEVERSA
-				if (($arrayMovement3['id'] != null)||($arrayMovementDetails3['inv_item_id'] != null)){
+			$draftId4 = null;																		//VER SI ESTA V RESTRICCION NO INCLUYE OTRAS OPERACIONES MAS ??????????			
+			if(($ACTION == 'save_invoice' && $OPERATION3 == 'DELETE' && $OPERATION4 == 'DELETE')||($ACTION == 'save_invoice' && $OPERATION3 == 'EDIT' && $OPERATION4 == 'DELETE')){//TOMANDO EN CUENTA QUE SIEMPRE QUE $OPERATION3 == 'DELETE' TAMBIEN $OPERATION4 == 'DELETE' Y VICEVERSA
+				if (($arrayMovement3['id'] !== null && $arrayMovementDetails3['inv_item_id'] !== null  && $OPERATION3 == 'DELETE')){
 					$rest3 = $this->InvMovement->InvMovementDetail->find('count', array(
 						'conditions'=>array(
 							'NOT'=>array(
@@ -954,7 +954,7 @@ class SalSalesController extends AppController {
 						'recursive'=>0
 					));
 				}
-				if (($arrayMovement4['id'] != null)||($arrayMovementDetails4['inv_item_id'] != null)){
+				if (($arrayMovement4['id'] !== null && $arrayMovementDetails4['inv_item_id'] !== null && $OPERATION4 == 'DELETE')){
 					$rest4 = $this->InvMovement->InvMovementDetail->find('count', array(
 						'conditions'=>array(
 							'NOT'=>array(
@@ -968,18 +968,18 @@ class SalSalesController extends AppController {
 						'recursive'=>0
 					));
 				}	
-				if(($rest3 == 0) && ($rest4 == 0) && ($arrayMovement3['id'] != null) && ($arrayMovement4['id'] != null)){
+				if(($rest3 === 0) && ($rest4 === 0) && ($arrayMovement3['id'] !== null) && ($arrayMovement4['id'] !== null)){
 					$draftId3 = $arrayMovement3['id'];
 					$draftId4 = $arrayMovement4['id'];
 //					echo "<br>1<br>";
 //					debug($draftId3);
 //					debug($draftId4);
-				}elseif(($rest3 == 0) && ($arrayMovement3['id'] != null)){
+				}elseif(($rest3 === 0) && ($arrayMovement3['id'] !== null)){
 					$draftId3 = $arrayMovement3['id'];
 //					$draftId4 = null;
 //					echo "<br>2<br>";
 //					debug($draftId3);
-				}elseif(($rest4 == 0) && ($arrayMovement4['id'] != null)){
+				}elseif(($rest4 === 0) && ($arrayMovement4['id'] !== null)){
 					$draftId4 = $arrayMovement4['id'];
 //					$draftId3 = null;
 //					echo "<br>3<br>";
@@ -1090,7 +1090,7 @@ class SalSalesController extends AppController {
 			$validation['error'] = 0;
 			$strItemsStock = '';
 			////////////////////////////////////////////START- CORE SAVE////////////////////////////////////////////////////////
-			if($error == 0){
+			if($error === 0){
 				/////////////////////START - SAVE/////////////////////////////	
 //				echo 'OPERATION';
 //					debug($OPERATION);
@@ -1131,6 +1131,7 @@ class SalSalesController extends AppController {
 //				echo '$arrayMovement5';	
 //					debug($arrayMovement5);
 //				echo '------------------------------------------------ <br>';	
+//				echo '$arrayMovement6';	
 //				debug($arrayMovement6);
 //				debug($dataMovement6);
 //				echo '------------------------------------------------ <br>';
@@ -1138,7 +1139,15 @@ class SalSalesController extends AppController {
 //				debug($dataPayDetail);
 //				debug($arrayPayDetails);
 //				debug($dataPayDetail);
-					if($validation['error'] == 0){
+//				echo '$rest3<br>';
+//				debug($rest3);
+//				echo 'id3<br>';
+//				debug($arrayMovement3['id']);
+//				echo '<br>$rest4<br>';
+//				debug($rest4);
+//				echo 'id4<br>';
+//				debug($arrayMovement4['id']);
+					if($validation['error'] === 0){
 							$res = $this->SalSale->saveMovement($dataMovement, $dataMovementDetail, $OPERATION, $ACTION, $movementDocCode, $dataPayDetail);
 							if ($ACTION == 'save_order'){
 								$res2 = $this->SalSale->saveMovement($dataMovement2, $dataMovementDetail, $OPERATION, $ACTION, $movementDocCode, null);
@@ -1175,8 +1184,9 @@ class SalSalesController extends AppController {
 //									echo "ini3";
 									$res3 = $this->InvMovement->saveMovement($dataMovement3, $dataMovementDetail3, $OPERATION3, 'save_in', null, $movementDocCode3);
 //									echo "fin3";
-								}
-								if(($quantity > $stock)||(($OPERATION4 == 'DELETE')&&($arrayMovement4['id']!==null))){	//($quantity > $stock) doesn't work when stock changes
+								}							//VER SI v ESTA CONDICION DEJA ENTRAR LO NECESARIO										//VER SI v ESTA OTRA CONDICION DEJA ENTRAR LO NECESARIO 
+								if(($quantity > $stock)||(($OPERATION3 == 'EDIT')&&($OPERATION4 == 'DELETE')&&($arrayMovement4['id']!==null))||(($OPERATION3 == 'DELETE')&&($OPERATION4 == 'DELETE')&&($arrayMovement4['id']!==null))){	//($quantity > $stock) doesn't work when stock changes
+//								if(($quantity > $stock)||(($OPERATION4 == 'DELETE')&&($arrayMovement4['id']!==null))){
 									//used to insert/update type 2 detail movements									
 									//used to delete movement details type 2
 //									echo "ini4";
@@ -1629,9 +1639,10 @@ class SalSalesController extends AppController {
 					$this->loadModel('InvMovement');
 					$arrayMovement5 = $this->InvMovement->find('all', array(
 						'fields'=>array(
-							'InvMovement.id'
-							,'InvMovement.date'
-							,'InvMovement.description'
+							'InvMovement.id',
+//							,'InvMovement.date'
+//							,'InvMovement.description'
+							'InvMovement.inv_warehouse_id'
 							),
 						'conditions'=>array(
 								'InvMovement.document_code'=>$genCode
@@ -1642,14 +1653,14 @@ class SalSalesController extends AppController {
 					if($arrayMovement5 <> null){
 						for($i=0;$i<count($arrayMovement5);$i++){
 							$arrayMovement5[$i]['InvMovement']['lc_state'] = 'DRAFT';
-							$arrayMovement5[$i]['InvMovement']['code'] = 'NO'; //not sure to put this
+//							$arrayMovement5[$i]['InvMovement']['code'] = 'NO'; //not sure to put this
 						}
 					}
 					if($arrayMovement5 <> null){
 						$dataMovement5 = $arrayMovement5;
 					}
 					if($arrayMovement5 <> null){
-						$res5 = $this->InvMovement->saveMovement($dataMovement5, null, null, null);
+						$res5 = $this->InvMovement->saveMovement($dataMovement5, null, 'UPDATEHEAD', null, null, null);
 					}
 				}
 		}
