@@ -1486,7 +1486,7 @@ class PurPurchasesController extends AppController {
 			$purchaseId = $this->request->data['purchaseId'];
 			$type = $this->request->data['type'];	
 			$genCode = $this->request->data['genCode'];
-				if($this->SalSale->updateAll(array('PurPurchase.lc_state'=>"'$type'"), array('PurPurchase.id'=>$purchaseId)) 
+				if($this->PurPurchase->updateAll(array('PurPurchase.lc_state'=>"'$type'"), array('PurPurchase.id'=>$purchaseId)) 
 						){
 					echo 'success';
 				}
@@ -1495,8 +1495,9 @@ class PurPurchasesController extends AppController {
 					$arrayMovement5 = $this->InvMovement->find('all', array(
 						'fields'=>array(
 							'InvMovement.id'
-							,'InvMovement.date'
-							,'InvMovement.description'
+//							,'InvMovement.date'
+//							,'InvMovement.description'
+							,'InvMovement.inv_warehouse_id'
 							),
 						'conditions'=>array(
 								'InvMovement.document_code'=>$genCode
@@ -1507,14 +1508,14 @@ class PurPurchasesController extends AppController {
 					if($arrayMovement5 <> null){
 						for($i=0;$i<count($arrayMovement5);$i++){
 							$arrayMovement5[$i]['InvMovement']['lc_state'] = 'DRAFT';
-							$arrayMovement5[$i]['InvMovement']['code'] = 'NO'; //not sure to put this
+//							$arrayMovement5[$i]['InvMovement']['code'] = 'NO'; //not sure to put this
 						}
 					}
 					if($arrayMovement5 <> null){
 						$dataMovement5 = $arrayMovement5;
 					}
 					if($arrayMovement5 <> null){
-						$res5 = $this->InvMovement->saveMovement($dataMovement5, null, null, null);
+						$res5 = $this->InvMovement->saveMovement($dataMovement5, null,'UPDATEHEAD', null, null, null);
 					}
 				}
 		}

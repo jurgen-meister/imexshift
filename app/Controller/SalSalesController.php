@@ -777,7 +777,9 @@ class SalSalesController extends AppController {
 				$surplus = $quantity - $stock;
 				if($quantity > $stock){
 					$arrayMovementDetails3 = array('inv_item_id'=>$itemId, 'quantity'=>$stock);
-					$OPERATION4 = 'ADD';
+					if($stock !== 0){
+						$OPERATION4 = 'ADD';
+					}
 				}else{
 					$arrayMovementDetails3 = array('inv_item_id'=>$itemId, 'quantity'=>$quantity);
 				}	
@@ -794,7 +796,9 @@ class SalSalesController extends AppController {
 				$surplus = $quantity - $stock;
 				if($quantity > $stock){
 					$arrayMovementDetails3 = array('inv_item_id'=>$itemId, 'quantity'=>$stock);
-					$OPERATION4 = 'ADD';
+					if($stock !== 0){
+						$OPERATION4 = 'ADD';
+					}	
 				}else{
 					$arrayMovementDetails3 = array('inv_item_id'=>$itemId, 'quantity'=>$quantity);
 				}	

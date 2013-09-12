@@ -555,7 +555,7 @@
 					
 					echo $this->BootstrapForm->input('amount_hidden', array(				
 							'id'=>'txtModalAmountHidden',
-//							'type'=>'hidden'
+							'type'=>'hidden'
 							));
 
 					?>
