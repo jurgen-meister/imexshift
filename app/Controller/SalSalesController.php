@@ -2164,16 +2164,16 @@ private function _find_stock($idItem, $idWarehouse){
 			$conditionItem = array("SalDetail.inv_item_id" => $item);
 		}
 		
-		$priceType = "price";
+		$currencyType = "price";
 		if($currency == "dolares"){
-			$priceType = "ex_price";
+			$currencyType = "ex_price";
 		}
 		
 		//*****************************************************************************//
 		$data = $this->SalSale->SalDetail->find('all', array(
 			"fields"=>array(
 				"to_char(\"SalSale\".\"date\",'mm') AS month",
-				'SUM("SalDetail"."quantity" * (SELECT '.$priceType.'  FROM inv_prices where inv_item_id = "SalDetail"."inv_item_id" AND date <= "SalSale"."date" AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1))'
+				'SUM("SalDetail"."quantity" * (SELECT '.$currencyType.'  FROM inv_prices where inv_item_id = "SalDetail"."inv_item_id" AND date <= "SalSale"."date" AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1))'
 			),
 			'group'=>array("to_char(SalSale.date,'mm')"),
 			"conditions"=>array(
