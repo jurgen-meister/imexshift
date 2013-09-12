@@ -2122,5 +2122,89 @@ private function _find_stock($idItem, $idWarehouse){
 			$clean[$key] = $value['InvMovementDetail']['quantity'];
 		}
 		return $clean;
-	}	
+	}
+	
+	//////////////////////////////////////////START-GRAPHICS//////////////////////////////////////////
+	public function vgraphics(){
+		$this->loadModel("AdmPeriod");
+		$years = $this->AdmPeriod->find("list", array(
+			"order"=>array("name"=>"desc"),
+			"fields"=>array("name", "name")
+			)
+		);
+		
+		$this->loadModel("InvItem");
+		
+		$itemsClean = $this->InvItem->find("list", array('order'=>array('InvItem.code')));
+		$items[0]="TODOS";
+		foreach ($itemsClean as $key => $value) {
+			$items[$key] = $value;
+		}
+		
+		$this->set(compact("years", "items"));
+		//debug($this->_get_bars_sales_and_time("2013", "0"));
+	}
+	
+	public function ajax_get_graphics_data(){
+		if($this->RequestHandler->isAjax()){
+			$year = $this->request->data['year'];
+			$currency = $this->request->data['currency'];
+			$item = $this->request->data['item'];
+			$string = $this->_get_bars_sales_and_time($year, $item, $currency);
+			echo $string;
+		}
+//		$string .= '30|54|12|114|64|100|98|80|10|50|169|222';
+	}
+	
+	private function _get_bars_sales_and_time($year, $item, $currency){
+		$conditionItem = null;
+		$dataString = "";
+		
+		if($item > 0){
+			$conditionItem = array("SalDetail.inv_item_id" => $item);
+		}
+		
+		$currencyType = "price";
+		if($currency == "dolares"){
+			$currencyType = "ex_price";
+		}
+		
+		//*****************************************************************************//
+		$data = $this->SalSale->SalDetail->find('all', array(
+			"fields"=>array(
+				"to_char(\"SalSale\".\"date\",'mm') AS month",
+				'SUM("SalDetail"."quantity" * (SELECT '.$currencyType.'  FROM inv_prices where inv_item_id = "SalDetail"."inv_item_id" AND date <= "SalSale"."date" AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1))'
+			),
+			'group'=>array("to_char(SalSale.date,'mm')"),
+			"conditions"=>array(
+				"to_char(SalSale.date,'YYYY')"=>$year,
+				"SalSale.lc_state"=>"SINVOICE_APPROVED",
+				$conditionItem
+			)
+		));
+		//*****************************************************************************//
+		
+		
+		//format data on string to response ajax request
+		$months = array(1,2,3,4,5,6,7,8,9,10,11,12);
+		
+		foreach ($months as $month) {
+			$exist = 0;
+			foreach ($data as $value) {
+				if($month == (int)$value[0]['month']){
+					$dataString .= $value[0]['sum']."|";
+					//debug($dataString);
+					$exist++;
+				}
+			}
+			if($exist == 0){
+				$dataString .= "0|";
+			}
+		}
+		
+		return substr($dataString, 0, -1);
+	}
+	
+	//////////////////////////////////////////END-GRAPHICS//////////////////////////////////////////
+	
 }
