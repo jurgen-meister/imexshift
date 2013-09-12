@@ -2139,6 +2139,7 @@ class PurPurchasesController extends AppController {
 		}
 		
 		//*****************************************************************************//
+		$this->PurPurchase->PurDetail->unbindModel(array('belongsTo' => array('InvSupplier')));
 		$data = $this->PurPurchase->PurDetail->find('all', array(
 			"fields"=>array(
 				"to_char(\"PurPurchase\".\"date\",'mm') AS month",
