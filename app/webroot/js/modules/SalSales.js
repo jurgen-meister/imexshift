@@ -503,7 +503,7 @@ $(document).ready(function(){
 		row +='<a class="btn btn-danger" href="#" id="btnDeleteItem'+itemId+'w'+warehouseId+'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
 		row +='</td>';
 		row +='</tr>'
-		$('#tablaItems').prepend(row);
+		$('#tablaItems tbody').prepend(row);
 	}
 	
 	function createRowPayTable(dateId, payDate, payAmount, payDescription){
@@ -553,12 +553,15 @@ $(document).ready(function(){
 		var itemCodeName = '';
 		var stock = 0;
 		
+		var arrayItemsDetails = [0];
 		//Sale setup variables
 //		if((ACTION !== 'save_order') || (ACTION !== 'save_out')){
 //			movementDocCode = $('#txtCode').val();
 //			movementCode = $('#txtGenericCode').val();
 //		}
-		
+		if(ACTION === 'save_invoice' && STATE === 'SINVOICE_APPROVED'){
+			arrayItemsDetails = getItemsDetails();
+		}
 //		if((ACTION === 'save_purchase_in' || ACTION === 'save_sale_out') && (movementId === '')  && (movementId === '')){
 //			arrayForValidate = getItemsDetails();
 //		}
@@ -625,6 +628,8 @@ $(document).ready(function(){
 				,'payDate':payDate
 				,'payAmount':payAmount
 				,'payDescription':payDescription
+		
+				,arrayItemsDetails:arrayItemsDetails
 		
 				,'ACTION':ACTION
 				,'OPERATION':OPERATION

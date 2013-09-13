@@ -565,7 +565,7 @@ $(document).ready(function(){
 		row +='<a class="btn btn-danger" href="#" id="btnDeleteItem'+itemId+'s'+supplierId+'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
 		row +='</td>';
 		row +='</tr>'
-		$('#tablaItems').prepend(row);
+		$('#tablaItems tbody').prepend(row);
 	}
 	
 	function createRowCostTable(costId, costCodeName, costExAmount){
@@ -629,14 +629,17 @@ $(document).ready(function(){
 		var supplier = '';
 		var itemCodeName = '';
 //		var stock = 0;
+		var arrayItemsDetails = [0];
 		var total=0;
 		var totalCost=0;
+		
 		//Sale setup variables
 //		if((ACTION !== 'save_order') || (ACTION !== 'save_out')){
 //			movementDocCode = $('#txtCode').val();
 //			movementCode = $('#txtGenericCode').val();
 //		}
-		if(STATE === 'PINVOICE_APPROVED'){
+		if(ACTION === 'save_invoice' && STATE === 'PINVOICE_APPROVED'){
+			arrayItemsDetails = getItemsDetails();
 			total = getTotal();
 			totalCost = getTotalCost();
 		}
@@ -717,6 +720,7 @@ $(document).ready(function(){
 		
 				,'total':total
 				,'totalCost':totalCost
+				,arrayItemsDetails:arrayItemsDetails
 		
 				,'ACTION':ACTION
 				,'OPERATION':OPERATION
