@@ -557,8 +557,12 @@ class PurPurchasesController extends AppController {
 //			$exFobPrice =  $this->_get_price($itemId, $date, 'FOB', 'dolar');
 //			$fobPrice =  $exFobPrice * $exRate;//$this->_get_price($itemId, $date, 'FOB', 'bs');
 			$fobPrice = $exFobPrice * $exRate;
-			$total = $this->request->data['total'];
-			$totalCost = $this->request->data['totalCost'];
+			if ($ACTION == 'save_invoice' && $STATE == 'PINVOICE_APPROVED'){
+				$arrayItemsDetails = $this->request->data['arrayItemsDetails'];	
+				$total = $this->request->data['total'];
+				$totalCost = $this->request->data['totalCost'];
+			}
+			
 			if (($ACTION == 'save_invoice' && $OPERATION == 'ADD_PAY') || ($ACTION == 'save_invoice' && $OPERATION == 'EDIT_PAY') || ($ACTION == 'save_invoice' && $OPERATION == 'DELETE_PAY')) {
 //				$dateId = $this->request->data['dateId'];
 				$payDate = $this->request->data['payDate'];
@@ -1028,10 +1032,33 @@ class PurPurchasesController extends AppController {
 //				debug($dataPayDetail);
 //				debug($supplier);
 //				debug($dataCostDetail);
-//				debug($total);
-//				debug($totalCost);
+				if ($ACTION == 'save_invoice' && $STATE == 'PINVOICE_APPROVED'){
+					$perc = $totalCost/$total;
+					for($i=0;$i<count($arrayItemsDetails);$i++){
+						$cif = $arrayItemsDetails[$i]['ex_fob_price'] + ($arrayItemsDetails[$i]['ex_fob_price'] * $perc);
+						$arrayCifPrices[$i]['inv_item_id'] = $arrayItemsDetails[$i]['inv_item_id'];
+						$arrayCifPrices[$i]['inv_price_type_id'] = 1;//or better relate by name FOB
+						$arrayCifPrices[$i]['ex_price'] = $arrayItemsDetails[$i]['ex_fob_price'];
+						$arrayCifPrices[$i]['price'] = $arrayItemsDetails[$i]['fob_price'];
+						$arrayCifPrices[$i]['description'] = $noteCode; 
+						$arrayCifPrices[$i]['date'] = $date;
+
+						$arrayFobPrices[$i]['inv_item_id'] = $arrayItemsDetails[$i]['inv_item_id'];
+						$arrayFobPrices[$i]['inv_price_type_id'] = 8;//or better relate by name CIF
+						$arrayFobPrices[$i]['ex_price'] = $cif;
+						$arrayFobPrices[$i]['price'] = $cif * $exRate;
+						$arrayFobPrices[$i]['description'] = $noteCode; 
+						$arrayFobPrices[$i]['date'] = $date;
+					}
+				}
+				
 					if($validation['error'] == 0){
 							$res = $this->PurPurchase->saveMovement($dataMovement, $dataMovementDetail, $OPERATION, $ACTION, $movementDocCode, $dataPayDetail, $dataCostDetail);
+							if ($ACTION == 'save_invoice' && $STATE == 'PINVOICE_APPROVED'){
+									$this->loadModel('InvPrice');
+									$this->InvPrice->saveAll($arrayCifPrices);
+									$this->InvPrice->saveAll($arrayFobPrices);
+							}
 							if ($ACTION == 'save_order'){
 								$res2 = $this->PurPurchase->saveMovement($dataMovement2, $dataMovementDetail, $OPERATION, $ACTION, $movementDocCode, null, null);
 								if(($OPERATION3 != 'DEFAULT')){

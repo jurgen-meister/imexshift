@@ -693,6 +693,9 @@ class SalSalesController extends AppController {
 //			$exFobPrice =  $this->_get_price($itemId, $date, 'FOB', 'dolar');
 //			$fobPrice =  $exFobPrice * $exRate;//$this->_get_price($itemId, $date, 'FOB', 'bs');
 			$exSalePrice = $salePrice / $exRate;
+			if ($ACTION == 'save_invoice' && $STATE == 'SINVOICE_APPROVED'){
+				$arrayItemsDetails = $this->request->data['arrayItemsDetails'];	
+			}
 			if (($ACTION == 'save_invoice' && $OPERATION == 'ADD_PAY') || ($ACTION == 'save_invoice' && $OPERATION == 'EDIT_PAY') || ($ACTION == 'save_invoice' && $OPERATION == 'DELETE_PAY')) {
 //				$dateId = $this->request->data['dateId'];
 				$payDate = $this->request->data['payDate'];
@@ -1151,8 +1154,23 @@ class SalSalesController extends AppController {
 //				debug($rest4);
 //				echo 'id4<br>';
 //				debug($arrayMovement4['id']);
+				
+				if ($ACTION == 'save_invoice' && $STATE == 'SINVOICE_APPROVED'){
+					for($i=0;$i<count($arrayItemsDetails);$i++){
+						$arraySalePrices[$i]['inv_item_id'] = $arrayItemsDetails[$i]['inv_item_id'];
+						$arraySalePrices[$i]['inv_price_type_id'] = 9;//or better relate by name VENTA
+						$arraySalePrices[$i]['ex_price'] = $arrayItemsDetails[$i]['ex_sale_price'];
+						$arraySalePrices[$i]['price'] = $arrayItemsDetails[$i]['sale_price'];
+						$arraySalePrices[$i]['description'] = $noteCode; 
+						$arraySalePrices[$i]['date'] = $date;
+					}
+				}
 					if($validation['error'] === 0){
 							$res = $this->SalSale->saveMovement($dataMovement, $dataMovementDetail, $OPERATION, $ACTION, $movementDocCode, $dataPayDetail);
+							if ($ACTION == 'save_invoice' && $STATE == 'SINVOICE_APPROVED'){
+									$this->loadModel('InvPrice');
+									$this->InvPrice->saveAll($arraySalePrices);
+							}
 							if ($ACTION == 'save_order'){
 								$res2 = $this->SalSale->saveMovement($dataMovement2, $dataMovementDetail, $OPERATION, $ACTION, $movementDocCode, null);
 								if(($stock != 0)||(($OPERATION3 == 'DELETE')&&($arrayMovement3['id']!==null))){
