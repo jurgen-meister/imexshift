@@ -66,6 +66,7 @@
 			}
 			?>
 			<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Orden de Compra</a>
+			<a href="#" id="btnApproveStateFull" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Solo Genera FAC MOV </a>
 			<a href="#" id="btnLogicDeleteState" class="btn btn-danger" style="display:<?php echo $displayApproved;?>"><i class=" icon-trash icon-white"></i> Eliminar</a>
 			<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Orden de Compra</a>
 			<?php

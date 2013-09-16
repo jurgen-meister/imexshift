@@ -40,16 +40,12 @@ class PurPurchasesController extends AppController {
 		}
 		$this->loadModel('AdmParameter');
 		$currency = $this->AdmParameter->AdmParameterDetail->find('first', array(
-			//	'fields'=>array('AdmParameterDetail.id'),
 				'conditions'=>array(
 					'AdmParameter.name'=>'Moneda',
 					'AdmParameterDetail.par_char1'=>'Dolares'
 				)
-			//	'recursive'=>-1
 			)); 
-//		debug($currency);
 		$currencyId = $currency['AdmParameterDetail']['id'];
-//		debug($currencyId);
 		
 		
 		
@@ -72,7 +68,6 @@ class PurPurchasesController extends AppController {
 				),
 				'recursive'=>-1
 			)); 		
-//		debug($xxxRate);
 		
 		
 		$exRate = $xxxRate['AdmExchangeRate']['value'];	//esto tiene q llamar al cambio del dia
@@ -205,18 +200,18 @@ class PurPurchasesController extends AppController {
 		// gets the first price in the list of the item prices
 		$firstItemListed = key($items);
 		$priceDirty = $this->PurPurchase->PurDetail->InvItem->InvPrice->find('first', array(
-			'fields'=>array('InvPrice.price'),
-			'order' => array('InvPrice.date_created' => 'desc'),
+			'fields'=>array('InvPrice.ex_price'),
+			'order' => array('InvPrice.date' => 'desc'),
 			'conditions'=>array(
 				'InvPrice.inv_item_id'=>$firstItemListed
+				,'InvPrice.inv_price_type_id'=>1
 				)
 		));
 //debug($priceDirty);
-		if($priceDirty==array()){
+		if($priceDirty == array() || $priceDirty['InvPrice']['ex_price'] == null){
 			$price = 0;
 		}  else {
-			
-			$price = $priceDirty['InvPrice']['price'];
+			$price = $priceDirty['InvPrice']['ex_price'];
 		}
 				
 			$this->set(compact('items', 'price', 'invSuppliers', 'supplier'));
@@ -1032,26 +1027,85 @@ class PurPurchasesController extends AppController {
 //				debug($dataPayDetail);
 //				debug($supplier);
 //				debug($dataCostDetail);
+//				
+//				if ($ACTION == 'save_invoice' && $STATE == 'PINVOICE_APPROVED'){
+//					$this->loadModel('InvPrice');
+//					$prices = $this->InvPrice->find('all', array(
+//					'fields'=>array(
+//						'InvPrice.inv_item_id'
+//						,'InvPrice.inv_price_type_id'
+//						,'InvPrice.ex_price'
+//						),
+//					'conditions'=>array(
+//						'InvPrice.date'=>$date
+//						),
+//					'recursive'=>-1
+//					));
+//			print_r($prices);
+//			print_r($arrayItemsDetails);
+//					for($i=0;$i<count($arrayItemsDetails);$i++){
+//						$contFob = 0;
+//						print_r($arrayItemsDetails[$i]);
+//						for($j=0;$j<count($prices);$j++){
+//							print_r($prices[$j]['InvPrice']);
+//							if($prices[$j]['InvPrice']['inv_item_id'] == $arrayItemsDetails[$i]['inv_item_id'] &&  $prices[$j]['InvPrice']['inv_price_type_id'] == 1 && $prices[$j]['InvPrice']['ex_price'] == $arrayItemsDetails[$i]['ex_fob_price']){	
+//								/*echo */$contFob += 1;
+//							}
+//						}
+//						if($contFob == 0){
+//								debug($arrayItemsDetails[$i]);
+//						}
+//					}
+//				}
+				
 				if ($ACTION == 'save_invoice' && $STATE == 'PINVOICE_APPROVED'){
+					$this->loadModel('InvPrice');
+					$prices = $this->InvPrice->find('all', array(
+					'fields'=>array(
+						'InvPrice.inv_item_id'
+						,'InvPrice.inv_price_type_id'
+						,'InvPrice.ex_price'
+						),
+					'conditions'=>array(
+						'InvPrice.date'=>$date
+						),
+					'recursive'=>-1
+					));
+					$arrayFobPrices = array();
+					$arrayCifPrices = array();
 					$perc = $totalCost/$total;
 					for($i=0;$i<count($arrayItemsDetails);$i++){
 						$cif = $arrayItemsDetails[$i]['ex_fob_price'] + ($arrayItemsDetails[$i]['ex_fob_price'] * $perc);
-						$arrayCifPrices[$i]['inv_item_id'] = $arrayItemsDetails[$i]['inv_item_id'];
-						$arrayCifPrices[$i]['inv_price_type_id'] = 1;//or better relate by name FOB
-						$arrayCifPrices[$i]['ex_price'] = $arrayItemsDetails[$i]['ex_fob_price'];
-						$arrayCifPrices[$i]['price'] = $arrayItemsDetails[$i]['fob_price'];
-						$arrayCifPrices[$i]['description'] = $noteCode; 
-						$arrayCifPrices[$i]['date'] = $date;
-
-						$arrayFobPrices[$i]['inv_item_id'] = $arrayItemsDetails[$i]['inv_item_id'];
-						$arrayFobPrices[$i]['inv_price_type_id'] = 8;//or better relate by name CIF
-						$arrayFobPrices[$i]['ex_price'] = $cif;
-						$arrayFobPrices[$i]['price'] = $cif * $exRate;
-						$arrayFobPrices[$i]['description'] = $noteCode; 
-						$arrayFobPrices[$i]['date'] = $date;
+						$contFob = 0; 
+						$contCif = 0;
+						for($j=0;$j<count($prices);$j++){
+							if($prices[$j]['InvPrice']['inv_item_id'] == $arrayItemsDetails[$i]['inv_item_id'] && $prices[$j]['InvPrice']['inv_price_type_id'] == 1 && $prices[$j]['InvPrice']['ex_price'] == $arrayItemsDetails[$i]['ex_fob_price']){	
+								$contFob += 1;
+							}							
+							if($prices[$j]['InvPrice']['inv_item_id'] == $arrayItemsDetails[$i]['inv_item_id'] && $prices[$j]['InvPrice']['inv_price_type_id'] == 8 && $prices[$j]['InvPrice']['ex_price'] == $cif){	
+								$contCif += 1;
+							}							
+						}
+						if($contFob === 0){							
+							$arrayFobPrices[$i]['inv_item_id'] = $arrayItemsDetails[$i]['inv_item_id'];
+							$arrayFobPrices[$i]['inv_price_type_id'] = 1;//or better relate by name FOB
+							$arrayFobPrices[$i]['ex_price'] = $arrayItemsDetails[$i]['ex_fob_price'];
+							$arrayFobPrices[$i]['price'] = $arrayItemsDetails[$i]['fob_price'];
+							$arrayFobPrices[$i]['description'] = $noteCode; 
+							$arrayFobPrices[$i]['date'] = $date;
+						}
+						if($contCif === 0){	
+							$arrayCifPrices[$i]['inv_item_id'] = $arrayItemsDetails[$i]['inv_item_id'];
+							$arrayCifPrices[$i]['inv_price_type_id'] = 8;//or better relate by name CIF
+							$arrayCifPrices[$i]['ex_price'] = $cif;
+							$arrayCifPrices[$i]['price'] = $cif * $exRate;
+							$arrayCifPrices[$i]['description'] = $noteCode; 
+							$arrayCifPrices[$i]['date'] = $date;
+						}	
 					}
 				}
-				
+//				print_r($arrayFobPrices);
+//				print_r($arrayCifPrices);
 					if($validation['error'] == 0){
 							$res = $this->PurPurchase->saveMovement($dataMovement, $dataMovementDetail, $OPERATION, $ACTION, $movementDocCode, $dataPayDetail, $dataCostDetail);
 							if ($ACTION == 'save_invoice' && $STATE == 'PINVOICE_APPROVED'){

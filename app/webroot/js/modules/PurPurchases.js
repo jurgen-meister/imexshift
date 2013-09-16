@@ -288,21 +288,6 @@ $(document).ready(function(){
 		});
 	}
 	
-	function validateOnlyNumbers(event){
-		// Allow only backspace and delete
-		if (event.keyCode == 8 || event.keyCode == 9 ) {
-			// let it happen, don't do anything
-		}
-		else {
-			// Ensure that it is a number and stop the keypress
-			if ( (event.keyCode < 96 || event.keyCode > 105) ) { //habilita keypad
-				if ( (event.keyCode < 48 || event.keyCode > 57) ) {
-					event.preventDefault(); 
-				}
-			}   
-		}
-	}
-	
 	function validateOnlyIntegers(event){
 		// Allow only backspace and delete
 		if (event.keyCode == 8 || event.keyCode == 9 ) {
@@ -1315,13 +1300,17 @@ $(document).ready(function(){
 	//************************************************************************//
 	//////////////////////////////////BEGIN-CONTROLS EVENTS/////////////////////
 	//************************************************************************//
-	//Validate only numbers
-	$('#txtModalCostExAmount').keydown(function(event) {
-			validateOnlyNumbers(event);			
+	$('#txtModalPrice').keydown(function(event) {
+			validateOnlyFloatNumbers(event);			
 	});
-	//Validate only numbers
 	$('#txtModalQuantity').keydown(function(event) {
-			validateOnlyNumbers(event);			
+			validateOnlyIntegers(event);			
+	});
+	$('#txtModalCostExAmount').keydown(function(event) {
+			validateOnlyFloatNumbers(event);			
+	});
+	$('#txtModalPaidAmount').keydown(function(event) {
+			validateOnlyFloatNumbers(event);			
 	});
 	//Calendar script
 	$("#txtDate").datepicker({
@@ -1446,6 +1435,7 @@ $(document).ready(function(){
 	$('#txtModalDate').keypress(function(){return false;});
 	$('#txtModalDueDate').keypress(function(){return false;});
 	$('#txtCode').keydown(function(e){e.preventDefault();});
+	$('#txtOriginCode').keydown(function(e){e.preventDefault();});
 //	if ($('#txtDocumentCode').length > 0){//existe
 //		$('#txtDocumentCode').keypress(function(){return false;});
 //	}
