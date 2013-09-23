@@ -231,21 +231,6 @@ $(document).ready(function(){
 		});
 	}
 	
-	function validateOnlyNumbers(event){
-		// Allow only backspace and delete
-		if (event.keyCode == 8 || event.keyCode == 9 ) {
-			// let it happen, don't do anything
-		}
-		else {
-			// Ensure that it is a number and stop the keypress
-			if ( (event.keyCode < 96 || event.keyCode > 105) ) { //habilita keypad
-				if ( (event.keyCode < 48 || event.keyCode > 57) ) {
-					event.preventDefault(); 
-				}
-			}   
-		}
-	}
-
 	function validateOnlyIntegers(event){
 		// Allow only backspace and delete
 		if (event.keyCode == 8 || event.keyCode == 9 ) {
@@ -1110,13 +1095,14 @@ $(document).ready(function(){
 	//************************************************************************//
 	//////////////////////////////////BEGIN-CONTROLS EVENTS/////////////////////
 	//************************************************************************//
-	//Validate only numbers
-	$('#txtModalAmount').keydown(function(event) {
-			validateOnlyIntegers(event);			
+	$('#txtModalPrice').keydown(function(event) {
+			validateOnlyFloatNumbers(event);			
 	});
-	//Validate only numbers
 	$('#txtModalQuantity').keydown(function(event) {
 			validateOnlyIntegers(event);			
+	});
+	$('#txtModalPaidAmount').keydown(function(event) {
+			validateOnlyFloatNumbers(event);			
 	});
 	//Calendar script
 	$("#txtDate").datepicker({
@@ -1223,6 +1209,11 @@ $(document).ready(function(){
 	$('#cbxCustomers').change(function(){
         ajax_list_controllers_inside();		
     });
+	
+	$('#txtDate').keydown(function(e){e.preventDefault();});
+	$('#txtModalDate').keypress(function(){return false;});
+	$('#txtCode').keydown(function(e){e.preventDefault();});
+	$('#txtOriginCode').keydown(function(e){e.preventDefault();});
 	
 	function ajax_list_controllers_inside(){
         $.ajax({
@@ -1712,8 +1703,150 @@ changeLabelDocumentState('NOTE_CANCELLED'); //#UNICORN
 	
 	
 	//************************************************************************//
-	//////////////////////////////////END-AJAX FUNCTIONS////////////////////////
+	//////////////////////////////////END-AJAX FUNCTIONS////////////////////////btnGenerateMovements
 	//************************************************************************//
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	$('#btnGenerateMovements').click(function(){
+		generateMovements();
+		return false;
+	});
+	
+	function generateMovements(){
+		showBittionAlertModal({content:'Esta seguro?'});
+		$('#bittionBtnYes').click(function(){
+			var arrayItemsDetails = [];
+			arrayItemsDetails = getItemsDetails();
+			var error = validateBeforeSaveAll(arrayItemsDetails);
+			if( error === ''){
+				if(arr[3] == 'save_invoice'){
+					ajax_generate_movements(arrayItemsDetails);
+				}
+			}else{
+				$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
+			}
+			hideBittionAlertModal();
+		});
+	}
+	
+	function ajax_generate_movements(arrayItemsDetails){
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_generate_movements",			
+            data:{arrayItemsDetails: arrayItemsDetails 
+//				  ,purchaseId:$('#txtPurchaseIdHidden').val()
+				  ,date:$('#txtDate').val()
+//				  ,customer:$('#cbxCustomers').val()
+//				  ,employee:$('#cbxEmployees').val()
+//				  ,taxNumber:$('#cbxTaxNumbers').val()
+//				  ,salesman:$('#cbxSalesman').val()	
+				  ,description:$('#txtDescription').val()
+//				  ,exRate:$('#txtExRate').val()
+				  ,note_code:$('#txtNoteCode').val()
+				  ,genericCode:$('#txtGenericCode').val()
+				  ,originCode:$('#txtOriginCode').val()
+			  },
+            beforeSend: showProcessing(),
+            success: function(data){			
+				var arrayCatch = data.split('|');
+				if(arrayCatch[0] == 'creado'){
+
+
+//		$('#btnApproveState, #btnLogicDeleteState, #btnSaveAll, .columnItemsButtons, #btnApproveStateFull').hide();
+//		$('#btnCancellState').show();
+//		$('#txtCode, #txtNoteCode, #txtDate, #cbxCustomers, #cbxEmployees, #cbxTaxNumbers, #cbxSalesman, #txtDescription, #txtExRate').attr('disabled','disabled');
+//		if ($('#btnAddItem').length > 0){//existe
+//			$('#btnAddItem').hide();
+//		}
+//		changeLabelDocumentState('NOTE_APPROVED'); //#UNICORN
+		
+
+
+					$('#boxMessage').html('');
+					showGrowlMessage('ok', 'Movimientos creados.');
+				}
+				$('#processing').text('');
+			},
+			error:function(data){
+				//$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#processing').text('');
+			}
+        });
+	}
+	
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	$('#btnApproveStateFull').click(function(){
+		changeStateApprovedFull();
+		return false;
+	});
+	
+	function changeStateApprovedFull(){
+		showBittionAlertModal({content:'Al APROBAR este documento ya no se podrá hacer más modificaciones y se crearan MOVs y FACs. ¿Está seguro?'});
+		$('#bittionBtnYes').click(function(){
+			var arrayItemsDetails = [];
+			arrayItemsDetails = getItemsDetails();
+			var error = validateBeforeSaveAll(arrayItemsDetails);
+			if( error === ''){
+				if(arr[3] == 'save_order'){
+					ajax_change_state_approved_movement_in_full(arrayItemsDetails);
+				}
+			}else{
+				$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
+			}
+			hideBittionAlertModal();
+		});
+	}
+	
+	function ajax_change_state_approved_movement_in_full(arrayItemsDetails){
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_change_state_approved_movement_in_full",			
+            data:{arrayItemsDetails: arrayItemsDetails 
+				  ,purchaseId:$('#txtPurchaseIdHidden').val()
+				  ,date:$('#txtDate').val()
+				  ,customer:$('#cbxCustomers').val()
+				  ,employee:$('#cbxEmployees').val()
+				  ,taxNumber:$('#cbxTaxNumbers').val()
+				  ,salesman:$('#cbxSalesman').val()	
+				  ,description:$('#txtDescription').val()
+				  ,exRate:$('#txtExRate').val()
+				  ,note_code:$('#txtNoteCode').val()
+				  ,genericCode:$('#txtGenericCode').val()
+			  },
+            beforeSend: showProcessing(),
+            success: function(data){			
+				var arrayCatch = data.split('|');
+				if(arrayCatch[0] == 'aprobado'){
+
+
+//		$('#txtCode').val(DATA[2]);
+//		$('#txtGenericCode').val(DATA[3]);
+		$('#btnApproveState, #btnLogicDeleteState, #btnSaveAll, .columnItemsButtons, #btnApproveStateFull').hide();
+		$('#btnCancellState').show();
+		$('#txtCode, #txtNoteCode, #txtDate, #cbxCustomers, #cbxEmployees, #cbxTaxNumbers, #cbxSalesman, #txtDescription, #txtExRate').attr('disabled','disabled');
+		if ($('#btnAddItem').length > 0){//existe
+			$('#btnAddItem').hide();
+		}
+		changeLabelDocumentState('NOTE_APPROVED'); //#UNICORN
+		
+
+
+					$('#boxMessage').html('');
+					showGrowlMessage('ok', 'Entrada aprobada.');
+				}
+				$('#processing').text('');
+			},
+			error:function(data){
+				//$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#processing').text('');
+			}
+        });
+	}
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	
 //END SCRIPT	
 });
