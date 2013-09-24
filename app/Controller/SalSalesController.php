@@ -2364,7 +2364,7 @@ private function _find_stock($idItem, $idWarehouse){
 				$arrayMovement2['description']=$description;
 				$arrayMovement2['document_code'] = $generalCode;
 				$arrayMovement2['type']=1;
-				$arrayMovement1['lc_state']='PENDANT';
+				$arrayMovement2['lc_state']='PENDANT';
 				$arrayMovement2['code'] = $this->_generate_movement_code('SAL',null);
 				
 				$data2 = array('InvMovement'=>$arrayMovement2, 'InvMovementDetail'=>$arrayMovementDetails2);
@@ -2384,7 +2384,7 @@ private function _find_stock($idItem, $idWarehouse){
 				$arrayMovement2['description']=$description;
 				$arrayMovement2['document_code'] = $generalCode;
 				$arrayMovement2['type']=1;
-				$arrayMovement1['lc_state']='PENDANT';
+				$arrayMovement2['lc_state']='PENDANT';
 				$arrayMovement2['code'] = $this->_generate_movement_code('SAL','inc');
 				
 				$data1 = array('InvMovement'=>$arrayMovement1, 'InvMovementDetail'=>$arrayMovementDetails1);
