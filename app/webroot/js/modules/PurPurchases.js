@@ -339,7 +339,7 @@ $(document).ready(function(){
 			$('#btnModalAddPay').show();
 			$('#btnModalEditPay').hide();
 			$('#boxModalValidatePay').html('');//clear error message
-			ajax_initiate_modal_add_pay(arrayPaysAlreadySaved, payDebt);
+			ajax_initiate_modal_add_pay(arrayPaysAlreadySaved, parseFloat(payDebt).toFixed(2));
 		}else{
 			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
 		}	
@@ -423,10 +423,10 @@ $(document).ready(function(){
 			showBittionAlertModal({content:'¿Está seguro de eliminar este item?'});
 			$('#bittionBtnYes').click(function(){
 				if(arr[3] == 'save_order'){
-					ajax_save_movement('DELETE', 'ORDER_PENDANT', objectTableRowSelected, []);
+					ajax_save_movement('DELETE', 'ORDER_PENDANT', objectTableRowSelected/*, []*/);
 				}
 				if(arr[3] == 'save_invoice'){
-					ajax_save_movement('DELETE', 'PINVOICE_PENDANT', objectTableRowSelected, []);
+					ajax_save_movement('DELETE', 'PINVOICE_PENDANT', objectTableRowSelected/*, []*/);
 				}
 				return false; //avoid page refresh
 			});
@@ -441,7 +441,7 @@ $(document).ready(function(){
 		if( error === ''){
 			showBittionAlertModal({content:'¿Está seguro de eliminar este pago?'});
 			$('#bittionBtnYes').click(function(){
-				ajax_save_movement('DELETE_PAY', 'PINVOICE_PENDANT', objectTableRowSelected, []);
+				ajax_save_movement('DELETE_PAY', 'PINVOICE_PENDANT', objectTableRowSelected/*, []*/);
 				return false;
 			});
 		}else{
@@ -455,7 +455,7 @@ $(document).ready(function(){
 		if( error === ''){
 			showBittionAlertModal({content:'¿Está seguro de eliminar este costo?'});
 			$('#bittionBtnYes').click(function(){
-				ajax_save_movement('DELETE_COST', 'PINVOICE_PENDANT', objectTableRowSelected, []);
+				ajax_save_movement('DELETE_COST', 'PINVOICE_PENDANT', objectTableRowSelected/*, []*/);
 				return false;
 			});
 		}else{
@@ -580,10 +580,10 @@ $(document).ready(function(){
 		var error = validateItem(supplier, itemCodeName, quantity, parseFloat(exFobPrice).toFixed(2)); 
 		if(error == ''){
 			if(arr[3] == 'save_order'){
-				ajax_save_movement('ADD', 'ORDER_PENDANT', '', []);
+				ajax_save_movement('ADD', 'ORDER_PENDANT', ''/*, []*/);
 			}
 			if(arr[3] == 'save_invoice'){
-				ajax_save_movement('ADD', 'PINVOICE_PENDANT', '', []);
+				ajax_save_movement('ADD', 'PINVOICE_PENDANT', ''/*, []*/);
 			}
 		}else{
 			$('#boxModalValidateItem').html('<ul>'+error+'</ul>');
@@ -599,10 +599,10 @@ $(document).ready(function(){
 		if(error == ''){
 			
 			if(arr[3] == 'save_order'){
-				ajax_save_movement('EDIT', 'ORDER_PENDANT', '', []);
+				ajax_save_movement('EDIT', 'ORDER_PENDANT', ''/*, []*/);
 			}
 			if(arr[3] == 'save_invoice'){
-				ajax_save_movement('EDIT', 'PINVOICE_PENDANT', '', []);
+				ajax_save_movement('EDIT', 'PINVOICE_PENDANT', ''/*, []*/);
 			}
 		}else{
 			$('#boxModalValidateItem').html('<ul>'+error+'</ul>');
@@ -615,7 +615,7 @@ $(document).ready(function(){
 		var error = validateAddPay(payDate, parseFloat(payAmount).toFixed(2));  
 		if(error == ''){
 			if(arr[3] == 'save_invoice'){
-				ajax_save_movement('ADD_PAY', 'PINVOICE_PENDANT', '', []);
+				ajax_save_movement('ADD_PAY', 'PINVOICE_PENDANT', ''/*, []*/);
 			}
 		}else{
 			$('#boxModalValidatePay').html('<ul>'+error+'</ul>');
@@ -629,7 +629,7 @@ $(document).ready(function(){
 		var error = validateEditPay(payDate, parseFloat(payAmount).toFixed(2), parseFloat(payHiddenAmount).toFixed(2));  
 		if(error == ''){
 			if(arr[3] == 'save_invoice'){
-				ajax_save_movement('EDIT_PAY', 'PINVOICE_PENDANT', '', []);
+				ajax_save_movement('EDIT_PAY', 'PINVOICE_PENDANT', ''/*, []*/);
 			}
 		}else{
 			$('#boxModalValidatePay').html('<ul>'+error+'</ul>');
@@ -642,7 +642,7 @@ $(document).ready(function(){
 		var error = validateCost(costCodeName, parseFloat(costExAmount).toFixed(2)); 
 		if(error == ''){
 			if(arr[3] == 'save_invoice'){
-				ajax_save_movement('ADD_COST', 'PINVOICE_PENDANT', '', []);
+				ajax_save_movement('ADD_COST', 'PINVOICE_PENDANT', ''/*, []*/);
 			}
 		}else{
 			$('#boxModalValidateCost').html('<ul>'+error+'</ul>');
@@ -656,7 +656,7 @@ $(document).ready(function(){
 		var error = validateCost(costCodeName, parseFloat(costExAmount).toFixed(2)); 
 		if(error == ''){
 			if(arr[3] == 'save_invoice'){
-				ajax_save_movement('EDIT_COST', 'PINVOICE_PENDANT', '', []);
+				ajax_save_movement('EDIT_COST', 'PINVOICE_PENDANT', ''/*, []*/);
 			}
 		}else{
 			$('#boxModalValidateCost').html('<ul>'+error+'</ul>');
@@ -821,10 +821,10 @@ $(document).ready(function(){
 		var error = validateBeforeSaveAll(arrayItemsDetails);
 		if( error == ''){
 			if(arr[3] == 'save_order'){
-				ajax_save_movement('DEFAULT', 'ORDER_PENDANT', '', []);
+				ajax_save_movement('DEFAULT', 'ORDER_PENDANT', ''/*, []*/);
 			}
 			if(arr[3] == 'save_invoice'){
-				ajax_save_movement('DEFAULT', 'PINVOICE_PENDANT', '', []);
+				ajax_save_movement('DEFAULT', 'PINVOICE_PENDANT', ''/*, []*/);
 			}
 		}else{
 			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
@@ -840,10 +840,10 @@ $(document).ready(function(){
 			var error = validateBeforeSaveAll(arrayForValidate);
 			if( error === ''){
 				if(arr[3] == 'save_order'){
-					ajax_save_movement('DEFAULT', 'ORDER_APPROVED', '', arrayForValidate);
+					ajax_save_movement('DEFAULT', 'ORDER_APPROVED', ''/*, arrayForValidate*/);
 				}
 				if(arr[3] == 'save_invoice'){
-					ajax_save_movement('DEFAULT', 'PINVOICE_APPROVED', '', arrayForValidate);
+					ajax_save_movement('DEFAULT', 'PINVOICE_APPROVED', ''/*, arrayForValidate*/);
 				}
 			}else{
 				$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
@@ -861,13 +861,13 @@ $(document).ready(function(){
 //			arrayCostsDetails = getCostsDetails();
 //			var arrayPaysDetails = [];
 //			arrayPaysDetails = getPaysDetails();
-			var arrayForValidate = [];
-			arrayForValidate = getItemsDetails();
+//			var arrayForValidate = [];
+//			arrayForValidate = getItemsDetails();
 			if(arr[3] == 'save_order'){
-				ajax_save_movement('DEFAULT', 'ORDER_CANCELLED', '', arrayForValidate);
+				ajax_save_movement('DEFAULT', 'ORDER_CANCELLED', ''/*, arrayForValidate*/);
 			}
 			if(arr[3] == 'save_invoice'){
-				ajax_save_movement('DEFAULT', 'PINVOICE_CANCELLED', '', arrayForValidate);
+				ajax_save_movement('DEFAULT', 'PINVOICE_CANCELLED', ''/*, arrayForValidate*/);
 			}
 			hideBittionAlertModal();
 		});
@@ -1052,7 +1052,7 @@ $(document).ready(function(){
 	////************************************************************************//
 	
 	//*****************************************************************************************************************************//
-	function setOnData(ACTION, OPERATION, STATE, objectTableRowSelected, arrayForValidate){
+	function setOnData(ACTION, OPERATION, STATE, objectTableRowSelected/*, arrayForValidate*/){
 		var DATA = [];
 		//constants
 		var purchaseId=$('#txtPurchaseIdHidden').val();
@@ -1168,7 +1168,7 @@ $(document).ready(function(){
 				,itemCodeName:itemCodeName
 				,costCodeName:costCodeName
 //				,stock:stock
-				,arrayForValidate:arrayForValidate
+//				,arrayForValidate:arrayForValidate
 			  };
 		  
 		return DATA;
@@ -1313,9 +1313,9 @@ $(document).ready(function(){
 		showGrowlMessage('ok', 'Cancelado.');
 	}
 	
-	function ajax_save_movement(OPERATION, STATE, objectTableRowSelected, arrayForValidate){//SAVE_IN/ADD/PENDANT
+	function ajax_save_movement(OPERATION, STATE, objectTableRowSelected/*, arrayForValidate*/){//SAVE_IN/ADD/PENDANT
 		var ACTION = arr[3];
-		var dataSent = setOnData(ACTION, OPERATION, STATE, objectTableRowSelected, arrayForValidate);
+		var dataSent = setOnData(ACTION, OPERATION, STATE, objectTableRowSelected/*, arrayForValidate*/);
 		//Ajax Interaction	
 		$.ajax({
             type:"POST",

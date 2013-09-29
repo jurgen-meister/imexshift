@@ -290,7 +290,7 @@ $(document).ready(function(){
 			$('#btnModalAddPay').show();
 			$('#btnModalEditPay').hide();
 			$('#boxModalValidatePay').html('');//clear error message
-			ajax_initiate_modal_add_pay(arrayPaysAlreadySaved,payDebt);
+			ajax_initiate_modal_add_pay(arrayPaysAlreadySaved,parseFloat(payDebt).toFixed(2));
 		}else{
 			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
 		}
@@ -561,7 +561,7 @@ $(document).ready(function(){
 			
 //			itemCifPrice = $(this).find('#txtCifPrice').val();
 //			itemExCifPrice = $(this).find('#txtCifExPrice').val();
-//			itemExSalePrice = itemSalePrice / exRate;//?????????????????????????
+			itemExSalePrice = itemSalePrice / exRate;//?????????????????????????
 			arrayItemsDetails.push({'inv_item_id':itemId, 'sale_price':itemSalePrice, 'quantity':itemQuantity, 'inv_warehouse_id':itemWarehouseId, 'ex_sale_price':parseFloat(itemExSalePrice).toFixed(2)});
 			
 		});
