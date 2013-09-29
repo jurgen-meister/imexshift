@@ -126,20 +126,32 @@ class SalSale extends AppModel {
 		)
 	);
 	
-		public function saveMovement($dataMovement, $dataMovementDetail, $OPERATION, $ACTION, $movementDocCode, $dataPayDetail){
+		public function saveMovement($dataMovement, $dataMovementDetail, $OPERATION, $ACTION, $STATE, $movementDocCode, $dataPayDetail, $arraySalePrices){
 		$dataSource = $this->getDataSource();
 		$dataSource->begin();
-		if(!$this->saveAll($dataMovement)){
+		
+		if(!$this->saveAll($dataMovement[0])){
 			$dataSource->rollback();
 			return 'error';
 		}else{
-			$idMovement = $this->id;
-				$dataMovementDetail['SalDetail']['sal_sale_id']=$idMovement;
-				if($dataPayDetail != null){
-					$dataPayDetail['SalPayment']['sal_sale_id']=$idMovement;
-				}
+			$idMovement1 = $this->id;
+			$dataMovementDetail[0]['SalDetail']['sal_sale_id']=$idMovement1;
+			if($dataPayDetail != null){
+				$dataPayDetail['SalPayment']['sal_sale_id']=$idMovement1;
+			}
 		}
-		
+		if($ACTION=='save_order'){
+			if(!$this->saveAll($dataMovement[1])){
+				$dataSource->rollback();
+				return 'error';
+			}else{
+				$idMovement2 = $this->id;
+				$dataMovementDetail[1]['SalDetail']['sal_sale_id']=$idMovement2;
+//				if($dataPayDetail != null){
+//					$dataPayDetail['SalPayment']['sal_sale_id']=$idMovement;
+//				}
+			}
+		}	
 			switch ($OPERATION) {
 				case 'ADD':
 					if(!$this->SalDetail->saveAll($dataMovementDetail)){
@@ -156,21 +168,41 @@ class SalSale extends AppModel {
 					}
 					break;
 				case 'EDIT':							//array fields
-					if($this->SalDetail->updateAll(array('SalDetail.sale_price'=>$dataMovementDetail['SalDetail']['sale_price'], 
-															'SalDetail.quantity'=>$dataMovementDetail['SalDetail']['quantity'], 
-															'SalDetail.ex_sale_price'=>$dataMovementDetail['SalDetail']['ex_sale_price']/*,
-															'SalDetail.fob_price'=>$dataMovementDetail['SalDetail']['fob_price'],
+					if($this->SalDetail->updateAll(array('SalDetail.sale_price'=>$dataMovementDetail[0]['SalDetail']['sale_price'], 
+															'SalDetail.quantity'=>$dataMovementDetail[0]['SalDetail']['quantity'], 
+															'SalDetail.ex_sale_price'=>$dataMovementDetail[0]['SalDetail']['ex_sale_price']
+															/*'SalDetail.fob_price'=>$dataMovementDetail['SalDetail']['fob_price'],
 															'SalDetail.ex_fob_price'=>$dataMovementDetail['SalDetail']['ex_fob_price'],
 															'SalDetail.cif_price'=>$dataMovementDetail['SalDetail']['cif_price'],
 															'SalDetail.ex_cif_price'=>$dataMovementDetail['SalDetail']['ex_cif_price']*/), 
-								/*array conditions*/array('SalDetail.sal_sale_id'=>$dataMovementDetail['SalDetail']['sal_sale_id'], 
-														'SalDetail.inv_warehouse_id'=>$dataMovementDetail['SalDetail']['inv_warehouse_id'], 
-														'SalDetail.inv_item_id'=>$dataMovementDetail['SalDetail']['inv_item_id']))){
+								/*array conditions*/array('SalDetail.sal_sale_id'=>$dataMovementDetail[0]['SalDetail']['sal_sale_id'], 
+														'SalDetail.inv_warehouse_id'=>$dataMovementDetail[0]['SalDetail']['inv_warehouse_id'], 
+														'SalDetail.inv_item_id'=>$dataMovementDetail[0]['SalDetail']['inv_item_id']
+													))){
 						$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
 					}
 					if($rowsAffected == 0){
 						$dataSource->rollback();
 						return 'error';
+					}
+					if($ACTION=='save_order'){
+						if($this->SalDetail->updateAll(array('SalDetail.sale_price'=>$dataMovementDetail[1]['SalDetail']['sale_price'], 
+															'SalDetail.quantity'=>$dataMovementDetail[1]['SalDetail']['quantity'], 
+															'SalDetail.ex_sale_price'=>$dataMovementDetail[1]['SalDetail']['ex_sale_price']				
+															/*'SalDetail.fob_price'=>$dataMovementDetail['SalDetail']['fob_price'],
+															'SalDetail.ex_fob_price'=>$dataMovementDetail['SalDetail']['ex_fob_price'],
+															'SalDetail.cif_price'=>$dataMovementDetail['SalDetail']['cif_price'],
+															'SalDetail.ex_cif_price'=>$dataMovementDetail['SalDetail']['ex_cif_price']*/), 
+								/*array conditions*/array('SalDetail.sal_sale_id'=>$dataMovementDetail[1]['SalDetail']['sal_sale_id'], 
+														'SalDetail.inv_warehouse_id'=>$dataMovementDetail[1]['SalDetail']['inv_warehouse_id'], 
+														'SalDetail.inv_item_id'=>$dataMovementDetail[1]['SalDetail']['inv_item_id']
+													))){
+							$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
+						}
+						if($rowsAffected == 0){
+							$dataSource->rollback();
+							return 'error';
+						}
 					}
 					break;
 				case 'EDIT_PAY':
@@ -188,12 +220,20 @@ class SalSale extends AppModel {
 					}
 					break;
 				case 'DELETE':
-					if(!$this->SalDetail->deleteAll(array('SalDetail.sal_sale_id'=>$dataMovementDetail['SalDetail']['sal_sale_id'],	
-															'SalDetail.inv_warehouse_id'=>$dataMovementDetail['SalDetail']['inv_warehouse_id'], 
-															'SalDetail.inv_item_id'=>$dataMovementDetail['SalDetail']['inv_item_id']))){
+					if(!$this->SalDetail->deleteAll(array('SalDetail.sal_sale_id'=>$dataMovementDetail[0]['SalDetail']['sal_sale_id'],	
+															'SalDetail.inv_warehouse_id'=>$dataMovementDetail[0]['SalDetail']['inv_warehouse_id'], 
+															'SalDetail.inv_item_id'=>$dataMovementDetail[0]['SalDetail']['inv_item_id']))){
 						$dataSource->rollback();
 						return 'error';
 					}
+					if($ACTION=='save_order'){
+						if(!$this->SalDetail->deleteAll(array('SalDetail.sal_sale_id'=>$dataMovementDetail[1]['SalDetail']['sal_sale_id'],	
+																'SalDetail.inv_warehouse_id'=>$dataMovementDetail[1]['SalDetail']['inv_warehouse_id'], 
+																'SalDetail.inv_item_id'=>$dataMovementDetail[1]['SalDetail']['inv_item_id']))){
+							$dataSource->rollback();
+							return 'error';
+						}
+					}	
 					break;
 				case 'DELETE_PAY':
 					if(!$this->SalPayment->deleteAll(array('SalPayment.sal_sale_id'=>$dataPayDetail['SalPayment']['sal_sale_id'], 
@@ -203,8 +243,32 @@ class SalSale extends AppModel {
 					}
 					break;
 			}		
+			
+			if ($ACTION == 'save_invoice' && $STATE == 'SINVOICE_APPROVED'/*$arraySalePrices != null*/){
+			
+				if(!ClassRegistry::init('InvPrice')->saveAll($arraySalePrices)){
+					$dataSource->rollback();
+					return 'error';
+				}
+				
+			}		
 		$dataSource->commit();
-		return $idMovement;
+		return $idMovement1;
 	}
-
+	
+	public function saveGeneratedMovements($data){
+		$dataSource = $this->getDataSource();
+		$dataSource->begin();
+		
+		foreach($data AS $row) { 
+			if(!ClassRegistry::init('InvMovement')->saveAll($row)){
+				$dataSource->rollback();
+				return 'error';
+			}else{
+				$idMovement[] = $this->id;
+			}
+		} 	
+		$dataSource->commit();
+		return array('SUCCESS', $idMovement);
+	}	
 }

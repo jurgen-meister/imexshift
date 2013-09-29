@@ -26,11 +26,431 @@ class SalSalesController extends AppController {
  * @var array
  */
 	//public $components = array('Session')
-/**
- * index method
- *
- * @return void
- */
+	//*******************************************************************************************************//
+	///////////////////////////////////////// START - FUNCTIONS ///////////////////////////////////////////////
+	//*******************************************************************************************************//
+	
+	//////////////////////////////////////////// START - PDF ///////////////////////////////////////////////
+	public function view_document_movement_pdf($id = null) {
+		
+		$this->InvMovement->id = $id;
+		
+		if (!$this->InvMovement->exists()) {
+			throw new NotFoundException(__('Invalid post'));
+		}
+		// increase memory limit in PHP 
+		ini_set('memory_limit', '512M');
+		$movement = $this->InvMovement->read(null, $id);
+		
+		if($movement['InvMovement']['inv_movement_type_id'] == 4){
+			$this->redirect(array('action'=>'index_warehouses_transfer'));
+		}
+		
+		if($movement['InvMovement']['inv_movement_type_id'] == 3){
+			
+			$movementIdOut = $this->InvMovement->find('all', array(
+				'conditions'=>array(
+					'InvMovement.document_code'=>$movement['InvMovement']['document_code'],
+					'InvMovement.inv_movement_type_id ='=>4
+			)));//Out Origin
+			$movement['Transfer']['code'] = $movementIdOut[0]['InvMovement']['code'];
+			$movement['Transfer']['warehouseName'] = $movementIdOut[0]['InvWarehouse']['name'];
+		}
+		
+		
+		$details=$this->_get_movements_details_without_stock($id);
+		$this->set('movement', $movement);
+		$this->set('details', $details);
+	}
+	//////////////////////////////////////////// END - PDF /////////////////////////////////////////////////
+	
+	//////////////////////////////////////////// START - REPORT ////////////////////////////////////////////////
+	public function vreport_generator(){
+		$this->loadModel("InvWarehouse");
+		$warehouse = $this->InvWarehouse->find('list');
+		$item = $this->_find_items();
+		$this->set(compact("warehouse", "item"));
+	}
+	
+	private function _find_items($type = 'none', $selected = array()){
+		$conditions = array();
+		$order = array('InvItem.code');
+		
+		switch ($type){
+			case 'category':
+				$conditions = array('InvItem.inv_category_id'=>$selected);
+				//$order = array('InvCategory.name');
+				break;
+			case 'brand':
+				$conditions = array('InvItem.inv_brand_id'=>$selected);
+				//$order = array('InvBrand.name');
+				break;
+		}
+			
+		$this->loadModel("InvItem");
+		$this->InvItem->unbindModel(array('hasMany' => array('InvPrice', 'InvCategory', 'InvMovementDetail', 'InvItemsSupplier')));
+		return $this->InvItem->find("all", array(
+					"fields"=>array('InvItem.code', 'InvItem.name', 'InvCategory.name', 'InvBrand.name', 'InvItem.id'),
+					"conditions"=>$conditions,
+					"order"=>$order
+				));
+	}
+	
+	public function ajax_get_group_items_and_filters(){
+		if($this->RequestHandler->isAjax()){
+			$type = $this->request->data['type'];
+			$group = array();
+			switch ($type) {
+				case 'category':
+					$this->loadModel("InvCategory");
+					$group = $this->InvCategory->find("list", array("order"=>array("InvCategory.name")));
+					$this->set('group', $group);
+					break;
+				case 'brand':
+					$this->loadModel("InvBrand");
+					$group = $this->InvBrand->find("list", array("order"=>array("InvBrand.name")));
+					$this->set('group', $group);
+					break;
+			}
+			$item = $this->_find_items($type, array_keys($group));
+			$this->set(compact("item"));
+		}
+	}
+	
+	public function ajax_get_group_items(){
+		if($this->RequestHandler->isAjax()){
+			$type = $this->request->data['type'];
+			if(isset($this->request->data['selected'])){
+				$selected = $this->request->data['selected'];
+			}else{
+				$selected = array(); 
+			}
+			$item = $this->_find_items($type, $selected);
+			$this->set(compact("item"));
+		}
+	}
+
+	
+	public function ajax_generate_report(){
+		if($this->RequestHandler->isAjax()){
+			//SETTING DATA
+			$this->Session->write('ReportMovement.startDate', $this->request->data['startDate']);
+			$this->Session->write('ReportMovement.finishDate', $this->request->data['finishDate']);
+			$this->Session->write('ReportMovement.movementType', $this->request->data['movementType']);
+			$this->Session->write('ReportMovement.movementTypeName', $this->request->data['movementTypeName']);
+			$this->Session->write('ReportMovement.warehouse', $this->request->data['warehouse']);
+			$this->Session->write('ReportMovement.warehouseName', $this->request->data['warehouseName']);
+			$this->Session->write('ReportMovement.currency', $this->request->data['currency']);
+			
+			//for transfer
+			$this->Session->write('ReportMovement.warehouse2', $this->request->data['warehouse2']);
+			$this->Session->write('ReportMovement.warehouseName2', $this->request->data['warehouseName2']);
+			//array items
+			$this->Session->write('ReportMovement.items', $this->request->data['items']);
+			
+			//to send data response to ajax success so it can choose the report view
+			echo $this->request->data['movementType']; 
+		///END AJAX
+		}
+	}
+	
+	public function vreport_ins_or_outs(){
+		$this->_generate_report();
+	}
+	
+	public function vreport_ins_and_outs(){
+		$this->_generate_report();
+	}
+	
+	public function vreport_transfers(){
+		$this->_generate_report(); 
+	}
+	
+	private function _generate_report(){
+		//special ctp template for printing due DOMPdf colapses generating too many pages
+		$this->layout = 'print';
+		
+		//Check if session variables are set otherwise redirect
+		if(!$this->Session->check('ReportMovement')){
+			$this->redirect(array('action' => 'vreport_generator'));
+		}
+		
+		//put session data sent data into variables
+		$initialData = $this->Session->read('ReportMovement');
+		
+		//debug($initialData);
+
+		$settings = $this->_generate_report_settings($initialData);
+		
+		//debug($settings);
+		
+		$movements=$this->_generate_report_movements($settings['values'], $settings['conditions'], $settings['fields']);
+		//debug($movements);
+		
+		$currencyFieldPrefix = '';
+		$currencyAbbreviation = '(BS)';
+		if(trim($initialData['currency']) == 'DOLARES AMERICANOS'){
+			$currencyFieldPrefix = 'ex_';
+			$currencyAbbreviation = '($US)';
+		}
+		
+		
+		$itemsComplete = $this->_generate_report_items_complete($initialData['items']);
+		//debug($itemsComplete);
+		$itemsMovements = $this->_generate_report_items_movements($itemsComplete, $movements, $currencyFieldPrefix);
+		//debug($itemsMovements);
+		
+		$initialData['currencyAbbreviation']=$currencyAbbreviation;//setting currency abbreviation before send
+		$initialData['items']='';//cleaning items ids 'cause won't be needed begore send
+		//debug($initialData);
+		$this->set('initialData', $initialData);
+		$this->set('itemsMovements', $itemsMovements);
+		//debug($settings['initialStocks']);
+		$this->set('initialStocks', $settings['initialStocks']);
+		$this->Session->delete('ReportMovement');
+	//END FUNCTION	
+	}
+	
+	
+	
+	private function _generate_report_items_movements($itemsComplete, $movements, $currencyFieldPrefix){
+		//I'll not calculate totals 'cause will be easier in the view and specially cleaner due the variation of calculation in every report
+		$auxArray=array();
+		foreach($itemsComplete as $item){
+			$fobQuantityTotal = 0;
+			$cifQuantityTotal = 0;
+			$saleQuantityTotal = 0;
+			$counter = 0;
+			
+			$forPricesSubQuery = 0; //before 'InvMovementDetail'
+			
+			//movements
+			foreach($movements as $movement){
+				if($item['InvItem']['id'] == $movement['InvMovementDetail']['inv_item_id']){
+					$fobQuantity = $movement['InvMovementDetail']['quantity'] * $movement[$forPricesSubQuery][$currencyFieldPrefix.'fob_price'];
+					$cifQuantity = $movement['InvMovementDetail']['quantity'] * $movement[$forPricesSubQuery][$currencyFieldPrefix.'cif_price'];
+					$saleQuantity = $movement['InvMovementDetail']['quantity'] * $movement[$forPricesSubQuery][$currencyFieldPrefix.'sale_price'];
+					$fobQuantityTotal = $fobQuantityTotal + $fobQuantity;
+					$cifQuantityTotal = $cifQuantityTotal + $cifQuantity;
+					$saleQuantityTotal = $saleQuantityTotal + $saleQuantity;
+					$auxArray[$item['InvItem']['id']]['Movements'][$counter] = array(
+						'code'=>$movement['InvMovement']['code'],
+						'document_code'=>$movement['InvMovement']['document_code'],
+						'quantity'=> $movement['InvMovementDetail']['quantity'],
+						'date'=>date("d/m/Y", strtotime($movement['InvMovement']['date'])),
+						'fob'=> $movement[$forPricesSubQuery][$currencyFieldPrefix.'fob_price'],
+						'cif'=> $movement[$forPricesSubQuery][$currencyFieldPrefix.'cif_price'],
+						'sale'=> $movement[$forPricesSubQuery][$currencyFieldPrefix.'sale_price'],
+						'fobQuantity'=>$fobQuantity,
+						'cifQuantity'=>$cifQuantity,
+						'saleQuantity'=>$saleQuantity,
+						'warehouse'=>$movement['InvMovement']['inv_warehouse_id']
+					);
+					if(isset($movement['InvMovementType']['status'])){
+						$auxArray[$item['InvItem']['id']]['Movements'][$counter]['status']=$movement['InvMovementType']['status'];
+					}
+					$counter++;
+				}
+			}
+			//Items
+			$auxArray[ $item['InvItem']['id'] ]['Item']['codeName']='[ '.$item['InvItem']['code'].' ] '.$item['InvItem']['name'];
+			$auxArray[ $item['InvItem']['id'] ]['Item']['brand']=$item['InvBrand']['name'];
+			$auxArray[ $item['InvItem']['id'] ]['Item']['category']=$item['InvCategory']['name'];
+			$auxArray[ $item['InvItem']['id'] ]['Item']['id']=$item['InvItem']['id'];
+			//Totals
+			$auxArray[ $item['InvItem']['id'] ]['TotalMovements']['fobQuantityTotal'] = $fobQuantityTotal;
+			$auxArray[ $item['InvItem']['id'] ]['TotalMovements']['cifQuantityTotal'] = $cifQuantityTotal;
+			$auxArray[ $item['InvItem']['id'] ]['TotalMovements']['saleQuantityTotal'] = $saleQuantityTotal;
+			////I don't calculate total quantity here 'cause could vary in every report, it will be done in the report views
+		}
+		return $auxArray;
+	}
+	
+	private function _generate_report_settings($initialData){
+		///////////////////VALUES, FIELDS, CONDITIONS////////////////////////
+		$values = array();
+		$conditions = array();
+		$fields = array();
+		$initialStocks=array();
+				
+		
+		$values['startDate']=$initialData['startDate'];
+		$values['finishDate']=$initialData['finishDate'];
+		$warehouses = array(0=>$initialData['warehouse']);
+		
+		switch ($initialData['movementType']) {
+			case 998://TODAS LAS ENTRADAS
+				$conditions['InvMovement.inv_movement_type_id']=array(1,4,5,6);
+				break;
+			case 999://TODAS LAS SALIDAS
+				$conditions['InvMovement.inv_movement_type_id']=array(2,3,7);
+				break;
+			case 1000://ENTRADAS Y SALIDAS
+				$values['bindMovementType'] = 1;
+				$initialStocks = $this->_get_stocks($initialData['items'], $initialData['warehouse'], $initialData['startDate'], '<');//before starDate, 'cause it will be added or substracted with movements quantities
+				break;
+			case 1001://TRASPASOS ENTRE ALMACENES
+				$values['bindMovementType'] = 1;
+				$conditions['InvMovement.inv_movement_type_id']=array(3,4);
+				$warehouses[1]=$initialData['warehouse2'];
+				break;
+			default:
+				$conditions['InvMovement.inv_movement_type_id']=$initialData['movementType'];
+				break;
+		}
+		$conditions['InvMovement.inv_warehouse_id']=$warehouses;//necessary to be here
+		$values['items']=$initialData['items'];//just for order
+		switch($initialData['currency']){
+			case 'BOLIVIANOS':
+				//$fields = array('InvMovementDetail.fob_price', 'InvMovementDetail.cif_price', 'InvMovementDetail.sale_price');
+				$fields[]='(SELECT price FROM inv_prices where inv_item_id = "InvMovementDetail"."inv_item_id" AND date <= "InvMovement"."date" AND inv_price_type_id=1 order by date DESC, date_created DESC LIMIT 1) AS "fob_price"';
+				$fields[]='(SELECT price FROM inv_prices where inv_item_id = "InvMovementDetail"."inv_item_id" AND date <= "InvMovement"."date" AND inv_price_type_id=8 order by date DESC, date_created DESC LIMIT 1) AS "cif_price"';
+				$fields[]='(SELECT price FROM inv_prices where inv_item_id = "InvMovementDetail"."inv_item_id" AND date <= "InvMovement"."date" AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1) AS "sale_price"';
+				break;
+			case 'DOLARES AMERICANOS':
+				//$fields = array('InvMovementDetail.ex_fob_price', 'InvMovementDetail.ex_cif_price', 'InvMovementDetail.ex_sale_price');
+				$fields[]='(SELECT ex_price FROM inv_prices where inv_item_id = "InvMovementDetail"."inv_item_id" AND date <= "InvMovement"."date" AND inv_price_type_id=1 order by date DESC, date_created DESC LIMIT 1) AS "ex_fob_price"';
+				$fields[]='(SELECT ex_price FROM inv_prices where inv_item_id = "InvMovementDetail"."inv_item_id" AND date <= "InvMovement"."date" AND inv_price_type_id=8 order by date DESC, date_created DESC LIMIT 1) AS "ex_cif_price"';
+				$fields[]='(SELECT ex_price FROM inv_prices where inv_item_id = "InvMovementDetail"."inv_item_id" AND date <= "InvMovement"."date" AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1) AS "ex_sale_price"';
+				break;
+		}
+		
+		return array('values'=>$values,'conditions'=>$conditions, 'fields'=>$fields, 'initialStocks'=>$initialStocks);
+	}
+	
+	
+	private function _generate_report_movements($values, $conditions, $fields){
+		$staticFields = array(
+			'InvMovement.id',
+			'InvMovement.code',
+			'InvMovement.document_code',
+			'InvMovement.date',
+			'InvMovement.inv_warehouse_id',
+			'InvMovementDetail.inv_item_id',
+			'InvMovementDetail.quantity'
+			);
+		if(isset($values['bindMovementType']) AND $values['bindMovementType'] == 1){
+			$this->InvMovement->InvMovementDetail->bindModel(array(
+				'hasOne'=>array(
+					'InvMovementType'=>array(
+						'foreignKey'=>false,
+						'conditions'=> array('InvMovement.inv_movement_type_id = InvMovementType.id')
+					)
+				)
+			));
+			$fields[] = 'InvMovementType.status'; 
+		}
+		$this->InvMovement->InvMovementDetail->unbindModel(array('belongsTo' => array('InvItem')));
+		return $this->InvMovement->InvMovementDetail->find('all', array(
+					'conditions'=>array(
+						'InvMovementDetail.inv_item_id'=>$values['items'],
+						'InvMovement.lc_state'=>'APPROVED',
+						'InvMovement.date BETWEEN ? AND ?' => array($values['startDate'], $values['finishDate']),
+						$conditions
+					),
+					'fields'=>  array_merge($staticFields, $fields),
+					'order'=>array('InvMovement.date', 'InvMovementDetail.id')
+				));
+	}
+	
+	
+	private function _generate_report_items_complete($items){
+		$this->loadModel('InvItem');
+		$this->InvItem->unbindModel(array('hasMany' => array('InvMovementDetail', 'PurDetail', 'SalDetail', 'InvItemsSupplier', 'InvPrice')));
+		return $this->InvItem->find('all', array(
+			'fields'=>array('InvItem.id', 'InvItem.code', 'InvItem.name', 'InvBrand.name', 'InvCategory.name'),
+			'conditions'=>array('InvItem.id'=>$items),
+			'order'=>array('InvItem.code')
+		));
+	}
+	
+	//////////////////////////////////////////// END - REPORT /////////////////////////////////////////////////
+	
+		//////////////////////////////////////////START-GRAPHICS//////////////////////////////////////////
+	public function vgraphics(){
+		$this->loadModel("AdmPeriod");
+		$years = $this->AdmPeriod->find("list", array(
+			"order"=>array("name"=>"desc"),
+			"fields"=>array("name", "name")
+			)
+		);
+		
+		$this->loadModel("InvItem");
+		
+		$itemsClean = $this->InvItem->find("list", array('order'=>array('InvItem.code')));
+		$items[0]="TODOS";
+		foreach ($itemsClean as $key => $value) {
+			$items[$key] = $value;
+		}
+		
+		$this->set(compact("years", "items"));
+		//debug($this->_get_bars_sales_and_time("2013", "0"));
+	}
+	
+	public function ajax_get_graphics_data(){
+		if($this->RequestHandler->isAjax()){
+			$year = $this->request->data['year'];
+			$currency = $this->request->data['currency'];
+			$item = $this->request->data['item'];
+			$string = $this->_get_bars_sales_and_time($year, $item, $currency);
+			echo $string;
+		}
+//		$string .= '30|54|12|114|64|100|98|80|10|50|169|222';
+	}
+	
+	private function _get_bars_sales_and_time($year, $item, $currency){
+		$conditionItem = null;
+		$dataString = "";
+		
+		if($item > 0){
+			$conditionItem = array("SalDetail.inv_item_id" => $item);
+		}
+		
+		$currencyType = "price";
+		if($currency == "dolares"){
+			$currencyType = "ex_price";
+		}
+		
+		//*****************************************************************************//
+		$data = $this->SalSale->SalDetail->find('all', array(
+			"fields"=>array(
+				"to_char(\"SalSale\".\"date\",'mm') AS month",
+				'SUM("SalDetail"."quantity" * (SELECT '.$currencyType.'  FROM inv_prices where inv_item_id = "SalDetail"."inv_item_id" AND date <= "SalSale"."date" AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1))'
+			),
+			'group'=>array("to_char(SalSale.date,'mm')"),
+			"conditions"=>array(
+				"to_char(SalSale.date,'YYYY')"=>$year,
+				"SalSale.lc_state"=>"SINVOICE_APPROVED",
+				$conditionItem
+			)
+		));
+		//*****************************************************************************//
+		
+		
+		//format data on string to response ajax request
+		$months = array(1,2,3,4,5,6,7,8,9,10,11,12);
+		
+		foreach ($months as $month) {
+			$exist = 0;
+			foreach ($data as $value) {
+				if($month == (int)$value[0]['month']){
+					$dataString .= $value[0]['sum']."|";
+					//debug($dataString);
+					$exist++;
+				}
+			}
+			if($exist == 0){
+				$dataString .= "0|";
+			}
+		}
+		
+		return substr($dataString, 0, -1);
+	}
+	
+	//////////////////////////////////////////END-GRAPHICS//////////////////////////////////////////
+	
+	//////////////////////////////////////////// START - INDEX ///////////////////////////////////////////////
+	
 	public function index_order() {
 		
 		///////////////////////////////////////START - CREATING VARIABLES//////////////////////////////////////
@@ -180,6 +600,10 @@ class SalSalesController extends AppController {
 		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
 	}
 	
+	///////////////////////////////////////////// END - INDEX ////////////////////////////////////////////////
+	
+	//////////////////////////////////////////// START - SAVE ///////////////////////////////////////////////
+	
 	public function save_order(){
 		$id = '';
 		if(isset($this->passedArgs['id'])){
@@ -319,83 +743,9 @@ class SalSalesController extends AppController {
 //debug($this->request->data);
 	}
 	
-	public function _get_movements_details($idMovement){
-		$movementDetails = $this->SalSale->SalDetail->find('all', array(
-			'conditions'=>array(
-				'SalDetail.sal_sale_id'=>$idMovement
-				),																									                             /*REVISAR ESTO V*/
-			'fields'=>array('InvItem.name', 'InvItem.code', 'SalDetail.sale_price', 'SalDetail.quantity','SalDetail.inv_warehouse_id', 'InvItem.id', 'InvWarehouse.name','InvWarehouse.id', 'InvItem.id')
-			));
-		
-		$formatedMovementDetails = array();
-		foreach ($movementDetails as $key => $value) {
-			// gets the first price in the list of the item prices
-//			$priceDirty = $this->PurPurchase->PurDetail->InvItem->InvPrice->find('first', array(
-//					'fields'=>array('InvPrice.price'),
-//					'order' => array('InvPrice.date_created' => 'desc'),
-//					'conditions'=>array(
-//						'InvPrice.inv_item_id'=>$value['InvItem']['id']
-//						)
-//				));
-				//$price = $priceDirty['InvPrice']['price'];
-			
-			$formatedMovementDetails[$key] = array(
-				'itemId'=>$value['InvItem']['id'],
-				'item'=>'[ '. $value['InvItem']['code'].' ] '.$value['InvItem']['name'],
-				'salePrice'=>$value['SalDetail']['sale_price'],//llamar precio
-				'cantidad'=>$value['SalDetail']['quantity'],//llamar cantidad
-				'warehouseId'=>$value['InvWarehouse']['id'],
-				'warehouse'=>$value['InvWarehouse']['name'],//llamar almacen
-//	'cifPrice'=>$value['SalDetail']['cif_price'],
-//	'exCifPrice'=>$value['SalDetail']['ex_cif_price'],
-				'stock'=> $this->_find_stock($value['InvItem']['id'], $value['SalDetail']['inv_warehouse_id'])
-				
-				);
-		}
-//debug($formatedMovementDetails);		
-		return $formatedMovementDetails;
-	}
+	//////////////////////////////////////////// END - SAVE /////////////////////////////////////////////////
 	
-	public function _get_pays_details($idMovement){
-		$paymentDetails = $this->SalSale->SalPayment->find('all', array(
-			'conditions'=>array(
-				'SalPayment.sal_sale_id'=>$idMovement
-				),																									                            
-			'fields'=>array('SalPayment.date', 'SalPayment.amount','SalPayment.description')
-			));
-		
-		$formatedPaymentDetails = array();
-		foreach ($paymentDetails as $key => $value) {
-			$formatedPaymentDetails[$key] = array(
-				'dateId'=>$value['SalPayment']['date'],//llamar precio
-				//'payDate'=>strftime("%A, %d de %B de %Y", strtotime($value['SalPayment']['date'])),
-				'payDate'=>strftime("%d/%m/%Y", strtotime($value['SalPayment']['date'])),
-				'payAmount'=>$value['SalPayment']['amount'],//llamar cantidad
-				'payDescription'=>$value['SalPayment']['description']
-				);
-		}
-//debug($formatedPaymentDetails);		strftime("%A, %d de %B de %Y", $value['SalPayment']['date'])
-		return $formatedPaymentDetails;
-	}
-	
-	public function ajax_list_controllers_inside(){
-		if($this->RequestHandler->isAjax()){
-			$customer = $this->request->data['customer']; //???????????????????
-		//	print_r( $customer);
-		//	$admControllers = $this->AdmMenu->AdmAction->AdmController->find('list', array('conditions'=>array('AdmController.adm_module_id'=>$module)));
-			$salEmployees = $this->SalSale->SalEmployee->find('list', array('conditions'=>array('SalEmployee.sal_customer_id'=>$customer)));
-			$salTaxNumbers = $this->SalSale->SalTaxNumber->find('list', array('conditions'=>array('SalTaxNumber.sal_customer_id'=>$customer)));
-
-		//	print_r( $salEmployees);
-		//	$controller = key($admControllers);
-		//	$employee = key($salEmployees);
-			//$admActions = $this->AdmMenu->AdmAction->find('list', array('conditions'=>array('AdmAction.adm_controller_id'=>$controller)));
-		//	$admActions = $this->_list_action_inside($controller);
-			$this->set(compact('salEmployees', 'salTaxNumbers'/*'admControllers','admActions'*/));			
-		}else{
-			$this->redirect($this->Auth->logout());
-		}
-	}
+	//////////////////////////////////////////// START - AJAX ///////////////////////////////////////////////
 	
 	public function ajax_initiate_modal_add_item_in(){
 		if($this->RequestHandler->isAjax()){
@@ -447,69 +797,6 @@ class SalSalesController extends AppController {
 			}
 	}
 	
-	public function ajax_initiate_modal_edit_item_in(){
-		if($this->RequestHandler->isAjax()){
-						
-		//	$itemsAlreadySaved = $this->request->data['itemsAlreadySaved'];
-//			$warehouse = $this->request->data['warehouse'];
-			$item = $this->request->data['item'];
-			$warehouse = $this->request->data['warehouse'];
-//			$supplier = $this->request->data['supplier'];
-//			$itemsBySupplier = $this->PurPurchase->InvSupplier->InvItemsSupplier->find('list', array(
-//				'fields'=>array('InvItemsSupplier.inv_item_id'),
-//				'conditions'=>array(
-//					'InvItemsSupplier.inv_supplier_id'=>$supplier
-//				),
-//				'recursive'=>-1
-//			)); 
-//debug($itemsBySupplier);			
-//			$items = $this->SalSale->SalDetail->InvItem->find('list', array(
-//				'conditions'=>array(
-//					'NOT'=>array('InvItem.id'=>$itemsAlreadySaved)
-//					
-//					/*,'InvItem.id'=>$itemsBySupplier*/
-//				),
-//				'recursive'=>-1
-//				//'fields'=>array('InvItem.id', 'CONCAT(InvItem.code, '-', InvItem.name)')
-//			));
-			
-			$invWarehouses = $this->SalSale->SalDetail->InvItem->InvMovementDetail->InvMovement->InvWarehouse->find('list');
-			
-			
-	//		$firstItemListed = key($items);
-			
-		//	$warehouse = key($invWarehouses);
-			
-			$stock = $this->_find_stock($item/*$firstItemListed*/, $warehouse);
-			
-
-//debug($invWarehouses);
-//debug($item);
-//debug($warehouse);
-//debug($stock);
-//debug($invWarehouses);
-////debug($this->request->data);
-		// gets the first price in the list of the item prices
-		//$firstItemListed = key($items);
-		$priceDirty = $this->SalSale->SalDetail->InvItem->InvPrice->find('first', array(
-			'fields'=>array('InvPrice.price'),
-			'order' => array('InvPrice.date_created' => 'desc'),
-			'conditions'=>array(
-				'InvPrice.inv_item_id'=>/*$firstItemListed*/$item
-				)
-		));
-////debug($priceDirty);
-		if($priceDirty==array()){
-			$price = 0;
-		}  else {
-			
-			$price = $priceDirty['InvPrice']['price'];
-		}
-				
-			$this->set(compact(/*'item', */'price','invWarehouses', 'stock', 'warehouse'));
-		}
-	}
-	
 	public function ajax_update_stock_modal(){
 		if($this->RequestHandler->isAjax()){
 			$item = $this->request->data['item'];
@@ -543,6 +830,25 @@ class SalSalesController extends AppController {
 			$this->set(compact('stock'));
 		}
 	}
+	
+	public function ajax_list_controllers_inside(){
+		if($this->RequestHandler->isAjax()){
+			$customer = $this->request->data['customer']; //???????????????????
+		//	print_r( $customer);
+		//	$admControllers = $this->AdmMenu->AdmAction->AdmController->find('list', array('conditions'=>array('AdmController.adm_module_id'=>$module)));
+			$salEmployees = $this->SalSale->SalEmployee->find('list', array('conditions'=>array('SalEmployee.sal_customer_id'=>$customer)));
+			$salTaxNumbers = $this->SalSale->SalTaxNumber->find('list', array('conditions'=>array('SalTaxNumber.sal_customer_id'=>$customer)));
+
+		//	print_r( $salEmployees);
+		//	$controller = key($admControllers);
+		//	$employee = key($salEmployees);
+			//$admActions = $this->AdmMenu->AdmAction->find('list', array('conditions'=>array('AdmAction.adm_controller_id'=>$controller)));
+		//	$admActions = $this->_list_action_inside($controller);
+			$this->set(compact('salEmployees', 'salTaxNumbers'/*'admControllers','admActions'*/));			
+		}else{
+			$this->redirect($this->Auth->logout());
+		}
+	}	
 	
 	public function ajax_update_items_modal(){
 		if($this->RequestHandler->isAjax()){
@@ -587,71 +893,6 @@ class SalSalesController extends AppController {
 			$this->set(compact('items', 'price', 'stock'));
 		}
 	}
-	
-	private function _get_price($itemId, $date, $type, $currType){
-		$this->loadModel('InvPrice');
-		//To change UK date format to US date format
-		$bits = explode('/',$date);
-		$date = $bits[1].'/'.$bits[0].'/'.$bits[2];
-		//To get id of the price type
-		$typeId = $this->InvPrice->InvPriceType->find('list', array(
-			'fields'=>array(
-				'InvPriceType.id'
-				),
-			'conditions'=>array(
-				'InvPriceType.name'=>$type
-				)
-			));
-		//To get the history of prices
-		$prices = $this->InvPrice->find('list', array(
-			'fields'=>array(
-				'InvPrice.id',
-				'InvPrice.date'
-				),
-			'conditions'=>array(
-				'InvPrice.inv_item_id'=>$itemId,
-				'InvPrice.inv_price_type_id'=>$typeId//'InvPrice.inv_price_type_id'=>1
-				)
-			));
-		if($prices <> null){
-			//To get the list of subtracted dates in unix time format
-			foreach($prices as $id => $day){
-				$interval[$id] = abs(strtotime($date) - strtotime($day));
-			}
-			asort($interval);
-			$closest = key($interval);
-			//To get the price
-			if($currType == 'dolar'){
-				$priceField = $this->InvPrice->find('first', array(
-				'fields'=>array(
-					'InvPrice.ex_price'
-					),
-				'conditions'=>array(
-					'InvPrice.id'=>$closest
-					)
-				));
-				$price = $priceField['InvPrice']['ex_price'];
-			}else{
-				$priceField = $this->InvPrice->find('first', array(
-				'fields'=>array(
-					'InvPrice.price'
-					),
-				'conditions'=>array(
-					'InvPrice.id'=>$closest
-					)
-				));
-				$price = $priceField['InvPrice']['price'];
-			}
-			if ($price === null){
-				$price = 0;
-			}
-		}else{
-			$price = 0;
-		}
-		//debug($price);
-		return $price;
-	}
-	
 	
 	public function ajax_save_movement(){
 		if($this->RequestHandler->isAjax()){
@@ -1055,11 +1296,11 @@ class SalSalesController extends AppController {
 //				}
 //			}
 			//++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-			$dataMovement = array('SalSale'=>$arrayMovement);
+			$dataMovement[0] = array('SalSale'=>$arrayMovement);
 			if ($ACTION == 'save_order'){
 				$this->loadModel('InvMovement');
 				//for invoice
-				$dataMovement2 = array('SalSale'=>$arrayMovement2);
+				$dataMovement[1] = array('SalSale'=>$arrayMovement2);
 				//for movement
 				$dataMovement3 = array('InvMovement'=>$arrayMovement3);
 				$dataMovementDetail3 = array('InvMovementDetail'=> $arrayMovementDetails3);
@@ -1092,8 +1333,10 @@ class SalSalesController extends AppController {
 				}	
 				$dataPayDetail = null;
 			}
-			$dataMovementDetail = array('SalDetail'=> $arrayMovementDetails);
-			
+			$dataMovementDetail[0] = array('SalDetail'=> $arrayMovementDetails);
+			if ($ACTION == 'save_order'){
+				$dataMovementDetail[1] = array('SalDetail'=> $arrayMovementDetails);
+			}
 			////////////////////////////////////////////////END - SET DATA//////////////////////////////////////////////////////
 			
 			$validation['error'] = 0;
@@ -1106,9 +1349,9 @@ class SalSalesController extends AppController {
 //				echo 'ACTION';
 //					debug($ACTION);
 //				echo '$dataMovement';	
-//					debug($dataMovement);
+//					print_r($dataMovement);
 //				echo '$dataMovementDetail';	
-//					debug($dataMovementDetail);
+//					print_r($dataMovementDetail);
 //				echo '------------------------------------------------ <br>';
 //				echo 'OPERATION2';
 //					debug($OPERATION);
@@ -1156,7 +1399,7 @@ class SalSalesController extends AppController {
 //				debug($rest4);
 //				echo 'id4<br>';
 //				debug($arrayMovement4['id']);
-				
+				$arraySalePrices = array();
 				if ($ACTION == 'save_invoice' && $STATE == 'SINVOICE_APPROVED'){
 					$this->loadModel('InvPrice');
 					$prices = $this->InvPrice->find('all', array(
@@ -1170,7 +1413,7 @@ class SalSalesController extends AppController {
 							),
 						'recursive'=>-1
 					));
-					$arraySalePrices = array();
+//					$arraySalePrices = array();
 					for($i=0;$i<count($arrayItemsDetails);$i++){
 						$contSale = 0; 
 						for($j=0;$j<count($prices);$j++){
@@ -1189,76 +1432,78 @@ class SalSalesController extends AppController {
 					}
 				}
 					if($validation['error'] === 0){
-							$res = $this->SalSale->saveMovement($dataMovement, $dataMovementDetail, $OPERATION, $ACTION, $movementDocCode, $dataPayDetail);
-							if ($ACTION == 'save_invoice' && $STATE == 'SINVOICE_APPROVED'){
-									$this->loadModel('InvPrice');
-									$this->InvPrice->saveAll($arraySalePrices);
-							}
-							if ($ACTION == 'save_order'){
-								$res2 = $this->SalSale->saveMovement($dataMovement2, $dataMovementDetail, $OPERATION, $ACTION, $movementDocCode, null);
-								if(($stock != 0)||(($OPERATION3 == 'DELETE')&&($arrayMovement3['id']!==null))){
-									//used to insert/update type 1 detail movements 
-									//used to delete movement details type 1
-//									echo "ini3";
-									$res3 = $this->InvMovement->saveMovement($dataMovement3, $dataMovementDetail3, $OPERATION3, 'save_in', null, $movementDocCode3);
-//									echo "fin3";
-								}
-								if(($quantity > $stock)||(($OPERATION4 == 'DELETE')&&($arrayMovement4['id']!==null))){	//($quantity > $stock) doesn't work when stock changes
-									//used to insert/update type 2 detail movements									
-									//used to delete movement details type 2
-//									echo "ini4";
-									$res4 = $this->InvMovement->saveMovement($dataMovement4, $dataMovementDetail4, $OPERATION4, 'save_in', null, $movementDocCode4);
-//									echo "fin4";
-								}	
-								if($arrayMovement5 <> null){
-									//used to update movements head
-//									echo "ini5";
-									$res5 = $this->InvMovement->saveMovement($dataMovement5, null, 'UPDATEHEAD', null, null, null);
-//									echo "fin5";
-								}
-								if((($ACTION == 'save_order' && $OPERATION3 == 'DELETE' && $arrayMovement6 <> null) || ($ACTION == 'save_order' && $OPERATION4 == 'DELETE' && $arrayMovement6 <> null)) ){
-//									echo "ini6";
-									$res6 = $this->InvMovement->saveMovement($dataMovement6, null, 'DELETEHEAD', null, null, null);
-//									echo "fin6";
-								}
 							
-							}elseif ($ACTION == 'save_invoice' && $OPERATION != 'ADD_PAY' && $OPERATION != 'EDIT_PAY' && $OPERATION != 'DELETE_PAY') {
-								if(($stock != 0)||(($OPERATION3 == 'DELETE')&&($arrayMovement3['id']!==null))){
-									//used to insert/update type 1 detail movements 
-									//used to delete movement details type 1
-//									echo "ini3";
-									$res3 = $this->InvMovement->saveMovement($dataMovement3, $dataMovementDetail3, $OPERATION3, 'save_in', null, $movementDocCode3);
-//									echo "fin3";
-								}							//VER SI v ESTA CONDICION DEJA ENTRAR LO NECESARIO										//VER SI v ESTA OTRA CONDICION DEJA ENTRAR LO NECESARIO 
-								if(($quantity > $stock)||(($OPERATION3 == 'EDIT')&&($OPERATION4 == 'DELETE')&&($arrayMovement4['id']!==null))||(($OPERATION3 == 'DELETE')&&($OPERATION4 == 'DELETE')&&($arrayMovement4['id']!==null))){	//($quantity > $stock) doesn't work when stock changes
-//								if(($quantity > $stock)||(($OPERATION4 == 'DELETE')&&($arrayMovement4['id']!==null))){
-									//used to insert/update type 2 detail movements									
-									//used to delete movement details type 2
-//									echo "ini4";
-									$res4 = $this->InvMovement->saveMovement($dataMovement4, $dataMovementDetail4, $OPERATION4, 'save_in', null, $movementDocCode4);
-//									echo "fin4";
-								}	
-								if($arrayMovement5 <> null){
-									//used to update movements head
-									//LO QUE ENTRE AQUI SOBREESCRIBE LA CABECERA DE $dataMovement3 y $dataMovement4
-//									echo "ini5";
-									$res5 = $this->InvMovement->saveMovement($dataMovement5, null, 'UPDATEHEAD', null, null, null);
-//									echo "fin5";
-								}
-//								if((($OPERATION3 == 'DELETE' || $OPERATION4 == 'DELETE') && $arrayMovement6 <> null)){
-//									$res6 = $this->InvMovement->saveMovement($dataMovement6, null, 'DELETEHEAD', null);
+							$res = $this->SalSale->saveMovement($dataMovement, $dataMovementDetail, $OPERATION, $ACTION, $STATE, $movementDocCode, $dataPayDetail, $arraySalePrices);
+							
+//							if ($ACTION == 'save_invoice' && $STATE == 'SINVOICE_APPROVED'){
+//									$this->loadModel('InvPrice');
+//									$this->InvPrice->saveAll($arraySalePrices);
+//							}
+//							if ($ACTION == 'save_order'){
+//								$res2 = $this->SalSale->saveMovement($dataMovement2, $dataMovementDetail, $OPERATION, $ACTION, $movementDocCode, null);
+//								if(($stock != 0)||(($OPERATION3 == 'DELETE')&&($arrayMovement3['id']!==null))){
+//									//used to insert/update type 1 detail movements 
+//									//used to delete movement details type 1
+////									echo "ini3";
+//									$res3 = $this->InvMovement->saveMovement($dataMovement3, $dataMovementDetail3, $OPERATION3, 'save_in', null, $movementDocCode3);
+////									echo "fin3";
 //								}
-							}elseif(($ACTION == 'save_invoice' && $OPERATION == 'ADD_PAY') || ($ACTION == 'save_invoice' && $OPERATION == 'EDIT_PAY') || ($ACTION == 'save_invoice' && $OPERATION == 'DELETE_PAY')){
-								if($arrayMovement5 <> null){
-									//used to update movements head
-									$res5 = $this->InvMovement->saveMovement($dataMovement5, null, 'UPDATEHEAD', null, null, null);
-								}
-							}
-						if(($res <> 'error')||($res2 <> 'error')){
+//								if(($quantity > $stock)||(($OPERATION4 == 'DELETE')&&($arrayMovement4['id']!==null))){	//($quantity > $stock) doesn't work when stock changes
+//									//used to insert/update type 2 detail movements									
+//									//used to delete movement details type 2
+////									echo "ini4";
+//									$res4 = $this->InvMovement->saveMovement($dataMovement4, $dataMovementDetail4, $OPERATION4, 'save_in', null, $movementDocCode4);
+////									echo "fin4";
+//								}	
+//								if($arrayMovement5 <> null){
+//									//used to update movements head
+////									echo "ini5";
+//									$res5 = $this->InvMovement->saveMovement($dataMovement5, null, 'UPDATEHEAD', null, null, null);
+////									echo "fin5";
+//								}
+//								if((($ACTION == 'save_order' && $OPERATION3 == 'DELETE' && $arrayMovement6 <> null) || ($ACTION == 'save_order' && $OPERATION4 == 'DELETE' && $arrayMovement6 <> null)) ){
+////									echo "ini6";
+//									$res6 = $this->InvMovement->saveMovement($dataMovement6, null, 'DELETEHEAD', null, null, null);
+////									echo "fin6";
+//								}
+//								
+//							}elseif ($ACTION == 'save_invoice' && $OPERATION != 'ADD_PAY' && $OPERATION != 'EDIT_PAY' && $OPERATION != 'DELETE_PAY') {
+//								if(($stock != 0)||(($OPERATION3 == 'DELETE')&&($arrayMovement3['id']!==null))){
+//									//used to insert/update type 1 detail movements 
+//									//used to delete movement details type 1
+////									echo "ini3";
+//									$res3 = $this->InvMovement->saveMovement($dataMovement3, $dataMovementDetail3, $OPERATION3, 'save_in', null, $movementDocCode3);
+////									echo "fin3";
+//								}							//VER SI v ESTA CONDICION DEJA ENTRAR LO NECESARIO										//VER SI v ESTA OTRA CONDICION DEJA ENTRAR LO NECESARIO 
+//								if(($quantity > $stock)||(($OPERATION3 == 'EDIT')&&($OPERATION4 == 'DELETE')&&($arrayMovement4['id']!==null))||(($OPERATION3 == 'DELETE')&&($OPERATION4 == 'DELETE')&&($arrayMovement4['id']!==null))){	//($quantity > $stock) doesn't work when stock changes
+////								if(($quantity > $stock)||(($OPERATION4 == 'DELETE')&&($arrayMovement4['id']!==null))){
+//									//used to insert/update type 2 detail movements									
+//									//used to delete movement details type 2
+////									echo "ini4";
+//									$res4 = $this->InvMovement->saveMovement($dataMovement4, $dataMovementDetail4, $OPERATION4, 'save_in', null, $movementDocCode4);
+////									echo "fin4";
+//								}	
+//								if($arrayMovement5 <> null){
+//									//used to update movements head
+//									//LO QUE ENTRE AQUI SOBREESCRIBE LA CABECERA DE $dataMovement3 y $dataMovement4
+////									echo "ini5";
+//									$res5 = $this->InvMovement->saveMovement($dataMovement5, null, 'UPDATEHEAD', null, null, null);
+////									echo "fin5";
+//								}
+////								if((($OPERATION3 == 'DELETE' || $OPERATION4 == 'DELETE') && $arrayMovement6 <> null)){
+////									$res6 = $this->InvMovement->saveMovement($dataMovement6, null, 'DELETEHEAD', null);
+////								}
+//							}elseif(($ACTION == 'save_invoice' && $OPERATION == 'ADD_PAY') || ($ACTION == 'save_invoice' && $OPERATION == 'EDIT_PAY') || ($ACTION == 'save_invoice' && $OPERATION == 'DELETE_PAY')){
+//								if($arrayMovement5 <> null){
+//									//used to update movements head
+//									$res5 = $this->InvMovement->saveMovement($dataMovement5, null, 'UPDATEHEAD', null, null, null);
+//								}
+//							}
+						if(($res <> 'error')/*||($res2 <> 'error')*/){
 							$movementIdSaved = $res;	//sal_sales NOTE id
-							if ($ACTION == 'save_order'){
-								$movementIdSaved2 = $res2;	//sal_sales INVOICE id
-							}
+//							if ($ACTION == 'save_order'){
+//								$movementIdSaved2 = $res2;	//sal_sales INVOICE id
+//							}
 							$strItemsStockDestination = '';
 							echo $STATE.'|'.$movementIdSaved.'|'.$movementDocCode.'|'.$movementCode.'|'.$strItemsStock.$strItemsStockDestination;
 						}else{
@@ -1273,401 +1518,6 @@ class SalSalesController extends AppController {
 				echo 'ERROR|onGeneratingParameters';
 			}
 			////////////////////////////////////////////END-CORE SAVE////////////////////////////////////////////////////////
-		}
-	}
-	
-	private function _get_doc_id($purchaseId, $movementCode, $type, $warehouseId){
-		if ($purchaseId <> null) {
-			$invoiceId = $this->SalSale->find('list', array(
-				'fields'=>array('SalSale.id'),
-				'conditions'=>array(
-					'SalSale.code'=>$movementCode,
-					"SalSale.id !="=>$purchaseId
-					)
-			));
-			$docId = key($invoiceId);
-		}else{
-			$this->loadModel('InvMovement');
-			$movementId = $this->InvMovement->find('list', array(
-				'fields'=>array('InvMovement.id'),
-				'conditions'=>array(
-					'InvMovement.document_code'=>$movementCode,
-					'InvMovement.type'=>$type,
-					'InvMovement.inv_warehouse_id'=>$warehouseId,
-					)
-			));
-			$docId = key($movementId);
-		}
-		return $docId;
-	}	
-	
-	public function ajax_save_movement_in(){
-		if($this->RequestHandler->isAjax()){
-			
-			////////////////////////////////////////////INICIO-CAPTURAR AJAX////////////////////////////////////////////////////////
-			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
-			$purchaseId = $this->request->data['purchaseId'];
-
-			$this->loadModel('AdmUser');
-			
-			$date = $this->request->data['date'];
-			$employee = $this->request->data['employee'];
-			$taxNumber = $this->request->data['taxNumber'];
-			$admProfileId = $this->request->data['salesman'];
-			$description = $this->request->data['description'];
-			$exRate = $this->request->data['exRate'];
-			$note_code = $this->request->data['note_code'];
-			
-			$admUserId = $this->AdmUser->AdmProfile->find('list', array(
-			'fields'=>array('AdmProfile.adm_user_id'),
-			'conditions'=>array('AdmProfile.id'=>$admProfileId)
-			));
-			
-			$salesman = key($this->AdmUser->find('list', array(
-			'conditions'=>array('AdmUser.id'=>$admUserId)
-			)));
-			////////////////////////////////////////////FIN-CAPTURAR AJAX////////////////////////////////////////////////////////
-
-			
-			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
-			$arrayMovement = array('date'=>$date, 'sal_employee_id'=>$employee,'sal_tax_number_id'=>$taxNumber,'salesman_id'=>$salesman,'note_code'=>$note_code,'ex_rate'=>$exRate,'description'=>$description);
-					
-			$movementCode = '';
-			$movementDocCode = '';
-			if($purchaseId <> ''){//update
-				$arrayMovement['id'] = $purchaseId;
-			}else{//insert
-				$movementCode = $this->_generate_code('VEN');
-				$movementDocCode = $this->_generate_doc_code('NOT');
-				$arrayMovement['lc_state'] = 'NOTE_PENDANT';
-				$arrayMovement['lc_transaction'] = 'CREATE';
-				$arrayMovement['code'] = $movementCode;
-	$arrayMovement['doc_code'] = $movementDocCode;
-	$arrayMovement['sal_employee_id'] = $employee;
-	$arrayMovement['sal_tax_number_id'] = $taxNumber;
-	$arrayMovement['salesman_id'] = $salesman;
-			}
-			
-			$data = array('SalSale'=>$arrayMovement, 'SalDetail'=>$arrayItemsDetails);
-		//	print_r($this->request->data);
-			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
-			
-
-			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////
-			if($purchaseId <> ''){//update
-				if($this->SalSale->SalDetail->deleteAll(array('SalDetail.sal_sale_id'=>$purchaseId))){
-		//		
-					if($this->SalSale->saveAssociated($data)){
-						
-//						$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $supplier);
-						echo 'modificado|'/*.$strItemsStock*/;
-						//print_r($data);
-					}
-				}
-			}else{//insert
-		//		print_r($data);
-				if($this->SalSale->saveAssociated($data)){
-//					$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $supplier);
-					$purchaseIdInserted = $this->SalSale->id;
-				//	print_r($data);
-						echo 'insertado|'/*.$strItemsStock.'|'*/.$movementDocCode.'|'.$purchaseIdInserted.'|'.$movementCode;
-				}
-			}
-			////////////////////////////////////////////FIN-SAVE////////////////////////////////////////////////////////
-		
-		}
-	}
-	
-	public function ajax_save_invoice(){
-		if($this->RequestHandler->isAjax()){
-			
-			////////////////////////////////////////////INICIO-CAPTURAR AJAX////////////////////////////////////////////////////////
-			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];	
-//			$arrayCostsDetails = $this->request->data['arrayCostsDetails'];
-			$arrayPaysDetails = $this->request->data['arrayPaysDetails'];
-			$purchaseId = $this->request->data['purchaseId'];
-
-			$this->loadModel('AdmUser');
-			
-			$date = $this->request->data['date'];
-//			$supplier = $this->request->data['supplier'];
-			$employee = $this->request->data['employee'];
-			$taxNumber = $this->request->data['taxNumber'];
-			$admProfileId = $this->request->data['salesman'];
-			$exRate = $this->request->data['exRate'];
-			$description = $this->request->data['description'];
-			$note_code = $this->request->data['note_code'];
-			
-			$admUserId = $this->AdmUser->AdmProfile->find('list', array(
-			'fields'=>array('AdmProfile.adm_user_id'),
-			'conditions'=>array('AdmProfile.id'=>$admProfileId)
-			));
-			
-			$salesman = key($this->AdmUser->find('list', array(
-			'conditions'=>array('AdmUser.id'=>$admUserId)
-			)));
-			////////////////////////////////////////////FIN-CAPTURAR AJAX////////////////////////////////////////////////////////
-			
-			
-			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
-			$arrayMovement = array('date'=>$date, 'sal_employee_id'=>$employee,'sal_tax_number_id'=>$taxNumber,'salesman_id'=>$salesman,'note_code'=>$note_code,/*'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType,*/ 'ex_rate'=>$exRate,'description'=>$description);
-			
-			$movementCode = '';
-			$movementDocCode = '';
-			if($purchaseId <> ''){//update
-				$arrayMovement['id'] = $purchaseId;
-			}
-			
-			//data sin costos ni pagos
-			$data = array('SalSale'=>$arrayMovement, 'SalDetail'=>$arrayItemsDetails);
-			//data con costos
-	//		$data2 = array('PurPurchase'=>$arrayMovement, 'PurDetail'=>$arrayItemsDetails, 'PurPrice'=>$arrayCostsDetails);
-			//data con pagos
-			$data3 = array('SalSale'=>$arrayMovement, 'SalDetail'=>$arrayItemsDetails, 'SalPayment'=>$arrayPaysDetails);
-			//data con pagos y costos
-	//		$data4 = array('PurPurchase'=>$arrayMovement, 'PurDetail'=>$arrayItemsDetails, 'PurPrice'=>$arrayCostsDetails, 'PurPayment'=>$arrayPaysDetails);
-			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
-			//print_r($data4);
-
-			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////
-			if($purchaseId <> ''){
-			/*	if(($arrayCostsDetails <> array(0)) && ($arrayPaysDetails <> array(0)) ){
-					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPayment->deleteAll(array('PurPayment.pur_purchase_id'=>$purchaseId))) ){
-			
-						if($this->PurPurchase->saveAssociated($data4)){
-							echo 'modificado| cost pay d&&d&&d';
-						}
-					}
-				}elseif ($arrayCostsDetails <> array(0)) {
-					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPayment->deleteAll(array('PurPayment.pur_purchase_id'=>$purchaseId))) ){
-				
-						if($this->PurPurchase->saveAssociated($data2)){
-							echo 'modificado| cost d&&d&&d';
-						}
-					}
-				}else*/if ($arrayPaysDetails <> array(0)) {
-					if(($this->SalSale->SalDetail->deleteAll(array('SalDetail.sal_sale_id'=>$purchaseId)))&&($this->SalSale->SalPayment->deleteAll(array('SalPayment.sal_sale_id'=>$purchaseId))) ){
-			//		print_r($data3);
-						if($this->SalSale->saveAssociated($data3)){
-							echo 'modificado| pay d&&d&&d';
-						}
-					}
-				}else{
-					if(($this->SalSale->SalDetail->deleteAll(array('SalDetail.sal_sale_id'=>$purchaseId)))&&($this->SalSale->SalPayment->deleteAll(array('SalPayment.sal_sale_id'=>$purchaseId))) ){
-				//		print_r($data);
-						if($this->SalSale->saveAssociated($data)){
-							echo 'modificado| d&&d&&d';
-						}
-					}
-				}
-				
-			}else{//insert
-				if($this->SalSale->saveAssociated($data3)){
-					$purchaseIdInserted = $this->SalSale->id;
-						echo 'insertado|'/*.$strItemsStock.'|'*/.$movementDocCode.'|'.$purchaseIdInserted.'|'.$movementCode;
-				}
-			}
-			////////////////////////////////////////////FIN-SAVE////////////////////////////////////////////////////////
-		
-		}
-	}
-	
-	public function ajax_change_state_approved_movement_in(){
-		if($this->RequestHandler->isAjax()){
-			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
-			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
-			$purchaseId = $this->request->data['purchaseId'];
-	
-			$this->loadModel('AdmUser');
-			
-			$date = $this->request->data['date'];
-			$employee = $this->request->data['employee'];
-			$taxNumber = $this->request->data['taxNumber'];
-			$admProfileId = $this->request->data['salesman'];
-			$description = $this->request->data['description'];
-			$exRate = $this->request->data['exRate'];
-			$note_code = $this->request->data['note_code'];
-	
-			$admUserId = $this->AdmUser->AdmProfile->find('list', array(
-			'fields'=>array('AdmProfile.adm_user_id'),
-			'conditions'=>array('AdmProfile.id'=>$admProfileId)
-			));
-			
-			$salesman = key($this->AdmUser->find('list', array(
-			'conditions'=>array('AdmUser.id'=>$admUserId)
-			)));
-			
-			$generalCode = $this->request->data['genericCode'];
-			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
-			
-			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
-			$arrayMovement = array('date'=>$date, 'sal_employee_id'=>$employee,'sal_tax_number_id'=>$taxNumber,'salesman_id'=>$salesman, 'description'=>$description, 'note_code'=>$note_code, 'ex_rate'=>$exRate);
-			$arrayMovement['lc_state'] = 'NOTE_APPROVED';
-			$arrayMovement['id'] = $purchaseId;
-			
-			$arrayInvoice = array('date'=>$date, 'sal_employee_id'=>$employee,'sal_tax_number_id'=>$taxNumber,'salesman_id'=>$salesman, 'description'=>$description, 'note_code'=>$note_code, 'ex_rate'=>$exRate);		
-			$movementDocCode = $this->_generate_doc_code('FAC');
-			$arrayInvoice['lc_state'] = 'SINVOICE_PENDANT';
-			$arrayInvoice['lc_transaction'] = 'CREATE';
-			$arrayInvoice['code'] = $generalCode;
-			$arrayInvoice['doc_code'] = $movementDocCode;
-//			$arrayInvoice['inv_supplier_id'] = $supplier;
-
-			
-			$data = array('SalSale'=>$arrayMovement, 'SalDetail'=>$arrayItemsDetails);
-			$dataInv = array('SalSale'=>$arrayInvoice, 'SalDetail'=>$arrayItemsDetails);
-			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
-			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
-
-			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
-			
-			//print_r($code);
-//			print_r($data);
-//			print_r($dataInv);
-			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////
-			if($purchaseId <> ''){//update
-				if($this->SalSale->SalDetail->deleteAll(array('SalDetail.sal_sale_id'=>$purchaseId))){
-					if(($this->SalSale->saveAssociated($data))&&($this->SalSale->saveAssociated($dataInv))){
-						
-						//////////////////////////////////////////////////////////
-
-				//////////////////////////////////////////////////////////////////////		
-						echo 'aprobado|';
-						//print_r($data);
-			//print_r($dataInv);
-					}
-				}
-			}
-			////////////////////////////////////////////FIN-SAVE////////////////////////////////////////////////////////
-		}
-	}
-	
-	public function ajax_change_state_approved_invoice(){
-		if($this->RequestHandler->isAjax()){
-			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
-			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];	
-			//$arrayCostsDetails = $this->request->data['arrayCostsDetails'];
-			$arrayPaysDetails = $this->request->data['arrayPaysDetails'];
-
-			$purchaseId = $this->request->data['purchaseId'];
-			$this->loadModel('AdmUser');
-			
-			$date = $this->request->data['date'];
-//			$supplier = $this->request->data['supplier'];
-			$employee = $this->request->data['employee'];
-			$taxNumber = $this->request->data['taxNumber'];
-			$admProfileId = $this->request->data['salesman'];
-			$exRate = $this->request->data['exRate'];
-			$description = $this->request->data['description'];
-			$note_code = $this->request->data['note_code'];
-			
-			$admUserId = $this->AdmUser->AdmProfile->find('list', array(
-			'fields'=>array('AdmProfile.adm_user_id'),
-			'conditions'=>array('AdmProfile.id'=>$admProfileId)
-			));
-			
-			$salesman = key($this->AdmUser->find('list', array(
-			'conditions'=>array('AdmUser.id'=>$admUserId)
-			)));
-			////////////////////////////////////////////FIN-CAPTURAR AJAX////////////////////////////////////////////////////////
-			
-			////////////////////////////////////////////INICIO-CREAR PARAMETROS////////////////////////////////////////////////////////
-			$arrayMovement = array('date'=>$date, 'sal_employee_id'=>$employee,'sal_tax_number_id'=>$taxNumber,'salesman_id'=>$salesman,'note_code'=>$note_code,/*'inv_warehouse_id'=>$warehouse, 'inv_movement_type_id'=>$movementType,*/ 'ex_rate'=>$exRate,'description'=>$description);
-			$arrayMovement['lc_state'] = 'SINVOICE_APPROVED';
-			$arrayMovement['id'] = $purchaseId;
-			
-//			//data sin costos ni pagos
-			$data = array('SalSale'=>$arrayMovement, 'SalDetail'=>$arrayItemsDetails);
-			//data con costos
-	//		$data2 = array('PurPurchase'=>$arrayMovement, 'PurDetail'=>$arrayItemsDetails, 'PurPrice'=>$arrayCostsDetails);
-			//data con pagos
-			$data3 = array('SalSale'=>$arrayMovement, 'SalDetail'=>$arrayItemsDetails, 'SalPayment'=>$arrayPaysDetails);
-			//data con pagos y costos
-	//		$data4 = array('PurPurchase'=>$arrayMovement, 'PurDetail'=>$arrayItemsDetails, 'PurPrice'=>$arrayCostsDetails, 'PurPayment'=>$arrayPaysDetails);
-			////////////////////////////////////////////FIN-CREAR PARAMETROS////////////////////////////////////////////////////////
-			//print_r($code);
-//			print_r($data);
-//			print_r($dataInv);
-			////////////////////////////////////////////INICIO-SAVE////////////////////////////////////////////////////////
-			if($purchaseId <> ''){
-			/*	if(($arrayCostsDetails <> array(0)) && ($arrayPaysDetails <> array(0)) ){
-					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPayment->deleteAll(array('PurPayment.pur_purchase_id'=>$purchaseId))) ){
-			
-						if($this->PurPurchase->saveAssociated($data4)){
-							echo 'modificado| cost pay d&&d&&d';
-						}
-					}
-				}elseif ($arrayCostsDetails <> array(0)) {
-					if(($this->PurPurchase->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$purchaseId)))&&($this->PurPurchase->PurPayment->deleteAll(array('PurPayment.pur_purchase_id'=>$purchaseId))) ){
-				
-						if($this->PurPurchase->saveAssociated($data2)){
-							echo 'modificado| cost d&&d&&d';
-						}
-					}
-				}else*/if ($arrayPaysDetails <> array(0)) {
-					if(($this->SalSale->SalDetail->deleteAll(array('SalDetail.sal_sale_id'=>$purchaseId)))&&($this->SalSale->SalPayment->deleteAll(array('SalPayment.sal_sale_id'=>$purchaseId))) ){
-			//		print_r($data3);
-						if($this->SalSale->saveAssociated($data3)){
-							echo 'aprobado| pay d&&d&&d';
-						}
-					}
-				}else{
-					if(($this->SalSale->SalDetail->deleteAll(array('SalDetail.sal_sale_id'=>$purchaseId)))&&($this->SalSale->SalPayment->deleteAll(array('SalPayment.sal_sale_id'=>$purchaseId))) ){
-				//		print_r($data);
-						if($this->SalSale->saveAssociated($data)){
-							echo 'aprobado| d&&d&&d';
-						}
-					}
-				}
-				
-			}
-			////////////////////////////////////////////FIN-SAVE////////////////////////////////////////////////////////
-		}
-	}
-	
-	public function ajax_change_state_cancelled_movement_in(){
-		if($this->RequestHandler->isAjax()){
-			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
-			$purchaseId = $this->request->data['purchaseId'];
-//			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
-			//$warehouse = $this->request->data['warehouse']; //combobox is disabled doesn't send nothing
-//			$warehouse = $this->InvMovement->field('InvMovement.inv_warehouse_id', array('InvMovement.id'=>$movementId));
-			//debug($warehouse);
-			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
-//			$error=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouse);
-//			if($error['error'] == 0){
-				$data = array('id'=>$purchaseId, 'lc_state'=>'NOTE_CANCELLED');
-				if($this->SalSale->save($data)){
-//					$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
-					echo 'cancelado|'/*.$strItemsStock*/;
-				}
-//			}else{
-//				echo 'error|'.$error['itemsStocks'];
-//			}
-						
-		}
-	}
-	
-	public function ajax_change_state_cancelled_invoice(){
-		if($this->RequestHandler->isAjax()){
-			////////////////////////////////////////////INICIO-CAPTURAR AJAX/////////////////////////////////////////////////////
-			$purchaseId = $this->request->data['purchaseId'];
-//			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
-			//$warehouse = $this->request->data['warehouse']; //combobox is disabled doesn't send nothing
-//			$warehouse = $this->InvMovement->field('InvMovement.inv_warehouse_id', array('InvMovement.id'=>$movementId));
-			//debug($warehouse);
-			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////
-//			$error=$this->_validateItemsStocksOut($arrayItemsDetails, $warehouse);
-//			if($error['error'] == 0){
-				$data = array('id'=>$purchaseId, 'lc_state'=>'SINVOICE_CANCELLED');
-				if($this->SalSale->save($data)){
-//					$strItemsStock = $this->_createStringItemsStocksUpdated($arrayItemsDetails, $warehouse);
-					echo 'cancelado|'/*.$strItemsStock*/;
-				}
-//			}else{
-//				echo 'error|'.$error['itemsStocks'];
-//			}
-						
 		}
 	}
 	
@@ -1711,6 +1561,265 @@ class SalSalesController extends AppController {
 		}
 	}
 	
+	public function ajax_initiate_modal_add_pay(){
+		if($this->RequestHandler->isAjax()){
+			$paysAlreadySaved = $this->request->data['paysAlreadySaved'];
+			$payDebt = $this->request->data['payDebt'];
+//			debug($payDebt);
+			$datePay=date('d/m/Y');
+//			$debt = $this->SalSale->SalPayment->find('list', array(
+//					'fields'=>array('SalPayment.amount'),
+//					'conditions'=>array(
+//						'SalPayment.date'=>$paysAlreadySaved
+//				),
+//				'recursive'=>-1
+//			));
+//	debug($debt);
+//			$warehouse = $this->request->data['warehouse'];
+		//	$supplier = $this->request->data['supplier'];
+//	//		$itemsBySupplier = $this->PurPurchase->InvSupplier->InvItemsSupplier->find('list', array(
+//				'fields'=>array('InvItemsSupplier.inv_item_id'),
+//				'conditions'=>array(
+//					'InvItemsSupplier.inv_supplier_id'=>$supplier
+//				),
+//				'recursive'=>-1
+//			)); 
+//debug($itemsBySupplier);			
+			$pays = $this->SalSale->SalPayment->SalPaymentType->find('list', array(
+					'fields'=>array('SalPaymentType.name'),
+					'conditions'=>array(
+//						'NOT'=>array('InvPriceType.id'=>$paysAlreadySaved) /*aca se hace la discriminacion de items seleccionados*/
+				),
+				
+				'recursive'=>-1
+				//'fields'=>array('InvItem.id', 'CONCAT(InvItem.code, '-', InvItem.name)')
+			));
+//debug($supplier);			
+//debug($items);
+//debug($this->request->data);
+		// gets the first price in the list of the item prices
+//		$firstItemListed = key($items);
+//		$priceDirty = $this->PurPurchase->PurDetail->InvItem->InvPrice->find('first', array(
+//			'fields'=>array('InvPrice.price'),
+//			'order' => array('InvPrice.date_created' => 'desc'),
+//			'conditions'=>array(
+//				'InvPrice.inv_item_id'=>$firstItemListed
+//				)
+//		));
+////debug($priceDirty);
+//		if($priceDirty==array()){
+//			$price = 0;
+//		}  else {
+//			
+//			$price = $priceDirty['InvPrice']['price'];
+//		}
+//			$amountDirty = $this->PurPurchase->PurPrice->find('first', array(
+//			'fields'=>array('PurPrice.amount'),
+//	//		'order' => array('rice.date_created' => 'desc'),
+//			'conditions'=>array(
+//				'PurPrice.inv_price_type_id'=>$costsAlreadySaved
+//				)
+//			));
+//			if($amountDirty==array()){
+//			$amount = 0;
+//		}  else {
+//			
+//			$amount = $amountDirty['PurPrice']['amount'];
+//		}
+				
+			$this->set(compact('pays', 'datePay', 'payDebt'/*, 'amount'*/));
+		}
+	}
+	
+	
+	public function ajax_update_ex_rate(){
+		if($this->RequestHandler->isAjax()){
+			$date = $this->request->data['date']; 
+			
+			$this->loadModel('AdmParameter');
+			$currency = $this->AdmParameter->AdmParameterDetail->find('first', array(
+				//	'fields'=>array('AdmParameterDetail.id'),
+					'conditions'=>array(
+						'AdmParameter.name'=>'Moneda',
+						'AdmParameterDetail.par_char1'=>'Dolares'
+					)
+				//	'recursive'=>-1
+				)); 
+	//		debug($currency);
+			$currencyId = $currency['AdmParameterDetail']['id'];
+	//		debug($currencyId);
+			$this->loadModel('AdmExchangeRate');
+			$xxxRate = $this->AdmExchangeRate->find('first', array(
+					'fields'=>array('AdmExchangeRate.value'),
+					'conditions'=>array(
+						'AdmExchangeRate.currency'=>$currencyId,
+						'AdmExchangeRate.date'=>$date
+					),
+					'recursive'=>-1
+				)); 		
+	//		debug($xxxRate);
+			$exRate = $xxxRate['AdmExchangeRate']['value'];
+		
+			$this->set(compact('exRate'));			
+		}else{
+			$this->redirect($this->Auth->logout());
+		}
+	}
+	
+	//////////////////////////////////////////// END - AJAX /////////////////////////////////////////////////
+	
+	//////////////////////////////////////////// START - PRIVATE ///////////////////////////////////////////////
+		
+	public function _get_movements_details($idMovement){
+		$movementDetails = $this->SalSale->SalDetail->find('all', array(
+			'conditions'=>array(
+				'SalDetail.sal_sale_id'=>$idMovement
+				),																									                             /*REVISAR ESTO V*/
+			'fields'=>array('InvItem.name', 'InvItem.code', 'SalDetail.sale_price', 'SalDetail.quantity','SalDetail.inv_warehouse_id', 'InvItem.id', 'InvWarehouse.name','InvWarehouse.id', 'InvItem.id')
+			));
+		
+		$formatedMovementDetails = array();
+		foreach ($movementDetails as $key => $value) {
+			// gets the first price in the list of the item prices
+//			$priceDirty = $this->PurPurchase->PurDetail->InvItem->InvPrice->find('first', array(
+//					'fields'=>array('InvPrice.price'),
+//					'order' => array('InvPrice.date_created' => 'desc'),
+//					'conditions'=>array(
+//						'InvPrice.inv_item_id'=>$value['InvItem']['id']
+//						)
+//				));
+				//$price = $priceDirty['InvPrice']['price'];
+			
+			$formatedMovementDetails[$key] = array(
+				'itemId'=>$value['InvItem']['id'],
+				'item'=>'[ '. $value['InvItem']['code'].' ] '.$value['InvItem']['name'],
+				'salePrice'=>$value['SalDetail']['sale_price'],//llamar precio
+				'cantidad'=>$value['SalDetail']['quantity'],//llamar cantidad
+				'warehouseId'=>$value['InvWarehouse']['id'],
+				'warehouse'=>$value['InvWarehouse']['name'],//llamar almacen
+//	'cifPrice'=>$value['SalDetail']['cif_price'],
+//	'exCifPrice'=>$value['SalDetail']['ex_cif_price'],
+				'stock'=> $this->_find_stock($value['InvItem']['id'], $value['SalDetail']['inv_warehouse_id'])
+				
+				);
+		}
+//debug($formatedMovementDetails);		
+		return $formatedMovementDetails;
+	}
+	
+	public function _get_pays_details($idMovement){
+		$paymentDetails = $this->SalSale->SalPayment->find('all', array(
+			'conditions'=>array(
+				'SalPayment.sal_sale_id'=>$idMovement
+				),																									                            
+			'fields'=>array('SalPayment.date', 'SalPayment.amount','SalPayment.description')
+			));
+		
+		$formatedPaymentDetails = array();
+		foreach ($paymentDetails as $key => $value) {
+			$formatedPaymentDetails[$key] = array(
+				'dateId'=>$value['SalPayment']['date'],//llamar precio
+				//'payDate'=>strftime("%A, %d de %B de %Y", strtotime($value['SalPayment']['date'])),
+				'payDate'=>strftime("%d/%m/%Y", strtotime($value['SalPayment']['date'])),
+				'payAmount'=>$value['SalPayment']['amount'],//llamar cantidad
+				'payDescription'=>$value['SalPayment']['description']
+				);
+		}
+//debug($formatedPaymentDetails);		strftime("%A, %d de %B de %Y", $value['SalPayment']['date'])
+		return $formatedPaymentDetails;
+	}
+	
+	
+	
+	private function _get_price($itemId, $date, $type, $currType){
+		$this->loadModel('InvPrice');
+		//To change UK date format to US date format
+		$bits = explode('/',$date);
+		$date = $bits[1].'/'.$bits[0].'/'.$bits[2];
+		//To get id of the price type
+		$typeId = $this->InvPrice->InvPriceType->find('list', array(
+			'fields'=>array(
+				'InvPriceType.id'
+				),
+			'conditions'=>array(
+				'InvPriceType.name'=>$type
+				)
+			));
+		//To get the history of prices
+		$prices = $this->InvPrice->find('list', array(
+			'fields'=>array(
+				'InvPrice.id',
+				'InvPrice.date'
+				),
+			'conditions'=>array(
+				'InvPrice.inv_item_id'=>$itemId,
+				'InvPrice.inv_price_type_id'=>$typeId//'InvPrice.inv_price_type_id'=>1
+				)
+			));
+		if($prices <> null){
+			//To get the list of subtracted dates in unix time format
+			foreach($prices as $id => $day){
+				$interval[$id] = abs(strtotime($date) - strtotime($day));
+			}
+			asort($interval);
+			$closest = key($interval);
+			//To get the price
+			if($currType == 'dolar'){
+				$priceField = $this->InvPrice->find('first', array(
+				'fields'=>array(
+					'InvPrice.ex_price'
+					),
+				'conditions'=>array(
+					'InvPrice.id'=>$closest
+					)
+				));
+				$price = $priceField['InvPrice']['ex_price'];
+			}else{
+				$priceField = $this->InvPrice->find('first', array(
+				'fields'=>array(
+					'InvPrice.price'
+					),
+				'conditions'=>array(
+					'InvPrice.id'=>$closest
+					)
+				));
+				$price = $priceField['InvPrice']['price'];
+			}
+			if ($price === null){
+				$price = 0;
+			}
+		}else{
+			$price = 0;
+		}
+		//debug($price);
+		return $price;
+	}
+		
+	private function _get_doc_id($purchaseId, $movementCode, $type, $warehouseId){
+		if ($purchaseId <> null) {
+			$invoiceId = $this->SalSale->find('list', array(
+				'fields'=>array('SalSale.id'),
+				'conditions'=>array(
+					'SalSale.code'=>$movementCode,
+					"SalSale.id !="=>$purchaseId
+					)
+			));
+			$docId = key($invoiceId);
+		}else{
+			$this->loadModel('InvMovement');
+			$movementId = $this->InvMovement->find('list', array(
+				'fields'=>array('InvMovement.id'),
+				'conditions'=>array(
+					'InvMovement.document_code'=>$movementCode,
+					'InvMovement.type'=>$type,
+					'InvMovement.inv_warehouse_id'=>$warehouseId,
+					)
+			));
+			$docId = key($movementId);
+		}
+		return $docId;
+	}	
+		
 	private function _get_stocks($items, $warehouse, $limitDate = '', $dateOperator = '<='){
 		$this->loadModel('InvMovement');
 		$this->InvMovement->InvMovementDetail->unbindModel(array('belongsTo' => array('InvItem')));
@@ -1855,261 +1964,7 @@ class SalSalesController extends AppController {
 		return $code;
 	}
 	
-	
-	
-	
-	
-	
-	
-		public function ajax_initiate_modal_add_pay(){
-		if($this->RequestHandler->isAjax()){
-			$paysAlreadySaved = $this->request->data['paysAlreadySaved'];
-			$payDebt = $this->request->data['payDebt'];
-//			debug($payDebt);
-			$datePay=date('d/m/Y');
-//			$debt = $this->SalSale->SalPayment->find('list', array(
-//					'fields'=>array('SalPayment.amount'),
-//					'conditions'=>array(
-//						'SalPayment.date'=>$paysAlreadySaved
-//				),
-//				'recursive'=>-1
-//			));
-//	debug($debt);
-//			$warehouse = $this->request->data['warehouse'];
-		//	$supplier = $this->request->data['supplier'];
-//	//		$itemsBySupplier = $this->PurPurchase->InvSupplier->InvItemsSupplier->find('list', array(
-//				'fields'=>array('InvItemsSupplier.inv_item_id'),
-//				'conditions'=>array(
-//					'InvItemsSupplier.inv_supplier_id'=>$supplier
-//				),
-//				'recursive'=>-1
-//			)); 
-//debug($itemsBySupplier);			
-			$pays = $this->SalSale->SalPayment->SalPaymentType->find('list', array(
-					'fields'=>array('SalPaymentType.name'),
-					'conditions'=>array(
-//						'NOT'=>array('InvPriceType.id'=>$paysAlreadySaved) /*aca se hace la discriminacion de items seleccionados*/
-				),
-				
-				'recursive'=>-1
-				//'fields'=>array('InvItem.id', 'CONCAT(InvItem.code, '-', InvItem.name)')
-			));
-//debug($supplier);			
-//debug($items);
-//debug($this->request->data);
-		// gets the first price in the list of the item prices
-//		$firstItemListed = key($items);
-//		$priceDirty = $this->PurPurchase->PurDetail->InvItem->InvPrice->find('first', array(
-//			'fields'=>array('InvPrice.price'),
-//			'order' => array('InvPrice.date_created' => 'desc'),
-//			'conditions'=>array(
-//				'InvPrice.inv_item_id'=>$firstItemListed
-//				)
-//		));
-////debug($priceDirty);
-//		if($priceDirty==array()){
-//			$price = 0;
-//		}  else {
-//			
-//			$price = $priceDirty['InvPrice']['price'];
-//		}
-//			$amountDirty = $this->PurPurchase->PurPrice->find('first', array(
-//			'fields'=>array('PurPrice.amount'),
-//	//		'order' => array('rice.date_created' => 'desc'),
-//			'conditions'=>array(
-//				'PurPrice.inv_price_type_id'=>$costsAlreadySaved
-//				)
-//			));
-//			if($amountDirty==array()){
-//			$amount = 0;
-//		}  else {
-//			
-//			$amount = $amountDirty['PurPrice']['amount'];
-//		}
-				
-			$this->set(compact('pays', 'datePay', 'payDebt'/*, 'amount'*/));
-		}
-	}
-	
-	
-	public function ajax_update_ex_rate(){
-		if($this->RequestHandler->isAjax()){
-			$date = $this->request->data['date']; 
-			
-			$this->loadModel('AdmParameter');
-			$currency = $this->AdmParameter->AdmParameterDetail->find('first', array(
-				//	'fields'=>array('AdmParameterDetail.id'),
-					'conditions'=>array(
-						'AdmParameter.name'=>'Moneda',
-						'AdmParameterDetail.par_char1'=>'Dolares'
-					)
-				//	'recursive'=>-1
-				)); 
-	//		debug($currency);
-			$currencyId = $currency['AdmParameterDetail']['id'];
-	//		debug($currencyId);
-			$this->loadModel('AdmExchangeRate');
-			$xxxRate = $this->AdmExchangeRate->find('first', array(
-					'fields'=>array('AdmExchangeRate.value'),
-					'conditions'=>array(
-						'AdmExchangeRate.currency'=>$currencyId,
-						'AdmExchangeRate.date'=>$date
-					),
-					'recursive'=>-1
-				)); 		
-	//		debug($xxxRate);
-			$exRate = $xxxRate['AdmExchangeRate']['value'];
-		
-			$this->set(compact('exRate'));			
-		}else{
-			$this->redirect($this->Auth->logout());
-		}
-	}
-	
-///////////////////////////////////////////*********************************************************************************///////////////	
-	
-	public function index() {
-		$this->SalSale->recursive = 0;
-		$this->set('salSales', $this->paginate());
-	}
-
-/**
- * view method
- *
- * @param string $id
- * @return void
- */
-	public function view($id = null) {
-		$this->SalSale->id = $id;
-		if (!$this->SalSale->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('sal sale')));
-		}
-		$this->set('salSale', $this->SalSale->read(null, $id));
-	}
-
-/**
- * add method
- *
- * @return void
- */
-	public function add() {
-		$date='';
-		if ($this->request->is('post')) {
-			$this->SalSale->create();
-			if ($this->SalSale->save($this->request->data)) {
-				$this->Session->setFlash(
-					__('The %s has been saved', __('sal sale')),
-					'alert',
-					array(
-						'plugin' => 'TwitterBootstrap',
-						'class' => 'alert-success'
-					)
-				);
-				$this->redirect(array('action' => 'index'));
-			} else {
-				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('sal sale')),
-					'alert',
-					array(
-						'plugin' => 'TwitterBootstrap',
-						'class' => 'alert-error'
-					)
-				);
-			}
-		}
-		$salEmployees = $this->SalSale->SalEmployee->find('list',array(
-			'fields' => array('SalEmployee.id','SalEmployee.full_name')
-		));
-		$salTaxNumbers = $this->SalSale->SalTaxNumber->find('list', array(
-			'fields' => array('SalTaxNumber.id', 'SalTaxNumber.full_nit')
-		));
-		$this->set(compact('salEmployees', 'salTaxNumbers','date'));
-	}
-
-/**
- * edit method
- *
- * @param string $id
- * @return void
- */
-	public function edit($id = null) {
-		$this->SalSale->id = $id;
-		if (!$this->SalSale->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('sal sale')));
-		}
-		if ($this->request->is('post') || $this->request->is('put')) {
-			if ($this->SalSale->save($this->request->data)) {
-				$this->Session->setFlash(
-					__('The %s has been saved', __('sal sale')),
-					'alert',
-					array(
-						'plugin' => 'TwitterBootstrap',
-						'class' => 'alert-success'
-					)
-				);
-				$this->redirect(array('action' => 'index'));
-			} else {
-				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('sal sale')),
-					'alert',
-					array(
-						'plugin' => 'TwitterBootstrap',
-						'class' => 'alert-error'
-					)
-				);
-			}
-		} else {
-			$this->request->data = $this->SalSale->read(null, $id);
-		}
-		$salEmployees = $this->SalSale->SalEmployee->find('list');
-		$salTaxNumbers = $this->SalSale->SalTaxNumber->find('list');
-		$this->set(compact('salEmployees', 'salTaxNumbers'));
-	}
-
-/**
- * delete method
- *
- * @param string $id
- * @return void
- */
-	public function delete($id = null) {
-		if (!$this->request->is('post')) {
-			throw new MethodNotAllowedException();
-		}
-		$this->SalSale->id = $id;
-		if (!$this->SalSale->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('sal sale')));
-		}
-		if ($this->SalSale->delete()) {
-			$this->Session->setFlash(
-				__('The %s deleted', __('sal sale')),
-				'alert',
-				array(
-					'plugin' => 'TwitterBootstrap',
-					'class' => 'alert-success'
-				)
-			);
-			$this->redirect(array('action' => 'index'));
-		}
-		$this->Session->setFlash(
-			__('The %s was not deleted', __('sal sale')),
-			'alert',
-			array(
-				'plugin' => 'TwitterBootstrap',
-				'class' => 'alert-error'
-			)
-		);
-		$this->redirect(array('action' => 'index'));
-	}
-	
-/*********************************************************************************************************************/
-/***********************************************************************************************************************/
-/*********************************************************************************************************************/
-/***********************************************************************************************************************/
-/*********************************************************************************************************************/
-/***********************************************************************************************************************/
-	
-private function _find_stock($idItem, $idWarehouse){		
+	private function _find_stock($idItem, $idWarehouse){		
 		$movementsIn = $this->_get_quantity_movements_item($idItem, $idWarehouse, 'entrada');
 		$movementsOut = $this->_get_quantity_movements_item($idItem, $idWarehouse, 'salida');
 		$add = array_sum($movementsIn);
@@ -2169,88 +2024,20 @@ private function _find_stock($idItem, $idWarehouse){
 		return $clean;
 	}
 	
-	//////////////////////////////////////////START-GRAPHICS//////////////////////////////////////////
-	public function vgraphics(){
-		$this->loadModel("AdmPeriod");
-		$years = $this->AdmPeriod->find("list", array(
-			"order"=>array("name"=>"desc"),
-			"fields"=>array("name", "name")
-			)
-		);
-		
-		$this->loadModel("InvItem");
-		
-		$itemsClean = $this->InvItem->find("list", array('order'=>array('InvItem.code')));
-		$items[0]="TODOS";
-		foreach ($itemsClean as $key => $value) {
-			$items[$key] = $value;
-		}
-		
-		$this->set(compact("years", "items"));
-		//debug($this->_get_bars_sales_and_time("2013", "0"));
-	}
+	//////////////////////////////////////////// END - PRIVATE /////////////////////////////////////////////////
 	
-	public function ajax_get_graphics_data(){
-		if($this->RequestHandler->isAjax()){
-			$year = $this->request->data['year'];
-			$currency = $this->request->data['currency'];
-			$item = $this->request->data['item'];
-			$string = $this->_get_bars_sales_and_time($year, $item, $currency);
-			echo $string;
-		}
-//		$string .= '30|54|12|114|64|100|98|80|10|50|169|222';
-	}
+	//*******************************************************************************************************//
+	/////////////////////////////////////////// END - CLASS ///////////////////////////////////////////////
+	//*******************************************************************************************************//
 	
-	private function _get_bars_sales_and_time($year, $item, $currency){
-		$conditionItem = null;
-		$dataString = "";
-		
-		if($item > 0){
-			$conditionItem = array("SalDetail.inv_item_id" => $item);
-		}
-		
-		$currencyType = "price";
-		if($currency == "dolares"){
-			$currencyType = "ex_price";
-		}
-		
-		//*****************************************************************************//
-		$data = $this->SalSale->SalDetail->find('all', array(
-			"fields"=>array(
-				"to_char(\"SalSale\".\"date\",'mm') AS month",
-				'SUM("SalDetail"."quantity" * (SELECT '.$currencyType.'  FROM inv_prices where inv_item_id = "SalDetail"."inv_item_id" AND date <= "SalSale"."date" AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1))'
-			),
-			'group'=>array("to_char(SalSale.date,'mm')"),
-			"conditions"=>array(
-				"to_char(SalSale.date,'YYYY')"=>$year,
-				"SalSale.lc_state"=>"SINVOICE_APPROVED",
-				$conditionItem
-			)
-		));
-		//*****************************************************************************//
-		
-		
-		//format data on string to response ajax request
-		$months = array(1,2,3,4,5,6,7,8,9,10,11,12);
-		
-		foreach ($months as $month) {
-			$exist = 0;
-			foreach ($data as $value) {
-				if($month == (int)$value[0]['month']){
-					$dataString .= $value[0]['sum']."|";
-					//debug($dataString);
-					$exist++;
-				}
-			}
-			if($exist == 0){
-				$dataString .= "0|";
-			}
-		}
-		
-		return substr($dataString, 0, -1);
-	}
+/*********************************************************************************************************************/
+/***********************************************************************************************************************/
+/*********************************************************************************************************************/
+/***********************************************************************************************************************/
+/*********************************************************************************************************************/
+/***********************************************************************************************************************/
 	
-	//////////////////////////////////////////END-GRAPHICS//////////////////////////////////////////
+
 	
 	
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2264,20 +2051,75 @@ private function _find_stock($idItem, $idWarehouse){
 			$note_code = $this->request->data['note_code'];
 			$genericCode = $this->request->data['genericCode'];
 			$originCode = $this->request->data['originCode'];
-			print_r($arrayItemsDetails);
-			echo "<br>";
-			print_r($date);
-			echo "<br>";
-			print_r($description);
-			echo "<br>";
-			print_r($note_code);
-			echo "<br>";
-			print_r($genericCode);
-			echo "<br>";
-			print_r($originCode);
-			echo "<br>";
-			echo 'creado|';
-		}	
+			$error=0;
+			$movementDocCode = '';
+//print_r($arrayItemsDetails);
+			
+			foreach($arrayItemsDetails as $val) {
+				$arrayWarehouses[] = $val['inv_warehouse_id'];
+			}
+//			debug($arrayWarehouses);
+			$arrayWarehousesList = array_values(array_unique($arrayWarehouses));
+//			sort($arrayWarehousesList);
+//			debug($arrayWarehousesList);
+			
+			for($i=0;$i<count($arrayWarehousesList);$i++){
+				$arrayMovement = array();
+				$arrayMovementDetails = array();
+				$arrayBOMovement = array();
+				$arrayBOMovementDetails = array();
+				$cont = 0;
+				for($j=0;$j<count($arrayItemsDetails);$j++){
+					if($arrayItemsDetails[$j]['inv_warehouse_id'] == $arrayWarehousesList[$i]){
+						$itemId = $arrayItemsDetails[$j]['inv_item_id'];
+						$quantity = $arrayItemsDetails[$j]['quantity'];
+						$warehouseId = $arrayItemsDetails[$j]['inv_warehouse_id'];
+						$stocks = $this->_get_stocks($itemId, $warehouseId);
+						$stock = $this->_find_item_stock($stocks, $itemId);
+//						debug($itemId.'+'.$warehouseId.'=>'.$quantity.'@'.$stock);
+						if ($quantity > $stock) {
+							$cont++;
+							if ($stock != 0){
+								$arrayMovementDetails[] = array('inv_item_id'=>$itemId, 'quantity'=>$stock);
+							}
+							$arrayBOMovementDetails[] = array('inv_item_id'=>$itemId, 'quantity'=>($quantity-$stock));
+						} else {
+							$arrayMovementDetails[] = array('inv_item_id'=>$itemId, 'quantity'=>$quantity);
+						}
+					}
+				}
+				if (($cont > 0)&&($arrayMovementDetails != array())){
+					$arrayMovement = array('type'=>1, 'date'=>$date, 'inv_warehouse_id'=>$arrayWarehousesList[$i], 'inv_movement_type_id'=>2, 'description'=>$description);
+					$arrayBOMovement = array('type'=>2, 'date'=>$date, 'inv_warehouse_id'=>$arrayWarehousesList[$i], 'inv_movement_type_id'=>2, 'description'=>$description);
+					$data[] = array('InvMovement'=>$arrayMovement, 'InvMovementDetail'=>$arrayMovementDetails);
+					$data[] = array('InvMovement'=>$arrayBOMovement, 'InvMovementDetail'=>$arrayBOMovementDetails);
+				} elseif (($cont > 0)&&($arrayMovementDetails == array())) {
+					$arrayBOMovement = array('type'=>2, 'date'=>$date, 'inv_warehouse_id'=>$arrayWarehousesList[$i], 'inv_movement_type_id'=>2, 'description'=>$description);
+					$data[] = array('InvMovement'=>$arrayBOMovement, 'InvMovementDetail'=>$arrayBOMovementDetails);
+				} else {
+					$arrayMovement = array('type'=>1, 'date'=>$date, 'inv_warehouse_id'=>$arrayWarehousesList[$i], 'inv_movement_type_id'=>2, 'description'=>$description);
+					$data[] = array('InvMovement'=>$arrayMovement, 'InvMovementDetail'=>$arrayMovementDetails);
+				}
+			}
+			print_r($data);
+			
+			if($error == 0){
+				$res = $this->SalSale->saveGeneratedMovements($data);
+				
+				switch ($res[0]) {
+					case 'SUCCESS':
+						echo $res[1];
+						break;
+					case 'ERROR':
+						echo 'ERROR|onSaving';
+						break;
+				}
+				
+			}else{
+				echo 'ERROR|onGeneratingParameters';
+			}
+		}
+		
 	}
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -2364,7 +2206,7 @@ private function _find_stock($idItem, $idWarehouse){
 				$arrayMovement2['description']=$description;
 				$arrayMovement2['document_code'] = $generalCode;
 				$arrayMovement2['type']=1;
-				$arrayMovement1['lc_state']='PENDANT';
+				$arrayMovement2['lc_state']='PENDANT';
 				$arrayMovement2['code'] = $this->_generate_movement_code('SAL',null);
 				
 				$data2 = array('InvMovement'=>$arrayMovement2, 'InvMovementDetail'=>$arrayMovementDetails2);
@@ -2384,7 +2226,7 @@ private function _find_stock($idItem, $idWarehouse){
 				$arrayMovement2['description']=$description;
 				$arrayMovement2['document_code'] = $generalCode;
 				$arrayMovement2['type']=1;
-				$arrayMovement1['lc_state']='PENDANT';
+				$arrayMovement2['lc_state']='PENDANT';
 				$arrayMovement2['code'] = $this->_generate_movement_code('SAL','inc');
 				
 				$data1 = array('InvMovement'=>$arrayMovement1, 'InvMovementDetail'=>$arrayMovementDetails1);
