@@ -6,6 +6,13 @@ var path = window.location.pathname;
 var arr = path.split('/');
 var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 
+//ON START
+	//EXECUTE onload
+	//ajax_get_graphics_data();
+	$('select').select2();
+	startDataTable();
+/////////////
+
 
 	function createBarData(sentData){
 		var splitData = sentData.split("|");
@@ -24,7 +31,24 @@ var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 		});
 		return finalData;
 	}
+	
+	function createPieData(sentData){
+		//Format expected from ajax request is label1-data1|label2-data2
+		var firstSplitedData = sentData.split("|");
+		var secondSplitedData = [];
+		var finalData = [];
+		var label = "";
+		var data = "";
 
+		for(var i=0; i < firstSplitedData.length; i++){
+			secondSplitedData = firstSplitedData[i].split("==");
+			label = secondSplitedData[0];
+			data = parseInt(secondSplitedData[1]);
+			finalData[i] = {label:label, data:data};
+		}
+		return finalData;
+	}
+	
 	function createBarOptions(){
 		var options =
 				{
@@ -40,8 +64,36 @@ var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 				};
 		return options;
 	}
+	
+	function createPieOptions(){
+		var options =
+			{
+				series: {
+					pie: {
+						show: true,
+						radius: 3/4,
+						label: {
+							show: true,
+							radius: 3/4,
+							formatter: function(label, series){
+								return '<div style="font-size:8pt;text-align:center;padding:2px;color:white;">'+label+'<br/>'+Math.round(series.percent)+'%</div>';
+							},
+							background: {
+								opacity: 0.5,
+								color: '#000'
+							}
+						},
+						innerRadius: 0.2
+					}
+				},
+					legend: {
+						show: false
+					}
+			};
+			return options;
+	}
 	/////////////////////////////////////////////////////////
-
+/*
 	function ajax_get_graphics_data(){ 
 		$.ajax({
             type:"POST",
@@ -66,7 +118,103 @@ var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 			}
         });
 	}
+*/	
 	
+	function ajax_get_graphics_items_customers(dataSent){ 
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_get_graphics_items_customers",			
+            data:dataSent,
+			beforeSend: function(){
+				$('#boxProcessing').text("Procesando...");
+			},
+            success: function(data){
+				var arrayData = data.split(",");
+				var pieOptions = createPieOptions();
+				var barOptions = createBarOptions();
+				
+				//Display graph    
+				
+				$.plot($(".bars"), createBarData(arrayData[0]), barOptions);
+				$.plot($(".bars2"), createBarData(arrayData[1]), barOptions);
+				$.plot($(".pie"), createPieData(arrayData[2]), pieOptions);
+				$.plot($(".pie2"), createPieData(arrayData[3]), pieOptions);
+				
+				
+				
+				$("#topMoreQuantity").html(createTableTops("Cantidad", arrayData[4]));
+				$("#topMoreMoney").html(createTableTops("Dinero", arrayData[5]));
+				$("#topLessQuantity").html(createTableTops("Cantidad", arrayData[6]));
+				$("#topLessMoney").html(createTableTops("Dinero", arrayData[7]));
+				//hide message
+				$('#boxProcessing').text("");
+			},
+			error:function(data){
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#boxProcessing').text("");
+			}
+        });
+	}
+	
+	function ajax_get_graphics_items_salesmen(dataSent){ 
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_get_graphics_items_salesmen",			
+            data:dataSent,
+			beforeSend: function(){
+				$('#boxProcessing').text("Procesando...");
+			},
+            success: function(data){
+				var arrayData = data.split(",");
+				var pieOptions = createPieOptions();
+				var barOptions = createBarOptions();
+				
+				//Display graph    
+				
+				$.plot($(".bars"), createBarData(arrayData[0]), barOptions);
+				$.plot($(".bars2"), createBarData(arrayData[1]), barOptions);
+				$.plot($(".pie"), createPieData(arrayData[2]), pieOptions);
+				$.plot($(".pie2"), createPieData(arrayData[3]), pieOptions);
+				
+				
+				
+				$("#topMoreQuantity").html(createTableTops("Cantidad", arrayData[4]));
+				$("#topMoreMoney").html(createTableTops("Dinero", arrayData[5]));
+				$("#topLessQuantity").html(createTableTops("Cantidad", arrayData[6]));
+				$("#topLessMoney").html(createTableTops("Dinero", arrayData[7]));
+				//hide message
+				$('#boxProcessing').text("");
+			},
+			error:function(data){
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#boxProcessing').text("");
+			}
+        });
+	}
+	
+	function createTableTops(fieldName, array){
+		var counter = 0;
+		var html = '';
+		if(array.length === 0){
+			return false;
+		}
+		var arrayData = array.split("|");
+		var arrayFinal = [];
+		
+		html += '<table class="table table-striped table-bordered">';
+		html += '<tr><th>#</th><th>Item</th><th>'+fieldName+'</th></tr>';
+		for(var i = 0; i < arrayData.length; i++){
+			html += '<tr>';
+				counter = i +1;
+				arrayFinal = arrayData[i].split("==");
+				html += '<td>'+counter+'</td>';
+				html += '<td>'+arrayFinal[0]+'</td>';
+				html += '<td>'+arrayFinal[1]+'</td>';
+			html += '</tr>';
+		}
+		html += '</table>';
+		return html;
+	}
 
 	function showGrowlMessage(type, text, sticky){
 		if(typeof(sticky)==='undefined') sticky = false;
@@ -94,17 +242,175 @@ var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 		});	
 	}
 	
-	//EXECUTE onload
-	ajax_get_graphics_data();
-	$('#cbxItem').select2();
-	
+
+	/*
 	//events
 	$('#cbxItem, #cbxYear, #cbxCurrency').change(function(){
 		ajax_get_graphics_data();
 	});
-	
+	*/
+////////////////////////////////////////////////////////////////////////////////
 
+$('#btnGenerateReportCustomers').click(function(){
+	var currency = $('#cbxCurrency').val();
+	var groupBy = $('#cbxReportGroupTypes').val();
+	var year =  $("#cbxYear").val();
+	var month =  $("#cbxMonth").val();
+	var customer = $("#cbxCustomer").val();
 	
+	var items = getSelectedCheckboxes();
+	if(items.length > 0){
+		var DATA = {
+						currency:currency,
+						groupBy:groupBy,
+						year:year,
+						month:month,
+						customer:customer,
+						items:items
+					   };
+			//ajax_generate_report(DATA);
+			//alert(DATA);
+			ajax_get_graphics_items_customers(DATA);
+			$('#boxMessage').html('');
+	}else{
+		$('#boxMessage').html('<div class="alert-error"><ul>'+'<li> Debe elegir al menos un "Item" </li>'+'</ul></div>');
+	}
+	return false;
+});
+
+
+$('#btnGenerateReportSalesmen').click(function(){
+	var currency = $('#cbxCurrency').val();
+	var groupBy = $('#cbxReportGroupTypes').val();
+	var year =  $("#cbxYear").val();
+	var month =  $("#cbxMonth").val();
+	var salesman = $("#cbxSalesman").val();
+	
+	var items = getSelectedCheckboxes();
+	if(items.length > 0){
+		var DATA = {
+						currency:currency,
+						groupBy:groupBy,
+						year:year,
+						month:month,
+						salesman:salesman,
+						items:items
+					   };
+			ajax_get_graphics_items_salesmen(DATA);
+			$('#boxMessage').html('');
+	}else{
+		$('#boxMessage').html('<div class="alert-error"><ul>'+'<li> Debe elegir al menos un "Item" </li>'+'</ul></div>');
+	}
+	return false;
+});
+
+
+
+$('#cbxReportGroupTypes').change(function(){
+		getGroupItemsAndFilters();
+});
+
+function getGroupItemsAndFilters(){
+	ajax_get_group_items_and_filters();
+}
+
+function ajax_get_group_items_and_filters(){ //Report
+		$.ajax({
+            type:"POST",
+			async:false, // the key to open new windows when success
+            url:moduleController + "ajax_get_group_items_and_filters",			
+            data:{type: $('#cbxReportGroupTypes').val()},
+			beforeSend: function(){
+				$('#boxProcessing').text('Procesando...');
+			},
+            success: function(data){
+				$('#boxGroupItemsAndFilters').html(data);
+				$('select').select2();
+				startDataTable();
+				$('#boxGroupItemsAndFilters #cbxReportGroupFilters').bind("change",function(){ 
+					var selected = new Array();
+					$("#boxGroupItemsAndFilters #cbxReportGroupFilters option:selected").each(function () {
+						selected.push($(this).val());
+					});
+					ajax_get_group_items(selected);
+				});
+				$('#boxProcessing').text('');
+				//location.href = "startReport";
+				//window.scrollTo(0, document.body.scrollHeight);
+			},
+			error:function(data){
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#boxProcessing').text('');
+			}
+        });
+	}
+	
+	function ajax_get_group_items(selected){ //Report
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_get_group_items",			
+            data:{type: $('#cbxReportGroupTypes').val(), selected: selected},
+			beforeSend: function(){
+				$('#boxProcessing').text('Procesando...');
+			},
+            success: function(data){
+				$('#boxGroupItems').html(data);
+				startDataTable();
+				$('#boxProcessing').text('');
+			},
+			error:function(data){
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#boxProcessing').text('');
+			}
+        });
+	}
+	
+	function startDataTable(){
+	   $('.data-table').dataTable({
+			"bJQueryUI": true,
+			//"sPaginationType": "full_numbers",
+			"sDom": '<"">t<"F"f>i',
+			"sScrollY": "240px",
+			//"bScrollCollapse": true,
+			"bPaginate": false,
+			"aaSorting":[], //on start sorting setting to empty
+			"oLanguage": {
+				"sSearch": "Filtrar:",
+				 "sZeroRecords":  "No se encontro nada.",
+				 //"sInfo":         "Ids from _START_ to _END_ of _TOTAL_ total" //when pagination exists
+				 "sInfo": "Encontrados _TOTAL_ Items",
+				 "sInfoEmpty": "Encontrados 0 Items",
+				 "sInfoFiltered": "(filtrado de _MAX_ Items)"
+			},
+			"aoColumnDefs": [
+			  { 'bSortable': false, 'aTargets': [ 0 ] }// do not sort first column
+			]
+		});
+		$('input[type=checkbox]').uniform();
+		$("#title-table-checkbox").click(function() {
+			var checkedStatus = this.checked;
+			var checkbox = $(this).parents('.widget-box').find('tr td:first-child input:checkbox');		
+			checkbox.each(function() {
+				this.checked = checkedStatus;
+				if (checkedStatus === this.checked) {
+					$(this).closest('.checker > span').removeClass('checked');
+				}
+				if (this.checked) {
+					$(this).closest('.checker > span').addClass('checked');
+				}
+			});
+		});	
+   }
+	
+	function getSelectedCheckboxes(){
+	   var selected = new Array();
+	   $(".data-table tbody input:checkbox:checked").each(function() {
+			selected.push($(this).val());
+	   });
+	   return selected;
+   }
+   
+////////////////////////////////////////////////////////////////////////////////////////////
 	
 //END SCRIPT	
 });
