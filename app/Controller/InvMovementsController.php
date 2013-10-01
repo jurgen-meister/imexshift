@@ -236,6 +236,7 @@ class InvMovementsController extends AppController {
 					$auxArray[$item['InvItem']['id']]['Movements'][$counter] = array(
 						'code'=>$movement['InvMovement']['code'],
 						'document_code'=>$movement['InvMovement']['document_code'],
+						'note_code'=>$movement[$forPricesSubQuery]['note_code'],
 						'quantity'=> $movement['InvMovementDetail']['quantity'],
 						'date'=>date("d/m/Y", strtotime($movement['InvMovement']['date'])),
 						'fob'=> $movement[$forPricesSubQuery][$currencyFieldPrefix.'fob_price'],
@@ -329,7 +330,15 @@ class InvMovementsController extends AppController {
 			'InvMovementDetail.inv_item_id',
 			'InvMovementDetail.quantity'
 			);
-		if(isset($values['bindMovementType']) AND $values['bindMovementType'] == 1){
+		
+		//Field to get note_code from Sales and Purchases
+		$fieldNoteCode = '(CASE "InvMovementType"."id" WHEN 1 THEN (SELECT note_code FROM pur_purchases WHERE code = "InvMovement"."document_code" LIMIT 1 )
+			      WHEN 2 THEN (SELECT note_code FROM sal_sales WHERE code = "InvMovement"."document_code" LIMIT 1 ) 
+			      ELSE \'NO\'
+		      END) as "note_code"';
+		$staticFields[] = $fieldNoteCode;
+		
+		//if(isset($values['bindMovementType']) AND $values['bindMovementType'] == 1){
 			$this->InvMovement->InvMovementDetail->bindModel(array(
 				'hasOne'=>array(
 					'InvMovementType'=>array(
@@ -339,7 +348,7 @@ class InvMovementsController extends AppController {
 				)
 			));
 			$fields[] = 'InvMovementType.status'; 
-		}
+		//}
 		$this->InvMovement->InvMovementDetail->unbindModel(array('belongsTo' => array('InvItem')));
 		return $this->InvMovement->InvMovementDetail->find('all', array(
 					'conditions'=>array(
@@ -730,7 +739,7 @@ class InvMovementsController extends AppController {
 				"PurPurchase.lc_state"=>"ORDER_APPROVED",
 				$filters
 			 ),
-			'fields'=>array('PurPurchase.id', 'PurPurchase.code', 'PurPurchase.date', 'PurPurchase.inv_supplier_id', 'InvSupplier.name'),
+			'fields'=>array('PurPurchase.id', 'PurPurchase.code', 'PurPurchase.date'),
 			'recursive'=>0,	
 			'order'=> array('PurPurchase.id'=>'desc'),
 			'limit' => 15,

@@ -366,7 +366,10 @@ class SalSalesController extends AppController {
 	
 	//////////////////////////////////////////// END - REPORT /////////////////////////////////////////////////
 	
-		//////////////////////////////////////////START-GRAPHICS//////////////////////////////////////////
+	
+
+	//////////////////////////////////////////START-GRAPHICS//////////////////////////////////////////
+	/*
 	public function vgraphics(){
 		$this->loadModel("AdmPeriod");
 		$years = $this->AdmPeriod->find("list", array(
@@ -386,7 +389,102 @@ class SalSalesController extends AppController {
 		$this->set(compact("years", "items"));
 		//debug($this->_get_bars_sales_and_time("2013", "0"));
 	}
+	*/
 	
+	public function vreport_purchases_customers(){
+		$this->loadModel("AdmPeriod");
+		$years = $this->AdmPeriod->find("list", array(
+			"order"=>array("name"=>"desc"),
+			"fields"=>array("name", "name")
+			)
+		);
+		$months = array(0=>"Todos", 1=>"Enero", 2=>"Febrero", 3=>"Marzo", 4=>"Abril", 5=>"Mayo", 6=>"Junio", 7=>"Julio", 8=>"Agosto", 9=>"Septiembre", 10=>"Octubre", 11=>"Noviembre", 12=>"Diciembre");
+		$item = $this->_find_items();
+		
+		$this->set(compact("years", "months", "item"));
+	}
+	
+	public function vgraphics_items_customers(){
+		$clientsClean = $this->SalSale->SalEmployee->SalCustomer->find('list');
+		$clients[0] = "TODOS";
+		foreach ($clientsClean as $key => $value) {
+			$clients[$key] = $value;
+		}
+		$this->loadModel("AdmPeriod");
+		$years = $this->AdmPeriod->find("list", array(
+			"order"=>array("name"=>"desc"),
+			"fields"=>array("name", "name")
+			)
+		);
+		$months = array(0=>"Todos", 1=>"Enero", 2=>"Febrero", 3=>"Marzo", 4=>"Abril", 5=>"Mayo", 6=>"Junio", 7=>"Julio", 8=>"Agosto", 9=>"Septiembre", 10=>"Octubre", 11=>"Noviembre", 12=>"Diciembre");
+		$item = $this->_find_items();
+		
+		$this->set(compact("clients", "years", "months", "item"));
+		
+		//////////////////////////////////////////////////////////////
+		/*
+		$this->SalSale->SalDetail->bindModel(array(
+			'hasOne'=>array(
+				'SalEmployee'=>array(
+					'foreignKey'=>false,
+					'conditions'=> array('SalSale.sal_employee_id = SalEmployee.id')
+				)
+			)
+		));
+		$this->SalSale->SalDetail->unbindModel(array('belongsTo' => array('InvWarehouse')));
+		$currencyType = "price";
+		$data = $this->SalSale->SalDetail->find('all', array(
+			"fields"=>array(
+				//"InvItem.id",
+				"InvItem.code",
+				"InvItem.name",
+				'SUM("SalDetail"."quantity" * (SELECT '.$currencyType.'  FROM inv_prices where inv_item_id = "SalDetail"."inv_item_id" AND date <= "SalSale"."date" AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1)) AS money',
+				'SUM("SalDetail"."quantity") AS quantity'
+			),
+			'group'=>array(
+				//"InvItem.id",
+				"InvItem.code",
+				"InvItem.name"
+				),
+			"conditions"=>array(
+				"to_char(SalSale.date,'YYYY')"=>"2013",
+				"SalSale.lc_state"=>"SINVOICE_APPROVED",
+				//"SalDetail.inv_item_id" => $items,
+				//$conditionPerson,
+				//$conditionMonth
+			),
+			"order"=>array('"money"'=> 'desc')
+		));
+		
+		debug($data);
+		*/
+	}
+	
+	
+	public function vgraphics_items_salesmen(){
+		$this->loadModel("AdmProfile");
+		$salesmenClean = $this->AdmProfile->find('list', array("fields"=>array("AdmProfile.adm_user_id", "AdmProfile.full_name")));
+		$salesmen[0] = "TODOS";
+		foreach ($salesmenClean as $key => $value) {
+			$salesmen[$key] = $value;
+		}
+		$this->loadModel("AdmPeriod");
+		$years = $this->AdmPeriod->find("list", array(
+			"order"=>array("name"=>"desc"),
+			"fields"=>array("name", "name")
+			)
+		);
+		$months = array(0=>"Todos", 1=>"Enero", 2=>"Febrero", 3=>"Marzo", 4=>"Abril", 5=>"Mayo", 6=>"Junio", 7=>"Julio", 8=>"Agosto", 9=>"Septiembre", 10=>"Octubre", 11=>"Noviembre", 12=>"Diciembre");
+		$item = $this->_find_items();
+		
+		$this->set(compact("salesmen", "years", "months", "item"));
+		
+		//////////////////////////////////////////////////////////////
+	}
+	
+	
+	/////////////
+	/*
 	public function ajax_get_graphics_data(){
 		if($this->RequestHandler->isAjax()){
 			$year = $this->request->data['year'];
@@ -397,31 +495,124 @@ class SalSalesController extends AppController {
 		}
 //		$string .= '30|54|12|114|64|100|98|80|10|50|169|222';
 	}
+	*/
 	
-	private function _get_bars_sales_and_time($year, $item, $currency){
-		$conditionItem = null;
+	public function ajax_get_graphics_items_customers(){
+		if($this->RequestHandler->isAjax()){
+			$year = $this->request->data['year'];
+			$month = $this->request->data['month'];
+			$currency = $this->request->data['currency'];
+			$items = $this->request->data['items'];
+			$groupBy = $this->request->data['groupBy'];
+			$customer = $this->request->data['customer'];
+			
+			//$string = $this->_get_bars_sales_and_time($year, $items, $currency, $client);
+			
+			//$string = $this->_get_pie_items_quantity_and_type("entrada", $year, $warehouse, $item).",";
+			//$string .= $this->_get_pie_items_quantity_and_type("salida", $year, $warehouse, $item).",";
+			
+			$barsData = $this->_get_bars_sales_and_time($year, $items, $currency, $customer, "customer");
+			$piesData = $this->_get_pies_sales_and_time($year, $items, $currency, $month, $customer, "customer");
+			//debug($piesData);
+			$string="";
+			$string .= $barsData["quantity"].",";
+			$string .= $barsData["money"].",";
+			$string .= $piesData["quantity"].",";
+			$string .= $piesData["money"].",";
+			
+			$string .= $piesData["topMoreQuantity"].",";
+			$string .= $piesData["topMoreMoney"].",";
+			$string .= $piesData["topLessQuantity"].",";
+			$string .= $piesData["topLessMoney"].",";
+			
+
+			echo $string;
+		}
+	}
+	
+	
+	public function ajax_get_graphics_items_salesmen(){
+		if($this->RequestHandler->isAjax()){
+			$year = $this->request->data['year'];
+			$month = $this->request->data['month'];
+			$currency = $this->request->data['currency'];
+			$items = $this->request->data['items'];
+			$groupBy = $this->request->data['groupBy'];
+			$salesman = $this->request->data['salesman'];
+			
+			//$string = $this->_get_bars_sales_and_time($year, $items, $currency, $client);
+			
+			//$string = $this->_get_pie_items_quantity_and_type("entrada", $year, $warehouse, $item).",";
+			//$string .= $this->_get_pie_items_quantity_and_type("salida", $year, $warehouse, $item).",";
+			
+			$barsData = $this->_get_bars_sales_and_time($year, $items, $currency, $salesman, "salesman");
+			$piesData = $this->_get_pies_sales_and_time($year, $items, $currency, $month, $salesman, "salesman");
+			//debug($piesData);
+			$string="";
+			$string .= $barsData["quantity"].",";
+			$string .= $barsData["money"].",";
+			$string .= $piesData["quantity"].",";
+			$string .= $piesData["money"].",";
+			
+			$string .= $piesData["topMoreQuantity"].",";
+			$string .= $piesData["topMoreMoney"].",";
+			$string .= $piesData["topLessQuantity"].",";
+			$string .= $piesData["topLessMoney"].",";
+			
+
+			echo $string;
+		}
+	}
+	
+	private function _get_bars_sales_and_time($year, $items, $currency, $person, $personType){
+		$conditionPerson = null;
 		$dataString = "";
-		
+		$dataString2 = "";
+	/*	
 		if($item > 0){
 			$conditionItem = array("SalDetail.inv_item_id" => $item);
 		}
-		
+	*/	
+		if($person > 0){
+			if($personType == "customer"){
+				$conditionPerson = array("SalEmployee.sal_customer_id" => $person);
+			}else{
+				$conditionPerson = array("SalSale.salesman_id" => $person);
+			}
+		}
 		$currencyType = "price";
 		if($currency == "dolares"){
 			$currencyType = "ex_price";
 		}
 		
 		//*****************************************************************************//
+		$this->SalSale->SalDetail->bindModel(array(
+			'hasOne'=>array(
+				'SalEmployee'=>array(
+					'foreignKey'=>false,
+					'conditions'=> array('SalSale.sal_employee_id = SalEmployee.id')
+				)
+				//Not using this relation because on SalEmployee already exists a customer ID.
+				/*,
+				'SalCustomer'=>array(
+					'foreignKey'=>false,
+					'conditions'=> array('SalEmployee.sal_customer_id = SalCustomer.id')
+				)*/
+			)
+		));
+		$this->SalSale->SalDetail->unbindModel(array('belongsTo' => array('InvWarehouse')));
 		$data = $this->SalSale->SalDetail->find('all', array(
 			"fields"=>array(
 				"to_char(\"SalSale\".\"date\",'mm') AS month",
-				'SUM("SalDetail"."quantity" * (SELECT '.$currencyType.'  FROM inv_prices where inv_item_id = "SalDetail"."inv_item_id" AND date <= "SalSale"."date" AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1))'
+				'SUM("SalDetail"."quantity" * (SELECT '.$currencyType.'  FROM inv_prices where inv_item_id = "SalDetail"."inv_item_id" AND date <= "SalSale"."date" AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1)) AS money',
+				'SUM("SalDetail"."quantity") AS quantity'
 			),
 			'group'=>array("to_char(SalSale.date,'mm')"),
 			"conditions"=>array(
 				"to_char(SalSale.date,'YYYY')"=>$year,
 				"SalSale.lc_state"=>"SINVOICE_APPROVED",
-				$conditionItem
+				"SalDetail.inv_item_id" => $items,
+				$conditionPerson
 			)
 		));
 		//*****************************************************************************//
@@ -434,20 +625,195 @@ class SalSalesController extends AppController {
 			$exist = 0;
 			foreach ($data as $value) {
 				if($month == (int)$value[0]['month']){
-					$dataString .= $value[0]['sum']."|";
+					$dataString .= $value[0]['money']."|";
+					$dataString2 .= $value[0]['quantity']."|";
 					//debug($dataString);
 					$exist++;
 				}
 			}
 			if($exist == 0){
 				$dataString .= "0|";
+				$dataString2 .= "0|";
 			}
 		}
 		
-		return substr($dataString, 0, -1);
+		return array("quantity"=>substr($dataString2, 0, -1), "money"=>substr($dataString, 0, -1));
 	}
 	
+	
+	private function _get_pies_sales_and_time($year, $items, $currency, $month, $person, $personType){
+		$conditionPerson = null;
+		$conditionMonth = null;
+		$dataString = "";
+		$dataString2 = "";
+
+		if($person > 0){
+			if($personType == "customer"){
+				$conditionPerson = array("SalEmployee.sal_customer_id" => $person);
+			}else{
+				$conditionPerson = array("SalSale.salesman_id" => $person);
+			}
+		}
+		
+		if($month > 0){
+			if(count($month) == 1){
+				$conditionMonth = array("to_char(SalSale.date,'mm')" => "0".$month);
+			}else{
+				$conditionMonth = array("to_char(SalSale.date,'mm')" => $month);
+			}
+			
+		}
+		$currencyType = "price";
+		if($currency == "dolares"){
+			$currencyType = "ex_price";
+		}
+		
+		//********************************************* ********************************//
+		
+		$this->SalSale->SalDetail->bindModel(array(
+			'hasOne'=>array(
+				'SalEmployee'=>array(
+					'foreignKey'=>false,
+					'conditions'=> array('SalSale.sal_employee_id = SalEmployee.id')
+				)
+			)
+		));
+		$this->SalSale->SalDetail->unbindModel(array('belongsTo' => array('InvWarehouse')));
+		$data = $this->SalSale->SalDetail->find('all', array(
+			"fields"=>array(
+				//"InvItem.id",
+				"InvItem.code",
+				"InvItem.name",
+				'SUM("SalDetail"."quantity" * (SELECT '.$currencyType.'  FROM inv_prices where inv_item_id = "SalDetail"."inv_item_id" AND date <= "SalSale"."date" AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1)) AS money',
+				'SUM("SalDetail"."quantity") AS quantity'
+			),
+			'group'=>array(
+				//"InvItem.id",
+				"InvItem.code",
+				"InvItem.name"
+				),
+			"conditions"=>array(
+				"to_char(SalSale.date,'YYYY')"=>$year,
+				"SalSale.lc_state"=>"SINVOICE_APPROVED",
+				"SalDetail.inv_item_id" => $items,
+				$conditionPerson,
+				$conditionMonth
+			),
+			"order"=>array('"money"'=> 'desc')
+		));
+		
+		//*************************************JUST FOR TOP QUANTITIES************************************//
+		$this->SalSale->SalDetail->bindModel(array(
+			'hasOne'=>array(
+				'SalEmployee'=>array(
+					'foreignKey'=>false,
+					'conditions'=> array('SalSale.sal_employee_id = SalEmployee.id')
+				)
+			)
+		));
+		$this->SalSale->SalDetail->unbindModel(array('belongsTo' => array('InvWarehouse')));
+		$topQuantity = $this->SalSale->SalDetail->find('all', array(
+			"fields"=>array(
+				//"InvItem.id",
+				"InvItem.code",
+				"InvItem.name",
+				'SUM("SalDetail"."quantity") AS quantity'
+			),
+			'group'=>array(
+				"InvItem.code",
+				"InvItem.name"
+				),
+			"conditions"=>array(
+				"to_char(SalSale.date,'YYYY')"=>$year,
+				"SalSale.lc_state"=>"SINVOICE_APPROVED",
+				"SalDetail.inv_item_id" => $items,
+				$conditionPerson,
+				$conditionMonth
+			),
+			"order"=>array('"quantity"'=> 'desc')
+		));
+		
+		//////////////////////////////////////////////////////////////////////////////////////////
+		//debug($data);
+		$limit = count($data);
+		$dataString3 = "";
+		$dataString4 = "";
+		$dataString5 = "";
+		$dataString6 = "";
+		$counter = 1;
+		//debug($limit);
+		$limitbackwards = $limit - 10;
+		$fullName = "";
+		//debug($limitbackwards);
+		$arrayForTopLessMoney = array();
+		$arrayForTopLessQuantity = array();
+		
+	   foreach ($data as $value) {
+		   $dataString .= $value['InvItem']['code'] ."==".$value['0']['money']."|";
+		   $dataString2 .= $value['InvItem']['code'] ."==".$value['0']['quantity']."|";
+		   $fullName = "[ ".$value['InvItem']['code']." ] ".$value['InvItem']['name'];
+		   if($counter <= 10){
+			   $dataString3 .= $fullName ."==".$value['0']['money']."|";
+			   //debug($counter);
+		   }
+		   if($counter >= $limitbackwards ){
+			   //$dataString5 .= $fullName ."==".$value['0']['money']."|";
+			   $arrayForTopLessMoney[] = $fullName ."==".$value['0']['money'];
+		   }
+		   $counter++;
+		   
+	   }
+	   
+	   $counter = 1;
+	   foreach ($topQuantity as $value) {
+		   $fullName = "[ ".$value['InvItem']['code']." ] ".$value['InvItem']['name'];
+		   if($counter <= 10){
+			  $dataString4 .= $fullName ."==".$value['0']['quantity']."|";
+			   
+		   }
+		   if($counter >= $limitbackwards ){
+			  //$dataString6 .= $fullName ."==".$value['0']['quantity']."|";
+			  $arrayForTopLessQuantity[] = $fullName ."==".$value['0']['quantity'];
+		   }
+		   $counter++;
+	   }
+	   
+	   //Now to revert order to get top less values
+	   $limitTopLessMoney = count($arrayForTopLessMoney);
+	   //debug($limitTopLessMoney);
+	   if($limitTopLessMoney > 0){
+		do{
+			$limitTopLessMoney = $limitTopLessMoney  - 1;
+			 $dataString5 .= $arrayForTopLessMoney[$limitTopLessMoney] . "|";
+		}while($limitTopLessMoney > 1);
+	   }
+	   
+	   $limitTopLessQuantity = count($arrayForTopLessQuantity);
+	   //debug($limitTopLessQuantity);
+	   if($limitTopLessQuantity > 0){
+		do{
+			 $limitTopLessQuantity = $limitTopLessQuantity  - 1;
+			  $dataString6 .= $arrayForTopLessQuantity[$limitTopLessQuantity] . "|";
+		 }while($limitTopLessQuantity > 1);
+	   }
+		return array(
+			"quantity"=>substr($dataString2, 0, -1),
+			"money"=>substr($dataString, 0, -1),
+			"topMoreQuantity"=>substr($dataString4, 0, -1),
+			"topMoreMoney"=>substr($dataString3, 0, -1),
+			"topLessQuantity"=>substr($dataString6, 0, -1),
+			"topLessMoney"=>substr($dataString5, 0, -1),
+			);
+	}
+	
+	
+	
 	//////////////////////////////////////////END-GRAPHICS//////////////////////////////////////////
+	
+	
+	
+	
+	
 	
 	//////////////////////////////////////////// START - INDEX ///////////////////////////////////////////////
 	
