@@ -96,7 +96,8 @@ var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 	
 	//EXECUTE onload
 	ajax_get_graphics_data();
-	$('#cbxItem').select2();
+	//$('#cbxItem').select2();
+	$('select').select2();
 	
 	//events
 	$('#cbxItem, #cbxYear, #cbxCurrency, #cbxPriceType').change(function(){

@@ -317,11 +317,12 @@ function getGroupItemsAndFilters(){
 function ajax_get_group_items_and_filters(){ //Report
 		$.ajax({
             type:"POST",
-			async:false, // the key to open new windows when success
+			//async:false, // the key to open new windows when success
             url:moduleController + "ajax_get_group_items_and_filters",			
             data:{type: $('#cbxReportGroupTypes').val()},
 			beforeSend: function(){
 				$('#boxProcessing').text('Procesando...');
+				//alert("mierdaaa");
 			},
             success: function(data){
 				$('#boxGroupItemsAndFilters').html(data);

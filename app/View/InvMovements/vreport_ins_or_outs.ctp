@@ -8,7 +8,7 @@
 	<tr style="text-align:center">
 		<th style="width:25%">Fecha Inicio:</th>
 		<th style="width:25%">Fecha Fin:</th>
-		<th style="width:25%">Almacen</th>
+		<th style="width:25%">Almacen:</th>
 		<th style="width:25%">Tipo de Cambio:</th>
 	</tr>
 	</thead>
@@ -44,12 +44,13 @@
 	<table class="report-table" border="1" style="border-collapse:collapse; width:100%;">
 		<?php if($countMovements == 1){?>
 			<thead>
-				<tr> <th style="width:100%" colspan="10">Movimientos</th></tr>
+				<tr> <th style="width:100%" colspan="11">Movimientos</th></tr>
 
 				<tr>
 					<th>Fecha</th>
 					<th>Codigo</th>
 					<th>Codigo <br> Ref</th>
+					<th>Nota <br> Remisión</th>
 					<th>Cant. <br> (Uni)</th>
 					<th>P.FOB <br><?php echo $currencyAbbr ; ?></th>
 					<th>P.FOB x Cant. <br><?php echo $currencyAbbr ; ?></th>
@@ -65,6 +66,7 @@
 					<td style="text-align:left;" ><?php echo $movement['date'];?></td>
 					<td style="text-align:left;"><?php echo $movement['code'];?></td>
 					<td style="text-align:left;"><?php echo $movement['document_code'];?></td>
+					<td style="text-align:left;"><?php echo $movement['note_code'];?></td>
 					<td style="font-weight:bold;"><?php echo $movement['quantity'];?></td>
 					<td ><?php echo $movement['fob'];?></td>
 					<td style="font-weight:bold;"><?php echo number_format($movement['fobQuantity'],2);?></td>
@@ -76,7 +78,7 @@
 				<?php $quantityTotal = $quantityTotal + $movement['quantity'];?>
 				<?php }?>
 				<tr style="text-align:center;font-weight:bold;">
-					<td colspan="3" style="text-align:right; padding-right: 10px">Total: </td>
+					<td colspan="4" style="text-align:right; padding-right: 10px">Total: </td>
 					<td ><?php echo $quantityTotal; ?></td>
 					<td ></td>
 					<td ><?php echo number_format($val['TotalMovements']['fobQuantityTotal'],2); ?></td>
@@ -87,7 +89,7 @@
 				</tr>
 		<?php }else{?>
 				<thead>
-				<tr> <th style="width:100%" colspan="10">Movimientos</th></tr>
+				<tr> <th style="width:100%" colspan="11">Movimientos</th></tr>
 				</thead>
 				<tbody>
 					<tr style="text-align:center;"><td>SIN MOVIMIENTOS</td></tr>

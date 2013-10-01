@@ -18,7 +18,7 @@
 				/////////////////START - SETTINGS BUTTON CANCEL /////////////////
 				//echo $this->Html->link('<i class="icon-cog icon-white"></i> Generar Reporte', array('#'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo', 'id'=>'btnPrint')); 
 			?>
-			<a href="#" id="btnGenerateReportCustomers" class="btn btn-primary noPrint "><i class="icon-cog icon-white"></i> Generar Reporte</a>
+			<a href="#" id="btnGenerateReportCustomers" class="btn btn-primary noPrint "><i class="icon-cog icon-white"></i> Generar Gráficas (abajo)</a>
 			<div id="boxMessage"></div>
 			<div id="boxProcessing" align="center"></div>
 		</div>

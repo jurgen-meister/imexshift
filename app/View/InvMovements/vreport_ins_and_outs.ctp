@@ -8,7 +8,7 @@
 	<tr style="text-align:center">
 		<th style="width:25%">Fecha Inicio:</th>
 		<th style="width:25%">Fecha Fin:</th>
-		<th style="width:25%">Almacen</th>
+		<th style="width:25%">Almacen:</th>
 		<th style="width:25%">Tipo de Cambio:</th>
 	</tr>
 	</thead>
@@ -34,7 +34,7 @@
 	$colspanTableHeader = 2;
 	if(isset($val['Movements'])){
 		$countMovements = 1;
-		$colspanTableHeader = 12;
+		$colspanTableHeader = 13;
 	}
 	
 	foreach ($initialStocks as $valStock) {
@@ -58,7 +58,7 @@
 			<tr> <th style="width:100%" colspan="<?php echo $colspanTableHeader;?>">Movimientos</th></tr>
 			<?php if($countMovements == 1){ ?>
 			<tr >
-				<th colspan="5" style="text-align:right; padding-right: 10px">Stock Inicial:</th>
+				<th colspan="6" style="text-align:right; padding-right: 10px">Stock Inicial:</th>
 				<th ><?php echo $stockQuantity; ?></th>
 				<th colspan="6"></th>
 			</tr>	
@@ -66,6 +66,7 @@
 				<th>Fecha</th>
 				<th>Codigo</th>
 				<th>Codigo <br> Ref</th>
+				<th>Nota <br> Remisión</th>
 				<th>Cant. Ent <br>(Uni)</th>
 				<th>Cant. Sal<br>(Uni)</th>
 				<th>Stock <br> (Uni)</th>
@@ -93,6 +94,7 @@
 						<td style="text-align:left;" ><?php echo $movement['date'];?></td>
 						<td style="text-align:left;"><?php echo $movement['code'];?></td>
 						<td style="text-align:left;"><?php echo $movement['document_code'];?></td>
+						<td style="text-align:left;"><?php echo $movement['note_code'];?></td>
 						<?php
 							$inQuantity = '-';
 							$outQuantity = '-';
@@ -125,7 +127,7 @@
 			<?php } //loop ends ?>
 
 					<tr style="text-align:center;font-weight:bold;">
-						<td colspan="3" style="text-align:right; padding-right: 10px">Total: </td>
+						<td colspan="4" style="text-align:right; padding-right: 10px">Total: </td>
 						<td ><?php if($inQuantityTotal == 0){echo '-';}else{echo $inQuantityTotal;} ?></td>
 						<td ><?php if($outQuantityTotal == 0){echo '-';}else{echo $outQuantityTotal;} ?></td>
 						<td ><?php echo $stockQuantity; ?></td>
@@ -138,7 +140,7 @@
 					</tr>
 
 				<tr style="font-weight:bold;">
-				<th colspan="5" style="text-align:right; padding-right: 10px">Stock Final:</td>
+				<th colspan="6" style="text-align:right; padding-right: 10px">Stock Final:</td>
 				<th style="text-align:center;"><?php echo $stockQuantity; ?></td>
 				<th colspan="6"></td>
 			</tr>	

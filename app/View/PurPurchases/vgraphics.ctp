@@ -37,7 +37,7 @@
 					'options'=>$priceTypes
 				));
 				echo $this->BootstrapForm->input('currency', array(
-					'label' => 'Cambio:',
+					'label' => 'Moneda:',
 					'id'=>'cbxCurrency',
 					'type'=>'select',
 					'options'=>array("bolivianos"=>"BOLIVIANOS", "dolares"=>"DOLARES")

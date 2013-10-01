@@ -78,7 +78,7 @@
 						
 						echo '<div class="row-fluid">';
 						  echo $this->BootstrapForm->input('currency', array(
-							'label' => '* Tipo de Cambio:',
+							'label' => '* Moneda:',
 							'id'=>'cbxReportCurrency',
 							'type'=>'select',
 							//'multiple'=>'multiple',

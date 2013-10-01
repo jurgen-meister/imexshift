@@ -51,7 +51,7 @@
 				<th><?php echo "#";?></th>
 				<th><?php echo 'Codigo Compra';?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('inv_supplier_id', 'Proveedor');?></th>
+				<!--<th><?php //echo $this->BootstrapPaginator->sort('inv_supplier_id', 'Proveedor');?></th>-->
 				<!--<th><?php //echo ('Codigo Entrada Almacen');?></th>-->
 				<th><?php echo 'Estado Documento';?></th>
 			</tr>
@@ -65,9 +65,9 @@
 					?>
 					&nbsp;
 				</td>
-				<td>
-					<?php echo h($purPurchase['InvSupplier']['name']); ?>
-				</td>
+				<!--<td>-->
+					<?php //echo h($purPurchase['InvSupplier']['name']); ?>
+				<!--</td>-->
 				<!--<td></td>-->
 				<td><?php
 				///////////START - SETTING URL AND PARAMETERS/////////////

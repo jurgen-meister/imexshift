@@ -369,6 +369,7 @@ class SalSalesController extends AppController {
 	
 
 	//////////////////////////////////////////START-GRAPHICS//////////////////////////////////////////
+	/*
 	public function vgraphics(){
 		$this->loadModel("AdmPeriod");
 		$years = $this->AdmPeriod->find("list", array(
@@ -388,7 +389,20 @@ class SalSalesController extends AppController {
 		$this->set(compact("years", "items"));
 		//debug($this->_get_bars_sales_and_time("2013", "0"));
 	}
+	*/
 	
+	public function vreport_purchases_customers(){
+		$this->loadModel("AdmPeriod");
+		$years = $this->AdmPeriod->find("list", array(
+			"order"=>array("name"=>"desc"),
+			"fields"=>array("name", "name")
+			)
+		);
+		$months = array(0=>"Todos", 1=>"Enero", 2=>"Febrero", 3=>"Marzo", 4=>"Abril", 5=>"Mayo", 6=>"Junio", 7=>"Julio", 8=>"Agosto", 9=>"Septiembre", 10=>"Octubre", 11=>"Noviembre", 12=>"Diciembre");
+		$item = $this->_find_items();
+		
+		$this->set(compact("years", "months", "item"));
+	}
 	
 	public function vgraphics_items_customers(){
 		$clientsClean = $this->SalSale->SalEmployee->SalCustomer->find('list');
@@ -727,9 +741,10 @@ class SalSalesController extends AppController {
 		$dataString5 = "";
 		$dataString6 = "";
 		$counter = 1;
+		//debug($limit);
 		$limitbackwards = $limit - 10;
 		$fullName = "";
-		
+		//debug($limitbackwards);
 		$arrayForTopLessMoney = array();
 		$arrayForTopLessQuantity = array();
 		
@@ -739,6 +754,7 @@ class SalSalesController extends AppController {
 		   $fullName = "[ ".$value['InvItem']['code']." ] ".$value['InvItem']['name'];
 		   if($counter <= 10){
 			   $dataString3 .= $fullName ."==".$value['0']['money']."|";
+			   //debug($counter);
 		   }
 		   if($counter >= $limitbackwards ){
 			   //$dataString5 .= $fullName ."==".$value['0']['money']."|";
@@ -747,7 +763,8 @@ class SalSalesController extends AppController {
 		   $counter++;
 		   
 	   }
-		
+	   
+	   $counter = 1;
 	   foreach ($topQuantity as $value) {
 		   $fullName = "[ ".$value['InvItem']['code']." ] ".$value['InvItem']['name'];
 		   if($counter <= 10){
@@ -763,19 +780,21 @@ class SalSalesController extends AppController {
 	   
 	   //Now to revert order to get top less values
 	   $limitTopLessMoney = count($arrayForTopLessMoney);
+	   //debug($limitTopLessMoney);
 	   if($limitTopLessMoney > 0){
 		do{
 			$limitTopLessMoney = $limitTopLessMoney  - 1;
 			 $dataString5 .= $arrayForTopLessMoney[$limitTopLessMoney] . "|";
-		}while($limitTopLessMoney > 0);
+		}while($limitTopLessMoney > 1);
 	   }
 	   
 	   $limitTopLessQuantity = count($arrayForTopLessQuantity);
+	   //debug($limitTopLessQuantity);
 	   if($limitTopLessQuantity > 0){
 		do{
 			 $limitTopLessQuantity = $limitTopLessQuantity  - 1;
 			  $dataString6 .= $arrayForTopLessQuantity[$limitTopLessQuantity] . "|";
-		 }while($limitTopLessQuantity > 0);
+		 }while($limitTopLessQuantity > 1);
 	   }
 		return array(
 			"quantity"=>substr($dataString2, 0, -1),
