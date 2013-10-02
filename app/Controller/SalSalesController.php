@@ -391,7 +391,7 @@ class SalSalesController extends AppController {
 	}
 	*/
 	
-	public function vreport_purchases_customers(){
+	public function vreport_generator_purchases_customers(){
 		$this->loadModel("AdmPeriod");
 		$years = $this->AdmPeriod->find("list", array(
 			"order"=>array("name"=>"desc"),
@@ -404,6 +404,102 @@ class SalSalesController extends AppController {
 		$this->set(compact("years", "months", "item"));
 	}
 	
+	
+	public function vreport_purchases_customers(){
+		//special ctp template for printing due DOMPdf colapses generating too many pages
+		$this->layout = 'print';
+		
+		//Check if session variables are set otherwise redirect
+		if(!$this->Session->check('ReportPurchasesCustomers')){
+			$this->redirect(array('action' => 'vreport_generator_purchases_customers'));
+		}
+		
+		//put session data sent data into variables
+		$initialData = $this->Session->read('ReportPurchasesCustomers');
+		
+		//debug($initialData);
+		$this->set("initialData", $initialData);
+		$conditionMonth = null;
+		if($initialData['month'] > 0){
+			if(count($initialData['month']) == 1){
+				$conditionMonth = array("to_char(SalSale.date,'mm')" => "0".$initialData['month']);
+			}else{
+				$conditionMonth = array("to_char(SalSale.date,'mm')" => $initialData['month']);
+			}
+		}
+		
+		$this->SalSale->SalDetail->bindModel(array(
+			'hasOne'=>array(
+				'SalEmployee'=>array(
+					'foreignKey'=>false,
+					'conditions'=> array('SalSale.sal_employee_id = SalEmployee.id')
+				),
+				'SalCustomer'=>array(
+					'foreignKey'=>false,
+					'conditions'=> array('SalEmployee.sal_customer_id = SalCustomer.id')
+				)
+			)
+		));
+		$this->SalSale->SalDetail->unbindModel(array('belongsTo' => array('InvWarehouse')));
+		$data = $this->SalSale->SalDetail->find("all", array(
+			"fields"=>array(
+				'SUM("SalDetail"."quantity" * "SalDetail"."sale_price") AS money',
+				'SUM("SalDetail"."quantity") AS quantity',
+				'SalCustomer.name',
+				'SalCustomer.id',
+			),
+			'group'=>array("SalCustomer.name", "SalCustomer.id"),
+			"conditions"=>array(
+				"SalCustomer.id"=>array(11,77,367),
+				"to_char(SalSale.date,'YYYY')"=>$initialData['year'],
+				"SalDetail.inv_item_id"=>$initialData['items'],
+				$conditionMonth
+			),
+			"order"=>array("SalCustomer.name")
+		));
+		$this->loadModel("SalCustomer");
+		$customers = $this->SalCustomer->find("list", array("order"=>array("SalCustomer.name")));
+		//debug($data);
+		
+		
+		$details = array();
+		$counter = 0;
+		foreach ($customers as $key => $customer) {
+			$details[$counter]['name'] = $customer;
+			$details[$counter]['money'] = 0;
+			$details[$counter]['quantity'] = 0;
+			foreach ($data as $key2 => $value) {
+				if($key == $value['SalCustomer']['id']){
+					$details[$counter]['money'] = $value[0]['money'];
+					$details[$counter]['quantity'] = $value[0]['quantity'];
+				}
+			}
+			$counter++;
+		}
+		
+		//debug($details);
+		$this->set(compact("details"));
+		//debug($details);
+		$this->Session->delete('ReportPurchasesCustomers');
+	}
+	
+	
+	public function  ajax_generate_report_purchases_customers(){
+		if($this->RequestHandler->isAjax()){
+			//SETTING DATA
+			$this->Session->write('ReportPurchasesCustomers.year', $this->request->data['year']);
+			$this->Session->write('ReportPurchasesCustomers.month', $this->request->data['month']);
+			$this->Session->write('ReportPurchasesCustomers.monthName', $this->request->data['monthName']);
+			$this->Session->write('ReportPurchasesCustomers.currency', $this->request->data['currency']);
+			
+			//array items
+			$this->Session->write('ReportPurchasesCustomers.items', $this->request->data['items']);
+			
+		///END AJAX
+		}
+	}
+
+
 	public function vgraphics_items_customers(){
 		$clientsClean = $this->SalSale->SalEmployee->SalCustomer->find('list');
 		$clients[0] = "TODOS";

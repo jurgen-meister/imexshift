@@ -279,6 +279,59 @@ $('#btnGenerateReportCustomers').click(function(){
 });
 
 
+$('#btnGenerateReportPurchasesCustomers').click(function(){
+	var currency = $('#cbxCurrency').val();
+	var groupBy = $('#cbxReportGroupTypes').val();
+	var year =  $("#cbxYear").val();
+	var month =  $("#cbxMonth").val();
+	var monthName =  $("#cbxMonth option:selected").text();
+	var items = getSelectedCheckboxes();
+	if(items.length > 0){
+		var DATA = {
+						currency:currency,
+						groupBy:groupBy,
+						year:year,
+						month:month,
+						monthName:monthName,
+						items:items
+					   };
+			//alert(DATA);
+			ajax_generate_report_purchases_customers(DATA);
+			$('#boxMessage').html('');
+	}else{
+		$('#boxMessage').html('<div class="alert-error"><ul>'+'<li> Debe elegir al menos un "Item" </li>'+'</ul></div>');
+	}
+	return false;
+});
+
+
+	function ajax_generate_report_purchases_customers(dataSent){ //Report
+		$.ajax({
+            type:"POST",
+			async:false, // the key to open new windows when success
+            url:moduleController + "ajax_generate_report_purchases_customers",			
+            data:dataSent,
+			beforeSend: function(){
+				$('#boxProcessing').text('Procesando...');
+			},
+            success: function(data){
+				open_in_new_tab(moduleController+'vreport_purchases_customers');
+				$('#boxProcessing').text('');
+			},
+			error:function(data){
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#boxProcessing').text('');
+			}
+        });
+	}
+
+
+	function open_in_new_tab(url)
+	{
+	  var win=window.open(url, '_blank');
+	  win.focus();
+	}
+
 $('#btnGenerateReportSalesmen').click(function(){
 	var currency = $('#cbxCurrency').val();
 	var groupBy = $('#cbxReportGroupTypes').val();
