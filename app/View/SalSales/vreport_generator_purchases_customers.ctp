@@ -31,7 +31,7 @@
 			<span class="icon">
 				<i class=" icon-search"></i>
 			</span>
-			<h5>Reporte de Compras realizadas por Clientes</h5>
+			<h5>Reporte Ventas - Compras de Clientes</h5>
 		</div>
 		<div class="widget-content nopadding">
 			<?php 
@@ -53,6 +53,13 @@
 					'type'=>'select',
 					'class'=>'span2',
 					'options'=>$months 
+				));
+				echo $this->BootstrapForm->input('show', array(
+					'label' => 'Mostrar:',
+					'id'=>'cbxShowZero',
+					'type'=>'select',
+					'class'=>'span2',
+					'options'=>array("no"=>"Sin cero", "yes"=>"Con cero") 
 				));
 				echo $this->BootstrapForm->input('currency', array(
 					'label' => 'Moneda:',

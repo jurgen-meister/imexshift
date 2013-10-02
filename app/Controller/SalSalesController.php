@@ -72,29 +72,38 @@ class SalSalesController extends AppController {
 		$this->set(compact("warehouse", "item"));
 	}
 	
-	private function _find_items($type = 'none', $selected = array()){
+	private function _find_items($type = 'none', $selected = array(), $items = ""){
 		$conditions = array();
 		$order = array('InvItem.code');
+		$conditionsTypes = array();
 		
 		switch ($type){
 			case 'category':
-				$conditions = array('InvItem.inv_category_id'=>$selected);
+				$conditionsTypes = array('InvItem.inv_category_id'=>$selected);
 				//$order = array('InvCategory.name');
 				break;
 			case 'brand':
-				$conditions = array('InvItem.inv_brand_id'=>$selected);
+				$conditionsTypes = array('InvItem.inv_brand_id'=>$selected);
 				//$order = array('InvBrand.name');
 				break;
 		}
-			
+		
+		if($items <> ""){
+			$conditions = array_merge($conditionsTypes, array("InvItem.id"=>$items));
+		}else{
+			$conditions = $conditionsTypes;
+		}
+		
 		$this->loadModel("InvItem");
 		$this->InvItem->unbindModel(array('hasMany' => array('InvPrice', 'InvCategory', 'InvMovementDetail', 'InvItemsSupplier')));
 		return $this->InvItem->find("all", array(
-					"fields"=>array('InvItem.code', 'InvItem.name', 'InvCategory.name', 'InvBrand.name', 'InvItem.id'),
+					"fields"=>array('InvItem.code', 'InvItem.name', 'InvCategory.name', 'InvBrand.name', 'InvItem.id', 'InvItem.full_name'),
 					"conditions"=>$conditions,
 					"order"=>$order
 				));
 	}
+	
+
 	
 	public function ajax_get_group_items_and_filters(){
 		if($this->RequestHandler->isAjax()){
@@ -450,7 +459,7 @@ class SalSalesController extends AppController {
 			),
 			'group'=>array("SalCustomer.name", "SalCustomer.id"),
 			"conditions"=>array(
-				"SalCustomer.id"=>array(11,77,367),
+				//"SalCustomer.id"=>array(11,77,367),
 				"to_char(SalSale.date,'YYYY')"=>$initialData['year'],
 				"SalDetail.inv_item_id"=>$initialData['items'],
 				$conditionMonth
@@ -461,25 +470,55 @@ class SalSalesController extends AppController {
 		$customers = $this->SalCustomer->find("list", array("order"=>array("SalCustomer.name")));
 		//debug($data);
 		
-		
+		//debug($customers);
 		$details = array();
-		$counter = 0;
-		foreach ($customers as $key => $customer) {
-			$details[$counter]['name'] = $customer;
-			$details[$counter]['money'] = 0;
-			$details[$counter]['quantity'] = 0;
-			foreach ($data as $key2 => $value) {
-				if($key == $value['SalCustomer']['id']){
-					$details[$counter]['money'] = $value[0]['money'];
-					$details[$counter]['quantity'] = $value[0]['quantity'];
+		
+		if($initialData["zero"] == "yes"){
+			$counter = 0;
+			foreach ($customers as $key => $customer) {
+				$details[$counter]['SalCustomer']['name'] = $customer;
+				$details[$counter][0]['money'] = 0;
+				$details[$counter][0]['quantity'] = 0;
+				foreach ($data as $key2 => $value) {
+					
+					if($key == $value['SalCustomer']['id']){
+						//debug($value[0]['money']);
+						$details[$counter][0]['money'] = $value[0]['money'];
+						$details[$counter][0]['quantity'] = $value[0]['quantity'];
+					}
 				}
+				$counter++;
 			}
-			$counter++;
+		}else{
+			$details = $data;
 		}
 		
 		//debug($details);
-		$this->set(compact("details"));
+		
 		//debug($details);
+		
+		//debug($details);
+		
+		//Now list items selected in order to get a reference
+		$group = array();
+			switch ($initialData['groupBy']) {
+				case 'category':
+					$this->loadModel("InvCategory");
+					$group = $this->InvCategory->find("list", array("order"=>array("InvCategory.name")));
+					$this->set('group', $group);
+					break;
+				case 'brand':
+					$this->loadModel("InvBrand");
+					$group = $this->InvBrand->find("list", array("order"=>array("InvBrand.name")));
+					$this->set('group', $group);
+					break;
+			}
+			$items = $this->_find_items($initialData['groupBy'], array_keys($group), $initialData['items']);
+		
+		
+			
+		$this->set(compact("details", "items"));
+		//debug($items);
 		$this->Session->delete('ReportPurchasesCustomers');
 	}
 	
@@ -491,6 +530,8 @@ class SalSalesController extends AppController {
 			$this->Session->write('ReportPurchasesCustomers.month', $this->request->data['month']);
 			$this->Session->write('ReportPurchasesCustomers.monthName', $this->request->data['monthName']);
 			$this->Session->write('ReportPurchasesCustomers.currency', $this->request->data['currency']);
+			$this->Session->write('ReportPurchasesCustomers.zero', $this->request->data['zero']);
+			$this->Session->write('ReportPurchasesCustomers.groupBy', $this->request->data['groupBy']);
 			
 			//array items
 			$this->Session->write('ReportPurchasesCustomers.items', $this->request->data['items']);

@@ -284,6 +284,7 @@ $('#btnGenerateReportPurchasesCustomers').click(function(){
 	var groupBy = $('#cbxReportGroupTypes').val();
 	var year =  $("#cbxYear").val();
 	var month =  $("#cbxMonth").val();
+	var zero =  $("#cbxShowZero").val();
 	var monthName =  $("#cbxMonth option:selected").text();
 	var items = getSelectedCheckboxes();
 	if(items.length > 0){
@@ -292,6 +293,7 @@ $('#btnGenerateReportPurchasesCustomers').click(function(){
 						groupBy:groupBy,
 						year:year,
 						month:month,
+						zero:zero,
 						monthName:monthName,
 						items:items
 					   };
