@@ -67,9 +67,19 @@ class InvMovementsController extends AppController {
 	//////////////////////////////////////////// START - REPORT ////////////////////////////////////////////////
 	public function vreport_generator(){
 		$this->loadModel("InvWarehouse");
-		$warehouse = $this->InvWarehouse->find('list');
+		
+		
+		$warehouseClean = $this->InvWarehouse->find('list');
+		/* //Comment this because in this case I want to show option Todos at the end
+		$warehouse[0]="TODOS";
+		foreach ($warehouseClean as $key => $value) {
+			$warehouse[$key] = $value;
+		}
+		*/
+		$warehouse = $warehouseClean;
+		$warehouse[0] = "TODOS";
 		$item = $this->_find_items();
-		$this->set(compact("warehouse", "item"));
+		$this->set(compact("warehouse", "item", "warehouseClean"));
 	}
 	
 	private function _find_items($type = 'none', $selected = array()){
@@ -141,7 +151,7 @@ class InvMovementsController extends AppController {
 			$this->Session->write('ReportMovement.warehouse', $this->request->data['warehouse']);
 			$this->Session->write('ReportMovement.warehouseName', $this->request->data['warehouseName']);
 			$this->Session->write('ReportMovement.currency', $this->request->data['currency']);
-			
+			$this->Session->write('ReportMovement.detail', $this->request->data['detail']);
 			//for transfer
 			$this->Session->write('ReportMovement.warehouse2', $this->request->data['warehouse2']);
 			$this->Session->write('ReportMovement.warehouseName2', $this->request->data['warehouseName2']);
@@ -278,7 +288,7 @@ class InvMovementsController extends AppController {
 		$values['startDate']=$initialData['startDate'];
 		$values['finishDate']=$initialData['finishDate'];
 		$warehouses = array(0=>$initialData['warehouse']);
-		
+		//debug($initialData);
 		switch ($initialData['movementType']) {
 			case 998://TODAS LAS ENTRADAS
 				$conditions['InvMovement.inv_movement_type_id']=array(1,4,5,6);
@@ -299,7 +309,10 @@ class InvMovementsController extends AppController {
 				$conditions['InvMovement.inv_movement_type_id']=$initialData['movementType'];
 				break;
 		}
-		$conditions['InvMovement.inv_warehouse_id']=$warehouses;//necessary to be here
+		//debug($warehouses);
+		if($warehouses[0] > 0){
+			$conditions['InvMovement.inv_warehouse_id']=$warehouses;//necessary to be here
+		}
 		$values['items']=$initialData['items'];//just for order
 		switch($initialData['currency']){
 			case 'BOLIVIANOS':

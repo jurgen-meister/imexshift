@@ -1,6 +1,12 @@
 <span style="font-size: 25px; font-weight: bold">IMEXPORT</span><span style="font-weight: bold">SRL</span>
 <hr style="height: 2px; color: #000; background-color: #000;">
-<div style="font-size: 20px; font-weight: bold; text-align:center; text-decoration: underline;">MOVIMIENTOS DE ALMACEN: <?php echo strtoupper($initialData['movementTypeName']);?></div>
+<?php
+$reportTypeName = " (DETALLADO) ";
+if($initialData['detail'] == "NO"){
+	$reportTypeName = " (TOTALES) ";
+}
+?>	
+<div style="font-size: 20px; font-weight: bold; text-align:center; text-decoration: underline;">MOVIMIENTOS DE ALMACEN<?php echo $reportTypeName;?>: <?php echo strtoupper($initialData['movementTypeName']);?></div>
 <br>
 <table class="report-table" border="0" style="border-collapse:collapse; width:100%;">
 	<thead>
@@ -25,6 +31,16 @@
 <hr style="height: 1px; color: #444; background-color: #444;">
 <?php 
 	$currencyAbbr = $initialData['currencyAbbreviation'];
+	
+	$globalQuantity = 0;
+	$globalQuantityFOB = 0;
+	$globalQuantityCIF = 0;
+	$globalQuantitySALE = 0;
+	
+	$fobQuantityTotalDivided = 0;
+	$cifQuantityTotalDivided = 0;
+	$saleQuantityTotalDivided = 0;
+	
 	$warehousesInOut = array($initialData['warehouse']=>$initialData['warehouseName'], $initialData['warehouse2']=>$initialData['warehouseName2']);
 	foreach($itemsMovements as $val){ 
 	$quantityTotal = 0;
@@ -47,6 +63,7 @@
 	<table class="report-table" border="1" style="border-collapse:collapse; width:100%;">
 		<?php if($countMovements == 1){?>
 			<thead>
+				<?php if($initialData['detail'] == 'YES'){ //start - detail YES?>
 				<tr> <th style="width:100%" colspan="13">Movimientos</th></tr>
 
 				<tr>
@@ -64,6 +81,13 @@
 					<th>P.Venta <br><?php echo $currencyAbbr ; ?></th>
 					<th>P.Venta x Cant. <br><?php echo $currencyAbbr ; ?></th>
 				</tr>
+				<?php }else{ //end - detail YES?>
+					<th></th>
+					<th>Cant. <br> (Uni)</th>
+					<th>P.FOB x Cant. <br><?php echo $currencyAbbr ; ?></th>
+					<th>P.CIF x Cant. <br><?php echo $currencyAbbr ; ?></th>
+					<th>P.Venta x Cant. <br><?php echo $currencyAbbr ; ?></th>
+				<?php } //end - detail NO?>
 			</thead>
 			<tbody>
 			<?php foreach($val['Movements'] as $movement){?>
@@ -76,6 +100,8 @@
 						$codeOUT = $movement['code'];
 						$warehouseOUT = $movement['warehouse'];
 				?>
+					
+					<?php if($initialData['detail'] == 'YES'){ //start - detail YES?>
 					<tr style="text-align:center;">
 						<td style="text-align:left;" ><?php echo $movement['date'];?></td>
 						<td style="text-align:left;"><?php echo $movement['document_code'];?></td>
@@ -91,18 +117,33 @@
 						<td ><?php echo $movement['sale'];?></td>
 						<td style="font-weight:bold;"><?php echo number_format($movement['saleQuantity'],2);?></td>
 					</tr>
+					<?php } //end - detail YES?>
+					
 					<?php $quantityTotal = $quantityTotal + $movement['quantity'];?>
 					<?php } $counter++;  //module?>
 			<?php }//foreach movement?>		
 					<tr style="text-align:center;font-weight:bold;">
+						<?php $extraEmptyTotalTds = ""; 
+						if($initialData['detail'] == 'YES'){ //start - detail YES
+
+						$extraEmptyTotalTds = "<td ></td>";
+						?>
+						
 						<td colspan="6" style="text-align:right; padding-right: 10px">Total: </td>
+						<?php }else{//end - detail YES?>
+						<td>Total:</td>
+						<?php }//end - detail NO ?>
+						
 						<td ><?php echo $quantityTotal; ?></td>
-						<td ></td>
-						<td ><?php echo number_format(($val['TotalMovements']['fobQuantityTotal'] / 2),2); ?></td>
-						<td ></td>
-						<td ><?php echo number_format(($val['TotalMovements']['cifQuantityTotal'] / 2),2); ?></td>
-						<td ></td>
-						<td ><?php echo number_format(($val['TotalMovements']['saleQuantityTotal'] / 2),2); ?></td>
+						<?php echo $extraEmptyTotalTds;?>
+						<?php $fobQuantityTotalDivided=($val['TotalMovements']['fobQuantityTotal'] / 2);?>
+						<td ><?php echo number_format($fobQuantityTotalDivided,2); ?></td>
+						<?php echo $extraEmptyTotalTds;?>
+						<?php $cifQuantityTotalDivided=($val['TotalMovements']['cifQuantityTotal'] / 2);?>
+						<td ><?php echo number_format($cifQuantityTotalDivided,2); ?></td>
+						<?php echo $extraEmptyTotalTds;?>
+						<?php $saleQuantityTotalDivided=($val['TotalMovements']['saleQuantityTotal'] / 2);?>
+						<td ><?php echo number_format($saleQuantityTotalDivided,2); ?></td>
 					</tr>
 		<?php }else{?>
 				<thead>
@@ -115,4 +156,38 @@
 	</table>
 	<hr style="height: 1px; color: #CCC; background-color: #CCC;">
 
-<?php } ?>
+<?php 
+	if($countMovements == 1){
+		$globalQuantity = $globalQuantity + $quantityTotal;
+		//debug($fobQuantityTotalDivided);
+		$globalQuantityFOB = $globalQuantityFOB + $fobQuantityTotalDivided;
+		$globalQuantityCIF = $globalQuantityCIF + $cifQuantityTotalDivided;
+		$globalQuantitySALE = $globalQuantitySALE + $saleQuantityTotalDivided;
+	}
+} //end initial foreach 
+
+
+if($initialData['detail'] == 'NO'){ //start - detail NO
+?>
+	<div style="font-size: 20px; font-weight: bold; text-align:center; text-decoration: underline;">TOTAL GLOBAL:</div>
+	<br>
+	<table class="report-table" border="1" style="border-collapse:collapse; width:100%;">
+		<tr>
+			<th></th>
+			<th>Cant. <br> (Uni)</th>
+			<th>P.FOB x Cant. <br><?php echo $currencyAbbr ; ?></th>
+			<th>P.CIF x Cant. <br><?php echo $currencyAbbr ; ?></th>
+			<th>P.Venta x Cant. <br><?php echo $currencyAbbr ; ?></th>
+		</tr>
+		<tr style="text-align:center;font-weight:bold;">
+			<td>TOTAL:</td>
+			<td><?php echo $globalQuantity;?></td>
+			<td><?php echo number_format($globalQuantityFOB,2);?></td>
+			<td><?php echo number_format($globalQuantityCIF,2);?></td>
+			<td><?php echo number_format($globalQuantitySALE,2);?></td>
+		</tr>
+	</table>	
+	<br>
+<?php	
+}
+?>

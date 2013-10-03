@@ -23,8 +23,13 @@ $(document).ready(function(){
 	$('#cbxReportMovementTypes').change(function(){
         if($(this).val() === '1001'){
 			$('#boxWarehouse2').show();
+			$("#cbxReportWarehouse option[value='0']").remove();
+			$("#cbxReportWarehouse").select2();
 		}else{
 			$('#boxWarehouse2').hide();
+			if($("#cbxReportWarehouse option[value='0']").length === 0){
+				$("#cbxReportWarehouse").append('<option value="0">TODOS</option>');
+			}
 		}
 	});
 	
@@ -38,9 +43,11 @@ $(document).ready(function(){
 		var currency = $('#cbxReportCurrency').val();
 		var groupBy = $('#cbxReportGroupTypes').val();
 		var movementTypeName = $('#cbxReportMovementTypes option:selected').text();
+		var detail = $('#cbxDetail').val();
 		var items = getSelectedCheckboxes();
 		var warehouse2 = 'non-existent';
 		var warehouseName2 = 'non-existent';
+		
 		if($('#boxWarehouse2').css('display') === 'block'){
 			warehouse2 = $('#cbxReportWarehouse2').val();
 			warehouseName2 = $('#cbxReportWarehouse2 option:selected').text();
@@ -58,6 +65,7 @@ $(document).ready(function(){
 						groupBy:groupBy,
 						warehouse2:warehouse2,
 						warehouseName2:warehouseName2,
+						detail:detail,
 						items:items
 					   };
 			ajax_generate_report(DATA);

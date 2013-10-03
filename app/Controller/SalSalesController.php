@@ -449,10 +449,14 @@ class SalSalesController extends AppController {
 				)
 			)
 		));
+		
+		$currencyField = "";
+		if(strtoupper($initialData["currency"]) == 'DOLARES'){ $currencyField = "ex_";}
+		
 		$this->SalSale->SalDetail->unbindModel(array('belongsTo' => array('InvWarehouse')));
 		$data = $this->SalSale->SalDetail->find("all", array(
 			"fields"=>array(
-				'SUM("SalDetail"."quantity" * "SalDetail"."sale_price") AS money',
+				'SUM("SalDetail"."quantity" * "SalDetail"."'.$currencyField.'sale_price") AS money',
 				'SUM("SalDetail"."quantity") AS quantity',
 				'SalCustomer.name',
 				'SalCustomer.id',
@@ -717,9 +721,9 @@ class SalSalesController extends AppController {
 				$conditionPerson = array("SalSale.salesman_id" => $person);
 			}
 		}
-		$currencyType = "price";
-		if($currency == "dolares"){
-			$currencyType = "ex_price";
+		$currencyType = "sale_price";
+		if(strtoupper($currency) == "DOLARES"){
+			$currencyType = "ex_sale_price";
 		}
 		
 		//*****************************************************************************//
@@ -741,7 +745,8 @@ class SalSalesController extends AppController {
 		$data = $this->SalSale->SalDetail->find('all', array(
 			"fields"=>array(
 				"to_char(\"SalSale\".\"date\",'mm') AS month",
-				'SUM("SalDetail"."quantity" * (SELECT '.$currencyType.'  FROM inv_prices where inv_item_id = "SalDetail"."inv_item_id" AND date <= "SalSale"."date" AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1)) AS money',
+				//'SUM("SalDetail"."quantity" * (SELECT '.$currencyType.'  FROM inv_prices where inv_item_id = "SalDetail"."inv_item_id" AND date <= "SalSale"."date" AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1)) AS money',
+				'SUM("SalDetail"."quantity" * "SalDetail"."'.$currencyType.'") as money',
 				'SUM("SalDetail"."quantity") AS quantity'
 			),
 			'group'=>array("to_char(SalSale.date,'mm')"),
@@ -800,9 +805,9 @@ class SalSalesController extends AppController {
 			}
 			
 		}
-		$currencyType = "price";
-		if($currency == "dolares"){
-			$currencyType = "ex_price";
+		$currencyType = "sale_price";
+		if(strtoupper($currency) == "DOLARES"){
+			$currencyType = "ex_sale_price";
 		}
 		
 		//********************************************* ********************************//
@@ -821,7 +826,8 @@ class SalSalesController extends AppController {
 				//"InvItem.id",
 				"InvItem.code",
 				"InvItem.name",
-				'SUM("SalDetail"."quantity" * (SELECT '.$currencyType.'  FROM inv_prices where inv_item_id = "SalDetail"."inv_item_id" AND date <= "SalSale"."date" AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1)) AS money',
+				//'SUM("SalDetail"."quantity" * (SELECT '.$currencyType.'  FROM inv_prices where inv_item_id = "SalDetail"."inv_item_id" AND date <= "SalSale"."date" AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1)) AS money',
+				'SUM("SalDetail"."quantity" * "SalDetail"."'.$currencyType.'") as money',
 				'SUM("SalDetail"."quantity") AS quantity'
 			),
 			'group'=>array(

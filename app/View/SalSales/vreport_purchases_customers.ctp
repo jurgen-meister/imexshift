@@ -19,24 +19,25 @@
 </table>
 <hr style="height: 1px; color: #444; background-color: #444;">
 
+<?php $currencyAbbr = ' (Bs)'; if(strtoupper($initialData['currency']) == 'DOLARES'){$currencyAbbr=' ($us)';}?>
 
 <table class="report-table" border="1" style="border-collapse:collapse; width:100%;">
 			<thead>
 				<tr>
 					<th>#</th>
 					<th>Cliente</th>
-					<th>Cantidad</th>
-					<th>Precio</th>
+					<th>Cantidad (Unidad)</th>
+					<th> Monto Dinero <?php echo $currencyAbbr;?></th>
 				</tr>
 			</thead>
 			<tbody>
 				<?php $counter = 1; $totalMoney = 0; $totalQuantity=0;?>
 				<?php foreach($details as $value){?>
 				<tr>
-					<td ><?php echo $counter;?></td>
-					<td ><?php echo $value['SalCustomer']['name'];?></td>
-					<td ><?php echo $value[0]['quantity'];?></td>
-					<td ><?php echo number_format($value[0]['money'],2);?></td>
+					<td style="text-align:center;"><?php echo $counter;?></td>
+					<td style="padding-left: 10px;"><?php echo $value['SalCustomer']['name'];?></td>
+					<td style="text-align:center;"><?php echo $value[0]['quantity'];?></td>
+					<td style="text-align:center;"><?php echo number_format($value[0]['money'],2);?></td>
 				</tr>
 				<?php 
 				$totalQuantity = $totalQuantity + $value[0]['quantity'];
@@ -66,8 +67,8 @@
 			<?php $counter=1; ?>
 			<?php foreach($items as $item){?>
 			<tr>
-					<td ><?php echo $counter;?></td>
-					<td ><?php echo $item["InvItem"]["full_name"];?></td>
+					<td style="text-align: center;"><?php echo $counter;?></td>
+					<td style="padding-left: 10px;"><?php echo $item["InvItem"]["full_name"];?></td>
 					<td style="text-align: center;"><?php echo $item["InvBrand"]["name"];?></td>
 					<td style="text-align: center;"><?php echo $item["InvCategory"]["name"];?></td>
 			</tr>
