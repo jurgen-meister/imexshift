@@ -6,6 +6,127 @@ var path = window.location.pathname;
 var arr = path.split('/');
 var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 
+//ON START
+	//EXECUTE onload
+	//ajax_get_graphics_data();
+	$('select').select2();
+	startDataTable();
+	
+/////////////
+	
+	$('#cbxReportGroupTypes').change(function(){
+		getGroupItemsAndFilters();
+	});
+	
+	function getGroupItemsAndFilters(){
+		ajax_get_group_items_and_filters();
+	}
+	
+	$('#btnGenerateGraphicsMovements').click(function(){
+		var items = getSelectedCheckboxes();
+		if(items.length > 0){
+			ajax_get_graphics_data(items);	
+			$('#boxMessage').html('');
+		}else{
+			$('#boxMessage').html('<div class="alert-error"><ul>'+'<li> Debe elegir al menos un "Item" </li>'+'</ul></div>');
+		}
+		
+	});
+	
+	function getSelectedCheckboxes(){
+	   var selected = new Array();
+	   $(".data-table tbody input:checkbox:checked").each(function() {
+			selected.push($(this).val());
+	   });
+	   return selected;
+   }
+	
+	function startDataTable(){
+	   $('.data-table').dataTable({
+			"bJQueryUI": true,
+			//"sPaginationType": "full_numbers",
+			"sDom": '<"">t<"F"f>i',
+			"sScrollY": "240px",
+			//"bScrollCollapse": true,
+			"bPaginate": false,
+			"aaSorting":[], //on start sorting setting to empty
+			"oLanguage": {
+				"sSearch": "Filtrar:",
+				 "sZeroRecords":  "No se encontro nada.",
+				 //"sInfo":         "Ids from _START_ to _END_ of _TOTAL_ total" //when pagination exists
+				 "sInfo": "Encontrados _TOTAL_ Items",
+				 "sInfoEmpty": "Encontrados 0 Items",
+				 "sInfoFiltered": "(filtrado de _MAX_ Items)"
+			},
+			"aoColumnDefs": [
+			  { 'bSortable': false, 'aTargets': [ 0 ] }// do not sort first column
+			]
+		});
+		$('input[type=checkbox]').uniform();
+		$("#title-table-checkbox").click(function() {
+			var checkedStatus = this.checked;
+			var checkbox = $(this).parents('.widget-box').find('tr td:first-child input:checkbox');		
+			checkbox.each(function() {
+				this.checked = checkedStatus;
+				if (checkedStatus === this.checked) {
+					$(this).closest('.checker > span').removeClass('checked');
+				}
+				if (this.checked) {
+					$(this).closest('.checker > span').addClass('checked');
+				}
+			});
+		});	
+   }
+function ajax_get_group_items_and_filters(){ //Report
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_get_group_items_and_filters",			
+            data:{type: $('#cbxReportGroupTypes').val()},
+			beforeSend: function(){
+				$('#boxProcessing').text('Procesando...');
+			},
+            success: function(data){
+				$('#boxGroupItemsAndFilters').html(data);
+				$('select').select2();
+				startDataTable();
+				$('#boxGroupItemsAndFilters #cbxReportGroupFilters').bind("change",function(){ 
+					var selected = new Array();
+					$("#boxGroupItemsAndFilters #cbxReportGroupFilters option:selected").each(function () {
+						selected.push($(this).val());
+					});
+					ajax_get_group_items(selected);
+				});
+				$('#boxProcessing').text('');
+			},
+			error:function(data){
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#boxProcessing').text('');
+			}
+        });
+	}
+	
+	function ajax_get_group_items(selected){ //Report
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_get_group_items",			
+            data:{type: $('#cbxReportGroupTypes').val(), selected: selected},
+			beforeSend: function(){
+				$('#boxProcessing').text('Procesando...');
+			},
+            success: function(data){
+				$('#boxGroupItems').html(data);
+				startDataTable();
+				$('#boxProcessing').text('');
+			},
+			error:function(data){
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#boxProcessing').text('');
+			}
+        });
+	}
+	
+	
+	////////////////////////////////////////////////////////////////////////
 	function createPieData(sentData){
 		//Format expected from ajax request is label1-data1|label2-data2
 		var firstSplitedData = sentData.split("|");
@@ -89,13 +210,14 @@ var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 	}
 	/////////////////////////////////////////////////////////
 
-	function ajax_get_graphics_data(){ 
+	function ajax_get_graphics_data(items){ 
+		//var items = getSelectedCheckboxes();
 		$.ajax({
             type:"POST",
             url:moduleController + "ajax_get_graphics_data",			
-            data:{year: $('#cbxYear').val(), warehouse:$('#cbxWarehouse').val(), item:$('#cbxItem').val()},
+            data:{year: $('#cbxYear').val(), warehouse:$('#cbxWarehouse').val(), item:items},
 			beforeSend: function(){
-				$('#processing').text("Procesando...");
+				$('#boxProcessing').text("Procesando...");
 			},
             success: function(data){
 				var arrayData = data.split(",");
@@ -109,12 +231,12 @@ var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 				$.plot($(".bars2"), createBarData(arrayData[3]), barOptions);
 				
 				//hide message
-				$('#processing').text("");
+				$('#boxProcessing').text("");
 			},
 			error:function(data){
 				//hideBittionAlertModal();
 				showGrowlMessage('error', 'Vuelva a intentarlo.');
-				$('#processing').text("");
+				$('#boxProcessing').text("");
 			}
         });
 	}
@@ -151,13 +273,14 @@ var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 	
 	//EXECUTE onload
 	ajax_get_graphics_data();
-	$('#cbxItem').select2();
+	//$('#cbxItem').select2();
 	
 	//events
+	/*
 	$('#cbxWarehouse, #cbxItem, #cbxYear').change(function(){
 		ajax_get_graphics_data();
 	});
-	
+	*/
 	////////////////////////////////////////////////////////
 //	var data = createPieData("Compras-175|Traspasos-25|Aperturas-25|Otros-25");
 //	var options = createPieOptions();

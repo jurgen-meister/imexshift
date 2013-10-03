@@ -8,6 +8,8 @@
 <?php echo $this->Html->script('jquery.flot.pie.min', FALSE); ?>
 <?php echo $this->Html->script('jquery.flot.resize.min', FALSE); ?>
 <?php echo $this->Html->script('unicorn', FALSE); ?>
+<?php echo $this->Html->script('jquery.dataTables.min.js', FALSE); ?>
+<?php echo $this->Html->script('jquery.uniform.js', FALSE); ?>
 <?php echo $this->Html->script('modules/InvGraphics', FALSE); ?>
 
 
@@ -16,6 +18,15 @@
 <!-- ************************************************************************************************************************ -->
 	<!-- //////////////////////////// Start - buttons /////////////////////////////////-->
 	<div class="widget-box">
+		<div class="widget-content nopadding">
+			<a href="#" id="btnGenerateGraphicsMovements" class="btn btn-primary noPrint "><i class="icon-cog icon-white"></i> Generar Gráficas (abajo)</a>
+			<div id="boxMessage"></div>
+			<div id="boxProcessing" align="center"></div>
+		</div>
+	</div>
+	<!-- //////////////////////////// End - buttons /////////////////////////////////-->
+	
+	<div class="widget-box">
 		<div class="widget-title">
 			<span class="icon">
 				<i class=" icon-search"></i>
@@ -23,10 +34,6 @@
 			<h5>Filtros</h5>
 		</div>
 		<div class="widget-content nopadding">
-			<?php 
-				/////////////////START - SETTINGS BUTTON CANCEL /////////////////
-				//echo $this->Html->link('<i class="icon-cog icon-white"></i> Generar Reporte', array('#'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo', 'id'=>'btnPrint')); 
-			?>
 			<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-horizontal', 'novalidate' => true));?>
 				<?php
 				echo $this->BootstrapForm->input('year', array(
@@ -39,9 +46,11 @@
 				echo $this->BootstrapForm->input('warehouse', array(
 					'label' => 'Almacen:',
 					'id'=>'cbxWarehouse',
+					'class'=>'span3',
 					'type'=>'select',
 					'options'=>$warehouses,
 				));
+				/*
 				echo $this->BootstrapForm->input('item', array(
 					'label' => 'Item:',
 					'id'=>'cbxItem',
@@ -49,10 +58,42 @@
 					'type'=>'select',
 					'options'=>$items,
 				));
+				 */
+				echo $this->BootstrapForm->input('type', array(
+				'label' => '* Agrupar por:',
+				'id'=>'cbxReportGroupTypes',
+				'type'=>'select',
+				'class'=>'span3',    
+				'options'=>array('none'=>'Ninguno','brand'=>'Marca','category'=> 'Categoria')  
+				)); 
+
 				?>
-			<label id="processing"></label>
+			
 			<?php echo $this->BootstrapForm->end();?>
-			<div id="boxMessage"></div>
+			<div id="boxGroupItemsAndFilters">
+				<table class="table table-bordered data-table with-check">
+					<thead>
+					<tr>
+						<th><input type="checkbox" id="title-table-checkbox" name="title-table-checkbox" checked="checked" /></th>
+						<th>Item</th>
+						<th>Marca</th>
+						<th>Categoria</th>
+					</tr>
+					</thead>
+
+					<tbody>
+					<?php foreach($item as $val){ ?>	
+					<tr>
+						<td><input type="checkbox" checked="checked" value="<?php echo $val['InvItem']['id'];?>" /></td>
+						<td><?php echo '[ '.$val['InvItem']['code'].' ] '.$val['InvItem']['name'];?></td>
+						<td><?php echo $val['InvBrand']['name'];?></td>
+						<td><?php echo $val['InvCategory']['name'];?></td>
+					</tr>
+					<?php } ?>
+					</tbody>
+				</table>  
+			</div>
+			
 		</div>
 	</div>
 	<!-- //////////////////////////// End - buttons /////////////////////////////////-->

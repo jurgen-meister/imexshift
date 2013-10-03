@@ -404,7 +404,7 @@ class InvMovementsController extends AppController {
 			"fields"=>array("name", "name")
 			)
 		);
-		
+		/*
 		$this->loadModel("InvItem");
 		
 		$itemsClean = $this->InvItem->find("list", array('order'=>array('InvItem.code')));
@@ -412,10 +412,11 @@ class InvMovementsController extends AppController {
 		foreach ($itemsClean as $key => $value) {
 			$items[$key] = $value;
 		}
-		
+		*/
+		$item = $this->_find_items();
 //		debug($items);
 		//array_unshift($items, "TODOS"); // doesn't work 'cause change key values to an order 1,2,3,etc
-		$this->set(compact("warehouses", "years", "items"));
+		$this->set(compact("warehouses", "years", "item"));
 		//debug($this->_get_bars_items_quantity_and_time("entrada", "2013", 0, 0));
 	}
 	
