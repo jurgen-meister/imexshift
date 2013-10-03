@@ -4,7 +4,7 @@
 <div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
 <!-- ************************************************************************************************************************ -->
 
-<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 1/2 *************************************** -->
+	<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 1/2 *************************************** -->
 	<?php
 		switch ($documentState){
 			case '':
@@ -26,47 +26,48 @@
 		}
 	?>
 	
-<!-- //////////////////////////// Start - buttons /////////////////////////////////-->
+	<!-- //////////////////////////// Start - buttons /////////////////////////////////-->
 	<div class="widget-box">
 		<div class="widget-content nopadding">
 			<?php 
-			
-			
-			
-			/////////////////START - SETTINGS BUTTON CANCEL /////////////////
-								
-					$parameters = $this->passedArgs;
-					$url=array();
-					if($idMovement == ''){
-						$url=array('action'=>'index_purchase_in');
-						if(!isset($parameters['search'])){
-							unset($parameters['document_code']);
-						}else{
-							if($parameters['search'] == 'empty'){
-								unset($parameters['document_code']);
-							}
-						}
+				/////////////////START - SETTINGS BUTTON CANCEL /////////////////
+				$parameters = $this->passedArgs;
+				$url=array();
+				if($idMovement == ''){
+					$url=array('action'=>'index_sale_out');
+					if(!isset($parameters['search'])){
+						unset($parameters['document_code']);
 					}else{
-						$url['action']='index_in';
-						if(!isset($parameters['search'])){//no search
+						if($parameters['search'] == 'empty'){
 							unset($parameters['document_code']);
-							unset($parameters['code']);
-						}else{//yes search
-							if($parameters['search']=='yes'){
-								if(isset($parameters['document_code']) && isset($parameters['code'])){
-									unset($parameters['document_code']);
-								}
-								if(isset($parameters['document_code'])){
-									unset($parameters['code']);
-								}
-							}
-							if($parameters['search']=='empty'){
-								unset($parameters['document_code']);
-							}
 						}
 					}
+				}else{
+					$url['action']='index_out';
+					if(!isset($parameters['search'])){//no search
+						unset($parameters['document_code']);
+						unset($parameters['code']);
+					}else{//yes search
+						if($parameters['search']=='yes'){
+							if(isset($parameters['document_code']) && isset($parameters['code'])){
+								unset($parameters['document_code']);
+							}
+							if(isset($parameters['document_code'])){
+								unset($parameters['code']);
+							}
+						}
+						if($parameters['search']=='empty'){
+							unset($parameters['document_code']);
+						}
+					}
+				}
 				unset($parameters['id']);
-				echo $this->Html->link('<i class=" icon-arrow-left"></i> Volver', array_merge($url,$parameters), array('class'=>'btn', 'escape'=>false)).' ';
+				if($parameters['documentCodeNoSet'] == ''){
+					unset($parameters['document_code']);
+				}else{
+					$parameters['document_code'] = $parameters['documentCodeNoSet'];
+				}
+				echo $this->Html->link('<i class=" icon-arrow-left"></i> Volver', array_merge(array("action"=>"index_purchase_in"),$parameters), array('class'=>'btn', 'escape'=>false)).' ';
 				//////////////////END - SETTINGS BUTTON CANCEL /////////////////
 			?>
 
@@ -110,22 +111,22 @@
 		</div>
 	</div>
 	<!-- //////////////////////////// End - buttons /////////////////////////////////-->
-
+	
 	<div class="widget-box">
 		<div class="widget-title">
 			<span class="icon">
 				<i class="icon-edit"></i>								
 			</span>
-			<h5>Entrada de Compra al Almacen</h5>
+			<h5>Entrada de Venta del Almacen</h5>
 			<span id="documentState" class="label <?php echo $documentStateColor;?>"><?php echo $documentStateName;?></span>
 		</div>
 		<div class="widget-content nopadding">
 	<!-- //******************************** END - #UNICORN  WRAP FORM BOX PART 1/2 *************************************** -->
+	
 
 	<!-- ////////////////////////////////// INICIO - INICIO FORM ///////////////////////////////////// -->
 		<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-horizontal'));?>
 		<fieldset>
-		
 	<!-- ////////////////////////////////// FIN - INICIO FORM /////////////////////////////////////// -->			
 				
 				<!-- ////////////////////////////////// INICIO CAMPOS FORMULARIOS MOVIMIENTO /////////////////////////////////////// -->
@@ -156,11 +157,20 @@
 				
 				echo $this->BootstrapForm->input('document_code', array(
 					'id'=>'txtDocumentCode',
-					'label'=>'Codigo Documento Ref:',
 					'autocomplete'=>'off',
+					'label'=>'Codigo Documento Ref:',
 					'style'=>'background-color:#EEEEEE',
 					'disabled'=>$disable,
 					'value'=>$documentCode
+				));
+				
+				echo $this->BootstrapForm->input('note_code', array(
+					'id'=>'txtNoteCode',
+					'autocomplete'=>'off',
+					'label'=>'Nota Remision:',
+					'style'=>'background-color:#EEEEEE',
+					'disabled'=>$disable,
+					'value'=>$noteCode
 				));
 				
 				echo $this->BootstrapForm->input('date_in', array(
@@ -194,14 +204,14 @@
 					'id'=>'txtDescription'
 				));
 				?>
-			</fieldset>
-			<?php echo $this->BootstrapForm->end();?>
+				</fieldset>
+				<?php echo $this->BootstrapForm->end();?>
 				<!-- ////////////////////////////////// FIN CAMPOS FORMULARIOS MOVIMIENTO /////////////////////////////////////// -->
 				
 				<!-- ////////////////////////////////// START MESSAGES /////////////////////////////////////// -->
 					<div id="boxMessage"></div>
 					<div id="processing"></div>
-					<!-- ////////////////////////////////// END MESSAGES /////////////////////////////////////// -->
+				<!-- ////////////////////////////////// END MESSAGES /////////////////////////////////////// -->
 				
 				<!-- ////////////////////////////////// INICIO - ITEMS /////////////////////////////////////// -->
 
@@ -214,7 +224,7 @@
 								<tr>
 									<th>Items ( <span id="countItems"><?php echo $limit;?> </span> )</th>
 									<th>Stock</th>
-									<th>Compra</th>
+									<!--<th>Venta</th>-->
 									<th>Cantidad</th>
 									<?php if($documentState == 'PENDANT' OR $documentState == ''){ ?>
 									<th class="columnItemsButtons"></th>
@@ -227,8 +237,9 @@
 									echo '<tr id="itemRow'.$invMovementDetails[$i]['itemId'].'" >';
 										echo '<td><span id="spaItemName'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['item'].'</span><input type="hidden" value="'.$invMovementDetails[$i]['itemId'].'" id="txtItemId" ></td>';
 										echo '<td><span id="spaStock'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['stock'].'</span></td>';
-										echo '<td><span id="spaQuantityDocument'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['cantidadCompra'].'</span></td>';
+										//echo '<td><span id="spaQuantityDocument'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['cantidadVenta'].'</span></td>';
 										echo '<td><span id="spaQuantity'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['cantidad'].'</span></td>';
+										/*
 										if($documentState == 'PENDANT' OR $documentState == ''){
 											echo '<td class="columnItemsButtons">';
 											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$invMovementDetails[$i]['itemId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
@@ -236,21 +247,23 @@
 												<a class="btn btn-danger" href="#" id="btnDeleteItem'.$invMovementDetails[$i]['itemId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
 											echo '</td>';
 										}
+										 * */
 									echo '</tr>';								
 								}
 								?>
 							</tbody>
 						</table>
+
 			<!-- ////////////////////////////////// FIN ITEMS /////////////////////////////////////// -->
+
+		
 
 	
 	<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
 		</div> <!-- Belongs to: <div class="widget-content nopadding"> -->
 	</div> <!-- Belongs to: <div class="widget-box"> -->
 	<!-- //******************************** END - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
-
 	
-
 	
 	
 <!-- ************************************************************************************************************************ -->
@@ -298,7 +311,7 @@
 					echo '</div>';
 					
 					echo $this->BootstrapForm->input('quantity_purchase', array(				
-							'label' => 'Compra:',
+							'label' => 'Venta:',
 							'id'=>'txtModalQuantityDocument',
 							'style'=>'background-color:#EEEEEE',
 							'class'=>'input-small',

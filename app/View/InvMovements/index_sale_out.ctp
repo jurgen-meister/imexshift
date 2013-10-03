@@ -1,8 +1,13 @@
-<?php echo  $this->BootstrapPaginator->options(array('url' => $this->passedArgs));?>
+<!--<div class="row-fluid">--> <!-- No va porque ya esta dentro del row-fluid del container del template principal-->
+<?php 
+$arrayPassedArgs = $this->passedArgs;
+echo  $this->BootstrapPaginator->options(array('url' => $arrayPassedArgs)); //debug($arrayPassedArgs);
+?>
 <!-- ************************************************************************************************************************ -->
 <div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
 <!-- ************************************************************************************************************************ -->
-		<h3><?php echo __('Salidas de Ventas del Almacen');?></h3>
+		<h3>
+<?php echo __(' Salidas de Ventas del Almacen');?></h3>
 		
 		<!-- *********************************************** #UNICORN SEARCH WRAP ********************************************-->
 		<div class="widget-box">
@@ -17,10 +22,27 @@
 			<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-search', 'novalidate' => true));?>
 			<fieldset>
 						<?php
+						echo $this->BootstrapForm->input('code', array(				
+										//'label' => 'Codigo Entrada:',
+										'id'=>'txtCode',
+										'value'=>$code,
+										'placeholder'=>'Codigo Salida'
+										));
+						?>
+						<?php
 						echo $this->BootstrapForm->input('document_code', array(				
+								//'label' => 'Codigo Compra:',
 								'id'=>'txtCodeDocument',
 								'value'=>$document_code,
-								'placeholder'=>'Codigo Venta'
+								'placeholder'=>'Codigo Documento'
+								));
+						?>
+						<?php
+						echo $this->BootstrapForm->input('note_code', array(				
+								//'label' => 'Codigo Compra:',
+								'id'=>'txtNoteCode',
+								'value'=>$note_code,
+								'placeholder'=>'Nota Remisión'
 								));
 						?>
 					<?php
@@ -28,11 +50,11 @@
 					?>
 			</fieldset>
 			<?php echo $this->BootstrapForm->end();?>
-			<!-- ////////////////////////////////////////FIN - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
+			<!-- ////////////////////////////////////////FIN - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->		
 			</div>
 		</div>
 		<!-- *********************************************** #UNICORN SEARCH WRAP ********************************************-->
-		
+			
 		
 		<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
 		<div class="widget-box">
@@ -50,64 +72,86 @@
 		<table class="table table-striped table-bordered table-hover">
 			<tr>
 				<th><?php echo "#";?></th>
-				<th><?php echo 'Codigo Venta';?></th>
+				<th><?php echo 'Codigo Salida';?></th>
+				<th><?php echo 'Codigo Documento Ref';?></th>
+				<th><?php echo 'Nota Remisión';?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('SalCustomer.name', 'Cliente');?></th>
-				<!--<th><?php //echo ('Codigo Salida Almacen');?></th>-->
-				<th><?php echo 'Acción';?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('inv_warehouse_id', 'Almacen');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('lc_state', 'Estado Documento');?></th>
 			</tr>
-		<?php //debug($salSales);
-		foreach ($salSales as $salSale): ?>
+		<?php foreach ($invMovements as $invMovement): ?>
 			<tr>
 				<td><?php echo $cont++;?></td>
-				<td><?php echo h($salSale['SalSale']['code']); ?>&nbsp;</td>
+				<td><?php echo h($invMovement['InvMovement']['code']); ?>&nbsp;</td>
 				<td>
 					<?php 
-					echo date("d/m/Y", strtotime($salSale['SalSale']['date']));
+					echo h($invMovement['InvMovement']['document_code']); 
+					?>
+				</td>
+				<td><?php echo h($invMovement[0]['note_code']); ?>&nbsp;</td>
+
+				<td>
+					<?php 
+					echo date("d/m/Y", strtotime($invMovement['InvMovement']['date']));
 					?>
 					&nbsp;
 				</td>
 				<td>
-					<?php echo h($salSale['SalCustomer']['name']); ?>
+					<?php echo h($invMovement['InvWarehouse']['name']); ?>
 				</td>
-				<!--<td></td>-->
-				<td><?php
-				///////////START - SETTING URL AND PARAMETERS/////////////
-					$url = array('action'=>'save_sale_out');
-					$parameters = $this->passedArgs;
-					$parameters['document_code']=$salSale['SalSale']['code'];
-				////////////END - SETTING URL AND PARAMETERS//////////////
-					$movementsSize = count($movements);
-					if($movementsSize > 0){
-						for($i=0; $i<$movementsSize; $i++){
-							if(trim($movements[$i]['InvMovement']['document_code']) == trim($salSale['SalSale']['code'])){
-								if($movements[$i]['InvMovement']['lc_state'] == 'PENDANT'){
-									$btnColor = 'btn-warning';
-									$btnName = ' Salida Pendiente';
-								}elseif( $movements[$i]['InvMovement']['lc_state'] == 'APPROVED'){
-									$btnColor = 'btn-success';
-									$btnName = ' Salida Aprobada';
-								}else{
-									$btnColor = 'btn-primary';
-									$btnName = ' Salida Nueva';
-								}
+				<td>
+					<?php 
+					
+					$documentState = $invMovement['InvMovement']['lc_state'];
+					switch ($documentState){
+								case 'PENDANT':
+									$stateColor = 'btn-warning';
+									$stateName = 'Pendiente';
+									break;
+								case 'APPROVED':
+									$stateColor = 'btn-success';
+									$stateName = 'Aprobado';
+									break;
+								case 'CANCELLED':
+									$stateColor = 'btn-danger';
+									$stateName = 'Cancelado';
+									break;
 							}
-						}
+					///////////START - SETTING URL AND PARAMETERS/////////////
+					$url = array();
+					$parameters = $this->passedArgs;
+					if($invMovement['InvMovement']['inv_movement_type_id'] == 2){//Venta
+						$url['action']='save_sale_out';
+						$parameters['document_code']=$invMovement['InvMovement']['document_code'];
+						$parameters['id']=$invMovement['InvMovement']['id'];
+					}elseif($invMovement['InvMovement']['inv_movement_type_id'] == 3){
+						$url['action']='save_warehouses_transfer';
+						$parameters['document_code']=$invMovement['InvMovement']['document_code'];
+						$parameters['origin']='out';
 					}else{
-						$btnColor = 'btn-primary';
-						$btnName = ' Salida Nueva';
+						$url['action'] = 'save_out';
+						$parameters['id']=$invMovement['InvMovement']['id'];
 					}
-					echo $this->Html->link('<i class="icon-circle-arrow-right icon-white"></i>'.__($btnName), array_merge($url, $parameters), array('class'=>'btn '.$btnColor, 'escape'=>false)); 
-					?>
+					////////////END - SETTING URL AND PARAMETERS//////////////
+					//debug($parameters);
+					$parameters["documentCodeNoSet"]="";
+					if(isset($arrayPassedArgs["document_code"])){
+						$parameters["documentCodeNoSet"]=$arrayPassedArgs["document_code"];
+					}
+					echo $this->Html->link('<i class="icon-pencil icon-white"></i>'.__(' '.$stateName),  array_merge($url,$parameters), array('class'=>'btn '.$stateColor, 'escape'=>false, 'title'=>'Editar')); 
+					?>&nbsp;
 				</td>
+				
 			</tr>
 		<?php endforeach; ?>
 		</table>
 
-	<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
+		<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
 		</div>
 	</div>
 	<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
 		<?php echo $this->BootstrapPaginator->pagination(); ?>
 <!-- ************************************************************************************************************************ -->
-</div><!-- FIN CONTAINER FLUID/ROW FLUID/SPAN12 - Del Template Principal #UNICORN-->
+</div><!-- FIN CONTAINER FLUID/ROW FLUID/SPAN12 - Del Template Principal #UNICORN
+<!-- ************************************************************************************************************************ -->
+<!--</div>--><!-- No va porque ya esta dentro del row-fluid del container del template principal-->

@@ -32,6 +32,7 @@
 			<?php 
 				/////////////////START - SETTINGS BUTTON CANCEL /////////////////
 				$parameters = $this->passedArgs;
+				/*
 				$url=array();
 				if($idMovement == ''){
 					$url=array('action'=>'index_sale_out');
@@ -61,8 +62,15 @@
 						}
 					}
 				}
+				*/
 				unset($parameters['id']);
-				echo $this->Html->link('<i class=" icon-arrow-left"></i> Volver', array_merge($url,$parameters), array('class'=>'btn', 'escape'=>false)).' ';
+				if($parameters['documentCodeNoSet'] == ''){
+					unset($parameters['document_code']);
+				}else{
+					$parameters['document_code'] = $parameters['documentCodeNoSet'];
+				}
+				//debug($parameters);
+				echo $this->Html->link('<i class=" icon-arrow-left"></i> Volver', array_merge(array("action"=>"index_sale_out"),$parameters), array('class'=>'btn', 'escape'=>false)).' ';
 				//////////////////END - SETTINGS BUTTON CANCEL /////////////////
 			?>
 
@@ -159,6 +167,15 @@
 					'value'=>$documentCode
 				));
 				
+				echo $this->BootstrapForm->input('note_code', array(
+					'id'=>'txtNoteCode',
+					'autocomplete'=>'off',
+					'label'=>'Nota Remision:',
+					'style'=>'background-color:#EEEEEE',
+					'disabled'=>$disable,
+					'value'=>$noteCode
+				));
+				
 				echo $this->BootstrapForm->input('date_in', array(
 					'required' => 'required',
 					'label' => 'Fecha:',
@@ -210,7 +227,7 @@
 								<tr>
 									<th>Items ( <span id="countItems"><?php echo $limit;?> </span> )</th>
 									<th>Stock</th>
-									<th>Venta</th>
+									<!--<th>Venta</th>-->
 									<th>Cantidad</th>
 									<?php if($documentState == 'PENDANT' OR $documentState == ''){ ?>
 									<th class="columnItemsButtons"></th>
@@ -223,8 +240,9 @@
 									echo '<tr id="itemRow'.$invMovementDetails[$i]['itemId'].'" >';
 										echo '<td><span id="spaItemName'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['item'].'</span><input type="hidden" value="'.$invMovementDetails[$i]['itemId'].'" id="txtItemId" ></td>';
 										echo '<td><span id="spaStock'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['stock'].'</span></td>';
-										echo '<td><span id="spaQuantityDocument'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['cantidadVenta'].'</span></td>';
+										//echo '<td><span id="spaQuantityDocument'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['cantidadVenta'].'</span></td>';
 										echo '<td><span id="spaQuantity'.$invMovementDetails[$i]['itemId'].'">'.$invMovementDetails[$i]['cantidad'].'</span></td>';
+										/*
 										if($documentState == 'PENDANT' OR $documentState == ''){
 											echo '<td class="columnItemsButtons">';
 											echo '<a class="btn btn-primary" href="#" id="btnEditItem'.$invMovementDetails[$i]['itemId'].'" title="Editar"><i class="icon-pencil icon-white"></i></a>
@@ -232,6 +250,7 @@
 												<a class="btn btn-danger" href="#" id="btnDeleteItem'.$invMovementDetails[$i]['itemId'].'" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
 											echo '</td>';
 										}
+										 * */
 									echo '</tr>';								
 								}
 								?>
