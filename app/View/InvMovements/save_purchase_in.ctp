@@ -117,7 +117,7 @@
 			<span class="icon">
 				<i class="icon-edit"></i>								
 			</span>
-			<h5>Entrada de Venta del Almacen</h5>
+			<h5>Entrada de Compras al Almacen</h5>
 			<span id="documentState" class="label <?php echo $documentStateColor;?>"><?php echo $documentStateName;?></span>
 		</div>
 		<div class="widget-content nopadding">

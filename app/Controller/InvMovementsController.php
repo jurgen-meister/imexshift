@@ -423,10 +423,11 @@ class InvMovementsController extends AppController {
 	public function ajax_get_graphics_data(){
 		if($this->RequestHandler->isAjax()){
 			$year = $this->request->data['year'];
+			$month = $this->request->data['month'];
 			$warehouse = $this->request->data['warehouse'];
 			$item = $this->request->data['item'];
-			$string = $this->_get_pie_items_quantity_and_type("entrada", $year, $warehouse, $item).",";
-			$string .= $this->_get_pie_items_quantity_and_type("salida", $year, $warehouse, $item).",";
+			$string = $this->_get_pie_items_quantity_and_type("entrada", $year, $warehouse, $item, $month).",";
+			$string .= $this->_get_pie_items_quantity_and_type("salida", $year, $warehouse, $item, $month).",";
 			$string .= $this->_get_bars_items_quantity_and_time("entrada", $year, $warehouse, $item).",";
 			$string .= $this->_get_bars_items_quantity_and_time("salida", $year, $warehouse, $item);
 			echo $string;
@@ -437,9 +438,10 @@ class InvMovementsController extends AppController {
 //		$string .= '30|54|12|114|64|100|98|80|10|50|169|222';
 	}
 	
-	private function _get_pie_items_quantity_and_type($status, $year, $warehouse, $item){
+	private function _get_pie_items_quantity_and_type($status, $year, $warehouse, $item, $month){
 		$conditionWarehouse = null;
 		$conditionItem = null;
+		$conditionMonth = null;
 		$dataString = "";
 		
 		if($warehouse > 0){
@@ -448,6 +450,15 @@ class InvMovementsController extends AppController {
 		
 		if($item > 0){
 			$conditionItem = array("InvMovementDetail.inv_item_id" => $item);
+		}
+		
+		if($month > 0){
+			if(count($month) == 1){
+				$conditionMonth = array("to_char(InvMovement.date,'mm')" => "0".$month);
+			}else{
+				$conditionMonth = array("to_char(InvMovement.date,'mm')" => $month);
+			}
+			
 		}
 		
 		// get types
@@ -474,7 +485,8 @@ class InvMovementsController extends AppController {
 				"to_char(InvMovement.date,'YYYY')"=>$year,
 				"InvMovement.lc_state"=>"APPROVED",
 				$conditionWarehouse,
-				$conditionItem
+				$conditionItem,
+				$conditionMonth
 			)
 		));
 		

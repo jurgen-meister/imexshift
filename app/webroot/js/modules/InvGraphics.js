@@ -215,7 +215,7 @@ function ajax_get_group_items_and_filters(){ //Report
 		$.ajax({
             type:"POST",
             url:moduleController + "ajax_get_graphics_data",			
-            data:{year: $('#cbxYear').val(), warehouse:$('#cbxWarehouse').val(), item:items},
+            data:{year: $('#cbxYear').val(), month: $('#cbxMonth').val(), warehouse:$('#cbxWarehouse').val(), item:items},
 			beforeSend: function(){
 				$('#boxProcessing').text("Procesando...");
 			},

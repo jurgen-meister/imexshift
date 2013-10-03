@@ -43,6 +43,13 @@
 					'class'=>'span2',
 					'options'=>$years 
 				));
+				echo $this->BootstrapForm->input('month', array(
+					'label' => 'Mes:',
+					'id'=>'cbxMonth',
+					'type'=>'select',
+					'class'=>'span2',
+					'options'=>array(0=>"Todos", 1=>"Enero", 2=>"Febrero", 3=>"Marzo", 4=>"Abril", 5=>"Mayo", 6=>"Junio", 7=>"Julio", 8=>"Agosto", 9=>"Septiembre", 10=>"Octubre", 11=>"Noviembre", 12=>"Diciembre")
+				));
 				echo $this->BootstrapForm->input('warehouse', array(
 					'label' => 'Almacen:',
 					'id'=>'cbxWarehouse',
