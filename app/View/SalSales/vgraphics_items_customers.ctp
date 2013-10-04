@@ -31,7 +31,7 @@
 			<span class="icon">
 				<i class=" icon-search"></i>
 			</span>
-			<h5>Filtros</h5>
+			<h5>Gráfica Ventas - Items Clientes</h5>
 		</div>
 		<div class="widget-content nopadding">
 			<?php 

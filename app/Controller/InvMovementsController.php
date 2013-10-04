@@ -453,6 +453,76 @@ class InvMovementsController extends AppController {
 		//debug($this->_get_bars_items_quantity_and_time("entrada", "2013", 0, 0));
 	}
 	
+	public function vgraphics_historical_prices(){
+		//$item = $this->_find_items();
+		$this->loadModel("InvItem");
+		$items = $this->InvItem->find("list", array(
+			"fields"=>array("InvItem.id", "InvItem.full_name"),
+			"order"=>array("InvItem.code")
+		));
+		$this->set(compact("items"));
+	}
+
+
+	public function ajax_get_graphics_data_historical_prices(){
+		if($this->RequestHandler->isAjax()){
+			$startDate = $this->request->data['startDate'];
+			$finishDate = $this->request->data['finishDate'];
+			$currency = $this->request->data['currency'];
+			$item = $this->request->data['item'];
+			//$string = $this->_get_bars_historical_prices($startDate, $finishDate, $item, $currency, 1);
+			//debug($currency);
+			/*
+			$string = $this->_get_pie_items_quantity_and_type("entrada", $year, $warehouse, $item, $month).",";
+			$string .= $this->_get_pie_items_quantity_and_type("salida", $year, $warehouse, $item, $month).",";
+			$string .= $this->_get_bars_items_quantity_and_time("entrada", $year, $warehouse, $item).",";
+			$string .= $this->_get_bars_items_quantity_and_time("salida", $year, $warehouse, $item);
+			 */
+			//debug($string);
+			$fob = $this->_get_bars_historical_prices($startDate, $finishDate, $item, $currency, 1); // FOB
+			//debug($fob);
+			$cif = $this->_get_bars_historical_prices($startDate, $finishDate, $item, $currency, 8); // CIF
+			$sale = $this->_get_bars_historical_prices($startDate, $finishDate, $item, $currency, 9); // SALE
+			$string = $fob["time"].",";
+			$string .= $fob["price"].",";
+			$string .= $cif["time"].",";
+			$string .= $cif["price"].",";
+			$string .= $sale["time"].",";
+			$string .= $sale["price"];
+			echo $string;
+		}
+	}
+	
+	private function _get_bars_historical_prices($startDate, $finishDate, $item, $currency, $priceType){
+		$currencyAbbr = "";
+		if($currency == "DOLARES"){
+			$currencyAbbr = "ex_";
+		}
+		$this->loadModel("InvPrice");
+		$array = $this->InvPrice->find("all", array(
+			"fields"=>array("InvPrice.".$currencyAbbr."price", 'to_char("InvPrice"."date", \' dd/mm/YYYY \') as date'),
+			"conditions"=>array(
+				"InvPrice.inv_item_id"=>$item
+				,"InvPrice.inv_price_type_id"=>$priceType
+				,'InvPrice.date BETWEEN ? AND ?' => array($startDate, $finishDate)
+			),
+			"order"=>array("InvPrice.date"=>"asc")
+		));
+		$time = "";
+		$price = "";
+		//debug($array);
+		//debug(count($array));
+		for($i=0; $i < count($array); $i++){
+			$time .= $array[$i][0]["date"]."|";
+			$price .= $array[$i]["InvPrice"][$currencyAbbr."price"]."|";
+		}
+		//debug(substr($time, 0, -1));
+		//debug($price);
+		return array("time"=>substr($time, 0, -1), "price"=>substr($price, 0, -1));
+		
+		//debug($array);
+	}
+	
 	public function ajax_get_graphics_data(){
 		if($this->RequestHandler->isAjax()){
 			$year = $this->request->data['year'];
@@ -470,6 +540,7 @@ class InvMovementsController extends AppController {
 //		$string .= '45|133|12|54|64|22|31|45|87|600|543|34,';
 //		$string .= '30|54|12|114|64|100|98|80|10|50|169|222';
 	}
+	
 	
 	private function _get_pie_items_quantity_and_type($status, $year, $warehouse, $item, $month){
 		$conditionWarehouse = null;
