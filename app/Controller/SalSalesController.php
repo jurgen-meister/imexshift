@@ -543,7 +543,97 @@ class SalSalesController extends AppController {
 		///END AJAX
 		}
 	}
-
+	/////////////////////////////////////////////////////
+	public function ajax_generate_report_items_utilities(){
+		if($this->RequestHandler->isAjax()){
+			$this->Session->write('ReportItemsUtilities.startDate', $this->request->data['startDate']);
+			$this->Session->write('ReportItemsUtilities.finishDate', $this->request->data['finishDate']);
+			$this->Session->write('ReportItemsUtilities.currency', $this->request->data['currency']);
+			$this->Session->write('ReportItemsUtilities.items', $this->request->data['items']);
+		}
+	}
+	
+	public function vreport_items_utilities(){
+		$this->layout = 'print';
+		
+		//Check if session variables are set otherwise redirect
+		if(!$this->Session->check('ReportItemsUtilities')){
+			$this->redirect(array('action' => 'vreport_items_utilities_generator'));
+		}
+		
+		//put session data sent data into variables
+		$initialData = $this->Session->read('ReportItemsUtilities');
+		
+		$currencyAbbr = "";
+		if($initialData["currency"] == "DOLARES"){
+			$currencyAbbr = "ex_";
+		}
+		
+		$this->SalSale->SalDetail->unbindModel(array('belongsTo' => array('InvWarehouse')));
+		$prices = $this->SalSale->SalDetail->find("all", array(
+			"conditions"=>array(
+				"InvItem.id"=>$initialData["items"]
+				,'SalSale.lc_state'=>'SINVOICE_APPROVED'
+				,'SalSale.date BETWEEN ? AND ?' => array($initialData['startDate'], $initialData['finishDate']),
+			)
+			,"fields"=>array(
+				"InvItem.id"
+				,'("SalDetail"."'.$currencyAbbr.'sale_price" * "SalDetail"."quantity") AS sale'
+				,'(SELECT '.$currencyAbbr.'price FROM inv_prices where inv_item_id = "SalDetail"."inv_item_id" AND date <= "SalSale"."date" AND inv_price_type_id=8 order by date DESC, date_created DESC LIMIT 1) * "SalDetail"."quantity" AS "cif"'
+			)
+		));
+		//debug($initialData["items"]);
+		//debug($prices);
+		
+		
+		
+		$limit = count($prices);
+		$dataDetail = array();
+		
+		$this->loadModel("InvItem");
+		$items = $this->InvItem->find("list", array(
+			"conditions"=>array("InvItem.id"=>$initialData["items"]),
+			"fields"=>array("InvItem.id", "InvItem.full_name"),
+			"order"=>array("InvItem.code")
+		));
+		
+		foreach($items as $keyItem => $item){
+			$dataDetail[$keyItem]["full_name"] = $item;
+			$dataDetail[$keyItem]["sale"] = 0;
+			$dataDetail[$keyItem]["cif"] = 0;
+			$dataDetail[$keyItem]["utility"] = 0;
+			$dataDetail[$keyItem]["margin"] = 0;
+		}
+		//debug($dataDetail);
+		
+		for($i=0; $i<$limit; $i++){
+			foreach ($initialData["items"] as $item) {
+				if($prices[$i]["InvItem"]["id"] == $item ){
+					$dataDetail[$item]["sale"] = $dataDetail[$item]["sale"] + $prices[$i][0]["sale"];
+					$dataDetail[$item]["cif"] = $dataDetail[$item]["cif"] + $prices[$i][0]["cif"];
+					$dataDetail[$item]["utility"] = $dataDetail[$item]["sale"] - $dataDetail[$item]["cif"];
+					$dataDetail[$item]["margin"] = ($dataDetail[$item]["utility"] * 100) / $dataDetail[$item]["sale"];
+				}
+			}
+		}
+		//debug($dataDetail);
+		$this->set("data", $initialData);
+		$this->set("dataDetails", $dataDetail);
+		$this->Session->delete('ReportItemsUtilities');
+	}
+	
+	
+	public function vreport_items_utilities_generator(){
+		$this->loadModel("AdmPeriod");
+		$years = $this->AdmPeriod->find("list", array(
+			"order"=>array("name"=>"desc"),
+			"fields"=>array("name", "name")
+			)
+		);
+		$item = $this->_find_items();
+		$this->set(compact("years", "item"));
+	}
+	////////////////////////////////////////////////////
 
 	public function vgraphics_items_customers(){
 		$clientsClean = $this->SalSale->SalEmployee->SalCustomer->find('list');

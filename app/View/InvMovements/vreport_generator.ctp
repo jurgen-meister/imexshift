@@ -22,7 +22,7 @@
 		<div class="widget-box">
 			<div class="widget-title">
 				<span class="icon">
-					<i class=" icon-align-justify"></i>
+					<i class=" icon-search"></i>
 				</span>
 				<h5>Reporte de Movimientos de Inventario</h5>
 			</div>

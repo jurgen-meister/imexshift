@@ -11,14 +11,15 @@ $(document).ready(function(){
 	});
 	startDataTable();
 	
+	$('#txtReportStartDate, #txtReportFinishDate').keydown(function(e){e.preventDefault();});
 	////////////////////////////////////// END - INITIAL ACTIONS /////////////////////////////////////////
-	
-	
-	
+
 	////////////////////////////////////// START - EVENTS /////////////////////////////////////////
 	$('#cbxReportGroupTypes').change(function(){
 		getGroupItemsAndFilters();
 	});
+	
+	
 	
 	$('#cbxReportMovementTypes').change(function(){
         if($(this).val() === '1001'){
@@ -222,6 +223,8 @@ $(document).ready(function(){
 			}
         });
 	}
+	
+	
 	
 	function ajax_get_group_items_and_filters(){ //Report
 		$.ajax({

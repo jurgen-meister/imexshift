@@ -386,6 +386,39 @@ class InvMovementsController extends AppController {
 		));
 	}
 	
+	/*
+	public function ajax_generate_report_items_utilities(){
+		if($this->RequestHandler->isAjax()){
+			$this->Session->write('ReportItemsUtilities.year', $this->request->data['year']);
+			$this->Session->write('ReportItemsUtilities.month', $this->request->data['month']);
+			$this->Session->write('ReportItemsUtilities.currency', $this->request->data['currency']);
+			$this->Session->write('ReportItemsUtilities.items', $this->request->data['items']);
+		}
+	}
+	
+	public function vreport_items_utilities(){
+		$this->layout = 'print';
+		
+		//Check if session variables are set otherwise redirect
+		if(!$this->Session->check('ReportItemsUtilities')){
+			$this->redirect(array('action' => 'vreport_items_utilities_generator'));
+		}
+		
+		//put session data sent data into variables
+		$initialData = $this->Session->read('ReportItemsUtilities');
+		//debug($initialData);
+		//$this->InvMovement->InvMovementDetail->InvItem->unbindModel(array('belongsTo' => array('InvBrand', 'InvCategory', 'InvMovementDetail')));
+		$this->loadModel("InvItem");
+		$dataDetail = $this->InvItem->find("all", array(
+			"fields"=>array("InvItem.full_name"),
+			"conditions"=>array("InvItem.id"=>$initialData["items"]),
+			"recursive"=>-1
+		));
+		
+		debug($dataDetail);
+		$this->Session->delete('ReportItemsUtilities');
+	}
+	 */
 	//////////////////////////////////////////// END - REPORT /////////////////////////////////////////////////
 	
 	
@@ -563,6 +596,18 @@ class InvMovementsController extends AppController {
 		return substr($dataString, 0, -1);
 	}
 	
+	/*
+	public function vreport_items_utilities_generator(){
+		$this->loadModel("AdmPeriod");
+		$years = $this->AdmPeriod->find("list", array(
+			"order"=>array("name"=>"desc"),
+			"fields"=>array("name", "name")
+			)
+		);
+		$item = $this->_find_items();
+		$this->set(compact("years", "item"));
+	}
+	*/
 	//////////////////////////////////////////// END - GRAPHICS  /////////////////////////////////////////////////
 	
 	

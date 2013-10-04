@@ -272,7 +272,7 @@ function ajax_get_group_items_and_filters(){ //Report
 	}
 	
 	//EXECUTE onload
-	ajax_get_graphics_data();
+	//ajax_get_graphics_data();
 	//$('#cbxItem').select2();
 	
 	//events
