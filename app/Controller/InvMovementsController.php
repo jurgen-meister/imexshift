@@ -67,9 +67,19 @@ class InvMovementsController extends AppController {
 	//////////////////////////////////////////// START - REPORT ////////////////////////////////////////////////
 	public function vreport_generator(){
 		$this->loadModel("InvWarehouse");
-		$warehouse = $this->InvWarehouse->find('list');
+		
+		
+		$warehouseClean = $this->InvWarehouse->find('list');
+		/* //Comment this because in this case I want to show option Todos at the end
+		$warehouse[0]="TODOS";
+		foreach ($warehouseClean as $key => $value) {
+			$warehouse[$key] = $value;
+		}
+		*/
+		$warehouse = $warehouseClean;
+		$warehouse[0] = "TODOS";
 		$item = $this->_find_items();
-		$this->set(compact("warehouse", "item"));
+		$this->set(compact("warehouse", "item", "warehouseClean"));
 	}
 	
 	private function _find_items($type = 'none', $selected = array()){
@@ -141,7 +151,7 @@ class InvMovementsController extends AppController {
 			$this->Session->write('ReportMovement.warehouse', $this->request->data['warehouse']);
 			$this->Session->write('ReportMovement.warehouseName', $this->request->data['warehouseName']);
 			$this->Session->write('ReportMovement.currency', $this->request->data['currency']);
-			
+			$this->Session->write('ReportMovement.detail', $this->request->data['detail']);
 			//for transfer
 			$this->Session->write('ReportMovement.warehouse2', $this->request->data['warehouse2']);
 			$this->Session->write('ReportMovement.warehouseName2', $this->request->data['warehouseName2']);
@@ -188,10 +198,10 @@ class InvMovementsController extends AppController {
 		//debug($movements);
 		
 		$currencyFieldPrefix = '';
-		$currencyAbbreviation = '(BS)';
-		if(trim($initialData['currency']) == 'DOLARES AMERICANOS'){
+		$currencyAbbreviation = '(Bs)';
+		if(trim($initialData['currency']) == 'DOLARES'){
 			$currencyFieldPrefix = 'ex_';
-			$currencyAbbreviation = '($US)';
+			$currencyAbbreviation = '($us)';
 		}
 		
 		
@@ -278,7 +288,7 @@ class InvMovementsController extends AppController {
 		$values['startDate']=$initialData['startDate'];
 		$values['finishDate']=$initialData['finishDate'];
 		$warehouses = array(0=>$initialData['warehouse']);
-		
+		//debug($initialData);
 		switch ($initialData['movementType']) {
 			case 998://TODAS LAS ENTRADAS
 				$conditions['InvMovement.inv_movement_type_id']=array(1,4,5,6);
@@ -299,7 +309,10 @@ class InvMovementsController extends AppController {
 				$conditions['InvMovement.inv_movement_type_id']=$initialData['movementType'];
 				break;
 		}
-		$conditions['InvMovement.inv_warehouse_id']=$warehouses;//necessary to be here
+		//debug($warehouses);
+		if($warehouses[0] > 0){
+			$conditions['InvMovement.inv_warehouse_id']=$warehouses;//necessary to be here
+		}
 		$values['items']=$initialData['items'];//just for order
 		switch($initialData['currency']){
 			case 'BOLIVIANOS':
@@ -308,7 +321,7 @@ class InvMovementsController extends AppController {
 				$fields[]='(SELECT price FROM inv_prices where inv_item_id = "InvMovementDetail"."inv_item_id" AND date <= "InvMovement"."date" AND inv_price_type_id=8 order by date DESC, date_created DESC LIMIT 1) AS "cif_price"';
 				$fields[]='(SELECT price FROM inv_prices where inv_item_id = "InvMovementDetail"."inv_item_id" AND date <= "InvMovement"."date" AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1) AS "sale_price"';
 				break;
-			case 'DOLARES AMERICANOS':
+			case 'DOLARES':
 				//$fields = array('InvMovementDetail.ex_fob_price', 'InvMovementDetail.ex_cif_price', 'InvMovementDetail.ex_sale_price');
 				$fields[]='(SELECT ex_price FROM inv_prices where inv_item_id = "InvMovementDetail"."inv_item_id" AND date <= "InvMovement"."date" AND inv_price_type_id=1 order by date DESC, date_created DESC LIMIT 1) AS "ex_fob_price"';
 				$fields[]='(SELECT ex_price FROM inv_prices where inv_item_id = "InvMovementDetail"."inv_item_id" AND date <= "InvMovement"."date" AND inv_price_type_id=8 order by date DESC, date_created DESC LIMIT 1) AS "ex_cif_price"';
@@ -373,6 +386,39 @@ class InvMovementsController extends AppController {
 		));
 	}
 	
+	/*
+	public function ajax_generate_report_items_utilities(){
+		if($this->RequestHandler->isAjax()){
+			$this->Session->write('ReportItemsUtilities.year', $this->request->data['year']);
+			$this->Session->write('ReportItemsUtilities.month', $this->request->data['month']);
+			$this->Session->write('ReportItemsUtilities.currency', $this->request->data['currency']);
+			$this->Session->write('ReportItemsUtilities.items', $this->request->data['items']);
+		}
+	}
+	
+	public function vreport_items_utilities(){
+		$this->layout = 'print';
+		
+		//Check if session variables are set otherwise redirect
+		if(!$this->Session->check('ReportItemsUtilities')){
+			$this->redirect(array('action' => 'vreport_items_utilities_generator'));
+		}
+		
+		//put session data sent data into variables
+		$initialData = $this->Session->read('ReportItemsUtilities');
+		//debug($initialData);
+		//$this->InvMovement->InvMovementDetail->InvItem->unbindModel(array('belongsTo' => array('InvBrand', 'InvCategory', 'InvMovementDetail')));
+		$this->loadModel("InvItem");
+		$dataDetail = $this->InvItem->find("all", array(
+			"fields"=>array("InvItem.full_name"),
+			"conditions"=>array("InvItem.id"=>$initialData["items"]),
+			"recursive"=>-1
+		));
+		
+		debug($dataDetail);
+		$this->Session->delete('ReportItemsUtilities');
+	}
+	 */
 	//////////////////////////////////////////// END - REPORT /////////////////////////////////////////////////
 	
 	
@@ -391,7 +437,7 @@ class InvMovementsController extends AppController {
 			"fields"=>array("name", "name")
 			)
 		);
-		
+		/*
 		$this->loadModel("InvItem");
 		
 		$itemsClean = $this->InvItem->find("list", array('order'=>array('InvItem.code')));
@@ -399,20 +445,92 @@ class InvMovementsController extends AppController {
 		foreach ($itemsClean as $key => $value) {
 			$items[$key] = $value;
 		}
-		
+		*/
+		$item = $this->_find_items();
 //		debug($items);
 		//array_unshift($items, "TODOS"); // doesn't work 'cause change key values to an order 1,2,3,etc
-		$this->set(compact("warehouses", "years", "items"));
+		$this->set(compact("warehouses", "years", "item"));
 		//debug($this->_get_bars_items_quantity_and_time("entrada", "2013", 0, 0));
+	}
+	
+	public function vgraphics_historical_prices(){
+		//$item = $this->_find_items();
+		$this->loadModel("InvItem");
+		$items = $this->InvItem->find("list", array(
+			"fields"=>array("InvItem.id", "InvItem.full_name"),
+			"order"=>array("InvItem.code")
+		));
+		$this->set(compact("items"));
+	}
+
+
+	public function ajax_get_graphics_data_historical_prices(){
+		if($this->RequestHandler->isAjax()){
+			$startDate = $this->request->data['startDate'];
+			$finishDate = $this->request->data['finishDate'];
+			$currency = $this->request->data['currency'];
+			$item = $this->request->data['item'];
+			//$string = $this->_get_bars_historical_prices($startDate, $finishDate, $item, $currency, 1);
+			//debug($currency);
+			/*
+			$string = $this->_get_pie_items_quantity_and_type("entrada", $year, $warehouse, $item, $month).",";
+			$string .= $this->_get_pie_items_quantity_and_type("salida", $year, $warehouse, $item, $month).",";
+			$string .= $this->_get_bars_items_quantity_and_time("entrada", $year, $warehouse, $item).",";
+			$string .= $this->_get_bars_items_quantity_and_time("salida", $year, $warehouse, $item);
+			 */
+			//debug($string);
+			$fob = $this->_get_bars_historical_prices($startDate, $finishDate, $item, $currency, 1); // FOB
+			//debug($fob);
+			$cif = $this->_get_bars_historical_prices($startDate, $finishDate, $item, $currency, 8); // CIF
+			$sale = $this->_get_bars_historical_prices($startDate, $finishDate, $item, $currency, 9); // SALE
+			$string = $fob["time"].",";
+			$string .= $fob["price"].",";
+			$string .= $cif["time"].",";
+			$string .= $cif["price"].",";
+			$string .= $sale["time"].",";
+			$string .= $sale["price"];
+			echo $string;
+		}
+	}
+	
+	private function _get_bars_historical_prices($startDate, $finishDate, $item, $currency, $priceType){
+		$currencyAbbr = "";
+		if($currency == "DOLARES"){
+			$currencyAbbr = "ex_";
+		}
+		$this->loadModel("InvPrice");
+		$array = $this->InvPrice->find("all", array(
+			"fields"=>array("InvPrice.".$currencyAbbr."price", 'to_char("InvPrice"."date", \' dd/mm/YYYY \') as date'),
+			"conditions"=>array(
+				"InvPrice.inv_item_id"=>$item
+				,"InvPrice.inv_price_type_id"=>$priceType
+				,'InvPrice.date BETWEEN ? AND ?' => array($startDate, $finishDate)
+			),
+			"order"=>array("InvPrice.date"=>"asc")
+		));
+		$time = "";
+		$price = "";
+		//debug($array);
+		//debug(count($array));
+		for($i=0; $i < count($array); $i++){
+			$time .= $array[$i][0]["date"]."|";
+			$price .= $array[$i]["InvPrice"][$currencyAbbr."price"]."|";
+		}
+		//debug(substr($time, 0, -1));
+		//debug($price);
+		return array("time"=>substr($time, 0, -1), "price"=>substr($price, 0, -1));
+		
+		//debug($array);
 	}
 	
 	public function ajax_get_graphics_data(){
 		if($this->RequestHandler->isAjax()){
 			$year = $this->request->data['year'];
+			$month = $this->request->data['month'];
 			$warehouse = $this->request->data['warehouse'];
 			$item = $this->request->data['item'];
-			$string = $this->_get_pie_items_quantity_and_type("entrada", $year, $warehouse, $item).",";
-			$string .= $this->_get_pie_items_quantity_and_type("salida", $year, $warehouse, $item).",";
+			$string = $this->_get_pie_items_quantity_and_type("entrada", $year, $warehouse, $item, $month).",";
+			$string .= $this->_get_pie_items_quantity_and_type("salida", $year, $warehouse, $item, $month).",";
 			$string .= $this->_get_bars_items_quantity_and_time("entrada", $year, $warehouse, $item).",";
 			$string .= $this->_get_bars_items_quantity_and_time("salida", $year, $warehouse, $item);
 			echo $string;
@@ -423,9 +541,11 @@ class InvMovementsController extends AppController {
 //		$string .= '30|54|12|114|64|100|98|80|10|50|169|222';
 	}
 	
-	private function _get_pie_items_quantity_and_type($status, $year, $warehouse, $item){
+	
+	private function _get_pie_items_quantity_and_type($status, $year, $warehouse, $item, $month){
 		$conditionWarehouse = null;
 		$conditionItem = null;
+		$conditionMonth = null;
 		$dataString = "";
 		
 		if($warehouse > 0){
@@ -434,6 +554,15 @@ class InvMovementsController extends AppController {
 		
 		if($item > 0){
 			$conditionItem = array("InvMovementDetail.inv_item_id" => $item);
+		}
+		
+		if($month > 0){
+			if(count($month) == 1){
+				$conditionMonth = array("to_char(InvMovement.date,'mm')" => "0".$month);
+			}else{
+				$conditionMonth = array("to_char(InvMovement.date,'mm')" => $month);
+			}
+			
 		}
 		
 		// get types
@@ -460,7 +589,8 @@ class InvMovementsController extends AppController {
 				"to_char(InvMovement.date,'YYYY')"=>$year,
 				"InvMovement.lc_state"=>"APPROVED",
 				$conditionWarehouse,
-				$conditionItem
+				$conditionItem,
+				$conditionMonth
 			)
 		));
 		
@@ -537,6 +667,18 @@ class InvMovementsController extends AppController {
 		return substr($dataString, 0, -1);
 	}
 	
+	/*
+	public function vreport_items_utilities_generator(){
+		$this->loadModel("AdmPeriod");
+		$years = $this->AdmPeriod->find("list", array(
+			"order"=>array("name"=>"desc"),
+			"fields"=>array("name", "name")
+			)
+		);
+		$item = $this->_find_items();
+		$this->set(compact("years", "item"));
+	}
+	*/
 	//////////////////////////////////////////// END - GRAPHICS  /////////////////////////////////////////////////
 	
 	
@@ -597,6 +739,7 @@ class InvMovementsController extends AppController {
 			"conditions"=>array(
 				//"InvMovement.lc_state !="=>"LOGIC_DELETED",
 				"NOT"=>array("InvMovement.lc_state" => array("LOGIC_DELETED", "DRAFT")),
+				"NOT"=>array("InvMovementType.id" => array(1,2)),//new
 				"to_char(InvMovement.date,'YYYY')"=> $period,
 				"InvMovementType.status"=> "entrada",
 				$filters
@@ -672,6 +815,7 @@ class InvMovementsController extends AppController {
 			"conditions"=>array(
 				//"InvMovement.lc_state !="=>"LOGIC_DELETED",
 				"NOT"=>array("InvMovement.lc_state" => array("LOGIC_DELETED", "DRAFT")),
+				"NOT"=>array("InvMovementType.id" => array(1,2)),//new
 				"to_char(InvMovement.date,'YYYY')"=> $period,
 				"InvMovementType.status"=> "salida",
 				$filters
@@ -693,9 +837,11 @@ class InvMovementsController extends AppController {
 	
 	public function index_purchase_in(){
 	
-		///////////////////////////////////////START - CREATING VARIABLES//////////////////////////////////////
+			///////////////////////////////////////START - CREATING VARIABLES//////////////////////////////////////
 		$filters = array();
+		$code = "";
 		$document_code = '';  //seria code de pur_purchases
+		$note_code = "";
 		$period = $this->Session->read('Period.name');
 		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
 		
@@ -705,75 +851,104 @@ class InvMovementsController extends AppController {
 			$url = array('action'=>'index_purchase_in');
 			$parameters = array();
 			$empty=0;
+			if(isset($this->request->data['InvMovement']['code']) && $this->request->data['InvMovement']['code']){
+				$parameters['code'] = trim(strip_tags($this->request->data['InvMovement']['code']));
+			}else{
+				$empty++;
+			}
 			if(isset($this->request->data['InvMovement']['document_code']) && $this->request->data['InvMovement']['document_code']){
 				$parameters['document_code'] = trim(strip_tags($this->request->data['InvMovement']['document_code']));
 			}else{
 				$empty++;
 			}
-			if($empty == 1){
+			if(isset($this->request->data['InvMovement']['note_code']) && $this->request->data['InvMovement']['note_code']){
+				$parameters['note_code'] = trim(strip_tags($this->request->data['InvMovement']['note_code']));
+			}else{
+				$empty++;
+			}
+			if($empty == 3){
 				$parameters['search']='empty';
 			}else{
 				$parameters['search']='yes';
 			}
-			
 			$this->redirect(array_merge($url,$parameters));
 		}
 		////////////////////////////END - WHEN SEARCH IS SEND THROUGH POST//////////////////////////////////////
 		
-		$this->loadModel('PurPurchase');
-		
 		////////////////////////////START - SETTING URL FILTERS//////////////////////////////////////
+		if(isset($this->passedArgs['code'])){
+			$filters['InvMovement.code LIKE'] = '%'.strtoupper($this->passedArgs['code']).'%';
+			$code = $this->passedArgs['code'];
+		}
 		if(isset($this->passedArgs['document_code'])){
-			$filters['PurPurchase.code LIKE'] = '%'.strtoupper($this->passedArgs['document_code']).'%';
+			$filters['InvMovement.document_code LIKE'] = '%'.strtoupper($this->passedArgs['document_code']).'%';
 			$document_code = $this->passedArgs['document_code'];
+		}
+		
+		// Filter by NoteCode, doing like this because there isn't association between movements and sales :( => 2.0 =)
+		/////////////////////////////////////////////
+		
+		if(isset($this->passedArgs['note_code'])){
+			$note_code = strtoupper($this->passedArgs['note_code']);
+			$this->loadModel('PurPurchase');
+			$noteCodeCondition = $note_code;
+			$conditions= array("PurPurchase.note_code LIKE"=>'%'.$noteCodeCondition.'%');
+			if($note_code == "NO"){
+				$noteCodeCondition = "";
+				$conditions= array("PurPurchase.note_code"=>$noteCodeCondition);
+			}
+			//debug($noteCodeCondition);
+			
+			$speciallyDocumentCode = $this->PurPurchase->find("list", array("conditions"=>$conditions, "fields"=>array("PurPurchase.note_code", "PurPurchase.code")));
+			//debug($speciallyDocumentCode);
+			//debug($noteCodeCondition);
+			if(count($speciallyDocumentCode) == 1){
+				$filters['InvMovement.document_code LIKE'] = '%'.strtoupper(reset($speciallyDocumentCode)).'%';
+			}elseif(count($speciallyDocumentCode) == 0){
+				$filters['InvMovement.document_code LIKE'] = '%'.strtoupper("TOKENEMPTY").'%';
+			}else{
+				$filters['InvMovement.document_code'] = $speciallyDocumentCode;
+			}
 		}
 		////////////////////////////END - SETTING URL FILTERS//////////////////////////////////////
 		
-		
-		
-		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
+		////////////////////////////////START - LIST ONLY SALES MOVEMENTS (easier) /////////////////////////////////////////
 		$this->paginate = array(
-			'conditions'=>array(
-				"PurPurchase.lc_state !="=>"LOGIC_DELETED",
-				"to_char(PurPurchase.date,'YYYY')"=> $period,
-				"PurPurchase.lc_state"=>"ORDER_APPROVED",
+			"conditions"=>array(
+				//"InvMovement.lc_state !="=>"LOGIC_DELETED",
+				"NOT"=>array("InvMovement.lc_state" => array("LOGIC_DELETED", "DRAFT")),
+				"InvMovementType.id" => array(1),//only purchases
+				"to_char(InvMovement.date,'YYYY')"=> $period,
+				//"InvMovementType.status"=> "salida",
 				$filters
 			 ),
-			'fields'=>array('PurPurchase.id', 'PurPurchase.code', 'PurPurchase.date'),
-			'recursive'=>0,	
-			'order'=> array('PurPurchase.id'=>'desc'),
-			'limit' => 15,
+			"recursive"=>0,
+			"fields"=>array("InvMovement.id", "InvMovement.code", "InvMovement.document_code", "InvMovement.date","InvMovement.inv_movement_type_id","InvMovementType.name", "InvMovement.inv_warehouse_id", "InvWarehouse.name", "InvMovement.lc_state"
+				, '(SELECT CASE note_code WHEN \'\' THEN \'NO\' ELSE note_code END FROM pur_purchases WHERE code = "InvMovement"."document_code" LIMIT 1 ) AS note_code'),
+			"order"=> array("InvMovement.id"=>"desc"),
+			"limit" => 15,
 		);
-		////////////////////////////END - SETTING PAGINATING VARIABLES//////////////////////////////////////
-		$pagination = $this->paginate('PurPurchase');
-		$paginatedCodes = array();
-		for($i = 0; $i<count($pagination); $i++){ 
-			$paginatedCodes[$i] = $pagination[$i]['PurPurchase']['code'];
-		}
-		//debug($paginatedCodes);
-		$movements = $this->InvMovement->find('all',array(
-			'conditions'=>array(
-				'InvMovement.inv_movement_type_id'=>1,
-				'InvMovement.document_code'=>$paginatedCodes,
-				'NOT'=>array('InvMovement.lc_state'=>array('LOGIC_DELETED', 'CANCELLED', 'DRAFT'))
-			),
-			'fields'=>array('InvMovement.lc_state', 'InvMovement.document_code'),
-			'recursive'=>-1
-		));
-		//debug($this->paginate('PurPurchase'));
+
+		$movements = $this->paginate('InvMovement');
 		//debug($movements);
-		////////////////////////START - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
-		$this->set('purPurchases', $pagination);
+		////////////////////////////////////////////
+		
+		
+		$this->set('invMovements', $movements);
+		$this->set('code', $code);
 		$this->set('document_code', $document_code);
-		$this->set('movements', $movements);
-		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
+		$this->set('note_code', $note_code);
+		////////////////////////////////END - LIST ONLY SALES MOVEMENTS (easier) /////////////////////////////////////////
 	}
+	
 	
 	public function index_sale_out(){
 	
 		///////////////////////////////////////START - CREATING VARIABLES//////////////////////////////////////
 		$filters = array();
+		$code = "";
 		$document_code = '';  //seria code de pur_purchases
+		$note_code = "";
 		$period = $this->Session->read('Period.name');
 		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
 		
@@ -783,82 +958,104 @@ class InvMovementsController extends AppController {
 			$url = array('action'=>'index_sale_out');
 			$parameters = array();
 			$empty=0;
+			if(isset($this->request->data['InvMovement']['code']) && $this->request->data['InvMovement']['code']){
+				$parameters['code'] = trim(strip_tags($this->request->data['InvMovement']['code']));
+			}else{
+				$empty++;
+			}
 			if(isset($this->request->data['InvMovement']['document_code']) && $this->request->data['InvMovement']['document_code']){
 				$parameters['document_code'] = trim(strip_tags($this->request->data['InvMovement']['document_code']));
 			}else{
 				$empty++;
 			}
-			if($empty == 1){
+			if(isset($this->request->data['InvMovement']['note_code']) && $this->request->data['InvMovement']['note_code']){
+				$parameters['note_code'] = trim(strip_tags($this->request->data['InvMovement']['note_code']));
+			}else{
+				$empty++;
+			}
+			if($empty == 3){
 				$parameters['search']='empty';
 			}else{
 				$parameters['search']='yes';
 			}
-			
 			$this->redirect(array_merge($url,$parameters));
+			
 		}
 		////////////////////////////END - WHEN SEARCH IS SEND THROUGH POST//////////////////////////////////////
 		
-		$this->loadModel('SalSale');
-		
 		////////////////////////////START - SETTING URL FILTERS//////////////////////////////////////
+		if(isset($this->passedArgs['code'])){
+			$filters['InvMovement.code LIKE'] = '%'.strtoupper($this->passedArgs['code']).'%';
+			$code = $this->passedArgs['code'];
+		}
 		if(isset($this->passedArgs['document_code'])){
-			$filters['SalSale.code LIKE'] = '%'.strtoupper($this->passedArgs['document_code']).'%';
+			$filters['InvMovement.document_code LIKE'] = '%'.strtoupper($this->passedArgs['document_code']).'%';
 			$document_code = $this->passedArgs['document_code'];
+		}
+		
+		// Filter by NoteCode, doing like this because there isn't association between movements and sales :( => 2.0 =)
+		/////////////////////////////////////////////
+		
+		if(isset($this->passedArgs['note_code'])){
+			$note_code = strtoupper($this->passedArgs['note_code']);
+			$this->loadModel('SalSale');
+			$noteCodeCondition = $note_code;
+			$conditions= array("SalSale.note_code LIKE"=>'%'.$noteCodeCondition.'%');
+			if($note_code == "NO"){
+				$noteCodeCondition = "";
+				$conditions= array("SalSale.note_code"=>$noteCodeCondition);
+			}
+			//debug($noteCodeCondition);
+			
+			$speciallyDocumentCode = $this->SalSale->find("list", array("conditions"=>$conditions, "fields"=>array("SalSale.note_code", "SalSale.code")));
+			//debug($speciallyDocumentCode);
+			if(count($speciallyDocumentCode) == 1){
+				$value = reset($speciallyDocumentCode);
+				$filters['InvMovement.document_code LIKE'] = '%'.strtoupper($value).'%';
+				/*
+				if($note_code == "NO"){
+					$filters['InvMovement.document_code LIKE'] = '%'.strtoupper($speciallyDocumentCode[$noteCodeCondition]).'%';
+				}else{
+					$filters['InvMovement.document_code LIKE'] = '%'.strtoupper($speciallyDocumentCode[$noteCodeCondition]).'%';
+				}
+				 * 
+				 */
+			}elseif(count($speciallyDocumentCode) == 0){
+				$filters['InvMovement.document_code LIKE'] = '%'.strtoupper("TOKENEMPTY").'%';
+			}else{
+				$filters['InvMovement.document_code'] = $speciallyDocumentCode;
+			}
 		}
 		////////////////////////////END - SETTING URL FILTERS//////////////////////////////////////
 		
-		
-		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
-		//Add association for SalCustomers
-		$this->SalSale->bindModel(array(
-			'hasOne'=>array(
-				'SalCustomer'=>array(
-					'foreignKey'=>false,
-					'conditions'=> array('SalEmployee.sal_customer_id = SalCustomer.id')
-				)
-				
-			)
-		));
-		//debug($this->SalSale->find('all'));
-		
+		////////////////////////////////START - LIST ONLY SALES MOVEMENTS (easier) /////////////////////////////////////////
 		$this->paginate = array(
-			'conditions'=>array(
-				"SalSale.lc_state !="=>"LOGIC_DELETED",
-				"to_char(SalSale.date,'YYYY')"=> $period,
-				"SalSale.lc_state"=>"NOTE_APPROVED",
+			"conditions"=>array(
+				//"InvMovement.lc_state !="=>"LOGIC_DELETED",
+				"NOT"=>array("InvMovement.lc_state" => array("LOGIC_DELETED", "DRAFT")),
+				"InvMovementType.id" => array(2),//only sales
+				"to_char(InvMovement.date,'YYYY')"=> $period,
+				//"InvMovementType.status"=> "salida",
 				$filters
 			 ),
-			'fields'=>array('SalSale.id','SalSale.code', 'SalSale.date', 'SalCustomer.name'),
-			'recursive'=>0,	
-			'order'=> array('SalSale.id'=>'desc'),
-			'limit' => 15,
+			"recursive"=>0,
+			"fields"=>array("InvMovement.id", "InvMovement.code", "InvMovement.document_code", "InvMovement.date","InvMovement.inv_movement_type_id","InvMovementType.name", "InvMovement.inv_warehouse_id", "InvWarehouse.name", "InvMovement.lc_state"
+				, '(SELECT CASE note_code WHEN \'\' THEN \'NO\' ELSE note_code END FROM sal_sales WHERE code = "InvMovement"."document_code" LIMIT 1 ) AS note_code'),
+			"order"=> array("InvMovement.id"=>"desc"),
+			"limit" => 15,
 		);
-		////////////////////////////END - SETTING PAGINATING VARIABLES//////////////////////////////////////
-		$pagination = $this->paginate('SalSale');
-		$paginatedCodes = array();
-		for($i = 0; $i<count($pagination); $i++){ 
-			$paginatedCodes[$i] = $pagination[$i]['SalSale']['code'];
-		}
-		//debug($paginatedCodes);
-		$movements = $this->InvMovement->find('all',array(
-			'conditions'=>array(
-				'InvMovement.inv_movement_type_id'=>2, 
-				'InvMovement.document_code'=>$paginatedCodes,
-				'NOT'=>array('InvMovement.lc_state'=>array('LOGIC_DELETED', 'CANCELLED', 'DRAFT'))
-			),
-			'fields'=>array('InvMovement.lc_state', 'InvMovement.document_code'),
-			'recursive'=>-1
-		));
-		//debug($this->paginate('PurPurchase'));
+
+		$movements = $this->paginate('InvMovement');
 		//debug($movements);
-		////////////////////////START - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
-		$this->set('salSales', $pagination);
-		$this->set('document_code', $document_code);
-		$this->set('movements', $movements);
-		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
-		 
-	}
+		////////////////////////////////////////////
 		
+		
+		$this->set('invMovements', $movements);
+		$this->set('code', $code);
+		$this->set('document_code', $document_code);
+		$this->set('note_code', $note_code);
+		////////////////////////////////END - LIST ONLY SALES MOVEMENTS (easier) /////////////////////////////////////////
+	}
 	///////////////////////////////////////////// END - INDEX ////////////////////////////////////////////////
 	
 	
@@ -954,18 +1151,31 @@ class InvMovementsController extends AppController {
 		
 		if($idMovement <> ''){//Si idMovimiento esta lleno, mostrar todo, hasta cancelados en index_in
 			$this->InvMovement->recursive = -1;
-			$arrayAux = $this->InvMovement->find('all', array('conditions'=>array(
-			 'InvMovement.document_code'=>$documentCode
-			,'InvMovement.id'=>$idMovement
-			)));
+			$arrayAux = $this->InvMovement->find('all', array(
+				'conditions'=>array(
+					'InvMovement.document_code'=>$documentCode
+					,'InvMovement.id'=>$idMovement
+				),
+				'fields'=>array('InvMovement.id','InvMovement.inv_warehouse_id','InvMovement.inv_movement_type_id','InvMovement.document_code'
+					,'InvMovement.code','InvMovement.date', 'InvMovement.description',  'InvMovement.lc_state'
+					,'(SELECT CASE note_code WHEN \'\' THEN \'NO\' ELSE note_code END FROM pur_purchases WHERE code = "InvMovement"."document_code" LIMIT 1 ) AS note_code'
+				)
+            ));
 			if(count($arrayAux) == 0){//si no existe el movimiento
 				$this->redirect(array('action' => 'index_in'));
 			}
 		}else{//Si idMovimiento esta vacio, mostrar solo (nuevo, pendiente o aprobado) en index_save_in
 			$this->InvMovement->recursive = -1;
-			$arrayAux = $this->InvMovement->find('all', array('conditions'=>array(
-			'InvMovement.document_code'=>trim($documentCode), 'InvMovement.lc_state'=>array('APPROVED','PENDANT')
-			)));
+			$arrayAux = $this->InvMovement->find('all', array(
+				'conditions'=>array(
+					'InvMovement.document_code'=>trim($documentCode), 'InvMovement.lc_state'=>array('APPROVED','PENDANT')
+				),
+				'fields'=>array('InvMovement.id','InvMovement.inv_warehouse_id','InvMovement.inv_movement_type_id','InvMovement.document_code'
+					,'InvMovement.code','InvMovement.date', 'InvMovement.description',  'InvMovement.lc_state'
+					,'(SELECT CASE note_code WHEN \'\' THEN \'NO\' ELSE note_code END FROM pur_purchases WHERE code = "InvMovement"."document_code" LIMIT 1 ) AS note_code'
+				)
+				
+			));
 		}
 		
 		//mostrar cancelados
@@ -976,6 +1186,7 @@ class InvMovementsController extends AppController {
 		////////////////////////////////INICIO - LLENAR VISTA ///////////////////////////////////////////////
 		if(count($arrayAux) > 0){ //UPDATE
 			$this->request->data = $arrayAux[0];
+			//debug($arrayAux[0]);
 			$date = date("d/m/Y", strtotime($this->request->data['InvMovement']['date']));//$this->request->data['InvMovement']['date'];
 			$id = $this->request->data['InvMovement']['id'];
 			$invMovementDetails = array();//$this->_get_movements_details($id);
@@ -993,7 +1204,7 @@ class InvMovementsController extends AppController {
 		}else{//INSERT
 			$invMovementDetails = $this->_get_purchases_details($idPurchase, $firstWarehouse,'nuevo');
 		}
-		
+		$this->set("noteCode", $arrayAux[0][0]['note_code']);
 		$this->set(compact('invWarehouses', 'id', 'documentCode', 'date', 'invMovementDetails', 'documentState', 'idMovement'));
 		////////////////////////////////FIN - LLENAR VISTA //////////////////////////////////////////////////
 		
@@ -1018,7 +1229,7 @@ class InvMovementsController extends AppController {
 		}
 		////////////////////////////////FIN - VALIDAR SI ID COMPRA NO ESTA VACIO/////////////////////////////////////
 
-
+		
 		////////////////////////////////INICIO - VALIDAR SI CODIGO COMPRA EXISTE///////////////////////////////////
 		$this->loadModel('SalSale');	
 		$idSale = $this->SalSale->field('SalSale.id', array('SalSale.code'=>$documentCode));
@@ -1042,18 +1253,30 @@ class InvMovementsController extends AppController {
 		
 		if($idMovement <> ''){//Si idMovimiento esta lleno, mostrar todo, hasta cancelados en index_in
 			$this->InvMovement->recursive = -1;
-			$arrayAux = $this->InvMovement->find('all', array('conditions'=>array(
-			 'InvMovement.document_code'=>$documentCode
-			,'InvMovement.id'=>$idMovement
-			)));
+			$arrayAux = $this->InvMovement->find('all', array(
+				'conditions'=>array(
+					'InvMovement.document_code'=>$documentCode
+				   ,'InvMovement.id'=>$idMovement
+				),
+				'fields'=>array('InvMovement.id','InvMovement.inv_warehouse_id','InvMovement.inv_movement_type_id','InvMovement.document_code'
+					,'InvMovement.code','InvMovement.date', 'InvMovement.description',  'InvMovement.lc_state'
+					,'(SELECT CASE note_code WHEN \'\' THEN \'NO\' ELSE note_code END FROM sal_sales WHERE code = "InvMovement"."document_code" LIMIT 1 ) AS note_code'
+				)
+			));
 			if(count($arrayAux) == 0){//si no existe el movimiento
 				$this->redirect(array('action' => 'index_in'));
 			}
 		}else{//Si idMovimiento esta vacio, mostrar solo (nuevo, pendiente o aprobado) en index_save_in
 			$this->InvMovement->recursive = -1;
-			$arrayAux = $this->InvMovement->find('all', array('conditions'=>array(
-			'InvMovement.document_code'=>trim($documentCode), 'InvMovement.lc_state'=>array('APPROVED','PENDANT')
-			)));
+			$arrayAux = $this->InvMovement->find('all', array(
+				'conditions'=>array(
+					'InvMovement.document_code'=>trim($documentCode), 'InvMovement.lc_state'=>array('APPROVED','PENDANT')
+				),
+				'fields'=>array('InvMovement.id','InvMovement.inv_warehouse_id','InvMovement.inv_movement_type_id','InvMovement.document_code'
+					,'InvMovement.code','InvMovement.date', 'InvMovement.description',  'InvMovement.lc_state'
+					,'(SELECT CASE note_code WHEN \'\' THEN \'NO\' ELSE note_code END FROM sal_sales WHERE code = "InvMovement"."document_code" LIMIT 1 ) AS note_code'
+				)
+			));
 		}
 		
 		////////////////////////////////INICIO - LLENAR VISTA ///////////////////////////////////////////////
@@ -1077,6 +1300,7 @@ class InvMovementsController extends AppController {
 			$invMovementDetails = $this->_get_sales_details($idSale, $firstWarehouse,'nuevo');
 		}
 		
+		$this->set("noteCode", $arrayAux[0][0]['note_code']);
 		$this->set(compact('invWarehouses', 'id', 'documentCode', 'date', 'invMovementDetails', 'documentState', 'idMovement'));
 		////////////////////////////////FIN - LLENAR VISTA //////////////////////////////////////////////////
 		

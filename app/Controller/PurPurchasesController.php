@@ -367,6 +367,8 @@ class PurPurchasesController extends AppController {
 	//////////////////////////////////////////// END - REPORT /////////////////////////////////////////////////
 	
 	//////////////////////////////////////////START-GRAPHICS//////////////////////////////////////////
+	
+	
 	public function vgraphics(){
 		$this->loadModel("AdmPeriod");
 		$years = $this->AdmPeriod->find("list", array(
@@ -374,25 +376,26 @@ class PurPurchasesController extends AppController {
 			"fields"=>array("name", "name")
 			)
 		);
-		
+		/*
 		$this->loadModel("InvItem");
-		
 		$itemsClean = $this->InvItem->find("list", array('order'=>array('InvItem.code')));
 		$items[0]="TODOS";
 		foreach ($itemsClean as $key => $value) {
 			$items[$key] = $value;
 		}
+		*/
+		$item = $this->_find_items();
+		//$this->loadModel("InvPriceType");
+		//$priceTypes = $this->InvPriceType->find("list", array("conditions"=>array("name"=>array("FOB", "CIF"))));
 		
-		$this->loadModel("InvPriceType");
-		$priceTypes = $this->InvPriceType->find("list", array("conditions"=>array("name"=>array("FOB", "CIF"))));
-		
-		$this->set(compact("years", "items", "priceTypes"));
+		$this->set(compact("years", "item"));
 		//debug($this->_get_bars_sales_and_time("2013", "0"));
 	}
 	
 	public function ajax_get_graphics_data(){
 		if($this->RequestHandler->isAjax()){
 			$year = $this->request->data['year'];
+			//$month = $this->request->data['month'];
 			$currency = $this->request->data['currency'];
 			$item = $this->request->data['item'];
 			$priceType = $this->request->data['priceType'];;
@@ -405,27 +408,44 @@ class PurPurchasesController extends AppController {
 	private function _get_bars_purchases_and_time($year, $item, $currency, $priceType){
 		$conditionItem = null;
 		$dataString = "";
-		
+		//$conditionMonth= null;
 		if($item > 0){
 			$conditionItem = array("PurDetail.inv_item_id" => $item);
 		}
 		
-		$currencyType = "price";
+		$currencyField = "";
 		if($currency == "dolares"){
-			$currencyType = "ex_price";
+			$currencyField = "ex_";
 		}
 		
+		$priceTypeField = "fob_price";
+		if($priceType == "CIF"){
+			$priceTypeField = "cif_price";
+		}
+		/*
+		if($month > 0){
+			if(count($month) == 1){
+				$conditionMonth = array("to_char(PurPurchase.date,'mm')" => "0".$month);
+			}else{
+				$conditionMonth = array("to_char(PurPurchase.date,'mm')" => $month);
+			}
+			
+		}
+		*/
 		//*****************************************************************************//
 		$this->PurPurchase->PurDetail->unbindModel(array('belongsTo' => array('InvSupplier')));
 		$data = $this->PurPurchase->PurDetail->find('all', array(
 			"fields"=>array(
 				"to_char(\"PurPurchase\".\"date\",'mm') AS month",
-				'SUM("PurDetail"."quantity" * (SELECT '.$currencyType.'  FROM inv_prices where inv_item_id = "PurDetail"."inv_item_id" AND date <= "PurPurchase"."date" AND inv_price_type_id='.$priceType.' order by date DESC, date_created DESC LIMIT 1))'
+				//'SUM("PurDetail"."quantity" * (SELECT '.$currencyType.'  FROM inv_prices where inv_item_id = "PurDetail"."inv_item_id" AND date <= "PurPurchase"."date" AND inv_price_type_id='.$priceType.' order by date DESC, date_created DESC LIMIT 1))'
+				'SUM("PurDetail"."quantity" * "PurDetail"."'.$currencyField.$priceTypeField.'")'
 			),
 			"conditions"=>array(
 				"to_char(PurPurchase.date,'YYYY')"=>$year,
 				"PurPurchase.lc_state"=>"PINVOICE_APPROVED",
-				$conditionItem
+				$conditionItem,
+				//$conditionMonth
+				
 			),
 			'group'=>array("to_char(PurPurchase.date,'mm')")
 		));
@@ -451,6 +471,8 @@ class PurPurchasesController extends AppController {
 		
 		return substr($dataString, 0, -1);
 	}
+	
+	
 	
 	//////////////////////////////////////////END-GRAPHICS//////////////////////////////////////////
 	

@@ -72,29 +72,38 @@ class SalSalesController extends AppController {
 		$this->set(compact("warehouse", "item"));
 	}
 	
-	private function _find_items($type = 'none', $selected = array()){
+	private function _find_items($type = 'none', $selected = array(), $items = ""){
 		$conditions = array();
 		$order = array('InvItem.code');
+		$conditionsTypes = array();
 		
 		switch ($type){
 			case 'category':
-				$conditions = array('InvItem.inv_category_id'=>$selected);
+				$conditionsTypes = array('InvItem.inv_category_id'=>$selected);
 				//$order = array('InvCategory.name');
 				break;
 			case 'brand':
-				$conditions = array('InvItem.inv_brand_id'=>$selected);
+				$conditionsTypes = array('InvItem.inv_brand_id'=>$selected);
 				//$order = array('InvBrand.name');
 				break;
 		}
-			
+		
+		if($items <> ""){
+			$conditions = array_merge($conditionsTypes, array("InvItem.id"=>$items));
+		}else{
+			$conditions = $conditionsTypes;
+		}
+		
 		$this->loadModel("InvItem");
 		$this->InvItem->unbindModel(array('hasMany' => array('InvPrice', 'InvCategory', 'InvMovementDetail', 'InvItemsSupplier')));
 		return $this->InvItem->find("all", array(
-					"fields"=>array('InvItem.code', 'InvItem.name', 'InvCategory.name', 'InvBrand.name', 'InvItem.id'),
+					"fields"=>array('InvItem.code', 'InvItem.name', 'InvCategory.name', 'InvBrand.name', 'InvItem.id', 'InvItem.full_name'),
 					"conditions"=>$conditions,
 					"order"=>$order
 				));
 	}
+	
+
 	
 	public function ajax_get_group_items_and_filters(){
 		if($this->RequestHandler->isAjax()){
@@ -391,7 +400,7 @@ class SalSalesController extends AppController {
 	}
 	*/
 	
-	public function vreport_purchases_customers(){
+	public function vreport_generator_purchases_customers(){
 		$this->loadModel("AdmPeriod");
 		$years = $this->AdmPeriod->find("list", array(
 			"order"=>array("name"=>"desc"),
@@ -404,6 +413,228 @@ class SalSalesController extends AppController {
 		$this->set(compact("years", "months", "item"));
 	}
 	
+	
+	public function vreport_purchases_customers(){
+		//special ctp template for printing due DOMPdf colapses generating too many pages
+		$this->layout = 'print';
+		
+		//Check if session variables are set otherwise redirect
+		if(!$this->Session->check('ReportPurchasesCustomers')){
+			$this->redirect(array('action' => 'vreport_generator_purchases_customers'));
+		}
+		
+		//put session data sent data into variables
+		$initialData = $this->Session->read('ReportPurchasesCustomers');
+		
+		//debug($initialData);
+		$this->set("initialData", $initialData);
+		$conditionMonth = null;
+		if($initialData['month'] > 0){
+			if(count($initialData['month']) == 1){
+				$conditionMonth = array("to_char(SalSale.date,'mm')" => "0".$initialData['month']);
+			}else{
+				$conditionMonth = array("to_char(SalSale.date,'mm')" => $initialData['month']);
+			}
+		}
+		
+		$this->SalSale->SalDetail->bindModel(array(
+			'hasOne'=>array(
+				'SalEmployee'=>array(
+					'foreignKey'=>false,
+					'conditions'=> array('SalSale.sal_employee_id = SalEmployee.id')
+				),
+				'SalCustomer'=>array(
+					'foreignKey'=>false,
+					'conditions'=> array('SalEmployee.sal_customer_id = SalCustomer.id')
+				)
+			)
+		));
+		
+		$currencyField = "";
+		if(strtoupper($initialData["currency"]) == 'DOLARES'){ $currencyField = "ex_";}
+		
+		$this->SalSale->SalDetail->unbindModel(array('belongsTo' => array('InvWarehouse')));
+		$data = $this->SalSale->SalDetail->find("all", array(
+			"fields"=>array(
+				'SUM("SalDetail"."quantity" * "SalDetail"."'.$currencyField.'sale_price") AS money',
+				'SUM("SalDetail"."quantity") AS quantity',
+				'SalCustomer.name',
+				'SalCustomer.id',
+			),
+			'group'=>array("SalCustomer.name", "SalCustomer.id"),
+			"conditions"=>array(
+				//"SalCustomer.id"=>array(11,77,367),
+				"to_char(SalSale.date,'YYYY')"=>$initialData['year'],
+				"SalDetail.inv_item_id"=>$initialData['items'],
+				$conditionMonth
+			),
+			"order"=>array("SalCustomer.name")
+		));
+		$this->loadModel("SalCustomer");
+		$customers = $this->SalCustomer->find("list", array("order"=>array("SalCustomer.name")));
+		//debug($data);
+		
+		//debug($customers);
+		$details = array();
+		
+		if($initialData["zero"] == "yes"){
+			$counter = 0;
+			foreach ($customers as $key => $customer) {
+				$details[$counter]['SalCustomer']['name'] = $customer;
+				$details[$counter][0]['money'] = 0;
+				$details[$counter][0]['quantity'] = 0;
+				foreach ($data as $key2 => $value) {
+					
+					if($key == $value['SalCustomer']['id']){
+						//debug($value[0]['money']);
+						$details[$counter][0]['money'] = $value[0]['money'];
+						$details[$counter][0]['quantity'] = $value[0]['quantity'];
+					}
+				}
+				$counter++;
+			}
+		}else{
+			$details = $data;
+		}
+		
+		//debug($details);
+		
+		//debug($details);
+		
+		//debug($details);
+		
+		//Now list items selected in order to get a reference
+		$group = array();
+			switch ($initialData['groupBy']) {
+				case 'category':
+					$this->loadModel("InvCategory");
+					$group = $this->InvCategory->find("list", array("order"=>array("InvCategory.name")));
+					$this->set('group', $group);
+					break;
+				case 'brand':
+					$this->loadModel("InvBrand");
+					$group = $this->InvBrand->find("list", array("order"=>array("InvBrand.name")));
+					$this->set('group', $group);
+					break;
+			}
+			$items = $this->_find_items($initialData['groupBy'], array_keys($group), $initialData['items']);
+		
+		
+			
+		$this->set(compact("details", "items"));
+		//debug($items);
+		$this->Session->delete('ReportPurchasesCustomers');
+	}
+	
+	
+	public function  ajax_generate_report_purchases_customers(){
+		if($this->RequestHandler->isAjax()){
+			//SETTING DATA
+			$this->Session->write('ReportPurchasesCustomers.year', $this->request->data['year']);
+			$this->Session->write('ReportPurchasesCustomers.month', $this->request->data['month']);
+			$this->Session->write('ReportPurchasesCustomers.monthName', $this->request->data['monthName']);
+			$this->Session->write('ReportPurchasesCustomers.currency', $this->request->data['currency']);
+			$this->Session->write('ReportPurchasesCustomers.zero', $this->request->data['zero']);
+			$this->Session->write('ReportPurchasesCustomers.groupBy', $this->request->data['groupBy']);
+			
+			//array items
+			$this->Session->write('ReportPurchasesCustomers.items', $this->request->data['items']);
+			
+		///END AJAX
+		}
+	}
+	/////////////////////////////////////////////////////
+	public function ajax_generate_report_items_utilities(){
+		if($this->RequestHandler->isAjax()){
+			$this->Session->write('ReportItemsUtilities.startDate', $this->request->data['startDate']);
+			$this->Session->write('ReportItemsUtilities.finishDate', $this->request->data['finishDate']);
+			$this->Session->write('ReportItemsUtilities.currency', $this->request->data['currency']);
+			$this->Session->write('ReportItemsUtilities.items', $this->request->data['items']);
+		}
+	}
+	
+	public function vreport_items_utilities(){
+		$this->layout = 'print';
+		
+		//Check if session variables are set otherwise redirect
+		if(!$this->Session->check('ReportItemsUtilities')){
+			$this->redirect(array('action' => 'vreport_items_utilities_generator'));
+		}
+		
+		//put session data sent data into variables
+		$initialData = $this->Session->read('ReportItemsUtilities');
+		
+		$currencyAbbr = "";
+		if($initialData["currency"] == "DOLARES"){
+			$currencyAbbr = "ex_";
+		}
+		
+		$this->SalSale->SalDetail->unbindModel(array('belongsTo' => array('InvWarehouse')));
+		$prices = $this->SalSale->SalDetail->find("all", array(
+			"conditions"=>array(
+				"InvItem.id"=>$initialData["items"]
+				,'SalSale.lc_state'=>'SINVOICE_APPROVED'
+				,'SalSale.date BETWEEN ? AND ?' => array($initialData['startDate'], $initialData['finishDate']),
+			)
+			,"fields"=>array(
+				"InvItem.id"
+				,'("SalDetail"."'.$currencyAbbr.'sale_price" * "SalDetail"."quantity") AS sale'
+				,'(SELECT '.$currencyAbbr.'price FROM inv_prices where inv_item_id = "SalDetail"."inv_item_id" AND date <= "SalSale"."date" AND inv_price_type_id=8 order by date DESC, date_created DESC LIMIT 1) * "SalDetail"."quantity" AS "cif"'
+			)
+		));
+		//debug($initialData["items"]);
+		//debug($prices);
+		
+		
+		
+		$limit = count($prices);
+		$dataDetail = array();
+		
+		$this->loadModel("InvItem");
+		$items = $this->InvItem->find("list", array(
+			"conditions"=>array("InvItem.id"=>$initialData["items"]),
+			"fields"=>array("InvItem.id", "InvItem.full_name"),
+			"order"=>array("InvItem.code")
+		));
+		
+		foreach($items as $keyItem => $item){
+			$dataDetail[$keyItem]["full_name"] = $item;
+			$dataDetail[$keyItem]["sale"] = 0;
+			$dataDetail[$keyItem]["cif"] = 0;
+			$dataDetail[$keyItem]["utility"] = 0;
+			$dataDetail[$keyItem]["margin"] = 0;
+		}
+		//debug($dataDetail);
+		
+		for($i=0; $i<$limit; $i++){
+			foreach ($initialData["items"] as $item) {
+				if($prices[$i]["InvItem"]["id"] == $item ){
+					$dataDetail[$item]["sale"] = $dataDetail[$item]["sale"] + $prices[$i][0]["sale"];
+					$dataDetail[$item]["cif"] = $dataDetail[$item]["cif"] + $prices[$i][0]["cif"];
+					$dataDetail[$item]["utility"] = $dataDetail[$item]["sale"] - $dataDetail[$item]["cif"];
+					$dataDetail[$item]["margin"] = ($dataDetail[$item]["utility"] * 100) / $dataDetail[$item]["sale"];
+				}
+			}
+		}
+		//debug($dataDetail);
+		$this->set("data", $initialData);
+		$this->set("dataDetails", $dataDetail);
+		$this->Session->delete('ReportItemsUtilities');
+	}
+	
+	
+	public function vreport_items_utilities_generator(){
+		$this->loadModel("AdmPeriod");
+		$years = $this->AdmPeriod->find("list", array(
+			"order"=>array("name"=>"desc"),
+			"fields"=>array("name", "name")
+			)
+		);
+		$item = $this->_find_items();
+		$this->set(compact("years", "item"));
+	}
+	////////////////////////////////////////////////////
+
 	public function vgraphics_items_customers(){
 		$clientsClean = $this->SalSale->SalEmployee->SalCustomer->find('list');
 		$clients[0] = "TODOS";
@@ -580,9 +811,9 @@ class SalSalesController extends AppController {
 				$conditionPerson = array("SalSale.salesman_id" => $person);
 			}
 		}
-		$currencyType = "price";
-		if($currency == "dolares"){
-			$currencyType = "ex_price";
+		$currencyType = "sale_price";
+		if(strtoupper($currency) == "DOLARES"){
+			$currencyType = "ex_sale_price";
 		}
 		
 		//*****************************************************************************//
@@ -604,7 +835,8 @@ class SalSalesController extends AppController {
 		$data = $this->SalSale->SalDetail->find('all', array(
 			"fields"=>array(
 				"to_char(\"SalSale\".\"date\",'mm') AS month",
-				'SUM("SalDetail"."quantity" * (SELECT '.$currencyType.'  FROM inv_prices where inv_item_id = "SalDetail"."inv_item_id" AND date <= "SalSale"."date" AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1)) AS money',
+				//'SUM("SalDetail"."quantity" * (SELECT '.$currencyType.'  FROM inv_prices where inv_item_id = "SalDetail"."inv_item_id" AND date <= "SalSale"."date" AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1)) AS money',
+				'SUM("SalDetail"."quantity" * "SalDetail"."'.$currencyType.'") as money',
 				'SUM("SalDetail"."quantity") AS quantity'
 			),
 			'group'=>array("to_char(SalSale.date,'mm')"),
@@ -663,9 +895,9 @@ class SalSalesController extends AppController {
 			}
 			
 		}
-		$currencyType = "price";
-		if($currency == "dolares"){
-			$currencyType = "ex_price";
+		$currencyType = "sale_price";
+		if(strtoupper($currency) == "DOLARES"){
+			$currencyType = "ex_sale_price";
 		}
 		
 		//********************************************* ********************************//
@@ -684,7 +916,8 @@ class SalSalesController extends AppController {
 				//"InvItem.id",
 				"InvItem.code",
 				"InvItem.name",
-				'SUM("SalDetail"."quantity" * (SELECT '.$currencyType.'  FROM inv_prices where inv_item_id = "SalDetail"."inv_item_id" AND date <= "SalSale"."date" AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1)) AS money',
+				//'SUM("SalDetail"."quantity" * (SELECT '.$currencyType.'  FROM inv_prices where inv_item_id = "SalDetail"."inv_item_id" AND date <= "SalSale"."date" AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1)) AS money',
+				'SUM("SalDetail"."quantity" * "SalDetail"."'.$currencyType.'") as money',
 				'SUM("SalDetail"."quantity") AS quantity'
 			),
 			'group'=>array(

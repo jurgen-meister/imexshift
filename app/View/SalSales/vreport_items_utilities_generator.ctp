@@ -4,7 +4,7 @@
 <?php echo $this->Html->script('unicorn', FALSE); ?>
 <?php echo $this->Html->script('jquery.dataTables.min.js', FALSE); ?>
 <?php echo $this->Html->script('jquery.uniform.js', FALSE); ?>
-<?php echo $this->Html->script('modules/InvGraphics', FALSE); ?>
+<?php echo $this->Html->script('modules/SalGraphics', FALSE); ?>
 
 
 <!-- ************************************************************************************************************************ -->
@@ -13,7 +13,7 @@
 	<!-- //////////////////////////// Start - buttons /////////////////////////////////-->
 	<div class="widget-box">
 		<div class="widget-content nopadding">
-			<a href="#" id="btnGenerateGraphicsMovements" class="btn btn-primary noPrint "><i class="icon-cog icon-white"></i> Generar Gráficas (abajo)</a>
+			<a href="#" id="btnGenerateReportItemsUtilities" class="btn btn-primary noPrint "><i class="icon-cog icon-white"></i> Generar Reporte</a>
 			<div id="boxMessage"></div>
 			<div id="boxProcessing" align="center"></div>
 		</div>
@@ -26,11 +26,12 @@
 			<span class="icon">
 				<i class=" icon-search"></i>
 			</span>
-			<h5>Gráficas de Movimientos</h5>
+			<h5>Reporte Ventas - Utilidades</h5>
 		</div>
 		<div class="widget-content nopadding">
 			<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-horizontal', 'novalidate' => true));?>
 				<?php
+				/*
 				echo $this->BootstrapForm->input('year', array(
 					'label' => 'Gestión:',
 					'id'=>'cbxYear',
@@ -45,22 +46,25 @@
 					'class'=>'span2',
 					'options'=>array(0=>"Todos", 1=>"Enero", 2=>"Febrero", 3=>"Marzo", 4=>"Abril", 5=>"Mayo", 6=>"Junio", 7=>"Julio", 8=>"Agosto", 9=>"Septiembre", 10=>"Octubre", 11=>"Noviembre", 12=>"Diciembre")
 				));
-				echo $this->BootstrapForm->input('warehouse', array(
-					'label' => 'Almacen:',
-					'id'=>'cbxWarehouse',
-					'class'=>'span3',
-					'type'=>'select',
-					'options'=>$warehouses,
-				));
-				/*
-				echo $this->BootstrapForm->input('item', array(
-					'label' => 'Item:',
-					'id'=>'cbxItem',
-					'class'=>'span8',
-					'type'=>'select',
-					'options'=>$items,
-				));
-				 */
+				*/
+				echo $this->BootstrapForm->input('start_date', array(
+					'label' => '* Fecha Inicio:',
+					'id'=>'txtReportStartDate'
+				  ));
+
+				  echo $this->BootstrapForm->input('finish_date', array(
+					'label' => '* Fecha Fin:',
+					'id'=>'txtReportFinishDate'
+				  ));
+				  
+			 echo $this->BootstrapForm->input('currency', array(
+				'label' => '* Moneda:',
+				'id'=>'cbxReportCurrency',
+				'type'=>'select',
+				'options'=>array('BOLIVIANOS'=>'BOLIVIANOS', 'DOLARES'=>'DOLARES'),
+				'class'=>'span4'  
+			  ));
+				
 				echo $this->BootstrapForm->input('type', array(
 				'label' => '* Agrupar por:',
 				'id'=>'cbxReportGroupTypes',
@@ -68,7 +72,6 @@
 				'class'=>'span3',    
 				'options'=>array('none'=>'Ninguno','brand'=>'Marca','category'=> 'Categoria')  
 				)); 
-
 				?>
 			
 			<?php echo $this->BootstrapForm->end();?>
@@ -100,68 +103,7 @@
 	</div>
 	<!-- //////////////////////////// End - filters /////////////////////////////////-->
 	
-<!-- *********************************************** #UNICORN SEARCH WRAP ********************************************-->
-<div class="row-fluid">
-	<div class="span8">
-		<div class="widget-box">
-			<div class="widget-title">
-				<span class="icon">
-					<i class=" icon-signal"></i>
-				</span>
-				<h5>Entradas (Items - Meses)</h5>
-			</div>
-			<div class="widget-content nopadding">
-				<div class="bars"></div>
-			</div>	
-		</div>
-	</div>
-	<div class="span4">
-		<div class="widget-box">
-			<div class="widget-title">
-				<span class="icon">
-					<i class=" icon-signal"></i>
-				</span>
-				<h5>Entradas (Items - Tipos)</h5>
-			</div>
-			<div class="widget-content nopadding">
-				<div class="pie"></div>
-			</div>	
-		</div>
-	</div>
-</div>
 
-<div class="row-fluid">
-	<div class="span8">
-		<div class="widget-box">
-			<div class="widget-title">
-				<span class="icon">
-					<i class=" icon-signal"></i>
-				</span>
-				<h5>Salidas (Items - Meses)</h5>
-			</div>
-			<div class="widget-content nopadding">
-				<div class="bars2"></div>
-			</div>	
-		</div>
-	</div>
-	<div class="span4">
-		<div class="widget-box">
-			<div class="widget-title">
-				<span class="icon">
-					<i class=" icon-signal"></i>
-				</span>
-				<h5>Salidas (Items - Tipos)</h5>
-			</div>
-			<div class="widget-content nopadding">
-				<div class="pie2"></div>
-			</div>	
-		</div>
-	</div>
-</div>
-<!-- *********************************************** #UNICORN SEARCH WRAP ********************************************-->
-		
-	
-	
 <!-- ************************************************************************************************************************ -->
 </div><!-- END CONTAINER FLUID/ROW FLUID/SPAN12 - FROM MAIN TEMPLATE #UNICORN
 <!-- ************************************************************************************************************************ -->

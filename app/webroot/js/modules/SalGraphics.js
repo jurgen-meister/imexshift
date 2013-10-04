@@ -10,9 +10,84 @@ var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 	//EXECUTE onload
 	//ajax_get_graphics_data();
 	$('select').select2();
+	$("#txtReportStartDate, #txtReportFinishDate").datepicker({
+		showButtonPanel: true
+	});
 	startDataTable();
-/////////////
-
+	
+	
+$('#txtReportStartDate, #txtReportFinishDate').keydown(function(e){e.preventDefault();});
+/////////////////////////////////////////
+$('#btnGenerateReportItemsUtilities').click(function(){
+		var items = getSelectedCheckboxes();
+		var startDate = $('#txtReportStartDate').val();
+		var finishDate = $('#txtReportFinishDate').val();
+		var error = validate(startDate, finishDate, items);
+		if(error === ''){
+			ajax_generate_report_items_utilities(items);
+			$('#boxMessage').html('');
+		}else{
+			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
+		}
+	});
+	
+	function validate(startDate, finishDate, items){
+	   var  error='';
+	   if(startDate === ''){error+='<li> El campo "Fecha Inicio" esta vacio </li>';}
+	   if(finishDate === ''){error+='<li> El campo "Fecha Fin" esta vacio </li>';}
+	   startDate = startDate.split("/");
+	   finishDate = finishDate.split("/");
+	   if(error === ''){
+		    if(validateSameYearOnly(startDate[2], finishDate[2]) === 1){
+				error+='<li> La "Fecha Inicio" y "Fecha Fin" deben ser del mismo año </li>';
+			}else{
+				if(validateGreaterThanStartDate(startDate, finishDate) === 1){error+='<li> La "Fecha Inicio" es mayor a la "Fecha Fin" </li>';}
+			}
+	   }
+	   if(items.length === 0){error+='<li> Debe elegir al menos un "Item" </li>';}
+	   return error;
+   }
+	
+   function validateGreaterThanStartDate(startDate, finishDate){
+		//Don't validate year 'cause is obligatory to be from the same year in other function
+	   if(startDate[1] > finishDate[1]){//month
+			return 1;//error
+		}
+		if(startDate[1] === finishDate[1]){//month
+			if(startDate[0] > finishDate[0]){//day
+				return 1;//error
+			}
+		}
+		return 0;//ok
+   }
+   
+   function validateSameYearOnly(startYear, finishYear){
+	   if(startYear !== finishYear){
+		   return 1; //error
+	   }
+	   return 0;//ok
+   }
+	
+	function ajax_generate_report_items_utilities(items){ //Report
+		$.ajax({
+            type:"POST",
+			async:false, // the key to open new windows when success
+            url:moduleController + "ajax_generate_report_items_utilities",			
+            data:{startDate: $('#txtReportStartDate').val(), finishDate: $('#txtReportFinishDate').val(), currency:$('#cbxReportCurrency').val(), items:items},
+			beforeSend: function(){
+				$('#boxProcessing').text('Procesando...');
+			},
+            success: function(data){
+				open_in_new_tab(moduleController+'vreport_items_utilities');
+				$('#boxProcessing').text('');
+			},
+			error:function(data){
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#boxProcessing').text('');
+			}
+        });
+	}
+///////////////////////////////////////
 
 	function createBarData(sentData){
 		var splitData = sentData.split("|");
@@ -278,6 +353,61 @@ $('#btnGenerateReportCustomers').click(function(){
 	return false;
 });
 
+
+$('#btnGenerateReportPurchasesCustomers').click(function(){
+	var currency = $('#cbxCurrency').val();
+	var groupBy = $('#cbxReportGroupTypes').val();
+	var year =  $("#cbxYear").val();
+	var month =  $("#cbxMonth").val();
+	var zero =  $("#cbxShowZero").val();
+	var monthName =  $("#cbxMonth option:selected").text();
+	var items = getSelectedCheckboxes();
+	if(items.length > 0){
+		var DATA = {
+						currency:currency,
+						groupBy:groupBy,
+						year:year,
+						month:month,
+						zero:zero,
+						monthName:monthName,
+						items:items
+					   };
+			//alert(DATA);
+			ajax_generate_report_purchases_customers(DATA);
+			$('#boxMessage').html('');
+	}else{
+		$('#boxMessage').html('<div class="alert-error"><ul>'+'<li> Debe elegir al menos un "Item" </li>'+'</ul></div>');
+	}
+	return false;
+});
+
+
+	function ajax_generate_report_purchases_customers(dataSent){ //Report
+		$.ajax({
+            type:"POST",
+			async:false, // the key to open new windows when success
+            url:moduleController + "ajax_generate_report_purchases_customers",			
+            data:dataSent,
+			beforeSend: function(){
+				$('#boxProcessing').text('Procesando...');
+			},
+            success: function(data){
+				open_in_new_tab(moduleController+'vreport_purchases_customers');
+				$('#boxProcessing').text('');
+			},
+			error:function(data){
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#boxProcessing').text('');
+			}
+        });
+	}
+
+
+	function open_in_new_tab(url)
+	{
+	  var win=window.open(url, '_blank');
+	  win.focus();
+	}
 
 $('#btnGenerateReportSalesmen').click(function(){
 	var currency = $('#cbxCurrency').val();

@@ -1,127 +1,78 @@
-<?php echo $this->Html->script('jquery.flot.min', FALSE); ?>
-<?php echo $this->Html->script('jquery.flot.pie.min', FALSE); ?>
-<?php echo $this->Html->script('jquery.flot.resize.min', FALSE); ?>
-<?php echo $this->Html->script('unicorn', FALSE); ?>
-<?php echo $this->Html->script('jquery.dataTables.min.js', FALSE); ?>
-<?php echo $this->Html->script('jquery.uniform.js', FALSE); ?>
-<?php echo $this->Html->script('modules/SalGraphics', FALSE); ?>
+<span style="font-size: 25px; font-weight: bold">IMEXPORT</span><span style="font-weight: bold">SRL</span>
+<hr style="height: 2px; color: #000; background-color: #000;">
+<div style="font-size: 20px; font-weight: bold; text-align:center; text-decoration: underline;">REPORTE DE VENTAS - COMPRAS DE CLIENTES:</div>
+<br>
 
+<table class="report-table" border="0" style="border-collapse:collapse; width:100%;">
+	<thead>
+	<tr style="text-align:center">
+		<th style="width:25%">Gestión:</th>
+		<th style="width:25%">Mes:</th>
+	</tr>
+	</thead>
+	<tbody>
+		<tr style="text-align:center">
+			<td><?php echo $initialData['year'];?></td>
+			<td><?php echo $initialData['monthName'];?></td>
+		</tr>
+	</tbody>
+</table>
+<hr style="height: 1px; color: #444; background-color: #444;">
 
-<!-- ************************************************************************************************************************ -->
-<div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FROM MAIN TEMPLATE #UNICORN -->
-<!-- ************************************************************************************************************************ -->
+<?php $currencyAbbr = ' (Bs)'; if(strtoupper($initialData['currency']) == 'DOLARES'){$currencyAbbr=' ($us)';}?>
 
-<!-- //////////////////////////// Start - buttons /////////////////////////////////-->
-	<div class="widget-box">
-		<div class="widget-content nopadding">
-			<?php 
-				/////////////////START - SETTINGS BUTTON CANCEL /////////////////
-				//echo $this->Html->link('<i class="icon-cog icon-white"></i> Generar Reporte', array('#'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo', 'id'=>'btnPrint')); 
-			?>
-			<a href="#" id="btnGenerateReportCustomers" class="btn btn-primary noPrint "><i class="icon-cog icon-white"></i> Generar Reporte</a>
-			<div id="boxMessage"></div>
-			<div id="boxProcessing" align="center"></div>
-		</div>
-	</div>
-	<!-- //////////////////////////// End - buttons /////////////////////////////////-->
+<table class="report-table" border="1" style="border-collapse:collapse; width:100%;">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>Cliente</th>
+					<th>Cantidad (Unidad)</th>
+					<th> Monto Dinero <?php echo $currencyAbbr;?></th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php $counter = 1; $totalMoney = 0; $totalQuantity=0;?>
+				<?php foreach($details as $value){?>
+				<tr>
+					<td style="text-align:center;"><?php echo $counter;?></td>
+					<td style="padding-left: 10px;"><?php echo $value['SalCustomer']['name'];?></td>
+					<td style="text-align:center;"><?php echo $value[0]['quantity'];?></td>
+					<td style="text-align:center;"><?php echo number_format($value[0]['money'],2);?></td>
+				</tr>
+				<?php 
+				$totalQuantity = $totalQuantity + $value[0]['quantity'];
+				$totalMoney = $totalMoney + $value[0]['money'];
+				$counter++;
+				}?>
+				<tr>
+					<td colspan="2" style="text-align:right; padding-right: 10px"> Total:</td>
+					<td style="font-weight:bold;"><?php echo $totalQuantity;?></td>
+					<td style="font-weight:bold;"><?php echo number_format($totalMoney,2);?></td>
+				</tr>
+			</tbody>
+	</table>
 
-	<!-- //////////////////////////// Start - buttons /////////////////////////////////-->
-	<div class="widget-box">
-		<div class="widget-title">
-			<span class="icon">
-				<i class=" icon-search"></i>
-			</span>
-			<h5>Filtros</h5>
-		</div>
-		<div class="widget-content nopadding">
-			<?php 
-				/////////////////START - SETTINGS BUTTON CANCEL /////////////////
-				//echo $this->Html->link('<i class="icon-cog icon-white"></i> Generar Reporte', array('#'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo', 'id'=>'btnPrint')); 
-			?>
-			<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-horizontal', 'novalidate' => true));?>
-				<?php
-				echo $this->BootstrapForm->input('year', array(
-					'label' => 'Gestión:',
-					'id'=>'cbxYear',
-					'type'=>'select',
-					'class'=>'span2',
-					'options'=>$years 
-				));
-				echo $this->BootstrapForm->input('month', array(
-					'label' => 'Mes:',
-					'id'=>'cbxMonth',
-					'type'=>'select',
-					'class'=>'span2',
-					'options'=>$months 
-				));
-				echo $this->BootstrapForm->input('currency', array(
-					'label' => 'Moneda:',
-					'id'=>'cbxCurrency',
-					'type'=>'select',
-					'options'=>array("bolivianos"=>"BOLIVIANOS", "dolares"=>"DOLARES")
-				));
-				echo $this->BootstrapForm->input('type', array(
-				'label' => '* Agrupar por:',
-				'id'=>'cbxReportGroupTypes',
-				'type'=>'select',
-				'class'=>'span3',    
-				'options'=>array('none'=>'Ninguno','brand'=>'Marca','category'=> 'Categoria')  
-				));
-				?>
-			<?php echo $this->BootstrapForm->end();?>
-			
-			<div id="boxGroupItemsAndFilters">
-				<table class="table table-bordered data-table with-check">
-					<thead>
-					<tr>
-						<th><input type="checkbox" id="title-table-checkbox" name="title-table-checkbox" checked="checked" /></th>
-						<th>Item</th>
-						<th>Marca</th>
-						<th>Categoria</th>
-					</tr>
-					</thead>
-
-					<tbody>
-					<?php foreach($item as $val){ ?>	
-					<tr>
-						<td><input type="checkbox" checked="checked" value="<?php echo $val['InvItem']['id'];?>" /></td>
-						<td><?php echo '[ '.$val['InvItem']['code'].' ] '.$val['InvItem']['name'];?></td>
-						<td><?php echo $val['InvBrand']['name'];?></td>
-						<td><?php echo $val['InvCategory']['name'];?></td>
-					</tr>
-					<?php } ?>
-					</tbody>
-				</table>  
-			</div>
-			
-		</div>
-	</div>
-	<!-- //////////////////////////// End - buttons /////////////////////////////////-->
-	
-<!-- *********************************************** #UNICORN REPORT DATA WRAP ********************************************-->
-<div class="row-fluid">
-	<div class="span12">
-		<div class="widget-box">
-			<div class="widget-title">
-				<span class="icon">
-					<i class=" icon-signal"></i>
-				</span>
-				<h5>Compras Clientes</h5>
-			</div>
-			<div class="widget-content nopadding">
-				
-			</div>	
-		</div>
-	</div>
-</div>
-
-
-
-
-<!-- *********************************************** #UNICORN REPORT DATA WRAP ********************************************-->
-		
-	
-	
-<!-- ************************************************************************************************************************ -->
-</div><!-- END CONTAINER FLUID/ROW FLUID/SPAN12 - FROM MAIN TEMPLATE #UNICORN
-<!-- ************************************************************************************************************************ -->
+<hr style="height: 1px; color: #444; background-color: #444;">
+<div style="font-size: 20px; font-weight: bold; text-align:center; text-decoration: underline;">ITEMS SELECCIONADOS:</div>
+<br>
+<table class="report-table" border="1" style="border-collapse:collapse; width:100%;">
+	<thead>
+				<tr>
+					<th>#</th>
+					<th>Item</th>
+					<th>Marca</th>
+					<th>Categoria</th>
+				</tr>
+			</thead>
+			<?php $counter=1; ?>
+			<?php foreach($items as $item){?>
+			<tr>
+					<td style="text-align: center;"><?php echo $counter;?></td>
+					<td style="padding-left: 10px;"><?php echo $item["InvItem"]["full_name"];?></td>
+					<td style="text-align: center;"><?php echo $item["InvBrand"]["name"];?></td>
+					<td style="text-align: center;"><?php echo $item["InvCategory"]["name"];?></td>
+			</tr>
+			<?php $counter++;}?>
+</table>
+<br>
+<br>

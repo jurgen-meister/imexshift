@@ -615,7 +615,7 @@ a:hover {
 }
 
 /* Charts & graphs, bittion added .pie2, bars2, .chart2 => for double grafics in a simple view (if needed more just add more .pie3,etc)**/
-.chart, .pie, .bars, .pie2, .bars2, .chart2 {
+.chart, .pie, .bars, .pie2, .bars2, .pie3, .bars3, .chart2 {
 	height: 300px;
 	max-width: 100%;
 }

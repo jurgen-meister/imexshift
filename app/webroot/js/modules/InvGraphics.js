@@ -6,6 +6,187 @@ var path = window.location.pathname;
 var arr = path.split('/');
 var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 
+//ON START
+	//EXECUTE onload
+	//ajax_get_graphics_data();
+	$('select').select2();
+	$("#txtReportStartDate, #txtReportFinishDate").datepicker({
+		showButtonPanel: true
+	});
+	
+	if(arr[3] === 'vgraphics' || arr[3] === 'vgraphics#'){
+		startDataTable();
+	}
+	$('#txtReportStartDate, #txtReportFinishDate').keydown(function(e){e.preventDefault();});
+	
+/////////////
+	
+	$('#cbxReportGroupTypes').change(function(){
+		getGroupItemsAndFilters();
+	});
+	
+	function getGroupItemsAndFilters(){
+		ajax_get_group_items_and_filters();
+	}
+	
+	$('#btnGenerateGraphicsMovements').click(function(){
+		var items = getSelectedCheckboxes();
+		if(items.length > 0){
+			ajax_get_graphics_data(items);	
+			$('#boxMessage').html('');
+		}else{
+			$('#boxMessage').html('<div class="alert-error"><ul>'+'<li> Debe elegir al menos un "Item" </li>'+'</ul></div>');
+		}
+		
+	});
+	
+	function getSelectedCheckboxes(){
+	   var selected = new Array();
+	   $(".data-table tbody input:checkbox:checked").each(function() {
+			selected.push($(this).val());
+	   });
+	   return selected;
+   }
+	
+	$('#btnGenerateGraphicsHistoricalPrices').click(function(){
+		
+		var items = $('#cbxItems').val(); //getSelectedCheckboxes();
+		var startDate = $('#txtReportStartDate').val();
+		var finishDate = $('#txtReportFinishDate').val();
+		//alert(startDate);
+		//alert(finishDate);
+		var error = validate(startDate, finishDate, items);
+		if(error === ''){
+			ajax_get_graphics_data_historical_prices(startDate, finishDate, items);
+			$('#boxMessage').html('');
+		}else{
+			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
+		}
+	});
+	
+	function validate(startDate, finishDate, items){
+	   var  error='';
+	   if(startDate === ''){error+='<li> El campo "Fecha Inicio" esta vacio </li>';}
+	   if(finishDate === ''){error+='<li> El campo "Fecha Fin" esta vacio </li>';}
+	   startDate = startDate.split("/");
+	   finishDate = finishDate.split("/");
+	   if(error === ''){
+		    if(validateSameYearOnly(startDate[2], finishDate[2]) === 1){
+				error+='<li> La "Fecha Inicio" y "Fecha Fin" deben ser del mismo año </li>';
+			}else{
+				if(validateGreaterThanStartDate(startDate, finishDate) === 1){error+='<li> La "Fecha Inicio" es mayor a la "Fecha Fin" </li>';}
+			}
+	   }
+	   //if(items.length === 0){error+='<li> Debe elegir al menos un "Item" </li>';}
+	   return error;
+   }
+	
+	function validateGreaterThanStartDate(startDate, finishDate){
+		//Don't validate year 'cause is obligatory to be from the same year in other function
+	   if(startDate[1] > finishDate[1]){//month
+			return 1;//error
+		}
+		if(startDate[1] === finishDate[1]){//month
+			if(startDate[0] > finishDate[0]){//day
+				return 1;//error
+			}
+		}
+		return 0;//ok
+   }
+   
+   function validateSameYearOnly(startYear, finishYear){
+	   if(startYear !== finishYear){
+		   return 1; //error
+	   }
+	   return 0;//ok
+   }
+	
+	function startDataTable(){
+	   $('.data-table').dataTable({
+			"bJQueryUI": true,
+			//"sPaginationType": "full_numbers",
+			"sDom": '<"">t<"F"f>i',
+			"sScrollY": "240px",
+			//"bScrollCollapse": true,
+			"bPaginate": false,
+			"aaSorting":[], //on start sorting setting to empty
+			"oLanguage": {
+				"sSearch": "Filtrar:",
+				 "sZeroRecords":  "No se encontro nada.",
+				 //"sInfo":         "Ids from _START_ to _END_ of _TOTAL_ total" //when pagination exists
+				 "sInfo": "Encontrados _TOTAL_ Items",
+				 "sInfoEmpty": "Encontrados 0 Items",
+				 "sInfoFiltered": "(filtrado de _MAX_ Items)"
+			},
+			"aoColumnDefs": [
+			  { 'bSortable': false, 'aTargets': [ 0 ] }// do not sort first column
+			]
+		});
+		$('input[type=checkbox]').uniform();
+		$("#title-table-checkbox").click(function() {
+			var checkedStatus = this.checked;
+			var checkbox = $(this).parents('.widget-box').find('tr td:first-child input:checkbox');		
+			checkbox.each(function() {
+				this.checked = checkedStatus;
+				if (checkedStatus === this.checked) {
+					$(this).closest('.checker > span').removeClass('checked');
+				}
+				if (this.checked) {
+					$(this).closest('.checker > span').addClass('checked');
+				}
+			});
+		});	
+   }
+function ajax_get_group_items_and_filters(){ //Report
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_get_group_items_and_filters",			
+            data:{type: $('#cbxReportGroupTypes').val()},
+			beforeSend: function(){
+				$('#boxProcessing').text('Procesando...');
+			},
+            success: function(data){
+				$('#boxGroupItemsAndFilters').html(data);
+				$('select').select2();
+				startDataTable();
+				$('#boxGroupItemsAndFilters #cbxReportGroupFilters').bind("change",function(){ 
+					var selected = new Array();
+					$("#boxGroupItemsAndFilters #cbxReportGroupFilters option:selected").each(function () {
+						selected.push($(this).val());
+					});
+					ajax_get_group_items(selected);
+				});
+				$('#boxProcessing').text('');
+			},
+			error:function(data){
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#boxProcessing').text('');
+			}
+        });
+	}
+	
+	function ajax_get_group_items(selected){ //Report
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_get_group_items",			
+            data:{type: $('#cbxReportGroupTypes').val(), selected: selected},
+			beforeSend: function(){
+				$('#boxProcessing').text('Procesando...');
+			},
+            success: function(data){
+				$('#boxGroupItems').html(data);
+				startDataTable();
+				$('#boxProcessing').text('');
+			},
+			error:function(data){
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#boxProcessing').text('');
+			}
+        });
+	}
+	
+	
+	////////////////////////////////////////////////////////////////////////
 	function createPieData(sentData){
 		//Format expected from ajax request is label1-data1|label2-data2
 		var firstSplitedData = sentData.split("|");
@@ -58,7 +239,7 @@ var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 		var splitData = sentData.split("|");
 		var data = [];
 		var finalData = [];
-			for (var i=0; i < 12; i++){
+			for (var i=0; i < splitData.length; i++){
 				data[i]=[i+1,parseInt(splitData[i])];
 			}
 		finalData.push({
@@ -71,7 +252,25 @@ var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 		});
 		return finalData;
 	}
-
+	
+	function createBarDataFloat(sentData){
+		var splitData = sentData.split("|");
+		var data = [];
+		var finalData = [];
+			for (var i=0; i < splitData.length; i++){
+				data[i]=[i+1,parseFloat(splitData[i]).toFixed(2)];
+			}
+		finalData.push({
+			data:data,
+			bars: {
+				show: true, 
+				barWidth: 0.5, 
+				order: 1
+			}
+		});
+		return finalData;
+	}
+	
 	function createBarOptions(){
 		var options =
 				{
@@ -87,15 +286,43 @@ var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 				};
 		return options;
 	}
+	
+	function createBarOptionsDynamic(stringXaxis){
+		
+		var arrayAux = [];
+		var arrayXaxis = [];
+		var ticks = [];
+		var key = 0;
+		arrayAux = stringXaxis.split("|");
+		
+		for(var i=0; i<arrayAux.length; i++){
+			key = i + 1;
+			ticks.push([key,arrayAux[i]]);
+		}
+		
+		
+		
+		var options =
+				{
+					legend: true,
+					/////////////////////
+					 xaxis:{
+						 ticks: ticks
+					 }
+				/////////////////////
+				};
+		return options;
+	}
 	/////////////////////////////////////////////////////////
 
-	function ajax_get_graphics_data(){ 
+	function ajax_get_graphics_data(items){ 
+		//var items = getSelectedCheckboxes();
 		$.ajax({
             type:"POST",
             url:moduleController + "ajax_get_graphics_data",			
-            data:{year: $('#cbxYear').val(), warehouse:$('#cbxWarehouse').val(), item:$('#cbxItem').val()},
+            data:{year: $('#cbxYear').val(), month: $('#cbxMonth').val(), warehouse:$('#cbxWarehouse').val(), item:items},
 			beforeSend: function(){
-				$('#processing').text("Procesando...");
+				$('#boxProcessing').text("Procesando...");
 			},
             success: function(data){
 				var arrayData = data.split(",");
@@ -109,18 +336,51 @@ var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 				$.plot($(".bars2"), createBarData(arrayData[3]), barOptions);
 				
 				//hide message
-				$('#processing').text("");
+				$('#boxProcessing').text("");
 			},
 			error:function(data){
 				//hideBittionAlertModal();
 				showGrowlMessage('error', 'Vuelva a intentarlo.');
-				$('#processing').text("");
+				$('#boxProcessing').text("");
 			}
         });
 	}
 	
 	
-	
+	function ajax_get_graphics_data_historical_prices(startDate, finishDate, items){ 
+		//var items = getSelectedCheckboxes();
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_get_graphics_data_historical_prices",			
+            data:{startDate:startDate, finishDate:finishDate, item:items, currency:$("#cbxReportCurrency").val()},
+			beforeSend: function(){
+				$('#boxProcessing').text("Procesando...");
+			},
+            success: function(data){
+				var arrayData = data.split(",");
+				var barOptions = createBarOptionsDynamic(arrayData[0]);
+				$.plot($(".bars"), createBarDataFloat(arrayData[1]), barOptions);
+				
+				var barOptions = createBarOptionsDynamic(arrayData[2]);
+				$.plot($(".bars2"), createBarDataFloat(arrayData[3]), barOptions);
+				
+				var barOptions = createBarOptionsDynamic(arrayData[4]);
+				$.plot($(".bars3"), createBarDataFloat(arrayData[5]), barOptions);
+				//Display graph    
+				
+				//$.plot($(".bars2"), createBarData(arrayData[1]), barOptions);
+				//$.plot($(".bars3"), createBarData(arrayData[2]), barOptions);
+				
+				//hide message
+				$('#boxProcessing').text("");
+			},
+			error:function(data){
+				//hideBittionAlertModal();
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#boxProcessing').text("");
+			}
+        });
+	}
 	
 	
 	function showGrowlMessage(type, text, sticky){
@@ -150,14 +410,15 @@ var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 	}
 	
 	//EXECUTE onload
-	ajax_get_graphics_data();
-	$('#cbxItem').select2();
+	//ajax_get_graphics_data();
+	//$('#cbxItem').select2();
 	
 	//events
+	/*
 	$('#cbxWarehouse, #cbxItem, #cbxYear').change(function(){
 		ajax_get_graphics_data();
 	});
-	
+	*/
 	////////////////////////////////////////////////////////
 //	var data = createPieData("Compras-175|Traspasos-25|Aperturas-25|Otros-25");
 //	var options = createPieOptions();

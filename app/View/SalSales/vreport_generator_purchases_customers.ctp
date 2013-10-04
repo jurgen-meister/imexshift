@@ -18,7 +18,7 @@
 				/////////////////START - SETTINGS BUTTON CANCEL /////////////////
 				//echo $this->Html->link('<i class="icon-cog icon-white"></i> Generar Reporte', array('#'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo', 'id'=>'btnPrint')); 
 			?>
-			<a href="#" id="btnGenerateReportCustomers" class="btn btn-primary noPrint "><i class="icon-cog icon-white"></i> Generar Gráficas (abajo)</a>
+			<a href="#" id="btnGenerateReportPurchasesCustomers" class="btn btn-primary noPrint "><i class="icon-cog icon-white"></i> Generar Reporte</a>
 			<div id="boxMessage"></div>
 			<div id="boxProcessing" align="center"></div>
 		</div>
@@ -31,7 +31,7 @@
 			<span class="icon">
 				<i class=" icon-search"></i>
 			</span>
-			<h5>Gráfica Ventas - Items Clientes</h5>
+			<h5>Reporte Ventas - Compras de Clientes</h5>
 		</div>
 		<div class="widget-content nopadding">
 			<?php 
@@ -40,13 +40,6 @@
 			?>
 			<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-horizontal', 'novalidate' => true));?>
 				<?php
-				echo $this->BootstrapForm->input('customer', array(
-					'label' => 'Cliente:',
-					'id'=>'cbxCustomer',
-					'type'=>'select',
-					'class'=>'span5',
-					'options'=>$clients 
-				));
 				echo $this->BootstrapForm->input('year', array(
 					'label' => 'Gestión:',
 					'id'=>'cbxYear',
@@ -60,6 +53,13 @@
 					'type'=>'select',
 					'class'=>'span2',
 					'options'=>$months 
+				));
+				echo $this->BootstrapForm->input('show', array(
+					'label' => 'Mostrar:',
+					'id'=>'cbxShowZero',
+					'type'=>'select',
+					'class'=>'span2',
+					'options'=>array("no"=>"Sin cero", "yes"=>"Con cero") 
 				));
 				echo $this->BootstrapForm->input('currency', array(
 					'label' => 'Moneda:',
@@ -104,131 +104,6 @@
 		</div>
 	</div>
 	<!-- //////////////////////////// End - buttons /////////////////////////////////-->
-	
-<!-- *********************************************** #UNICORN REPORT DATA WRAP ********************************************-->
-<div class="row-fluid">
-	<div class="span6">
-		<div class="widget-box">
-			<div class="widget-title">
-				<span class="icon">
-					<i class=" icon-signal"></i>
-				</span>
-				<h5>Cantidad de Items</h5>
-			</div>
-			<div class="widget-content nopadding">
-				<div class="pie"></div>
-			</div>	
-		</div>
-	</div>
-	<div class="span6">
-		<div class="widget-box">
-			<div class="widget-title">
-				<span class="icon">
-					<i class=" icon-signal"></i>
-				</span>
-				<h5>Dinero de Items</h5>
-			</div>
-			<div class="widget-content nopadding">
-				<div class="pie2"></div>
-			</div>	
-		</div>
-	</div>
-</div>
-
-<div class="row-fluid">
-	<div class="span6">
-		<div class="widget-box">
-			<div class="widget-title">
-				<span class="icon">
-					<i class=" icon-list"></i>
-				</span>
-				<h5>Top 10 - Cantidad Mas vendidos</h5>
-			</div>
-			<div class="widget-content nopadding">
-				<div id ="topMoreQuantity">
-				</div>
-			</div>	
-		</div>
-	</div>
-	<div class="span6">
-		<div class="widget-box">
-			<div class="widget-title">
-				<span class="icon">
-					<i class=" icon-list"></i>
-				</span>
-				<h5>Top 10 - Dinero Mas vendidos</h5>
-			</div>
-			<div class="widget-content nopadding">
-				<div id ="topMoreMoney">
-				</div>
-			</div>	
-		</div>
-	</div>
-</div>
-
-<div class="row-fluid">
-	<div class="span6">
-		<div class="widget-box">
-			<div class="widget-title">
-				<span class="icon">
-					<i class=" icon-list"></i>
-				</span>
-				<h5>Top 10 - Cantidad Menos vendidos</h5>
-			</div>
-			<div class="widget-content nopadding">
-				<div id ="topLessQuantity">
-				</div>
-			</div>	
-		</div>
-	</div>
-	<div class="span6">
-		<div class="widget-box">
-			<div class="widget-title">
-				<span class="icon">
-					<i class=" icon-list"></i>
-				</span>
-				<h5>Top 10 - Dinero Menos vendidos</h5>
-			</div>
-			<div class="widget-content nopadding">
-				<div id ="topLessMoney">
-				</div>
-			</div>	
-		</div>
-	</div>
-</div>
-
-<div class="row-fluid">
-	<div class="span6">
-		<div class="widget-box">
-			<div class="widget-title">
-				<span class="icon">
-					<i class=" icon-signal"></i>
-				</span>
-				<h5>(Cantidad de Items) - Meses</h5>
-			</div>
-			<div class="widget-content nopadding">
-				<div class="bars"></div>
-			</div>	
-		</div>
-	</div>
-	<div class="span6">
-		<div class="widget-box">
-			<div class="widget-title">
-				<span class="icon">
-					<i class=" icon-signal"></i>
-				</span>
-				<h5>(Monto Dinero de Items) - Meses</h5>
-			</div>
-			<div class="widget-content nopadding">
-				<div class="bars2"></div>
-			</div>	
-		</div>
-	</div>
-</div>
-
-<!-- *********************************************** #UNICORN REPORT DATA WRAP ********************************************-->
-		
-	
 	
 <!-- ************************************************************************************************************************ -->
 </div><!-- END CONTAINER FLUID/ROW FLUID/SPAN12 - FROM MAIN TEMPLATE #UNICORN

@@ -22,7 +22,7 @@
 		<div class="widget-box">
 			<div class="widget-title">
 				<span class="icon">
-					<i class=" icon-align-justify"></i>
+					<i class=" icon-search"></i>
 				</span>
 				<h5>Reporte de Movimientos de Inventario</h5>
 			</div>
@@ -49,7 +49,7 @@
 							'label' => '* Tipo de Movimiento:',
 							'id'=>'cbxReportMovementTypes',
 							'type'=>'select',
-							'class'=>'span4',  	
+							'class'=>'span6',  	
 							'options'=>array(1000=>'TODAS LAS ENTRADAS Y SALIDAS', 998=>'TODAS LAS ENTRADAS', 999=>'TODAS LAS SALIDAS', 1001=>'TRASPASOS ENTRE ALMACENES', 1=>'Entradas de compra', 5=>'Entradas de apertura',4=>'Entradas de traspaso', 6=>'Entradas otras', 2=>'Salidas de venta', 3=>'Salidas de traspaso', 7=>'Salidas otras')  
 						  ));
 						echo '</div>';
@@ -62,7 +62,7 @@
 							//'multiple'=>'multiple',
 							'options'=>$warehouse,
 							//'selected'=>  array_keys($warehouse),
-							'class'=>'span6'  
+							'class'=>'span4'  
 						  ));
 						echo '</div>';
 						
@@ -71,8 +71,8 @@
 							'label' => '* Almacen a Comparar:',
 							'id'=>'cbxReportWarehouse2',
 							'type'=>'select',
-							'options'=>$warehouse,
-							'class'=>'span6',
+							'options'=>$warehouseClean,
+							'class'=>'span4',
 						  ));
 						echo '</div>';
 						
@@ -82,11 +82,23 @@
 							'id'=>'cbxReportCurrency',
 							'type'=>'select',
 							//'multiple'=>'multiple',
-							'options'=>array('BOLIVIANOS'=>'Bolivianos', 'DOLARES AMERICANOS'=>'Dolares Americanos'),
+							'options'=>array('BOLIVIANOS'=>'BOLIVIANOS', 'DOLARES'=>'DOLARES'),
 							//'selected'=>  array_keys($warehouse),
-							'class'=>'span6'  
+							'class'=>'span4'  
 						  ));
 						echo '</div>';
+						
+						
+						echo '<div class="row-fluid">';
+						  echo $this->BootstrapForm->input('detail', array(
+							'label' => '* Mostrar reporte:',
+							'id'=>'cbxDetail',
+							'type'=>'select',
+							'options'=>array('YES'=>'Detallado', 'NO'=>'Totales'),
+							'class'=>'span2'  
+						  ));
+						echo '</div>';
+						
 						
 						echo '<div class="row-fluid">';
 						  echo $this->BootstrapForm->input('type', array(
@@ -96,7 +108,7 @@
 							'class'=>'span4',    
 							'options'=>array('none'=>'Ninguno','brand'=>'Marca','category'=> 'Categoria')  
 						  ));
-						echo '</div>';	  
+						 echo '</div>';	  
 				?>
 			</form>
 			
