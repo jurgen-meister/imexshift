@@ -82,7 +82,7 @@
 							'id'=>'cbxReportCurrency',
 							'type'=>'select',
 							//'multiple'=>'multiple',
-							'options'=>array('BOLIVIANOS'=>'BOLIVIANOS', 'DOLARES AMERICANOS'=>'DOLARES'),
+							'options'=>array('BOLIVIANOS'=>'BOLIVIANOS', 'DOLARES'=>'DOLARES'),
 							//'selected'=>  array_keys($warehouse),
 							'class'=>'span4'  
 						  ));

@@ -198,10 +198,10 @@ class InvMovementsController extends AppController {
 		//debug($movements);
 		
 		$currencyFieldPrefix = '';
-		$currencyAbbreviation = '(BS)';
-		if(trim($initialData['currency']) == 'DOLARES AMERICANOS'){
+		$currencyAbbreviation = '(Bs)';
+		if(trim($initialData['currency']) == 'DOLARES'){
 			$currencyFieldPrefix = 'ex_';
-			$currencyAbbreviation = '($US)';
+			$currencyAbbreviation = '($us)';
 		}
 		
 		
@@ -321,7 +321,7 @@ class InvMovementsController extends AppController {
 				$fields[]='(SELECT price FROM inv_prices where inv_item_id = "InvMovementDetail"."inv_item_id" AND date <= "InvMovement"."date" AND inv_price_type_id=8 order by date DESC, date_created DESC LIMIT 1) AS "cif_price"';
 				$fields[]='(SELECT price FROM inv_prices where inv_item_id = "InvMovementDetail"."inv_item_id" AND date <= "InvMovement"."date" AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1) AS "sale_price"';
 				break;
-			case 'DOLARES AMERICANOS':
+			case 'DOLARES':
 				//$fields = array('InvMovementDetail.ex_fob_price', 'InvMovementDetail.ex_cif_price', 'InvMovementDetail.ex_sale_price');
 				$fields[]='(SELECT ex_price FROM inv_prices where inv_item_id = "InvMovementDetail"."inv_item_id" AND date <= "InvMovement"."date" AND inv_price_type_id=1 order by date DESC, date_created DESC LIMIT 1) AS "ex_fob_price"';
 				$fields[]='(SELECT ex_price FROM inv_prices where inv_item_id = "InvMovementDetail"."inv_item_id" AND date <= "InvMovement"."date" AND inv_price_type_id=8 order by date DESC, date_created DESC LIMIT 1) AS "ex_cif_price"';
