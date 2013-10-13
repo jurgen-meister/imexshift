@@ -722,15 +722,18 @@ $(document).ready(function(){
 	//************************************************************************//
 	//////////////////////////////////BEGIN-CONTROLS EVENTS/////////////////////
 	//************************************************************************//
-	$('#txtModalPrice').keydown(function(event) {
-			validateOnlyFloatNumbers(event);			
-	});
+//	$('#txtModalPrice').keydown(function(event) {
+//			validateOnlyFloatNumbers(event);			
+//	});
 	$('#txtModalQuantity').keydown(function(event) {
 			validateOnlyIntegers(event);			
 	});
-	$('#txtModalPaidAmount').keydown(function(event) {
-			validateOnlyFloatNumbers(event);			
+	$('#txtDiscount').keydown(function(event) {
+			validateOnlyIntegers(event);			
 	});
+//	$('#txtModalPaidAmount').keydown(function(event) {
+//			validateOnlyFloatNumbers(event);			
+//	});
 	//Calendar script
 	$("#txtDate").datepicker({
 	  showButtonPanel: true
@@ -856,11 +859,11 @@ $(document).ready(function(){
     }
 	
 
-	$('#txtDate').keypress(function(e){e.preventDefault();});
-	$('#txtModalDate').keypress(function(){return false;});
+//	$('#txtDate').keypress(function(e){e.preventDefault();});
+//	$('#txtModalDate').keypress(function(){return false;});
 //	$('#txtModalDueDate').keypress(function(){return false;});
-	$('#txtCode').keydown(function(e){e.preventDefault();});
-	$('#txtOriginCode').keydown(function(e){e.preventDefault();});
+//	$('#txtCode').keydown(function(e){e.preventDefault();});
+//	$('#txtOriginCode').keydown(function(e){e.preventDefault();});
 	//************************************************************************//
 	//////////////////////////////////END-CONTROLS EVENTS//////////////////////
 	//************************************************************************//
@@ -878,8 +881,8 @@ $(document).ready(function(){
 		var DATA = [];
 		//constants
 		var purchaseId=$('#txtPurchaseIdHidden').val();
-		var	movementDocCode = $('#txtCode').val();
-		var	movementCode = $('#txtGenericCode').val();
+		var movementDocCode = $('#txtCode').val();
+		var movementCode = $('#txtGenericCode').val();
 		var noteCode=$('#txtNoteCode').val();
 		var date=$('#txtDate').val();
 		var employee=$('#cbxEmployees').val();
@@ -887,6 +890,7 @@ $(document).ready(function(){
 		var salesman=$('#cbxSalesman').val();
 		var description=$('#txtDescription').val();
 		var exRate=$('#txtExRate').val();
+		var discount=$('#txtDiscount').val();
 		//variables
 		var warehouseId = 0;
 		var itemId = 0;
@@ -953,6 +957,7 @@ $(document).ready(function(){
 				,'salesman':salesman
 				,'description':description	
 				,'exRate':exRate
+				,'discount':discount
 
 				,'warehouseId':warehouseId
 				,'warehouse':warehouse
@@ -1082,7 +1087,7 @@ $(document).ready(function(){
 		$('#txtGenericCode').val(DATA[3]);
 		$('#btnApproveState, #btnLogicDeleteState, #btnSaveAll, .columnItemsButtons').hide();
 		$('#btnCancellState').show();
-		$('#txtCode, #txtNoteCode, #txtDate, #cbxCustomers, #cbxEmployees, #cbxTaxNumbers, #cbxSalesman, #txtDescription, #txtExRate').attr('disabled','disabled');
+		$('#txtCode, #txtNoteCode, #txtDate, #cbxCustomers, #cbxEmployees, #cbxTaxNumbers, #cbxSalesman, #txtDescription, #txtExRate, #txtDiscount').attr('disabled','disabled');
 		if ($('#btnAddItem').length > 0){//existe
 			$('#btnAddItem').hide();
 		}
@@ -1202,6 +1207,10 @@ $(document).ready(function(){
 				$('#cbxModalItems').select2();
 				
 				$('#txtModalStock').keypress(function(){return false;});//find out why this is necessary
+				
+				$('#txtModalPrice').keydown(function(event) {
+					validateOnlyFloatNumbers(event);			
+				});
 			},
 			error:function(data){
 				showGrowlMessage('error', 'Vuelva a intentarlo.');
@@ -1229,6 +1238,9 @@ $(document).ready(function(){
 					ajax_update_stock_modal();
 				});
 				$('#cbxModalItems').select2();	
+				$('#txtModalPrice').keydown(function(event) {
+					validateOnlyFloatNumbers(event);			
+				});
 			},
 			error:function(data){
 				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
@@ -1252,6 +1264,9 @@ $(document).ready(function(){
 				$("#txtModalDate").datepicker({
 					showButtonPanel: true
 				});
+				$('#txtModalPaidAmount').keydown(function(event) {
+					validateOnlyFloatNumbers(event);			
+				});
 			},
 			error:function(data){
 				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
@@ -1270,6 +1285,9 @@ $(document).ready(function(){
             success: function(data){
 				$('#processing').text("");
 				$('#boxModalPrice').html(data);
+				$('#txtModalPrice').keydown(function(event) {
+					validateOnlyFloatNumbers(event);			
+				});
 			},
 			error:function(data){
 				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
@@ -1303,6 +1321,64 @@ $(document).ready(function(){
 	//************************************************************************//
 	//////////////////////////////////END-AJAX FUNCTIONS////////////////////////btnGenerateMovements
 	//************************************************************************//
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	$('#btnCancellAll').click(function(){
+		//alert('Se cancela entrada');
+		changeStateCancelledAll();
+		return false;
+	});
+	
+	function changeStateCancelledAll(){
+		showBittionAlertModal({content:'¿Está seguro de eliminar este documento y su factura y movimientos?'});
+		$('#bittionBtnYes').click(function(){
+			var purchaseId = $('#txtPurchaseIdHidden').val();
+			var genCode = $('#txtGenericCode').val();
+//			var purchaseId2=0;
+			var type;
+//			var type2=0;
+			var index;
+			switch(arr[3]){
+				case 'save_order':
+					index = 'index_order';
+					type = 'NOTE_CANCELLED';
+					break;	
+				case 'save_invoice':
+					index = 'index_invoice';
+					type = 'SINVOICE_LOGIC_DELETED';
+					break;	
+			}
+			ajax_cancell_all(purchaseId, type, index, genCode);
+			hideBittionAlertModal();
+		});
+	}
+	
+	function ajax_cancell_all(purchaseId,/* purchaseId2, */type, /*type2,*/ index, genCode){
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_cancell_all",			
+            data:{purchaseId: purchaseId
+			//	,purchaseId2: purchaseId2
+				,type: type
+			//	,type2: type2
+				,genCode: genCode
+			},
+            success: function(data){
+				if(data === 'success'){
+					showBittionAlertModal({content:'Se eliminó el documento su factura y movimientos', btnYes:'Aceptar', btnNo:''});
+					$('#bittionBtnYes').click(function(){
+						window.location = moduleController + index;
+					});
+					
+				}else{
+					showGrowlMessage('error', 'Vuelva a intentarlo.');
+				}
+			},
+			error:function(data){
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+			}
+        });
+	}
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	$('#btnGenerateMovements').click(function(){
@@ -1340,9 +1416,9 @@ $(document).ready(function(){
 //				  ,salesman:$('#cbxSalesman').val()	
 				  ,description:$('#txtDescription').val()
 //				  ,exRate:$('#txtExRate').val()
-				  ,note_code:$('#txtNoteCode').val()
+//				  ,note_code:$('#txtNoteCode').val()
 				  ,genericCode:$('#txtGenericCode').val()
-				  ,originCode:$('#txtOriginCode').val()
+//				  ,originCode:$('#txtOriginCode').val()
 			  },
             beforeSend: showProcessing(),
             success: function(data){			
@@ -1357,11 +1433,14 @@ $(document).ready(function(){
 //			$('#btnAddItem').hide();
 //		}
 //		changeLabelDocumentState('NOTE_APPROVED'); //#UNICORN
-		
+					showBittionAlertModal({content:'Se crearon los movimientos correspondientes', btnYes:'Aceptar', btnNo:''});
+						$('#bittionBtnYes').click(function(){
+							window.location = '/imexport/inv_movements/index_out/document_code:'+ $('#txtGenericCode').val() +'/search:yes';
+						});
 
 
-					$('#boxMessage').html('');
-					showGrowlMessage('ok', 'Movimientos creados.');
+//					$('#boxMessage').html('');
+//					showGrowlMessage('ok', 'Movimientos creados.');
 				}
 				$('#processing').text('');
 			},
@@ -1410,6 +1489,7 @@ $(document).ready(function(){
 				  ,salesman:$('#cbxSalesman').val()	
 				  ,description:$('#txtDescription').val()
 				  ,exRate:$('#txtExRate').val()
+				   ,discount:$('#txtDiscount').val()
 				  ,note_code:$('#txtNoteCode').val()
 				  ,genericCode:$('#txtGenericCode').val()
 			  },
@@ -1423,7 +1503,7 @@ $(document).ready(function(){
 //		$('#txtGenericCode').val(DATA[3]);
 		$('#btnApproveState, #btnLogicDeleteState, #btnSaveAll, .columnItemsButtons, #btnApproveStateFull').hide();
 		$('#btnCancellState').show();
-		$('#txtCode, #txtNoteCode, #txtDate, #cbxCustomers, #cbxEmployees, #cbxTaxNumbers, #cbxSalesman, #txtDescription, #txtExRate').attr('disabled','disabled');
+		$('#txtCode, #txtNoteCode, #txtDate, #cbxCustomers, #cbxEmployees, #cbxTaxNumbers, #cbxSalesman, #txtDescription, #txtExRate, #txtDiscount').attr('disabled','disabled');
 		if ($('#btnAddItem').length > 0){//existe
 			$('#btnAddItem').hide();
 		}

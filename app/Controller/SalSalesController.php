@@ -1259,6 +1259,7 @@ class SalSalesController extends AppController {
 		$documentState = '';
 		$customerId = '';
 		$admUserId = '';
+		$discount  = 0;
 		if($id <> null){
 			$date = date("d/m/Y", strtotime($this->request->data['SalSale']['date']));
 			$salDetails = $this->_get_movements_details($id);
@@ -1275,8 +1276,9 @@ class SalSalesController extends AppController {
 //		debug($admProfileId);
 //			debug($admUserId);
 			$exRate = $this->request->data['SalSale']['ex_rate'];
+			$discount = $this->request->data['SalSale']['discount'];
 		}
-		$this->set(compact('salCustomers','customerId', 'salTaxNumbers', 'salEmployees','employeeId', 'salAdmUsers', 'admUserId','id', 'date', 'salDetails', 'documentState', 'genericCode', 'exRate'));
+		$this->set(compact('salCustomers','customerId', 'salTaxNumbers', 'salEmployees','employeeId', 'salAdmUsers', 'admUserId','id', 'date', 'salDetails', 'documentState', 'genericCode', 'exRate', 'discount'));
 		//debug($admProfileId);
 	//	debug($salAdmUsers);
 	}
@@ -1312,6 +1314,7 @@ class SalSalesController extends AppController {
 //		$purPrices = array();
 		$documentState = '';
 		$exRate = '8.00';	//esto tiene q llamar al cambio del dia
+		$discount  = 0;
 		if($id <> null){
 			$date = date("d/m/Y", strtotime($this->request->data['SalSale']['date']));
 			$salDetails = $this->_get_movements_details($id);
@@ -1335,10 +1338,11 @@ class SalSalesController extends AppController {
 			$admProfileId = $this->request->data['SalSale']['salesman_id'];
 			$admUserId = $this->AdmUser->AdmProfile->find('list', array('fields'=>array('AdmProfile.id'),'conditions'=>array('AdmProfile.adm_user_id'=>$admProfileId)));
 			$exRate = $this->request->data['SalSale']['ex_rate'];
+			$discount = $this->request->data['SalSale']['discount'];
 		}
 		
 			
-		$this->set(compact('salCustomers','customerId', 'salTaxNumbers', 'salEmployees','employeeId', 'salAdmUsers', 'admUserId','id', 'date', 'salDetails', 'salPayments', 'documentState', 'genericCode', 'originCode', 'exRate'));
+		$this->set(compact('salCustomers','customerId', 'salTaxNumbers', 'salEmployees','employeeId', 'salAdmUsers', 'admUserId','id', 'date', 'salDetails', 'salPayments', 'documentState', 'genericCode', 'originCode', 'exRate', 'discount'));
 //debug($this->request->data);
 	}
 	
@@ -1524,6 +1528,8 @@ class SalSalesController extends AppController {
 			///////////////////////////////////////////////////////
 			$description = $this->request->data['description'];
 			$exRate = $this->request->data['exRate'];
+			$discount = $this->request->data['discount'];
+//			debug($discount);
 			//Sale Details
 			$warehouseId = $this->request->data['warehouseId'];
 			$itemId = $this->request->data['itemId'];
@@ -1561,6 +1567,7 @@ class SalSalesController extends AppController {
 			$arrayMovement['salesman_id']=$salesman;
 			$arrayMovement['description']=$description;
 			$arrayMovement['ex_rate']=$exRate;
+			$arrayMovement['discount']=$discount;
 			$arrayMovement['lc_state']=$STATE;
 			if ($ACTION == 'save_order'){
 				//header for invoice
@@ -1571,6 +1578,7 @@ class SalSalesController extends AppController {
 				$arrayMovement2['salesman_id']=$salesman;
 				$arrayMovement2['description']=$description;
 				$arrayMovement2['ex_rate']=$exRate;
+				$arrayMovement2['discount']=$discount;
 				//header for movement
 				$arrayMovement3['date']=$date;
 				$arrayMovement3['inv_warehouse_id']=$warehouseId;
@@ -1899,7 +1907,7 @@ class SalSalesController extends AppController {
 			if ($ACTION == 'save_order'){
 				$this->loadModel('InvMovement');
 				//for invoice
-				$dataMovement[1] = array('SalSale'=>$arrayMovement2);
+//				$dataMovement[1] = array('SalSale'=>$arrayMovement2);
 				//for movement
 				$dataMovement3 = array('InvMovement'=>$arrayMovement3);
 				$dataMovementDetail3 = array('InvMovementDetail'=> $arrayMovementDetails3);
@@ -1933,9 +1941,9 @@ class SalSalesController extends AppController {
 				$dataPayDetail = null;
 			}
 			$dataMovementDetail[0] = array('SalDetail'=> $arrayMovementDetails);
-			if ($ACTION == 'save_order'){
-				$dataMovementDetail[1] = array('SalDetail'=> $arrayMovementDetails);
-			}
+//			if ($ACTION == 'save_order'){
+//				$dataMovementDetail[1] = array('SalDetail'=> $arrayMovementDetails);
+//			}
 			////////////////////////////////////////////////END - SET DATA//////////////////////////////////////////////////////
 			
 			$validation['error'] = 0;
@@ -2563,6 +2571,38 @@ class SalSalesController extends AppController {
 		return $code;
 	}
 	
+        private function _generate_movement_code_id($keyword, $type, $idsToDelete){
+		$this->loadModel('InvMovement');
+		$period = $this->Session->read('Period.name');
+		$movementType = '';
+		if($keyword == 'ENT'){$movementType = 'entrada';}
+		if($keyword == 'SAL'){$movementType = 'salida';}
+		if($period <> ''){
+			try{
+				$movements = $this->InvMovement->find('count', array(
+					'conditions'=>array(
+						'InvMovementType.status'=>$movementType
+						,'InvMovement.code !='=>'NO'
+						,'InvMovement.id !='=>$idsToDelete
+						)
+				)); 
+			}catch(Exception $e){
+				return 'error';
+			}
+		}else{
+			return 'error';
+		}
+		if($type == 'inc'){
+			static $inc = 0;
+			$quantity = $movements + 1 + $inc;
+			$inc++;
+		}else{
+			$quantity = $movements + 1; 
+		}
+		$code = $keyword.'-'.$period.'-'.$quantity;
+		return $code;
+	}
+        
 	private function _find_stock($idItem, $idWarehouse){		
 		$movementsIn = $this->_get_quantity_movements_item($idItem, $idWarehouse, 'entrada');
 		$movementsOut = $this->_get_quantity_movements_item($idItem, $idWarehouse, 'salida');
@@ -2636,9 +2676,55 @@ class SalSalesController extends AppController {
 /*********************************************************************************************************************/
 /***********************************************************************************************************************/
 	
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 	
-	
+	public function ajax_cancell_all(){
+		if($this->RequestHandler->isAjax()){
+			$purchaseId = $this->request->data['purchaseId'];
+			$type = $this->request->data['type'];	
+			$genCode = $this->request->data['genCode'];
+			$purchaseId2 = $this->_get_doc_id($purchaseId, $genCode, null, null);
+
+				if($this->SalSale->updateAll(array('SalSale.lc_state'=>"'$type'"), array('SalSale.id'=>$purchaseId)) 
+						){
+					if($this->SalSale->updateAll(array('SalSale.lc_state'=>"'SINVOICE_CANCELLED'"), array('SalSale.id'=>$purchaseId2)) 
+						){
+					echo 'success';
+				}
+				}
+				
+				if($type === 'NOTE_CANCELLED'){
+					$this->loadModel('InvMovement');
+					$arrayMovement5 = $this->InvMovement->find('all', array(
+						'fields'=>array(
+							'InvMovement.id',
+//							,'InvMovement.date'
+//							,'InvMovement.description'
+							'InvMovement.inv_warehouse_id'
+							),
+						'conditions'=>array(
+								'InvMovement.document_code'=>$genCode
+							)
+						,'order' => array('InvMovement.id' => 'ASC')
+						,'recursive'=>0
+					));
+					if($arrayMovement5 <> null){
+						for($i=0;$i<count($arrayMovement5);$i++){
+							$arrayMovement5[$i]['InvMovement']['lc_state'] = 'CANCELLED';
+//							$arrayMovement5[$i]['InvMovement']['code'] = 'NO'; //not sure to put this
+						}
+					}
+					if($arrayMovement5 <> null){
+						$dataMovement5 = $arrayMovement5;
+					}
+					if($arrayMovement5 <> null){
+						$res5 = $this->InvMovement->saveMovement($dataMovement5, null, 'UPDATEHEAD', null, null, null);
+					}
+				}
+		}
+	}
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	public function ajax_generate_movements(){
@@ -2647,12 +2733,19 @@ class SalSalesController extends AppController {
 			$arrayItemsDetails = $this->request->data['arrayItemsDetails'];		
 			$date = $this->request->data['date'];
 			$description = $this->request->data['description'];
-			$note_code = $this->request->data['note_code'];
+//			$note_code = $this->request->data['note_code'];
 			$genericCode = $this->request->data['genericCode'];
-			$originCode = $this->request->data['originCode'];
+//			$originCode = $this->request->data['originCode'];
 			$error=0;
 			$movementDocCode = '';
 //print_r($arrayItemsDetails);
+			$this->loadModel('InvMovement');
+			$ids = $this->InvMovement->find('list', array(
+				'fields'=>array('InvMovement.id'),
+				'conditions'=>array('InvMovement.document_code'=>$genericCode)
+			));
+			$idsOrdered = array_values($ids);
+			
 			
 			foreach($arrayItemsDetails as $val) {
 				$arrayWarehouses[] = $val['inv_warehouse_id'];
@@ -2668,6 +2761,8 @@ class SalSalesController extends AppController {
 				$arrayBOMovement = array();
 				$arrayBOMovementDetails = array();
 				$cont = 0;
+				$movementDocCode = '';
+				$movementBODocCode = '';
 				for($j=0;$j<count($arrayItemsDetails);$j++){
 					if($arrayItemsDetails[$j]['inv_warehouse_id'] == $arrayWarehousesList[$i]){
 						$itemId = $arrayItemsDetails[$j]['inv_item_id'];
@@ -2678,36 +2773,48 @@ class SalSalesController extends AppController {
 //						debug($itemId.'+'.$warehouseId.'=>'.$quantity.'@'.$stock);
 						if ($quantity > $stock) {
 							$cont++;
-							if ($stock != 0){
+							if ($stock > 0){
 								$arrayMovementDetails[] = array('inv_item_id'=>$itemId, 'quantity'=>$stock);
 							}
-							$arrayBOMovementDetails[] = array('inv_item_id'=>$itemId, 'quantity'=>($quantity-$stock));
+							if ($stock >= 0){
+								$arrayBOMovementDetails[] = array('inv_item_id'=>$itemId, 'quantity'=>($quantity-$stock));
+							}else{
+								$arrayBOMovementDetails[] = array('inv_item_id'=>$itemId, 'quantity'=>$quantity);
+							}
 						} else {
 							$arrayMovementDetails[] = array('inv_item_id'=>$itemId, 'quantity'=>$quantity);
 						}
 					}
 				}
 				if (($cont > 0)&&($arrayMovementDetails != array())){
-					$arrayMovement = array('type'=>1, 'date'=>$date, 'inv_warehouse_id'=>$arrayWarehousesList[$i], 'inv_movement_type_id'=>2, 'description'=>$description);
-					$arrayBOMovement = array('type'=>2, 'date'=>$date, 'inv_warehouse_id'=>$arrayWarehousesList[$i], 'inv_movement_type_id'=>2, 'description'=>$description);
+					$movementDocCode = $this->_generate_movement_code_id('SAL','inc', $idsOrdered);
+					$movementBODocCode = $this->_generate_movement_code_id('SAL','inc', $idsOrdered);
+					$arrayMovement = array('type'=>1, 'date'=>$date, 'inv_warehouse_id'=>$arrayWarehousesList[$i], 'inv_movement_type_id'=>2, 'description'=>$description, 'code'=>$movementDocCode, 'document_code'=>$genericCode, 'lc_state'=>'PENDANT');
+					$arrayBOMovement = array('type'=>2, 'date'=>$date, 'inv_warehouse_id'=>$arrayWarehousesList[$i], 'inv_movement_type_id'=>2, 'description'=>$description, 'code'=>$movementBODocCode, 'document_code'=>$genericCode, 'lc_state'=>'PENDANT');
 					$data[] = array('InvMovement'=>$arrayMovement, 'InvMovementDetail'=>$arrayMovementDetails);
 					$data[] = array('InvMovement'=>$arrayBOMovement, 'InvMovementDetail'=>$arrayBOMovementDetails);
 				} elseif (($cont > 0)&&($arrayMovementDetails == array())) {
-					$arrayBOMovement = array('type'=>2, 'date'=>$date, 'inv_warehouse_id'=>$arrayWarehousesList[$i], 'inv_movement_type_id'=>2, 'description'=>$description);
+					$movementBODocCode = $this->_generate_movement_code_id('SAL','inc', $idsOrdered);
+					$arrayBOMovement = array('type'=>2, 'date'=>$date, 'inv_warehouse_id'=>$arrayWarehousesList[$i], 'inv_movement_type_id'=>2, 'description'=>$description, 'code'=>$movementBODocCode, 'document_code'=>$genericCode, 'lc_state'=>'PENDANT');
 					$data[] = array('InvMovement'=>$arrayBOMovement, 'InvMovementDetail'=>$arrayBOMovementDetails);
 				} else {
-					$arrayMovement = array('type'=>1, 'date'=>$date, 'inv_warehouse_id'=>$arrayWarehousesList[$i], 'inv_movement_type_id'=>2, 'description'=>$description);
+					$movementDocCode = $this->_generate_movement_code_id('SAL','inc', $idsOrdered);
+					$arrayMovement = array('type'=>1, 'date'=>$date, 'inv_warehouse_id'=>$arrayWarehousesList[$i], 'inv_movement_type_id'=>2, 'description'=>$description, 'code'=>$movementDocCode, 'document_code'=>$genericCode, 'lc_state'=>'PENDANT');
 					$data[] = array('InvMovement'=>$arrayMovement, 'InvMovementDetail'=>$arrayMovementDetails);
 				}
+				if($movementDocCode == 'error'){$error++;}
+				if($movementBODocCode == 'error'){$error++;}
 			}
-			print_r($data);
+//			print_r($data);
+			
+			$idsToDelete = array('InvMovement.id'=>$idsOrdered);
 			
 			if($error == 0){
-				$res = $this->SalSale->saveGeneratedMovements($data);
+				$res = $this->SalSale->saveGeneratedMovements($idsToDelete, $data);
 				
 				switch ($res[0]) {
 					case 'SUCCESS':
-						echo $res[1];
+						echo 'creado|'.$res[1];
 						break;
 					case 'ERROR':
 						echo 'ERROR|onSaving';
@@ -2737,6 +2844,7 @@ class SalSalesController extends AppController {
 			$admProfileId = $this->request->data['salesman'];
 			$description = $this->request->data['description'];
 			$exRate = $this->request->data['exRate'];
+			$discount = $this->request->data['discount'];
 			$note_code = $this->request->data['note_code'];
 	
 			$admUserId = $this->AdmUser->AdmProfile->find('list', array(
@@ -2756,7 +2864,7 @@ class SalSalesController extends AppController {
 //			$arrayMovement['lc_state'] = 'SINVOICE_PENDANT';
 //			$arrayMovement['id'] = $purchaseId;
 			$arrayNote = array('id' => $purchaseId, 'lc_state'=>'NOTE_APPROVED');
-			$arrayInvoice = array('date'=>$date, 'sal_employee_id'=>$employee,'sal_tax_number_id'=>$taxNumber,'salesman_id'=>$salesman, 'description'=>$description, 'note_code'=>$note_code, 'ex_rate'=>$exRate);		
+			$arrayInvoice = array('date'=>$date, 'sal_employee_id'=>$employee,'sal_tax_number_id'=>$taxNumber,'salesman_id'=>$salesman, 'description'=>$description, 'note_code'=>$note_code, 'ex_rate'=>$exRate, 'discount'=>$discount);		
 			$movementDocCode = $this->_generate_doc_code('VFA');
 			$arrayInvoice['lc_state'] = 'SINVOICE_PENDANT';
 //			$arrayInvoice['lc_transaction'] = 'CREATE';

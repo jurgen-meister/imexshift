@@ -908,18 +908,18 @@ $(document).ready(function(){
 	//************************************************************************//
 	//////////////////////////////////BEGIN-CONTROLS EVENTS/////////////////////
 	//************************************************************************//
-	$('#txtModalPrice').keydown(function(event) {
-			validateOnlyFloatNumbers(event);			
-	});
+//	$('#txtModalPrice').keydown(function(event) {
+//			validateOnlyFloatNumbers(event);			
+//	});
 	$('#txtModalQuantity').keydown(function(event) {
 			validateOnlyIntegers(event);			
 	});
 	$('#txtModalCostExAmount').keydown(function(event) {
 			validateOnlyFloatNumbers(event);			
 	});
-	$('#txtModalPaidAmount').keydown(function(event) {
-			validateOnlyFloatNumbers(event);			
-	});
+//	$('#txtModalPaidAmount').keydown(function(event) {
+//			validateOnlyFloatNumbers(event);			
+//	});
 	//Calendar script
 	$("#txtDate").datepicker({
 	  showButtonPanel: true
@@ -1415,6 +1415,9 @@ $(document).ready(function(){
 					ajax_update_stock_modal();
 				});
 				$('#cbxModalItems').select2();
+				$('#txtModalPrice').keydown(function(event) {
+					validateOnlyFloatNumbers(event);			
+				});
 			},
 			error:function(data){
 				showGrowlMessage('error', 'Vuelva a intentarlo.');
@@ -1442,6 +1445,9 @@ $(document).ready(function(){
 					ajax_update_stock_modal();
 				});
 				$('#cbxModalItems').select2();	
+				$('#txtModalPrice').keydown(function(event) {
+					validateOnlyFloatNumbers(event);			
+				});
 			},
 			error:function(data){
 				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
@@ -1489,6 +1495,9 @@ $(document).ready(function(){
 				$("#txtModalDate").datepicker({
 					showButtonPanel: true
 				});
+				$('#txtModalPaidAmount').keydown(function(event) {
+					validateOnlyFloatNumbers(event);			
+				});
 			},
 			error:function(data){
 				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
@@ -1507,6 +1516,9 @@ $(document).ready(function(){
             success: function(data){
 				$('#processing').text("");
 				$('#boxModalPrice').html(data);
+				$('#txtModalPrice').keydown(function(event) {
+					validateOnlyFloatNumbers(event);			
+				});
 			},
 			error:function(data){
 				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');

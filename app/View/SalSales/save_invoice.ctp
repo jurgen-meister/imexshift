@@ -200,6 +200,14 @@
 					'id'=>'txtDescription'
 				));
 				
+				echo $this->BootstrapForm->input('discount', array(
+					'label' => 'Descuento:',
+					'disabled'=>$disable,
+					'id'=>'txtDiscount',
+					'value'=>$discount,
+					'min'=>0
+				));
+				
 				echo '<div id="boxExRate">';
 					echo $this->BootstrapForm->input('ex_rate', array(
 						'label' => 'Tipo de Cambio:',
