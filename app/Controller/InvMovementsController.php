@@ -1197,7 +1197,7 @@ class InvMovementsController extends AppController {
 			foreach ($arrMovementsSaved as $key => $value) {
 				$invMovementDetails[$key]['itemId']=$value['itemId'];
 				$invMovementDetails[$key]['item']=$value['item'];
-				$invMovementDetails[$key]['cantidadCompra']=$arrPurchases[$key]['cantidadCompra'];
+				//$invMovementDetails[$key]['cantidadCompra']=$arrPurchases[$key]['cantidadCompra'];
 				$invMovementDetails[$key]['stock']=$value['stock'];
 				$invMovementDetails[$key]['cantidad']=$value['cantidad'];
 			}
