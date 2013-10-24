@@ -1086,13 +1086,13 @@ $(document).ready(function(){
 		var itemCodeName = '';
 //		var stock = 0;
 		var arrayItemsDetails = [0];
-//		var total=0;
-//		var totalCost=0;
+		var total=0;
+		var totalCost=0;
 		
 		if(ACTION === 'save_invoice' && STATE === 'PINVOICE_APPROVED'){
 			arrayItemsDetails = getItemsDetails();
-//			total = getTotal();
-//			totalCost = getTotalCost();
+			total = getTotal();
+			totalCost = getTotalCost();
 		}
 		//PurchaseDetails(Item) setup variables
 		if(OPERATION === 'ADD' || OPERATION === 'EDIT' || OPERATION === 'ADD_PAY' || OPERATION === 'EDIT_PAY' || OPERATION === 'ADD_COST' || OPERATION === 'EDIT_COST'){	
@@ -1159,8 +1159,8 @@ $(document).ready(function(){
 				,'costId':costId
 				,'costExAmount':costExAmount
 		
-//				,'total':total
-//				,'totalCost':totalCost
+				,'total':total
+				,'totalCost':totalCost
 				,arrayItemsDetails:arrayItemsDetails
 		
 				,'ACTION':ACTION

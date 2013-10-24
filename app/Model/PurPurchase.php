@@ -305,7 +305,7 @@ class PurPurchase extends AppModel {
 					break;	
 			}	
 			
-			if ($ACTION == 'save_invoice' && $STATE == 'SINVOICE_APPROVED' &&  $arrayCifPrices != array()){
+			if ($ACTION == 'save_invoice' && $STATE == 'PINVOICE_APPROVED' &&  $arrayCifPrices != array()){
 			
 				if(!ClassRegistry::init('InvPrice')->saveAll($arrayCifPrices)){
 					$dataSource->rollback();
@@ -314,7 +314,7 @@ class PurPurchase extends AppModel {
 				
 			}	
 			
-			if ($ACTION == 'save_invoice' && $STATE == 'SINVOICE_APPROVED' &&  $arrayFobPrices != array()){
+			if ($ACTION == 'save_invoice' && $STATE == 'PINVOICE_APPROVED' &&  $arrayFobPrices != array()){
 			
 				if(!ClassRegistry::init('InvPrice')->saveAll($arrayFobPrices)){
 					$dataSource->rollback();
