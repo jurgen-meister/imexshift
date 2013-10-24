@@ -819,7 +819,6 @@ class SalSalesController extends AppController {
 			$items = $this->_find_items($initialData['groupBy'], array_keys($group), $initialData['items']);
 		
 		
-			
 		$this->set(compact("details", "items"));
 		//debug($items);
 		$this->Session->delete('ReportPurchasesCustomers');

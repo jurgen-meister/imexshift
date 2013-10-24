@@ -68,7 +68,7 @@
 			<?php foreach($items as $item){?>
 			<tr>
 					<td style="text-align: center;"><?php echo $counter;?></td>
-					<td style="padding-left: 10px;"><?php echo $item["InvItem"]["full_name"];?></td>
+					<td style="padding-left: 10px;"><?php echo "[ ".$item["InvItem"]["code"]." ] ". $item["InvItem"]["name"];?></td>
 					<td style="text-align: center;"><?php echo $item["InvBrand"]["name"];?></td>
 					<td style="text-align: center;"><?php echo $item["InvCategory"]["name"];?></td>
 			</tr>
