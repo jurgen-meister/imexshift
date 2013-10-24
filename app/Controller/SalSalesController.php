@@ -702,6 +702,16 @@ class SalSalesController extends AppController {
 		$this->set(compact("years", "months", "item"));
 	}
 	
+	public function vreport_generator_customers_debts(){
+		$clientsClean = $this->SalSale->SalEmployee->SalCustomer->find('list');
+		$clients[0] = "TODOS";
+		foreach ($clientsClean as $key => $value) {
+			$clients[$key] = $value;
+		}
+		
+		$this->set(compact("clients"));
+	}
+	
 	
 	public function vreport_purchases_customers(){
 		//special ctp template for printing due DOMPdf colapses generating too many pages
@@ -1514,7 +1524,7 @@ class SalSalesController extends AppController {
 		$this->loadModel('AdmUser');
 		
 		$salAdmUsers = $this->AdmUser->AdmProfile->find('list');
-		debug($salAdmUsers);
+//		debug($salAdmUsers);
 		//array_unshift($salAdmUsers,"Sin Vendedor"); //REVISAR ESTO ARRUINA EL CODIGO Q BOTA EL DROPDOWN
 		$salCustomers = $this->SalSale->SalEmployee->SalCustomer->find('list'/*, array('conditions'=>array('SalCustomer.location'=>'COCHABAMBA'))*/);
 		$customer = key($salCustomers);
@@ -2336,13 +2346,13 @@ class SalSalesController extends AppController {
 							$arraySalePrices[$i]['inv_price_type_id'] = 9;//or better relate by name VENTA
 							$arraySalePrices[$i]['price'] = $arrayItemsDetails[$i]['sale_price'];
 							$arraySalePrices[$i]['ex_price'] = $arrayItemsDetails[$i]['ex_sale_price'];
-							$arraySalePrices[$i]['description'] = "Precio de Venta del ".$date; 
+							$arraySalePrices[$i]['description'] = "Precio de Venta del ".$date." de la compra ".$noteCode; 
 							$arraySalePrices[$i]['date'] = $date;
 						}	
 					}	
 				}
 					if($validation['error'] === 0){
-							
+						
 							$res = $this->SalSale->saveMovement($dataMovement, $dataMovementDetail, $OPERATION, $ACTION, $STATE, $movementDocCode, $dataPayDetail, $arraySalePrices);
 							
 //							if ($ACTION == 'save_invoice' && $STATE == 'SINVOICE_APPROVED'){

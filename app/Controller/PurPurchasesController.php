@@ -1119,6 +1119,9 @@ class PurPurchasesController extends AppController {
 				$arrayItemsDetails = $this->request->data['arrayItemsDetails'];	
 				$total = $this->request->data['total'];
 				$totalCost = $this->request->data['totalCost'];
+//				debug($arrayItemsDetails);
+//				debug($total);
+//				debug($totalCost);
 			}
 			if (($ACTION == 'save_invoice' && $OPERATION == 'ADD_PAY') || ($ACTION == 'save_invoice' && $OPERATION == 'EDIT_PAY') || ($ACTION == 'save_invoice' && $OPERATION == 'DELETE_PAY')) {
 				//variables used to save Pays assigned on Invoice
@@ -1633,7 +1636,8 @@ class PurPurchasesController extends AppController {
 //						}
 //					}
 //				}
-				
+				$arrayFobPrices = array();
+				$arrayCifPrices = array();
 				if ($ACTION == 'save_invoice' && $STATE == 'PINVOICE_APPROVED'){
 					$this->loadModel('InvPrice');
 					$prices = $this->InvPrice->find('all', array(
@@ -1667,7 +1671,7 @@ class PurPurchasesController extends AppController {
 							$arrayFobPrices[$i]['inv_price_type_id'] = 1;//or better relate by name FOB
 							$arrayFobPrices[$i]['ex_price'] = $arrayItemsDetails[$i]['ex_fob_price'];
 							$arrayFobPrices[$i]['price'] = $arrayItemsDetails[$i]['fob_price'];
-							$arrayFobPrices[$i]['description'] = "Precio FOB de la compra ".$noteCode." del".$date; 
+							$arrayFobPrices[$i]['description'] = "Precio FOB de la compra ".$noteCode." del ".$date; 
 							$arrayFobPrices[$i]['date'] = $date;
 						}
 						if($contCif === 0){	
@@ -1675,13 +1679,13 @@ class PurPurchasesController extends AppController {
 							$arrayCifPrices[$i]['inv_price_type_id'] = 8;//or better relate by name CIF
 							$arrayCifPrices[$i]['ex_price'] = $cif;
 							$arrayCifPrices[$i]['price'] = $cif * $exRate;
-							$arrayCifPrices[$i]['description'] = "Precio CIF prorrateado de la compra ".$noteCode." del".$date; 
+							$arrayCifPrices[$i]['description'] = "Precio CIF prorrateado de la compra ".$noteCode." del ".$date; 
 							$arrayCifPrices[$i]['date'] = $date;
 						}	
 					}
 				}
-//				print_r($arrayFobPrices);
-//				print_r($arrayCifPrices);
+//				debug($arrayFobPrices);
+//				debug($arrayCifPrices);
 //					if($validation['error'] == 0){
 						
 							$res = $this->PurPurchase->saveMovement($dataPurchase, $dataPurchaseDetail, $dataMovement, $dataMovementDetail, $dataMovementHeadsUpd, $OPERATION, $ACTION, $STATE, $dataPayDetail, $dataCostDetail, $arrayFobPrices, $arrayCifPrices);

@@ -21,7 +21,7 @@ $(document).ready(function(){
 		payDebt =0;
 		
 		var	payPaid = getTotalPay();
-		var payTotal = getTotal();
+		var payTotal = getTotalDebt();
 //		
 		
 		
@@ -520,6 +520,26 @@ $(document).ready(function(){
 	}
 	
 	function getTotal(){
+		var arrayAux = [];
+		var total = 0;
+//		var discount = $('#txtDiscount').val();
+		arrayAux = getItemsDetails();
+		if(arrayAux[0] != 0){
+			for(var i=0; i< arrayAux.length; i++){
+				 var salePrice = (arrayAux[i]['sale_price']);
+				 var quantity = (arrayAux[i]['quantity']);
+				 total = total + (salePrice*quantity);
+			}
+		}
+		
+//		if(discount !== 0){
+//			total = total-(total*(discount/100));
+//		}
+		
+		return parseFloat(total).toFixed(2); 	
+	}
+	
+	function getTotalDebt(){
 		var arrayAux = [];
 		var total = 0;
 		var discount = $('#txtDiscount').val();
