@@ -19,10 +19,14 @@ $(document).ready(function(){
 	
 	function startEventsWhenExistsDebts(){		
 		payDebt =0;
+		
 		var	payPaid = getTotalPay();
 		var payTotal = getTotal();
+//		
+		
+		
 		payDebt = Number(payTotal) - Number(payPaid);
-		return payDebt
+		return  parseFloat(payDebt).toFixed(2);
 	}
 	
 	//gets a list of the item ids in the document details
@@ -166,6 +170,8 @@ $(document).ready(function(){
 		var employees = $('#cbxEmployees').text();
 		var taxNumbers = $('#cbxTaxNumbers').text();
 		var salesmen = $('#cbxSalesman').text();
+		var discount = $('#txtDiscount').val();
+		var exRate = $('#txtExRate').val();
 		if(date === ''){	error+='<li> El campo "Fecha" no puede estar vacio </li>'; }
 		if(dateYear[2] !== globalPeriod){	error+='<li> El año '+dateYear[2]+' de la fecha del documento no es valida, ya que se encuentra en la gestión '+ globalPeriod +'.</li>'; }
 		if(clients === ''){	error+='<li> El campo "Cliente" no puede estar vacio </li>'; }
@@ -173,6 +179,8 @@ $(document).ready(function(){
 		if(taxNumbers === ''){	error+='<li> El campo "NIT - Nombre" no puede estar vacio </li>'; }
 		if(salesmen === ''){	error+='<li> El campo "Vendedor" no puede estar vacio </li>'; }
 		if(arrayItemsDetails[0] == 0){error+='<li> Debe existir al menos 1 "Item" </li>';}
+		if(discount === ''){	error+='<li> El campo "Descuento" no puede estar vacio </li>'; }
+		if(exRate === ''){	error+='<li> El campo "Tipo de Cambio" no puede estar vacio </li>'; }
 		var itemZero = findIfOneItemHasQuantityZero(arrayItemsDetails);
 		if(itemZero > 0){error+='<li> Se encontraron '+ itemZero +' "Items" con "Cantidad" 0, no puede existir ninguno </li>';}
 		
@@ -421,7 +429,7 @@ $(document).ready(function(){
 	
 	function createRowPayTable(dateId, payDate, payAmount, payDescription){
 		var row = '<tr id="payRow'+dateId+'" >';
-		row +='<td><span id="spaPayDate'+dateId+'">'+payDate+'</span><input  value="'+dateId+'" id="txtPayDate" ></td>';
+		row +='<td><span id="spaPayDate'+dateId+'">'+payDate+'</span><input type="hidden" value="'+dateId+'" id="txtPayDate" ></td>';
 		row +='<td><span id="spaPayAmount'+dateId+'">'+payAmount+'</span></td>';
 		row +='<td><span id="spaPayDescription'+dateId+'">'+payDescription+'</span></td>';
 		row +='<td class="columnPaysButtons">';
@@ -514,6 +522,7 @@ $(document).ready(function(){
 	function getTotal(){
 		var arrayAux = [];
 		var total = 0;
+		var discount = $('#txtDiscount').val();
 		arrayAux = getItemsDetails();
 		if(arrayAux[0] != 0){
 			for(var i=0; i< arrayAux.length; i++){
@@ -522,7 +531,12 @@ $(document).ready(function(){
 				 total = total + (salePrice*quantity);
 			}
 		}
-		return total; 	
+		
+		if(discount !== 0){
+			total = total-(total*(discount/100));
+		}
+		
+		return parseFloat(total).toFixed(2); 	
 	}
 	
 	function getTotalPay(){
@@ -536,7 +550,7 @@ $(document).ready(function(){
 				 total = total + Number(amount);
 			}
 		}
-		return total; 	
+		return parseFloat(total).toFixed(2); 	
 	}
 	
 	//get all items for save a purchase
@@ -722,15 +736,18 @@ $(document).ready(function(){
 	//************************************************************************//
 	//////////////////////////////////BEGIN-CONTROLS EVENTS/////////////////////
 	//************************************************************************//
-	$('#txtModalPrice').keydown(function(event) {
-			validateOnlyFloatNumbers(event);			
-	});
+//	$('#txtModalPrice').keydown(function(event) {
+//			validateOnlyFloatNumbers(event);			
+//	});
 	$('#txtModalQuantity').keydown(function(event) {
 			validateOnlyIntegers(event);			
 	});
-	$('#txtModalPaidAmount').keydown(function(event) {
-			validateOnlyFloatNumbers(event);			
+	$('#txtDiscount').keydown(function(event) {
+			validateOnlyIntegers(event);			
 	});
+//	$('#txtModalPaidAmount').keydown(function(event) {
+//			validateOnlyFloatNumbers(event);			
+//	});
 	//Calendar script
 	$("#txtDate").datepicker({
 	  showButtonPanel: true
@@ -824,6 +841,12 @@ $(document).ready(function(){
 	
 	$('#cbxCustomers').select2();
 	
+	$('#cbxEmployees').select2();
+	
+	$('#cbxTaxNumbers').select2();
+	
+	$('#cbxSalesman').select2();
+	
 //	$('#cbxSuppliers').data('pre', $(this).val());
 //	$('#cbxSuppliers').change(function(){
 //	var supplier = $(this).data('pre');
@@ -856,11 +879,11 @@ $(document).ready(function(){
     }
 	
 
-	$('#txtDate').keypress(function(e){e.preventDefault();});
-	$('#txtModalDate').keypress(function(){return false;});
+//	$('#txtDate').keypress(function(e){e.preventDefault();});
+//	$('#txtModalDate').keypress(function(){return false;});
 //	$('#txtModalDueDate').keypress(function(){return false;});
-	$('#txtCode').keydown(function(e){e.preventDefault();});
-	$('#txtOriginCode').keydown(function(e){e.preventDefault();});
+//	$('#txtCode').keydown(function(e){e.preventDefault();});
+//	$('#txtOriginCode').keydown(function(e){e.preventDefault();});
 	//************************************************************************//
 	//////////////////////////////////END-CONTROLS EVENTS//////////////////////
 	//************************************************************************//
@@ -878,8 +901,8 @@ $(document).ready(function(){
 		var DATA = [];
 		//constants
 		var purchaseId=$('#txtPurchaseIdHidden').val();
-		var	movementDocCode = $('#txtCode').val();
-		var	movementCode = $('#txtGenericCode').val();
+		var movementDocCode = $('#txtCode').val();
+		var movementCode = $('#txtGenericCode').val();
 		var noteCode=$('#txtNoteCode').val();
 		var date=$('#txtDate').val();
 		var employee=$('#cbxEmployees').val();
@@ -887,6 +910,7 @@ $(document).ready(function(){
 		var salesman=$('#cbxSalesman').val();
 		var description=$('#txtDescription').val();
 		var exRate=$('#txtExRate').val();
+		var discount=$('#txtDiscount').val();
 		//variables
 		var warehouseId = 0;
 		var itemId = 0;
@@ -953,6 +977,7 @@ $(document).ready(function(){
 				,'salesman':salesman
 				,'description':description	
 				,'exRate':exRate
+				,'discount':discount
 
 				,'warehouseId':warehouseId
 				,'warehouse':warehouse
@@ -1082,7 +1107,7 @@ $(document).ready(function(){
 		$('#txtGenericCode').val(DATA[3]);
 		$('#btnApproveState, #btnLogicDeleteState, #btnSaveAll, .columnItemsButtons').hide();
 		$('#btnCancellState').show();
-		$('#txtCode, #txtNoteCode, #txtDate, #cbxCustomers, #cbxEmployees, #cbxTaxNumbers, #cbxSalesman, #txtDescription, #txtExRate').attr('disabled','disabled');
+		$('#txtCode, #txtNoteCode, #txtDate, #cbxCustomers, #cbxEmployees, #cbxTaxNumbers, #cbxSalesman, #txtDescription, #txtExRate, #txtDiscount').attr('disabled','disabled');
 		if ($('#btnAddItem').length > 0){//existe
 			$('#btnAddItem').hide();
 		}
@@ -1184,7 +1209,8 @@ $(document).ready(function(){
             type:"POST",
             url:moduleController + "ajax_initiate_modal_add_item_in",			
 			data:{itemsAlreadySaved: itemsAlreadySaved,
-				warehouseItemsAlreadySaved: warehouseItemsAlreadySaved},				
+				warehouseItemsAlreadySaved: warehouseItemsAlreadySaved
+			,date: $('#txtDate').val()},				
             beforeSend: showProcessing(),
             success: function(data){
 				$('#processing').text('');
@@ -1195,6 +1221,7 @@ $(document).ready(function(){
 					//este es para los items precio y stock
 					ajax_update_items_modal(itemsAlreadySaved, warehouseItemsAlreadySaved);
 				});
+				$('#cbxModalWarehouses').select2();
 				$('#cbxModalItems').bind("change",function(){ //must be binded 'cause dropbox is loaded by a previous ajax'
 					ajax_update_stock_modal();
 					ajax_update_stock_modal_1();
@@ -1202,6 +1229,10 @@ $(document).ready(function(){
 				$('#cbxModalItems').select2();
 				
 				$('#txtModalStock').keypress(function(){return false;});//find out why this is necessary
+				
+				$('#txtModalPrice').keydown(function(event) {
+					validateOnlyFloatNumbers(event);			
+				});
 			},
 			error:function(data){
 				showGrowlMessage('error', 'Vuelva a intentarlo.');
@@ -1216,7 +1247,8 @@ $(document).ready(function(){
             url:moduleController + "ajax_update_items_modal",			
             data:{itemsAlreadySaved: itemsAlreadySaved,
 				warehouseItemsAlreadySaved: warehouseItemsAlreadySaved,
-				warehouse: $('#cbxModalWarehouses').val()},
+				warehouse: $('#cbxModalWarehouses').val()
+			,date: $('#txtDate').val()},
             beforeSend: showProcessing(),
             success: function(data){
 				$('#processing').text("");
@@ -1229,6 +1261,9 @@ $(document).ready(function(){
 					ajax_update_stock_modal();
 				});
 				$('#cbxModalItems').select2();	
+				$('#txtModalPrice').keydown(function(event) {
+					validateOnlyFloatNumbers(event);			
+				});
 			},
 			error:function(data){
 				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
@@ -1242,7 +1277,9 @@ $(document).ready(function(){
             type:"POST",
             url:moduleController + "ajax_initiate_modal_add_pay",			
 		    data:{paysAlreadySaved: paysAlreadySaved,
-					payDebt: payDebt},
+					payDebt: payDebt
+//				,discount: $('#txtDiscount').val()
+			,date:$('#txtDate').val()},
             beforeSend: showProcessing(),
             success: function(data){
 				$('#processing').text('');
@@ -1251,6 +1288,9 @@ $(document).ready(function(){
 				initiateModalPay()
 				$("#txtModalDate").datepicker({
 					showButtonPanel: true
+				});
+				$('#txtModalPaidAmount').keydown(function(event) {
+					validateOnlyFloatNumbers(event);			
 				});
 			},
 			error:function(data){
@@ -1265,11 +1305,15 @@ $(document).ready(function(){
 		$.ajax({
             type:"POST",
             url:moduleController + "ajax_update_stock_modal",			
-            data:{item: $('#cbxModalItems').val()},
+            data:{item: $('#cbxModalItems').val()
+			,date: $('#txtDate').val()},
             beforeSend: showProcessing(),
             success: function(data){
 				$('#processing').text("");
 				$('#boxModalPrice').html(data);
+				$('#txtModalPrice').keydown(function(event) {
+					validateOnlyFloatNumbers(event);			
+				});
 			},
 			error:function(data){
 				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
@@ -1303,6 +1347,64 @@ $(document).ready(function(){
 	//************************************************************************//
 	//////////////////////////////////END-AJAX FUNCTIONS////////////////////////btnGenerateMovements
 	//************************************************************************//
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	$('#btnCancellAll').click(function(){
+		//alert('Se cancela entrada');
+		changeStateCancelledAll();
+		return false;
+	});
+	
+	function changeStateCancelledAll(){
+		showBittionAlertModal({content:'¿Está seguro de eliminar este documento y su factura y movimientos?'});
+		$('#bittionBtnYes').click(function(){
+			var purchaseId = $('#txtPurchaseIdHidden').val();
+			var genCode = $('#txtGenericCode').val();
+//			var purchaseId2=0;
+			var type;
+//			var type2=0;
+			var index;
+			switch(arr[3]){
+				case 'save_order':
+					index = 'index_order';
+					type = 'NOTE_CANCELLED';
+					break;	
+				case 'save_invoice':
+					index = 'index_invoice';
+					type = 'SINVOICE_LOGIC_DELETED';
+					break;	
+			}
+			ajax_cancell_all(purchaseId, type, index, genCode);
+			hideBittionAlertModal();
+		});
+	}
+	
+	function ajax_cancell_all(purchaseId,/* purchaseId2, */type, /*type2,*/ index, genCode){
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_cancell_all",			
+            data:{purchaseId: purchaseId
+			//	,purchaseId2: purchaseId2
+				,type: type
+			//	,type2: type2
+				,genCode: genCode
+			},
+            success: function(data){
+				if(data === 'success'){
+					showBittionAlertModal({content:'Se eliminó el documento su factura y movimientos', btnYes:'Aceptar', btnNo:''});
+					$('#bittionBtnYes').click(function(){
+						window.location = moduleController + index;
+					});
+					
+				}else{
+					showGrowlMessage('error', 'Vuelva a intentarlo.');
+				}
+			},
+			error:function(data){
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+			}
+        });
+	}
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 	$('#btnGenerateMovements').click(function(){
@@ -1340,9 +1442,9 @@ $(document).ready(function(){
 //				  ,salesman:$('#cbxSalesman').val()	
 				  ,description:$('#txtDescription').val()
 //				  ,exRate:$('#txtExRate').val()
-				  ,note_code:$('#txtNoteCode').val()
+//				  ,note_code:$('#txtNoteCode').val()
 				  ,genericCode:$('#txtGenericCode').val()
-				  ,originCode:$('#txtOriginCode').val()
+//				  ,originCode:$('#txtOriginCode').val()
 			  },
             beforeSend: showProcessing(),
             success: function(data){			
@@ -1357,11 +1459,14 @@ $(document).ready(function(){
 //			$('#btnAddItem').hide();
 //		}
 //		changeLabelDocumentState('NOTE_APPROVED'); //#UNICORN
-		
+					showBittionAlertModal({content:'Se crearon los movimientos correspondientes', btnYes:'Aceptar', btnNo:''});
+						$('#bittionBtnYes').click(function(){
+							window.location = '/imexport/inv_movements/index_sale_out/document_code:'+ $('#txtGenericCode').val() +'/search:yes';
+						});
 
 
-					$('#boxMessage').html('');
-					showGrowlMessage('ok', 'Movimientos creados.');
+//					$('#boxMessage').html('');
+//					showGrowlMessage('ok', 'Movimientos creados.');
 				}
 				$('#processing').text('');
 			},
@@ -1410,6 +1515,7 @@ $(document).ready(function(){
 				  ,salesman:$('#cbxSalesman').val()	
 				  ,description:$('#txtDescription').val()
 				  ,exRate:$('#txtExRate').val()
+				   ,discount:$('#txtDiscount').val()
 				  ,note_code:$('#txtNoteCode').val()
 				  ,genericCode:$('#txtGenericCode').val()
 			  },
@@ -1423,7 +1529,7 @@ $(document).ready(function(){
 //		$('#txtGenericCode').val(DATA[3]);
 		$('#btnApproveState, #btnLogicDeleteState, #btnSaveAll, .columnItemsButtons, #btnApproveStateFull').hide();
 		$('#btnCancellState').show();
-		$('#txtCode, #txtNoteCode, #txtDate, #cbxCustomers, #cbxEmployees, #cbxTaxNumbers, #cbxSalesman, #txtDescription, #txtExRate').attr('disabled','disabled');
+		$('#txtCode, #txtNoteCode, #txtDate, #cbxCustomers, #cbxEmployees, #cbxTaxNumbers, #cbxSalesman, #txtDescription, #txtExRate, #txtDiscount').attr('disabled','disabled');
 		if ($('#btnAddItem').length > 0){//existe
 			$('#btnAddItem').hide();
 		}

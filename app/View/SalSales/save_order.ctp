@@ -66,9 +66,10 @@
 			}
 			?>
 			<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"> Aprobar Orden de Compra</a>
-			<a href="#" id="btnApproveStateFull" class="btn btn-inverse" style="display:<?php echo $displayApproved;?>"> Solo Genera FAC MOV </a>
+		<!--	<a href="#" id="btnApproveStateFull" class="btn btn-inverse" style="display:<?php echo $displayApproved;?>"> Solo Genera FAC MOV </a>-->
 			<a href="#" id="btnLogicDeleteState" class="btn btn-danger" style="display:<?php echo $displayApproved;?>"><i class=" icon-trash icon-white"></i> Eliminar</a>
 			<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Orden de Compra</a>
+		<!--	<a href="#" id="btnCancellAll" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"> Cancelar Orden y Movs</a>-->
 			<?php
 				$displayPrint = 'none';
 				if($id <> ''){
@@ -191,6 +192,14 @@
 					'label' => 'Descripción:',
 					'disabled'=>$disable,
 					'id'=>'txtDescription'
+				));
+				
+				echo $this->BootstrapForm->input('discount', array(
+					'label' => 'Descuento:',
+					'disabled'=>$disable,
+					'id'=>'txtDiscount',
+					'value'=>$discount,
+					'type'=>'text'
 				));
 				
 				echo '<div id="boxExRate">';

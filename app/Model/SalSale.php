@@ -147,9 +147,6 @@ class SalSale extends AppModel {
 			}else{
 				$idMovement2 = $this->id;
 				$dataMovementDetail[1]['SalDetail']['sal_sale_id']=$idMovement2;
-//				if($dataPayDetail != null){
-//					$dataPayDetail['SalPayment']['sal_sale_id']=$idMovement;
-//				}
 			}
 		}	
 			switch ($OPERATION) {
@@ -244,7 +241,7 @@ class SalSale extends AppModel {
 					break;
 			}		
 			
-			if ($ACTION == 'save_invoice' && $STATE == 'SINVOICE_APPROVED'/*$arraySalePrices != null*/){
+			if ($ACTION == 'save_invoice' && $STATE == 'SINVOICE_APPROVED' && $arraySalePrices != array()){
 			
 				if(!ClassRegistry::init('InvPrice')->saveAll($arraySalePrices)){
 					$dataSource->rollback();
@@ -256,19 +253,24 @@ class SalSale extends AppModel {
 		return $idMovement1;
 	}
 	
-	public function saveGeneratedMovements($data){
+	public function saveGeneratedMovements(/*$idsToDelete,*/ $data){
 		$dataSource = $this->getDataSource();
 		$dataSource->begin();
+		
+//		if(!ClassRegistry::init('InvMovement')->deleteAll($idsToDelete, true)){
+//			$dataSource->rollback();
+//			return 'error';
+//		}
 		
 		foreach($data AS $row) { 
 			if(!ClassRegistry::init('InvMovement')->saveAll($row)){
 				$dataSource->rollback();
 				return 'error';
 			}else{
-				$idMovement[] = $this->id;
+				$idMovement[] = ClassRegistry::init('InvMovement')->id;
 			}
 		} 	
 		$dataSource->commit();
-		return array('SUCCESS', $idMovement);
+		return array('SUCCESS', implode("|",$idMovement));
 	}	
 }

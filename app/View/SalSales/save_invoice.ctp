@@ -76,8 +76,8 @@
 				echo $this->Html->link('<i class="icon-print icon-white"></i> Imprimir', array('action' => 'view_document_movement_pdf', $id.'.pdf'), array('class'=>'btn btn-primary','style'=>'display:'.$displayPrint, 'escape'=>false, 'title'=>'Nuevo', 'id'=>'btnPrint', 'target'=>'_blank')); 
 
 			?>
-			<a href="#" id="btnGenerateMovements" class="btn btn-inverse" style="display:<?php echo $displayApproved;?>"> Ver Movimientos</a>
-			
+			<a href="#" id="btnGenerateMovements" class="btn btn-inverse" style="display:<?php echo $displayApproved;?>"> Ver Movimientos</a> 			
+		
 			
 			
 			
@@ -198,6 +198,14 @@
 					'label' => 'Descripción:',
 					'disabled'=>$disable,
 					'id'=>'txtDescription'
+				));
+				
+				echo $this->BootstrapForm->input('discount', array(
+					'label' => 'Descuento:',
+					'disabled'=>$disable,
+					'id'=>'txtDiscount',
+					'value'=>$discount,
+					'type'=>'text'
 				));
 				
 				echo '<div id="boxExRate">';
