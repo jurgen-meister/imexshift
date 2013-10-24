@@ -112,7 +112,7 @@ class PurPurchase extends AppModel {
 		)
 	);
 
-	public function saveMovement($dataPurchase, $dataPurchaseDetail, $dataMovement, $dataMovementDetail, $dataMovementHeadsUpd, $OPERATION, $ACTION, $STATE, $dataPayDetail, $dataCostDetail){
+	public function saveMovement($dataPurchase, $dataPurchaseDetail, $dataMovement, $dataMovementDetail, $dataMovementHeadsUpd, $OPERATION, $ACTION, $STATE, $dataPayDetail, $dataCostDetail, $arrayFobPrices, $arrayCifPrices){
 		$dataSource = $this->getDataSource();
 		$dataSource->begin();
 		
@@ -303,7 +303,25 @@ class PurPurchase extends AppModel {
 						return 'ERROR';
 					}
 					break;	
-			}		
+			}	
+			
+			if ($ACTION == 'save_invoice' && $STATE == 'SINVOICE_APPROVED' &&  $arrayCifPrices != array()){
+			
+				if(!ClassRegistry::init('InvPrice')->saveAll($arrayCifPrices)){
+					$dataSource->rollback();
+					return 'error';
+				}
+				
+			}	
+			
+			if ($ACTION == 'save_invoice' && $STATE == 'SINVOICE_APPROVED' &&  $arrayFobPrices != array()){
+			
+				if(!ClassRegistry::init('InvPrice')->saveAll($arrayFobPrices)){
+					$dataSource->rollback();
+					return 'error';
+				}
+				
+			}	
 		$dataSource->commit();
 		return array('SUCCESS', $STATE.'|'.$idPurchase1);
 	}

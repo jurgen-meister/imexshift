@@ -50,7 +50,7 @@
 							'id'=>'cbxReportShowByTypes',
 							'type'=>'select',
 							'class'=>'span6',  	
-							'options'=>array(999=>'ITEMS', 998=>'CLIENTES', 1000=>'VENDEDORES')  
+							'options'=>array(999=>'ITEMS', 1000=>'CLIENTES', 998=>'VENDEDORES')  
 						  ));
 						echo '</div>';
 						  
@@ -59,8 +59,19 @@
 							'label' => '* Cliente:',
 							'id'=>'cbxReportCustomer',
 							'type'=>'select',
-							'options'=>$salCustomer,
+							'options'=>$customer,
 							'selected'=> 0,
+							'class'=>'span4',
+						  ));
+						echo '</div>';
+						
+						echo '<div class="row-fluid" id="boxCustomerWO0" style="display:none;">';
+						  echo $this->BootstrapForm->input('customerWO0', array(
+							'label' => '* Cliente:',
+							'id'=>'cbxReportCustomerWO0',
+							'type'=>'select',
+							'options'=>$customerWO0,
+//							'selected'=> 0,
 							'class'=>'span4',
 						  ));
 						echo '</div>';
@@ -70,8 +81,19 @@
 							'label' => '* Vendedor:',
 							'id'=>'cbxReportSalesman',
 							'type'=>'select',
-							'options'=>$salAdmUser,
+							'options'=>$salesman,
 							'selected'=> 0,
+							'class'=>'span4',
+						  ));
+						echo '</div>';
+						
+						echo '<div class="row-fluid" id="boxSalesmanWO0" style="display:none;">';
+						  echo $this->BootstrapForm->input('salesmanWO0', array(
+							'label' => '* Vendedor:',
+							'id'=>'cbxReportSalesmanWO0',
+							'type'=>'select',
+							'options'=>$salesmanWO0,
+//							'selected'=> 0,
 							'class'=>'span4',
 						  ));
 						echo '</div>';

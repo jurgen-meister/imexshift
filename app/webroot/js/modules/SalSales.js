@@ -19,10 +19,14 @@ $(document).ready(function(){
 	
 	function startEventsWhenExistsDebts(){		
 		payDebt =0;
+		
 		var	payPaid = getTotalPay();
 		var payTotal = getTotal();
+//		
+		
+		
 		payDebt = Number(payTotal) - Number(payPaid);
-		return payDebt
+		return  parseFloat(payDebt).toFixed(2);
 	}
 	
 	//gets a list of the item ids in the document details
@@ -166,6 +170,8 @@ $(document).ready(function(){
 		var employees = $('#cbxEmployees').text();
 		var taxNumbers = $('#cbxTaxNumbers').text();
 		var salesmen = $('#cbxSalesman').text();
+		var discount = $('#txtDiscount').val();
+		var exRate = $('#txtExRate').val();
 		if(date === ''){	error+='<li> El campo "Fecha" no puede estar vacio </li>'; }
 		if(dateYear[2] !== globalPeriod){	error+='<li> El año '+dateYear[2]+' de la fecha del documento no es valida, ya que se encuentra en la gestión '+ globalPeriod +'.</li>'; }
 		if(clients === ''){	error+='<li> El campo "Cliente" no puede estar vacio </li>'; }
@@ -173,6 +179,8 @@ $(document).ready(function(){
 		if(taxNumbers === ''){	error+='<li> El campo "NIT - Nombre" no puede estar vacio </li>'; }
 		if(salesmen === ''){	error+='<li> El campo "Vendedor" no puede estar vacio </li>'; }
 		if(arrayItemsDetails[0] == 0){error+='<li> Debe existir al menos 1 "Item" </li>';}
+		if(discount === ''){	error+='<li> El campo "Descuento" no puede estar vacio </li>'; }
+		if(exRate === ''){	error+='<li> El campo "Tipo de Cambio" no puede estar vacio </li>'; }
 		var itemZero = findIfOneItemHasQuantityZero(arrayItemsDetails);
 		if(itemZero > 0){error+='<li> Se encontraron '+ itemZero +' "Items" con "Cantidad" 0, no puede existir ninguno </li>';}
 		
@@ -421,7 +429,7 @@ $(document).ready(function(){
 	
 	function createRowPayTable(dateId, payDate, payAmount, payDescription){
 		var row = '<tr id="payRow'+dateId+'" >';
-		row +='<td><span id="spaPayDate'+dateId+'">'+payDate+'</span><input  value="'+dateId+'" id="txtPayDate" ></td>';
+		row +='<td><span id="spaPayDate'+dateId+'">'+payDate+'</span><input type="hidden" value="'+dateId+'" id="txtPayDate" ></td>';
 		row +='<td><span id="spaPayAmount'+dateId+'">'+payAmount+'</span></td>';
 		row +='<td><span id="spaPayDescription'+dateId+'">'+payDescription+'</span></td>';
 		row +='<td class="columnPaysButtons">';
@@ -514,6 +522,7 @@ $(document).ready(function(){
 	function getTotal(){
 		var arrayAux = [];
 		var total = 0;
+		var discount = $('#txtDiscount').val();
 		arrayAux = getItemsDetails();
 		if(arrayAux[0] != 0){
 			for(var i=0; i< arrayAux.length; i++){
@@ -522,7 +531,12 @@ $(document).ready(function(){
 				 total = total + (salePrice*quantity);
 			}
 		}
-		return total; 	
+		
+		if(discount !== 0){
+			total = total-(total*(discount/100));
+		}
+		
+		return parseFloat(total).toFixed(2); 	
 	}
 	
 	function getTotalPay(){
@@ -536,7 +550,7 @@ $(document).ready(function(){
 				 total = total + Number(amount);
 			}
 		}
-		return total; 	
+		return parseFloat(total).toFixed(2); 	
 	}
 	
 	//get all items for save a purchase
@@ -826,6 +840,12 @@ $(document).ready(function(){
 	});
 	
 	$('#cbxCustomers').select2();
+	
+	$('#cbxEmployees').select2();
+	
+	$('#cbxTaxNumbers').select2();
+	
+	$('#cbxSalesman').select2();
 	
 //	$('#cbxSuppliers').data('pre', $(this).val());
 //	$('#cbxSuppliers').change(function(){
@@ -1189,7 +1209,8 @@ $(document).ready(function(){
             type:"POST",
             url:moduleController + "ajax_initiate_modal_add_item_in",			
 			data:{itemsAlreadySaved: itemsAlreadySaved,
-				warehouseItemsAlreadySaved: warehouseItemsAlreadySaved},				
+				warehouseItemsAlreadySaved: warehouseItemsAlreadySaved
+			,date: $('#txtDate').val()},				
             beforeSend: showProcessing(),
             success: function(data){
 				$('#processing').text('');
@@ -1200,6 +1221,7 @@ $(document).ready(function(){
 					//este es para los items precio y stock
 					ajax_update_items_modal(itemsAlreadySaved, warehouseItemsAlreadySaved);
 				});
+				$('#cbxModalWarehouses').select2();
 				$('#cbxModalItems').bind("change",function(){ //must be binded 'cause dropbox is loaded by a previous ajax'
 					ajax_update_stock_modal();
 					ajax_update_stock_modal_1();
@@ -1225,7 +1247,8 @@ $(document).ready(function(){
             url:moduleController + "ajax_update_items_modal",			
             data:{itemsAlreadySaved: itemsAlreadySaved,
 				warehouseItemsAlreadySaved: warehouseItemsAlreadySaved,
-				warehouse: $('#cbxModalWarehouses').val()},
+				warehouse: $('#cbxModalWarehouses').val()
+			,date: $('#txtDate').val()},
             beforeSend: showProcessing(),
             success: function(data){
 				$('#processing').text("");
@@ -1254,7 +1277,9 @@ $(document).ready(function(){
             type:"POST",
             url:moduleController + "ajax_initiate_modal_add_pay",			
 		    data:{paysAlreadySaved: paysAlreadySaved,
-					payDebt: payDebt},
+					payDebt: payDebt
+//				,discount: $('#txtDiscount').val()
+			,date:$('#txtDate').val()},
             beforeSend: showProcessing(),
             success: function(data){
 				$('#processing').text('');
@@ -1280,7 +1305,8 @@ $(document).ready(function(){
 		$.ajax({
             type:"POST",
             url:moduleController + "ajax_update_stock_modal",			
-            data:{item: $('#cbxModalItems').val()},
+            data:{item: $('#cbxModalItems').val()
+			,date: $('#txtDate').val()},
             beforeSend: showProcessing(),
             success: function(data){
 				$('#processing').text("");
@@ -1435,7 +1461,7 @@ $(document).ready(function(){
 //		changeLabelDocumentState('NOTE_APPROVED'); //#UNICORN
 					showBittionAlertModal({content:'Se crearon los movimientos correspondientes', btnYes:'Aceptar', btnNo:''});
 						$('#bittionBtnYes').click(function(){
-							window.location = '/imexport/inv_movements/index_out/document_code:'+ $('#txtGenericCode').val() +'/search:yes';
+							window.location = '/imexport/inv_movements/index_sale_out/document_code:'+ $('#txtGenericCode').val() +'/search:yes';
 						});
 
 

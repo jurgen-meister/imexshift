@@ -652,10 +652,6 @@ class PurPurchasesController extends AppController {
 			)); 
 		$currencyId = $currency['AdmParameterDetail']['id'];
 		
-		
-		
-//		$invSuppliers = $this->PurPurchase->InvSupplier->find('list');
-		
 		$this->PurPurchase->recursive = -1;
 		$this->request->data = $this->PurPurchase->read(null, $id);
 		$genericCode ='';
@@ -675,34 +671,14 @@ class PurPurchasesController extends AppController {
 			)); 		
 		
 		
-		$exRate = $xxxRate['AdmExchangeRate']['value'];	//esto tiene q llamar al cambio del dia
+		$exRate = $xxxRate['AdmExchangeRate']['value'];	//esto llamar al cambio del dia
 		////////////////////////////////////////////////////////////
-//		debug($exRate);
 		if($id <> null){
 			$date = date("d/m/Y", strtotime($this->request->data['PurPurchase']['date']));//$this->request->data['InvMovement']['date'];
 			$purDetails = $this->_get_movements_details($id);
 			$documentState =$this->request->data['PurPurchase']['lc_state'];
-			$genericCode = $this->request->data['PurPurchase']['code'];
-			//////////////////////////////////////////////////////////
-//			$this->loadModel('AdmExchangeRate');
-//			$xxxRate = $this->AdmExchangeRate->find('first', array(
-//					'fields'=>array('AdmExchangeRate.value'),
-//					'conditions'=>array(
-//						'AdmExchangeRate.currency'=>$currencyId,
-//						'AdmExchangeRate.date'=>$date
-//					),
-//					'recursive'=>-1
-//				)); 		
-//	//		debug($xxxRate);
-
-
-//			$exRate = $xxxRate['AdmExchangeRate']['value'];
-			
+			$genericCode = $this->request->data['PurPurchase']['code'];			
 			$exRate = $this->request->data['PurPurchase']['ex_rate'];
-			////////////////////////////////////////////////////////// arriba jala de la fecha guardada, abajo jala de el exRate guardado,
-			////////////////////////////////////////////que si el usuario cambia en adm_exchanges_rates puede ser diferente a lo guardado
-			
-			
 		}
 		$this->set(compact(/*'invSuppliers', */'id', 'date', 'purDetails', 'documentState', 'genericCode', 'exRate'));
 	}
@@ -774,10 +750,9 @@ class PurPurchasesController extends AppController {
 						
 			$itemsAlreadySaved = $this->request->data['itemsAlreadySaved'];
 			$supplierItemsAlreadySaved = $this->request->data['supplierItemsAlreadySaved'];
+			$date = $this->request->data['date'];
 			
-			//$supplier = $this->request->data['supplier'];
 			$invSuppliers = $this->PurPurchase->PurDetail->InvItem->InvItemsSupplier->InvSupplier->find('list');
-//			debug($invSuppliers);
 			$supplier = key($invSuppliers);
 			$itemsBySupplier = $this->PurPurchase->PurDetail->InvItem->InvItemsSupplier->find('list', array(
 				'fields'=>array('InvItemsSupplier.inv_item_id'),
@@ -792,8 +767,7 @@ class PurPurchasesController extends AppController {
 				if($supplierItemsAlreadySaved[$i] == $supplier){
 					$itemsAlreadyTakenFromSupplier[] = $itemsAlreadySaved[$i];
 				}	
-			}
-//			debug($itemsAlreadyTakenFromSupplier);			
+			}		
 			$items = $this->PurPurchase->PurDetail->InvItem->find('list', array(
 				'conditions'=>array(
 					'NOT'=>array('InvItem.id'=>$itemsAlreadyTakenFromSupplier)
@@ -802,10 +776,7 @@ class PurPurchasesController extends AppController {
 				'recursive'=>-1,
 				'order'=>array('InvItem.code')
 			));
-//debug($supplier);			
-//debug($items);
-//debug($this->request->data);
-		// gets the first price in the list of the item prices
+		// gets the last date price in the list of the item prices
 		$firstItemListed = key($items);
 		$priceDirty = $this->PurPurchase->PurDetail->InvItem->InvPrice->find('first', array(
 			'fields'=>array('InvPrice.ex_price'),
@@ -813,15 +784,16 @@ class PurPurchasesController extends AppController {
 			'conditions'=>array(
 				'InvPrice.inv_item_id'=>$firstItemListed
 				,'InvPrice.inv_price_type_id'=>1
+				,'InvPrice.date <='=>$date
 				)
 		));
-//debug($priceDirty);
 		if($priceDirty == array() || $priceDirty['InvPrice']['ex_price'] == null){
-			$price = 0;
+			$price = '';
 		}  else {
 			$price = $priceDirty['InvPrice']['ex_price'];
 		}
-				
+//			$fields[]="SELECT ex_price FROM inv_prices where inv_item_id = '$firstItemListed' AND date <= '$date' AND inv_price_type_id=1 order by date DESC, date_created DESC LIMIT 1";
+//			debug($fields);	
 			$this->set(compact('items', 'price', 'invSuppliers', 'supplier'));
 		}
 	}
@@ -831,6 +803,7 @@ class PurPurchasesController extends AppController {
 			$itemsAlreadySaved = $this->request->data['itemsAlreadySaved'];
 			$supplierItemsAlreadySaved = $this->request->data['supplierItemsAlreadySaved'];
 			$supplier = $this->request->data['supplier'];
+			$date = $this->request->data['date'];
 			
 			$itemsBySupplier = $this->PurPurchase->PurDetail->InvItem->InvItemsSupplier->find('list', array(
 				'fields'=>array('InvItemsSupplier.inv_item_id'),
@@ -863,10 +836,12 @@ class PurPurchasesController extends AppController {
 			'order' => array('InvPrice.date_created' => 'desc'),
 			'conditions'=>array(
 				'InvPrice.inv_item_id'=>$item
+				,'InvPrice.inv_price_type_id'=>1
+				,'InvPrice.date <='=>$date
 				)
 			));
 			if($priceDirty==array()){
-			$price = 0;
+			$price = '';
 			}  else {
 			
 			$price = $priceDirty['InvPrice']['price'];
@@ -1013,16 +988,19 @@ class PurPurchasesController extends AppController {
 	public function ajax_update_stock_modal(){
 		if($this->RequestHandler->isAjax()){
 			$item = $this->request->data['item'];
+			$date = $this->request->data['date'];
 			//////////////////////CAMBIAR POR EL ALGORITMO QUE SACA EL PRECIO PRORRATEADO////////////////
 			$priceDirty = $this->PurPurchase->PurDetail->InvItem->InvPrice->find('first', array(
 			'fields'=>array('InvPrice.price'),
 			'order' => array('InvPrice.date_created' => 'desc'),
 			'conditions'=>array(
 				'InvPrice.inv_item_id'=>$item
+				,'InvPrice.inv_price_type_id'=>1
+				,'InvPrice.date <='=>$date
 				)
 			));
 			if($priceDirty==array()){
-			$price = 0;
+			$price ='';
 			}else{
 			
 			$price = $priceDirty['InvPrice']['price'];
@@ -1068,16 +1046,12 @@ class PurPurchasesController extends AppController {
 			
 			$this->loadModel('AdmParameter');
 			$currency = $this->AdmParameter->AdmParameterDetail->find('first', array(
-				//	'fields'=>array('AdmParameterDetail.id'),
 					'conditions'=>array(
 						'AdmParameter.name'=>'Moneda',
 						'AdmParameterDetail.par_char1'=>'Dolares'
 					)
-				//	'recursive'=>-1
 				)); 
-	//		debug($currency);
 			$currencyId = $currency['AdmParameterDetail']['id'];
-	//		debug($currencyId);
 			$this->loadModel('AdmExchangeRate');
 			$xxxRate = $this->AdmExchangeRate->find('first', array(
 					'fields'=>array('AdmExchangeRate.value'),
@@ -1087,9 +1061,11 @@ class PurPurchasesController extends AppController {
 					),
 					'recursive'=>-1
 				)); 		
-	//		debug($xxxRate);
-			$exRate = $xxxRate['AdmExchangeRate']['value'];
-		
+			if ($xxxRate == array()){
+				$exRate = '';
+			}else{
+				$exRate = $xxxRate['AdmExchangeRate']['value'];
+			}
 			$this->set(compact('exRate'));			
 		}else{
 			$this->redirect($this->Auth->logout());
@@ -1124,10 +1100,8 @@ class PurPurchasesController extends AppController {
 			$OPERATION= $this->request->data['OPERATION'];
 			$STATE = $this->request->data['STATE'];//also for Movement
 			$OPERATION3 = $OPERATION;
-//			$OPERATION4 = $OPERATION;
 			//Sale
 			$purchaseId = $this->request->data['purchaseId'];
-//			debug($purchaseId);
 			$purchaseOrderDocCode = $this->request->data['movementDocCode'];
 			$purchaseCode = $this->request->data['movementCode'];
 			$noteCode = $this->request->data['noteCode'];
@@ -1139,11 +1113,6 @@ class PurPurchasesController extends AppController {
 			$itemId = $this->request->data['itemId'];
 			$exFobPrice = $this->request->data['exFobPrice'];
 			$quantity = $this->request->data['quantity'];
-//			$cifPrice =  $this->_get_price($itemId, $date, 'CIF', 'bs');//$this->request->data['cifPrice'];
-//			$exCifPrice = $this->_get_price($itemId, $date, 'CIF', 'dolar');//$this->request->data['exCifPrice'];
-			//For prices IF DETAILS ARE PASSED / IF ACTION ADD OR EDIT
-//			$exFobPrice =  $this->_get_price($itemId, $date, 'FOB', 'dolar');
-//			$fobPrice =  $exFobPrice * $exRate;//$this->_get_price($itemId, $date, 'FOB', 'bs');
 			$fobPrice = $exFobPrice * $exRate;
 			if ($ACTION == 'save_invoice' && $STATE == 'PINVOICE_APPROVED'){
 				//variables used to calculate apportionment assigned when Invoice is APPROVED
@@ -1674,7 +1643,7 @@ class PurPurchasesController extends AppController {
 						,'InvPrice.ex_price'
 						),
 					'conditions'=>array(
-						'InvPrice.date'=>$date
+						'InvPrice.date <='=>$date
 						),
 					'recursive'=>-1
 					));
@@ -1698,7 +1667,7 @@ class PurPurchasesController extends AppController {
 							$arrayFobPrices[$i]['inv_price_type_id'] = 1;//or better relate by name FOB
 							$arrayFobPrices[$i]['ex_price'] = $arrayItemsDetails[$i]['ex_fob_price'];
 							$arrayFobPrices[$i]['price'] = $arrayItemsDetails[$i]['fob_price'];
-							$arrayFobPrices[$i]['description'] = $noteCode; 
+							$arrayFobPrices[$i]['description'] = "Precio FOB de la compra ".$noteCode." del".$date; 
 							$arrayFobPrices[$i]['date'] = $date;
 						}
 						if($contCif === 0){	
@@ -1706,7 +1675,7 @@ class PurPurchasesController extends AppController {
 							$arrayCifPrices[$i]['inv_price_type_id'] = 8;//or better relate by name CIF
 							$arrayCifPrices[$i]['ex_price'] = $cif;
 							$arrayCifPrices[$i]['price'] = $cif * $exRate;
-							$arrayCifPrices[$i]['description'] = $noteCode; 
+							$arrayCifPrices[$i]['description'] = "Precio CIF prorrateado de la compra ".$noteCode." del".$date; 
 							$arrayCifPrices[$i]['date'] = $date;
 						}	
 					}
@@ -1715,7 +1684,7 @@ class PurPurchasesController extends AppController {
 //				print_r($arrayCifPrices);
 //					if($validation['error'] == 0){
 						
-							$res = $this->PurPurchase->saveMovement($dataPurchase, $dataPurchaseDetail, $dataMovement, $dataMovementDetail, $dataMovementHeadsUpd, $OPERATION, $ACTION, $STATE, $dataPayDetail, $dataCostDetail);
+							$res = $this->PurPurchase->saveMovement($dataPurchase, $dataPurchaseDetail, $dataMovement, $dataMovementDetail, $dataMovementHeadsUpd, $OPERATION, $ACTION, $STATE, $dataPayDetail, $dataCostDetail, $arrayFobPrices, $arrayCifPrices);
 							
 //							if ($ACTION == 'save_invoice' && $STATE == 'PINVOICE_APPROVED'){
 //									$this->loadModel('InvPrice');

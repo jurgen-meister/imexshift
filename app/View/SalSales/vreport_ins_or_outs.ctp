@@ -35,7 +35,7 @@ if($initialData['detail'] == "NO"){
 	$globalQuantityCIF = 0;
 	$globalQuantitySALE = 0;
 	
-	foreach($itemsMovements as $val){ 
+	foreach($clientsMovements as $val){ 
 	$quantityTotal = 0;
 	$countMovements = 0;
 	if(isset($val['Movements'])){
@@ -44,11 +44,7 @@ if($initialData['detail'] == "NO"){
 ?>
 	<table class="report-table" border="0" style="border-collapse:collapse; width:100%;">
 		<tr>
-			<td colspan="2" ><span style="font-weight:bold;">Item: </span><?php echo $val['Item']['codeName']; ?></td>
-		</tr>
-		<tr>
-			<td><span style="font-weight:bold;">Categoria: </span><?php echo $val['Item']['category']; ?></td>
-			<td><span style="font-weight:bold;">Marca: </span><?php echo $val['Item']['brand']; ?></td>
+			<td colspan="2" ><span style="font-weight:bold;">Cliente: </span><?php echo $val['SalCustomer']['name']; ?></td>
 		</tr>
 	</table>	
 	<table class="report-table" border="1" style="border-collapse:collapse; width:100%;">
@@ -56,12 +52,14 @@ if($initialData['detail'] == "NO"){
 		
 			<thead>
 				<?php if($initialData['detail'] == 'YES'){ //start - detail YES?>
-				<tr> <th style="width:100%" colspan="11">Movimientos</th></tr>
+				<tr> <th style="width:100%" colspan="13">Movimientos</th></tr>
 				<tr>
 					<th>Fecha</th>
 					<th>Codigo</th>
 					<th>Codigo <br> Ref</th>
 					<th>Nota <br> Remisión</th>
+					<th>Item</th>
+					<th>Vendedor</th>
 					<th>Cant. <br> (Uni)</th>
 					<th>P.FOB <br><?php echo $currencyAbbr ; ?></th>
 					<th>P.FOB x Cant. <br><?php echo $currencyAbbr ; ?></th>
@@ -86,6 +84,8 @@ if($initialData['detail'] == "NO"){
 						<td style="text-align:left;"><?php echo $movement['code'];?></td>
 						<td style="text-align:left;"><?php echo $movement['doc_code'];?></td>
 						<td style="text-align:left;"><?php echo $movement['note_code'];?></td>
+						<td style="text-align:left;"><?php echo $movement['item'];?></td>
+						<td style="text-align:left;"><?php echo $movement['salesman'];?></td>
 						<td style="font-weight:bold;"><?php echo $movement['quantity'];?></td>
 						<td ><?php echo $movement['fob'];?></td>
 						<td style="font-weight:bold;"><?php echo number_format($movement['fobQuantity'],2);?></td>
@@ -103,7 +103,7 @@ if($initialData['detail'] == "NO"){
 					
 					$extraEmptyTotalTds = "<td ></td>";
 					?>
-					<td colspan="4" style="text-align:right; padding-right: 10px">Total: </td>
+					<td colspan="6" style="text-align:right; padding-right: 10px">Total: </td>
 					<?php }else{//end - detail YES?>
 					<td>Total:</td>
 					<?php }//end - detail NO ?>
@@ -117,10 +117,10 @@ if($initialData['detail'] == "NO"){
 				</tr>
 		<?php }else{?>
 				<thead>
-				<tr> <th style="width:100%" colspan="11">Movimientos</th></tr>
+				<tr> <th style="width:100%" colspan="13">Ventas</th></tr>
 				</thead>
 				<tbody>
-					<tr style="text-align:center;"><td>SIN MOVIMIENTOS</td></tr>
+					<tr style="text-align:center;"><td>SIN VENTAS</td></tr>
 				</tbody>
 		<?php }?>		
 	</table>
@@ -137,25 +137,7 @@ if($initialData['detail'] == "NO"){
 
 if($initialData['detail'] == 'NO'){ //start - detail NO
 ?>
-	<div style="font-size: 20px; font-weight: bold; text-align:center; text-decoration: underline;">TOTAL GLOBAL:</div>
-	<br>
-	<table class="report-table" border="1" style="border-collapse:collapse; width:100%;">
-		<tr>
-			<th></th>
-			<th>Cant. <br> (Uni)</th>
-			<th>P.FOB x Cant. <br><?php echo $currencyAbbr ; ?></th>
-			<th>P.CIF x Cant. <br><?php echo $currencyAbbr ; ?></th>
-			<th>P.Venta x Cant. <br><?php echo $currencyAbbr ; ?></th>
-		</tr>
-		<tr style="text-align:center;font-weight:bold;">
-			<td>TOTAL:</td>
-			<td><?php echo $globalQuantity;?></td>
-			<td><?php echo number_format($globalQuantityFOB,2);?></td>
-			<td><?php echo number_format($globalQuantityCIF,2);?></td>
-			<td><?php echo number_format($globalQuantitySALE,2);?></td>
-		</tr>
-	</table>	
-	<br>
+	
 <?php	
 }
 ?>

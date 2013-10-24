@@ -19,21 +19,35 @@ $(document).ready(function(){
 		getGroupItemsAndFilters();
 	});
 	
-	
+//	$('#cbxReportMovementTypes').change(function(){
+//        if($(this).val() === '1001'){
+//			$('#boxWarehouse2').show();
+//			$("#cbxReportWarehouse option[value='0']").remove();	//ESTO TENIA QUE USAR EN VEZ DE CREAR WO0!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+//			$("#cbxReportWarehouse").select2();
+//		}else{
+//			$('#boxWarehouse2').hide();
+//			if($("#cbxReportWarehouse option[value='0']").length === 0){
+//				$("#cbxReportWarehouse").append('<option value="0">TODOS</option>');
+//			}
+//		}
+//	});
 	
 	$('#cbxReportShowByTypes').change(function(){
-		if($(this).val() === '998'){
-//			$('#boxCustomer').show();
-//			$('#boxCustomer').show();
-//			$('#boxSalesman').hide();
-		}else if ($(this).val() === '1000'){
-//			$('#boxSalesman').show();
-//			$('#boxCustomer').hide();
+		if($(this).val() === '1000'){//CLIENTES
+			$('#boxCustomer').hide();
+			$('#boxSalesmanWO0').hide();
+			$('#boxCustomerWO0').show();
+			$('#boxSalesman').show();
+		}else if ($(this).val() === '998'){//VENDEDORES
+			$('#boxSalesman').hide();
+			$('#boxCustomerWO0').hide();
+			$('#boxSalesmanWO0').show();
+			$('#boxCustomer').show();
 		}else{
+			$('#boxCustomerWO0').hide();
+			$('#boxSalesmanWO0').hide();
 			$('#boxCustomer').show();
 			$('#boxSalesman').show();
-//			$('#boxCustomer').hide();
-//			$('#boxSalesman').hide();
 		}
 	});
 	
@@ -46,23 +60,27 @@ $(document).ready(function(){
 		var warehouseName = $('#cbxReportWarehouse option:selected').text();
 		var currency = $('#cbxReportCurrency').val();
 		var groupBy = $('#cbxReportGroupTypes').val();
-		var showByTypeName = $('#cbxReportMovementTypes option:selected').text();
+		var showByTypeName = $('#cbxReportShowByTypes option:selected').text();
 		var detail = $('#cbxDetail').val();
 		var items = getSelectedCheckboxes();
-		var customer = 'non-existent';
-		var customerName = 'non-existent';
-		var salesman = 'non-existent';
-		var salesmanName = 'non-existent';
+		var customer = $('#cbxReportCustomer').val();
+		var customerName = $('#cbxReportCustomer option:selected').text();
+		var salesman = $('#cbxReportSalesman').val();
+		var salesmanName = $('#cbxReportSalesman option:selected').text();
+		var customerWO0 = 'non-existent';
+		var customerNameWO0 = 'non-existent';
+		var salesmanWO0 = 'non-existent';
+		var salesmanNameWO0 = 'non-existent';
 		
-		if($('#boxCustomer').css('display') === 'block'){
-			customer = $('#cbxReportCustomer').val();
-			customerName = $('#cbxReportCustomer option:selected').text();
+		if($('#boxCustomerWO0').css('display') === 'block'){
+			customerWO0 = $('#cbxReportCustomerWO0').val();
+			customerNameWO0 = $('#cbxReportCustomerWO0 option:selected').text();
 		}	
-		if($('#boxSalesman').css('display') === 'block'){
-			salesman = $('#cbxReportSalesman').val();
-			salesmanName = $('#cbxReportSalesman option:selected').text();
+		if($('#boxSalesmanWO0').css('display') === 'block'){
+			salesmanWO0 = $('#cbxReportSalesmanWO0').val();
+			salesmanNameWO0 = $('#cbxReportSalesmanWO0 option:selected').text();
 		}
-		var error = validate(startDate, finishDate, showByType, warehouse, customer, salesman, currency, groupBy, items);
+		var error = validate(startDate, finishDate, showByType, warehouse, customer, customerWO0, salesman, salesmanWO0, currency, groupBy, items);
 		if(error === ''){
 			var DATA = {
 						startDate:startDate,
@@ -75,6 +93,10 @@ $(document).ready(function(){
 						groupBy:groupBy,
 						customer:customer,
 						customerName:customerName,
+						customerWO0:customerWO0,
+						customerNameWO0:customerNameWO0,
+						salesmanWO0:salesmanWO0,
+						salesmanNameWO0:salesmanNameWO0,
 						salesman:salesman,
 						salesmanName:salesmanName,
 						detail:detail,

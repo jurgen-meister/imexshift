@@ -197,8 +197,10 @@ $(document).ready(function(){
 		var error = '';
 		var date = $('#txtDate').val();
 		var dateYear = date.split('/');
+		var exRate = $('#txtExRate').val();
 		if(date === ''){	error+='<li> El campo "Fecha" no puede estar vacio </li>'; }
 		if(dateYear[2] !== globalPeriod){	error+='<li> El año '+dateYear[2]+' de la fecha del documento no es valida, ya que se encuentra en la gestión '+ globalPeriod +'.</li>'; }
+		if(exRate === ''){	error+='<li> El campo "Tipo de Cambio" no puede estar vacio </li>'; }
 		if(arrayItemsDetails[0] == 0){error+='<li> Debe existir al menos 1 "Item" </li>';}
 		var itemZero = findIfOneItemHasQuantityZero(arrayItemsDetails);
 		if(itemZero > 0){error+='<li> Se encontraron '+ itemZero +' "Items" con "Cantidad" 0, no puede existir ninguno </li>';}
@@ -674,7 +676,7 @@ $(document).ready(function(){
 				 total = total + (exFobPrice*quantity);
 			}
 		}
-		return total; 	
+		return parseFloat(total).toFixed(2); 	
 	}
 	
 	function getTotalPay(){
@@ -687,7 +689,7 @@ $(document).ready(function(){
 				 total = total + Number(amount);
 			}
 		}
-		return total; 	
+		return parseFloat(total).toFixed(2); 
 	}
 	
 	function getTotalCost(){
@@ -700,7 +702,7 @@ $(document).ready(function(){
 				 total = total + Number(exAmount);
 			}
 		}
-		return total; 	
+		return parseFloat(total).toFixed(2); 
 	}
 	
 	//get all items for save a purchase
@@ -1399,8 +1401,10 @@ $(document).ready(function(){
 		 $.ajax({
             type:"POST",
             url:moduleController + "ajax_initiate_modal_add_item_in",			
-  /*data*/  data:{itemsAlreadySaved: itemsAlreadySaved, 
-					supplierItemsAlreadySaved: supplierItemsAlreadySaved},
+  /*data*/  data:{	itemsAlreadySaved: itemsAlreadySaved, 
+				supplierItemsAlreadySaved: supplierItemsAlreadySaved,
+				date: $('#txtDate').val()
+			},
             beforeSend: showProcessing(),
             success: function(data){
 				$('#processing').text('');
@@ -1411,6 +1415,7 @@ $(document).ready(function(){
 					//este es para los items precio y stock
 					ajax_update_items_modal(itemsAlreadySaved, supplierItemsAlreadySaved);
 				});
+				$('#cbxModalSuppliers').select2();
 				$('#cbxModalItems').bind("change",function(){ //must be binded 'cause dropbox is loaded by a previous ajax'
 					ajax_update_stock_modal();
 				});
@@ -1432,7 +1437,8 @@ $(document).ready(function(){
             url:moduleController + "ajax_update_items_modal",			
             data:{itemsAlreadySaved: itemsAlreadySaved,
 				supplierItemsAlreadySaved: supplierItemsAlreadySaved,
-				supplier: $('#cbxModalSuppliers').val()},
+				supplier: $('#cbxModalSuppliers').val(),
+			date: $('#txtDate').val()},
             beforeSend: showProcessing(),
             success: function(data){
 				$('#processing').text("");
@@ -1511,7 +1517,8 @@ $(document).ready(function(){
 		$.ajax({
             type:"POST",
             url:moduleController + "ajax_update_stock_modal",			
-            data:{item: $('#cbxModalItems').val()},
+            data:{item: $('#cbxModalItems').val(),
+			date: $('#txtDate').val()},
             beforeSend: showProcessing(),
             success: function(data){
 				$('#processing').text("");

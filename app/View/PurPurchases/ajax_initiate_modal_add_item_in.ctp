@@ -4,7 +4,8 @@
 		'id'=>'cbxModalSuppliers',
 		'class'=>'span6'
 		));
-
+		echo '<br>';
+		echo '<br>';
 		echo '<div id="boxModalItemPriceStock">';
 			//////////////////////////////////////
 			echo $this->BootstrapForm->input('items_id', array(				
