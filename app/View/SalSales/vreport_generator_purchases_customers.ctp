@@ -54,12 +54,21 @@
 					'class'=>'span2',
 					'options'=>$months 
 				));
+				
+				echo $this->BootstrapForm->input('customer', array(
+					'label' => 'Cliente:',
+					'id'=>'cbxCustomer',
+					'type'=>'select',
+					'class'=>'span6',
+					'options'=>$customers 
+				));
+				
 				echo $this->BootstrapForm->input('show', array(
 					'label' => 'Mostrar:',
 					'id'=>'cbxShowZero',
 					'type'=>'select',
-					'class'=>'span2',
-					'options'=>array("no"=>"Sin cero", "yes"=>"Con cero") 
+					'class'=>'span3',
+					'options'=>array("no"=>"Valores Sin Cero", "yes"=>"Valores Con Cero") 
 				));
 				echo $this->BootstrapForm->input('currency', array(
 					'label' => 'Moneda:',

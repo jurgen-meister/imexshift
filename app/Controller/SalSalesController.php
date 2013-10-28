@@ -696,10 +696,15 @@ class SalSalesController extends AppController {
 			"fields"=>array("name", "name")
 			)
 		);
-		$months = array(0=>"Todos", 1=>"Enero", 2=>"Febrero", 3=>"Marzo", 4=>"Abril", 5=>"Mayo", 6=>"Junio", 7=>"Julio", 8=>"Agosto", 9=>"Septiembre", 10=>"Octubre", 11=>"Noviembre", 12=>"Diciembre");
+		$months = array(0=>"TODOS", 1=>"Enero", 2=>"Febrero", 3=>"Marzo", 4=>"Abril", 5=>"Mayo", 6=>"Junio", 7=>"Julio", 8=>"Agosto", 9=>"Septiembre", 10=>"Octubre", 11=>"Noviembre", 12=>"Diciembre");
 		$item = $this->_find_items();
-		
-		$this->set(compact("years", "months", "item"));
+		$customers[0] = "TODOS";
+		$this->loadModel("SalCustomer");
+		$customersClean = $this->SalCustomer->find("list");
+		foreach ($customersClean as $key => $value) {
+			$customers[$key]=$value;
+		}
+		$this->set(compact("years", "months", "item", "customers"));
 	}
 	
 	public function vreport_generator_customers_debts(){
@@ -735,7 +740,12 @@ class SalSalesController extends AppController {
 				$conditionMonth = array("to_char(SalSale.date,'mm')" => $initialData['month']);
 			}
 		}
-		
+		/////////////////////
+		$conditionCustomer = null;
+		if($initialData['customer'] > 0){
+			$conditionCustomer = array("SalCustomer.id"=>$initialData['customer']);
+		}
+		/////////////////////
 		$this->SalSale->SalDetail->bindModel(array(
 			'hasOne'=>array(
 				'SalEmployee'=>array(
@@ -757,44 +767,67 @@ class SalSalesController extends AppController {
 			"fields"=>array(
 				'SUM("SalDetail"."quantity" * "SalDetail"."'.$currencyField.'sale_price") AS money',
 				'SUM("SalDetail"."quantity") AS quantity',
+				//'SalDetail.quantity',
+				//'SalDetail.sale_price',
+				//'SalDetail.id',
+				//'SalSale.id',
 				'SalCustomer.name',
 				'SalCustomer.id',
 			),
 			'group'=>array("SalCustomer.name", "SalCustomer.id"),
 			"conditions"=>array(
 				//"SalCustomer.id"=>array(11,77,367),
+				'SalSale.lc_state'=>'SINVOICE_APPROVED',
 				"to_char(SalSale.date,'YYYY')"=>$initialData['year'],
 				"SalDetail.inv_item_id"=>$initialData['items'],
-				$conditionMonth
+				$conditionMonth,
+				$conditionCustomer
 			),
-			"order"=>array("SalCustomer.name")
+			"order"=>array('"money"'=>"DESC", "SalCustomer.name")
 		));
 		$this->loadModel("SalCustomer");
 		$customers = $this->SalCustomer->find("list", array("order"=>array("SalCustomer.name")));
 		//debug($data);
 		
 		//debug($customers);
-		$details = array();
+		//$details = array();
+		
+		$details = $data;
+		//debug($details);
+		
+		
 		
 		if($initialData["zero"] == "yes"){
-			$counter = 0;
-			foreach ($customers as $key => $customer) {
-				$details[$counter]['SalCustomer']['name'] = $customer;
-				$details[$counter][0]['money'] = 0;
-				$details[$counter][0]['quantity'] = 0;
+			if($initialData["customer"] == 0){
+				$counter = 0;
 				foreach ($data as $key2 => $value) {
-					
-					if($key == $value['SalCustomer']['id']){
-						//debug($value[0]['money']);
-						$details[$counter][0]['money'] = $value[0]['money'];
-						$details[$counter][0]['quantity'] = $value[0]['quantity'];
+					foreach ($customers as $key => $customer) {
+						if($key == $value['SalCustomer']['id']){
+							//debug($key);
+							$details[$counter]['SalCustomer']['name'] = $customer;
+							$details[$counter][0]['money'] = $value[0]['money'];
+							$details[$counter][0]['quantity'] = $value[0]['quantity'];
+							unset($customers[$key]);
+						}
 					}
+					$counter++;
 				}
-				$counter++;
+				foreach ($customers as $key => $customer) {
+					$details[$counter]['SalCustomer']['name'] = $customer;
+					$details[$counter][0]['money'] = 0;
+					$details[$counter][0]['quantity'] = 0;
+					$counter++;
+				}
+			}else{ // in case for just one customer
+				if(count($details) == 0){
+					$details[0]['SalCustomer']['name'] = $initialData['customerName'];
+					$details[0][0]['money'] = 0;
+					$details[0][0]['quantity'] = 0;
+				}
 			}
-		}else{
-			$details = $data;
 		}
+		
+		
 		
 		//debug($details);
 		
@@ -834,6 +867,8 @@ class SalSalesController extends AppController {
 			$this->Session->write('ReportPurchasesCustomers.currency', $this->request->data['currency']);
 			$this->Session->write('ReportPurchasesCustomers.zero', $this->request->data['zero']);
 			$this->Session->write('ReportPurchasesCustomers.groupBy', $this->request->data['groupBy']);
+			$this->Session->write('ReportPurchasesCustomers.customer', $this->request->data['customer']);
+			$this->Session->write('ReportPurchasesCustomers.customerName', $this->request->data['customerName']);
 			
 			//array items
 			$this->Session->write('ReportPurchasesCustomers.items', $this->request->data['items']);
@@ -848,6 +883,12 @@ class SalSalesController extends AppController {
 			$this->Session->write('ReportItemsUtilities.finishDate', $this->request->data['finishDate']);
 			$this->Session->write('ReportItemsUtilities.currency', $this->request->data['currency']);
 			$this->Session->write('ReportItemsUtilities.items', $this->request->data['items']);
+			
+			$this->Session->write('ReportItemsUtilities.customer', $this->request->data['customer']);
+			$this->Session->write('ReportItemsUtilities.customerName', $this->request->data['customerName']);
+			
+			$this->Session->write('ReportItemsUtilities.salesman', $this->request->data['salesman']);
+			$this->Session->write('ReportItemsUtilities.salesmanName', $this->request->data['salesmanName']);
 		}
 	}
 	
@@ -862,59 +903,103 @@ class SalSalesController extends AppController {
 		//put session data sent data into variables
 		$initialData = $this->Session->read('ReportItemsUtilities');
 		
+		$conditionCustomer = null;
+		if($initialData["customer"] > 0){
+			$conditionCustomer = array("SalEmployee.sal_customer_id" => $initialData["customer"]);
+		}
+		$conditionSalesman = null;
+		if($initialData["salesman"] > 0){
+			$conditionSalesman = array("SalSale.salesman_id" => $initialData["salesman"]);
+		}
+		
 		$currencyAbbr = "";
 		if($initialData["currency"] == "DOLARES"){
 			$currencyAbbr = "ex_";
 		}
 		
+		//debug($initialData);
+		$this->SalSale->SalDetail->bindModel(array(
+			'hasOne'=>array(
+				'SalEmployee'=>array(
+					'foreignKey'=>false,
+					'conditions'=> array('SalSale.sal_employee_id = SalEmployee.id')
+				)
+			)
+		));
 		$this->SalSale->SalDetail->unbindModel(array('belongsTo' => array('InvWarehouse')));
+		
 		$prices = $this->SalSale->SalDetail->find("all", array(
 			"conditions"=>array(
 				"InvItem.id"=>$initialData["items"]
 				,'SalSale.lc_state'=>'SINVOICE_APPROVED'
-				,'SalSale.date BETWEEN ? AND ?' => array($initialData['startDate'], $initialData['finishDate']),
+				,'SalSale.date BETWEEN ? AND ?' => array($initialData['startDate'], $initialData['finishDate'])
+				,$conditionCustomer
+				,$conditionSalesman
 			)
 			,"fields"=>array(
 				"InvItem.id"
-				,'("SalDetail"."'.$currencyAbbr.'sale_price" * "SalDetail"."quantity") AS sale'
-				,'(SELECT '.$currencyAbbr.'price FROM inv_prices where inv_item_id = "SalDetail"."inv_item_id" AND date <= "SalSale"."date" AND inv_price_type_id=8 order by date DESC, date_created DESC LIMIT 1) * "SalDetail"."quantity" AS "cif"'
+				//,"SalSale.salesman_id"
+				//,"SalEmployee.sal_customer_id"
+				,"InvItem.code"
+				,"InvItem.name"
+				,'SUM(SalDetail.quantity) AS quantity'
+				,'SUM("SalDetail"."'.$currencyAbbr.'sale_price" * "SalDetail"."quantity") AS sale'
+				,'SUM((SELECT '.$currencyAbbr.'price FROM inv_prices where inv_item_id = "SalDetail"."inv_item_id" AND date <= "SalSale"."date" AND inv_price_type_id=8 order by date DESC, date_created DESC LIMIT 1) * "SalDetail"."quantity") AS "cif"'
 			)
+			,"group"=>array(
+				"InvItem.id"
+				,"InvItem.code"
+				,"InvItem.name"
+				//,"SalSale.salesman_id"
+				//,"SalEmployee.sal_customer_id"
+			)
+			,"order"=>array('"quantity"' => 'DESC', 'InvItem.code')
 		));
-		//debug($initialData["items"]);
-		//debug($prices);
 		
 		
-		
-		$limit = count($prices);
 		$dataDetail = array();
-		
+		//debug($prices);
 		$this->loadModel("InvItem");
-		$items = $this->InvItem->find("list", array(
-			"conditions"=>array("InvItem.id"=>$initialData["items"]),
-			"fields"=>array("InvItem.id", "InvItem.full_name"),
+		$this->InvItem->unbindModel(array('belongsTo' => array('InvPrice', 'InvMovementDetail', 'InvItemsSupplier')));
+		
+		
+		$items = array();
+		
+	   foreach ($initialData["items"] as $value) {
+		 $items[$value] = $value;
+	   }
+
+	   foreach($prices as $value){
+			$index = $value['InvItem']['id'];
+			$dataDetail[$index]["code"] = $value['InvItem']['code'];
+			$dataDetail[$index]["name"] = $value['InvItem']['name'];
+			$dataDetail[$index]["quantity"] = $value[0]['quantity'];
+			$dataDetail[$index]["sale"] = $value[0]['sale'];
+			$dataDetail[$index]["cif"] = $value[0]['cif'];
+			
+			$utility = $value[0]['sale'] - $value[0]['cif'];
+			$dataDetail[$index]["utility"] = $utility;
+			$dataDetail[$index]["margin"] = ($utility * 100) / $value[0]['sale'];
+			unset($items[$index]);
+		}
+		
+		$pricesZero = $this->InvItem->find("all", array(
+			"conditions"=>array("InvItem.id"=>$items),
+			"fields"=>array("InvItem.id", "InvItem.code", "InvItem.name"),
 			"order"=>array("InvItem.code")
 		));
 		
-		foreach($items as $keyItem => $item){
-			$dataDetail[$keyItem]["full_name"] = $item;
-			$dataDetail[$keyItem]["sale"] = 0;
-			$dataDetail[$keyItem]["cif"] = 0;
-			$dataDetail[$keyItem]["utility"] = 0;
-			$dataDetail[$keyItem]["margin"] = 0;
+		foreach($pricesZero as $keyItem => $item){
+			$index = $item['InvItem']['id'];
+			$dataDetail[$index]["code"] = $item['InvItem']['code'];
+			$dataDetail[$index]["name"] = $item['InvItem']['name'];
+			$dataDetail[$index]["quantity"] = 0;
+			$dataDetail[$index]["sale"] = 0;
+			$dataDetail[$index]["cif"] = 0;
+			$dataDetail[$index]["utility"] = 0;
+			$dataDetail[$index]["margin"] = 0;
 		}
-		//debug($dataDetail);
-		
-		for($i=0; $i<$limit; $i++){
-			foreach ($initialData["items"] as $item) {
-				if($prices[$i]["InvItem"]["id"] == $item ){
-					$dataDetail[$item]["sale"] = $dataDetail[$item]["sale"] + $prices[$i][0]["sale"];
-					$dataDetail[$item]["cif"] = $dataDetail[$item]["cif"] + $prices[$i][0]["cif"];
-					$dataDetail[$item]["utility"] = $dataDetail[$item]["sale"] - $dataDetail[$item]["cif"];
-					$dataDetail[$item]["margin"] = ($dataDetail[$item]["utility"] * 100) / $dataDetail[$item]["sale"];
-				}
-			}
-		}
-		//debug($dataDetail);
+		 
 		$this->set("data", $initialData);
 		$this->set("dataDetails", $dataDetail);
 		$this->Session->delete('ReportItemsUtilities');
@@ -929,7 +1014,29 @@ class SalSalesController extends AppController {
 			)
 		);
 		$item = $this->_find_items();
-		$this->set(compact("years", "item"));
+		
+		$this->loadModel('AdmUser');
+		$salesmanClean = $this->AdmUser->AdmProfile->find('list', array(
+			"order"=>array("first_name"),
+			"fields"=>array("adm_user_id", "full_name")
+			)
+		);
+		$salesmen[0] = "TODOS";
+		foreach ($salesmanClean as $key => $value) {
+			$salesmen[$key] = $value;
+		}
+		
+//		debug($salesmen);
+		
+		
+		$customersClean = $this->SalSale->SalEmployee->SalCustomer->find('list', array("order"=>array("name")));
+		$customers[0] = "TODOS";
+		//debug($customer);
+		foreach ($customersClean as $key => $value) {
+			$customers[$key] = $value;
+		}
+		
+		$this->set(compact("years", "item", "customers", "salesmen"));
 	}
 	////////////////////////////////////////////////////
 

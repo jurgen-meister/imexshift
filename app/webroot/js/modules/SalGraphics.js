@@ -73,7 +73,15 @@ $('#btnGenerateReportItemsUtilities').click(function(){
             type:"POST",
 			async:false, // the key to open new windows when success
             url:moduleController + "ajax_generate_report_items_utilities",			
-            data:{startDate: $('#txtReportStartDate').val(), finishDate: $('#txtReportFinishDate').val(), currency:$('#cbxReportCurrency').val(), items:items},
+            data:{startDate: $('#txtReportStartDate').val(),
+				finishDate: $('#txtReportFinishDate').val(),
+				currency:$('#cbxReportCurrency').val(),
+				items:items,
+				customer:$('#cbxCustomer').val(),
+				customerName:$('#cbxCustomer option:selected').text(),
+				salesman:$('#cbxSalesman').val(),
+				salesmanName:$('#cbxSalesman option:selected').text()
+			},
 			beforeSend: function(){
 				$('#boxProcessing').text('Procesando...');
 			},
@@ -360,6 +368,8 @@ $('#btnGenerateReportPurchasesCustomers').click(function(){
 	var year =  $("#cbxYear").val();
 	var month =  $("#cbxMonth").val();
 	var zero =  $("#cbxShowZero").val();
+	var customer = $("#cbxCustomer").val();
+	var customerName = $("#cbxCustomer option:selected").text();
 	var monthName =  $("#cbxMonth option:selected").text();
 	var items = getSelectedCheckboxes();
 	if(items.length > 0){
@@ -368,6 +378,8 @@ $('#btnGenerateReportPurchasesCustomers').click(function(){
 						groupBy:groupBy,
 						year:year,
 						month:month,
+						customer:customer,
+						customerName:customerName,
 						zero:zero,
 						monthName:monthName,
 						items:items
