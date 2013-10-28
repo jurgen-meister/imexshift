@@ -38,6 +38,14 @@ if($initialData['detail'] == "NO"){
 	$globalQuantityCIF = 0;
 	$globalQuantitySALE = 0;
 	
+	$finalFOB = 0;
+	$finalCIF = 0;
+	$finalSale = 0;
+	
+	$finalFOBGlobal = 0;
+	$finalCIFGlobal = 0;
+	$finalSaleGlobal = 0;
+	
 	foreach($itemsMovements as $val){ 
 	$quantityTotal = 0;
 	$stockQuantity = 0;
@@ -59,7 +67,7 @@ if($initialData['detail'] == "NO"){
 ?>
 	<table class="report-table" border="0" style="border-collapse:collapse; width:100%;">
 		<tr>
-			<td colspan="2" ><span style="font-weight:bold;">Item: </span><?php echo $val['Item']['codeName']; ?></td>
+			<td colspan="2" ><span style="font-weight:bold;">Producto: </span><?php echo $val['Item']['codeName']; ?></td>
 		</tr>
 		<tr>
 			<td><span style="font-weight:bold;">Categoria: </span><?php echo $val['Item']['category']; ?></td>
@@ -78,31 +86,43 @@ if($initialData['detail'] == "NO"){
 				<th ><?php echo $stockQuantity; ?></th>
 				<th colspan="6"></th>
 			</tr>	
+			
+			<tr >
+				<th colspan="6" style="text-align:right;"></th>
+				<th colspan="4">Compra</th>
+				<th colspan="2">Venta</th>
+			</tr>	
 				
 				<tr>
 					<th>Fecha</th>
-					<th>Codigo</th>
-					<th>Codigo <br> Ref</th>
+					<!--<th>Codigo</th>-->
+					<!--<th>Codigo <br> Ref</th>-->
+					<th>Tipo Movimiento</th>
 					<th>Nota <br> Remisión</th>
-					<th>Cant. Ent <br>(Uni)</th>
-					<th>Cant. Sal<br>(Uni)</th>
-					<th>Stock <br> (Uni)</th>
-					<th>P.FOB <br><?php echo $currencyAbbr ; ?></th>
-					<th>P.FOB x Cant. <br><?php echo $currencyAbbr ; ?></th>
-					<th>P.CIF <br><?php echo $currencyAbbr ; ?></th>
-					<th>P.CIF x Cant. <br><?php echo $currencyAbbr ; ?></th>
-					<th>P.Venta <br><?php echo $currencyAbbr ; ?></th>
-					<th>P.Venta x Cant. <br><?php echo $currencyAbbr ; ?></th>
+					<th>Cantidad Entrada <br>(Unidad)</th>
+					<th>Cantidad Salida<br>(Unidad)</th>
+					<th>Stock <br> (Unidad)</th>
+					<th>Precio Unitario FOB <br><?php echo $currencyAbbr ; ?></th>
+					<th>Precio Total FOB <br><?php echo $currencyAbbr ; ?></th>
+					<th>Precio Unitario CIF <br><?php echo $currencyAbbr ; ?></th>
+					<th>Precio Total CIF <br><?php echo $currencyAbbr ; ?></th>
+					<th>Precio Unitario Venta <br><?php echo $currencyAbbr ; ?></th>
+					<th>Precio Total Venta<br><?php echo $currencyAbbr ; ?></th>
 				</tr>
 				<?php }else{ //end - detail YES?>
+				<tr >
+					<th colspan="2" style="text-align:right;"></th>
+					<th colspan="2">Compra</th>
+					<th colspan="1">Venta</th>
+				</tr>	
 				<tr>
 					<th></th>
-					<th>Cant. Ent <br>(Uni)</th>
-					<th>Cant. Sal<br>(Uni)</th>
-					<th>Stock <br> (Uni)</th>
-					<th>P.FOB x Cant. <br><?php echo $currencyAbbr ; ?></th>
-					<th>P.CIF x Cant. <br><?php echo $currencyAbbr ; ?></th>
-					<th>P.Venta x Cant. <br><?php echo $currencyAbbr ; ?></th>
+					<!--<th>Cant. Ent <br>(Uni)</th>-->
+					<!--<th>Cant. Sal<br>(Uni)</th>-->
+					<th>Stock <br> (Unidad)</th>
+					<th>Precio FOB<br><?php echo $currencyAbbr ; ?></th>
+					<th>Precio CIF <br><?php echo $currencyAbbr ; ?></th>
+					<th>Precio Venta <br><?php echo $currencyAbbr ; ?></th>
 				</tr>
 				<?php } //end - detail NO?>
 			<?php }else{?>
@@ -137,11 +157,34 @@ if($initialData['detail'] == "NO"){
 				//debug($stockQuantity);
 			?>
 			
+			<?php 
+			$finalFOB = $movement['fob'];
+			$finalCIF = $movement['cif'];
+			$finalSale = $movement['sale'];
+			?>
 			<?php if($initialData['detail'] == 'YES'){ //start - detail YES?>
 					<tr style="text-align:center;">
 						<td style="text-align:left;" ><?php echo $movement['date'];?></td>
-						<td style="text-align:left;"><?php echo $movement['code'];?></td>
-						<td style="text-align:left;"><?php echo $movement['document_code'];?></td>
+						<td style="text-align:left;">
+							<?php 
+							$movementType = "Entrada";
+							if($outQuantity == "-"){
+								$movementType = "Salida";
+							}
+							$tokenMovement = substr($movement['document_code'], 0, 3);
+							if( $tokenMovement == "TRA"){
+								$movementType .= " (Traspaso)";
+							}elseif($tokenMovement == "VEN"){
+								$movementType .= " (Venta)";
+							}elseif($tokenMovement == "COM"){
+								$movementType .= " (Compra)";
+							}
+							echo $movementType;
+							//echo $movement['document_code'];
+							?>
+						</td>
+						<!--<td style="text-align:left;"><?php //echo $movement['code'];?></td>-->
+						<!--<td style="text-align:left;"><?php //echo $movement['document_code'];?></td>-->
 						<td style="text-align:left;"><?php echo $movement['note_code'];?></td>
 						
 						<td style="font-weight:bold;"><?php echo $inQuantity;?></td>
@@ -160,7 +203,7 @@ if($initialData['detail'] == "NO"){
 					<?php } //end - detail YES?>
 
 			<?php } //loop ends ?>
-
+					<?php if($initialData['detail'] == 'NO'){ //only when global?>
 					<tr style="text-align:center;font-weight:bold;">
 						<?php 
 						$extraEmptyTotalTds = "<td ></td>";
@@ -172,16 +215,27 @@ if($initialData['detail'] == "NO"){
 							$extraEmptyTotalTds = "";
 						}//end - detail NO
 						?>
-						<td ><?php if($inQuantityTotal == 0){echo '-';}else{echo $inQuantityTotal;} ?></td>
-						<td ><?php if($outQuantityTotal == 0){echo '-';}else{echo $outQuantityTotal;} ?></td>
+						<!--<td ><?php //if($inQuantityTotal == 0){echo '-';}else{echo $inQuantityTotal;} ?></td>-->
+						<!--<td ><?php //if($outQuantityTotal == 0){echo '-';}else{echo $outQuantityTotal;} ?></td>-->
 						<td ><?php echo $stockQuantity; ?></td>
 						<?php echo $extraEmptyTotalTds;?>
-						<td ><?php echo number_format($val['TotalMovements']['fobQuantityTotal'],2); ?></td>
+						<?php
+						
+						$finalFOBTemp = $stockQuantity * $finalFOB;
+						$finalCIFTemp = $stockQuantity * $finalCIF;
+						$finalSaleTemp = $stockQuantity * $finalSale;
+						$finalFOBGlobal = $finalFOBGlobal + $finalFOBTemp;
+						$finalCIFGlobal = $finalCIFGlobal + $finalCIFTemp;
+						$finalSaleGlobal = $finalSaleGlobal + $finalSaleTemp;
+						?>
+						<td ><?php echo number_format($finalFOBTemp,2);//echo number_format($val['TotalMovements']['fobQuantityTotal'],2); ?></td>
 						<?php echo $extraEmptyTotalTds;?>
-						<td ><?php echo number_format($val['TotalMovements']['cifQuantityTotal'],2); ?></td>
+						<td ><?php echo number_format($finalCIFTemp,2);//echo number_format($val['TotalMovements']['cifQuantityTotal'],2); ?></td>
 						<?php echo $extraEmptyTotalTds;?>
-						<td ><?php echo number_format($val['TotalMovements']['saleQuantityTotal'],2); ?></td>
+						<td ><?php echo number_format($finalSaleTemp,2);//echo number_format($val['TotalMovements']['saleQuantityTotal'],2); ?></td>
 					</tr>
+					<?php } //only when global ?>
+					
 				<?php if($initialData['detail'] == 'YES'){ //start - detail YES?>
 				<tr style="font-weight:bold;">
 				<th colspan="6" style="text-align:right; padding-right: 10px">Stock Final:</td>
@@ -225,23 +279,28 @@ if($initialData['detail'] == 'NO'){ //start - detail YES
 	<div style="font-size: 20px; font-weight: bold; text-align:center; text-decoration: underline;">TOTAL GLOBAL:</div>
 	<br>
 	<table class="report-table" border="1" style="border-collapse:collapse; width:100%;">
+		<tr >
+			<th colspan="2" style="text-align:right;"></th>
+			<th colspan="2">Compra</th>
+			<th colspan="1">Venta</th>
+		</tr>	
 		<tr>
 			<th></th>
-			<th>Cant. Ent <br>(Uni)</th>
-			<th>Cant. Sal<br>(Uni)</th>
-			<th>Stock <br> (Uni)</th>
-			<th>P.FOB x Cant. <br><?php echo $currencyAbbr ; ?></th>
-			<th>P.CIF x Cant. <br><?php echo $currencyAbbr ; ?></th>
-			<th>P.Venta x Cant. <br><?php echo $currencyAbbr ; ?></th>
+			<!--<th>Cant. Ent <br>(Uni)</th>-->
+			<!--<th>Cant. Sal<br>(Uni)</th>-->
+			<th>Stock <br> (Unidad)</th>
+			<th>Precio FOB<br><?php echo $currencyAbbr ; ?></th>
+			<th>Precio CIF <br><?php echo $currencyAbbr ; ?></th>
+			<th>Precio Venta <br><?php echo $currencyAbbr ; ?></th>
 		</tr>
 		<tr style="text-align:center;font-weight:bold;">
 			<td>TOTAL:</td>
-			<td><?php echo $globalQuanttityIn;?></td>
-			<td><?php echo $globalQuanttityOut;?></td>
+			<!--<td><?php //echo $globalQuanttityIn;?></td>-->
+			<!--<td><?php //echo $globalQuanttityOut;?></td>-->
 			<td><?php echo $globalStock;?></td>
-			<td><?php echo number_format($globalQuantityFOB,2);?></td>
-			<td><?php echo number_format($globalQuantityCIF,2);?></td>
-			<td><?php echo number_format($globalQuantitySALE,2);?></td>
+			<td><?php echo number_format($finalFOBGlobal,2);?></td>
+			<td><?php echo number_format($finalCIFGlobal,2);?></td>
+			<td><?php echo number_format($finalSaleGlobal,2);?></td>
 		</tr>
 	</table>	
 	<br>

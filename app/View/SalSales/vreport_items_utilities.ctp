@@ -25,9 +25,13 @@ if($data["currency"]=="DOLARES"){
 		</tr>
 	</tbody>
 </table>
+
+<table class="report-table" border="1" style="border-collapse:collapse; width:100%;">
+	<tr><td style="width:10%; font-weight: bold;">Cliente:</td><td><?php echo $data['customerName'];?></td></tr>
+	<tr><td style="width:10%; font-weight: bold;">Vendedor:</td><td><?php echo $data['salesmanName'];?></td></tr>
+</table>
+
 <hr style="height: 1px; color: #444; background-color: #444;">
-
-
 <table class="report-table" border="1" style="border-collapse:collapse; width:100%;">
 	<thead>
 				<tr>
