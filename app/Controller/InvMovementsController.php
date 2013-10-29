@@ -189,7 +189,20 @@ class InvMovementsController extends AppController {
 		$initialData = $this->Session->read('ReportMovement');
 		
 		//debug($initialData);
-
+		
+		//////////In case option all warehouses selected and report type = ins and outs
+		$kardexWarehouses = array();
+		if($initialData["movementType"] == 1000){
+			if($initialData["warehouse"] == 0 ){
+				$this->loadModel("InvWarehouse");
+				$kardexWarehouses = $this->InvWarehouse->find("list");
+			}
+		}
+		
+		$this->set("kardexWarehouses",$kardexWarehouses);
+		
+		
+		
 		$settings = $this->_generate_report_settings($initialData);
 		
 		//debug($settings);
@@ -205,18 +218,36 @@ class InvMovementsController extends AppController {
 		}
 		
 		
-		$itemsComplete = $this->_generate_report_items_complete($initialData['items']);
+		$itemsComplete = $this->_generate_report_items_complete($initialData['items'], $initialData['finishDate'], $currencyFieldPrefix);
 		//debug($itemsComplete);
 		$itemsMovements = $this->_generate_report_items_movements($itemsComplete, $movements, $currencyFieldPrefix);
 		//debug($itemsMovements);
+		//debug($itemsComplete);
+		//debug($movements);
 		
 		$initialData['currencyAbbreviation']=$currencyAbbreviation;//setting currency abbreviation before send
-		$initialData['items']='';//cleaning items ids 'cause won't be needed begore send
+		//$initialData['items']='';//cleaning items ids 'cause won't be needed begore send
 		//debug($initialData);
 		$this->set('initialData', $initialData);
 		$this->set('itemsMovements', $itemsMovements);
+		//debug($itemsMovements);
 		//debug($settings['initialStocks']);
-		$this->set('initialStocks', $settings['initialStocks']);
+		$varStocks = $settings['initialStocks'];
+		if($initialData["movementType"] == 1000){
+			if($initialData["warehouse"] == 0 ){
+				//for($i=0; $i < count($kardexWarehouses); $i++){
+				//$counter = 0;
+				//debug($kardexWarehouses);
+				//debug($initialData['items']);
+				//debug($initialData['startDate']);
+				foreach ($kardexWarehouses as $key => $value) {
+					$varStocks[$key] = $this->_get_stocks($initialData['items'], $key, $initialData['startDate'], '<');
+					//debug($varStocks);
+					//$counter++;
+				}
+		}}
+		$this->set('initialStocks', $varStocks);
+		//debug($varStocks);
 		$this->Session->delete('ReportMovement');
 	//END FUNCTION	
 	}
@@ -244,6 +275,7 @@ class InvMovementsController extends AppController {
 					$cifQuantityTotal = $cifQuantityTotal + $cifQuantity;
 					$saleQuantityTotal = $saleQuantityTotal + $saleQuantity;
 					$auxArray[$item['InvItem']['id']]['Movements'][$counter] = array(
+						'warehouse'=>$movement['InvMovement']['inv_warehouse_id'],
 						'code'=>$movement['InvMovement']['code'],
 						'document_code'=>$movement['InvMovement']['document_code'],
 						'note_code'=>$movement[$forPricesSubQuery]['note_code'],
@@ -268,6 +300,12 @@ class InvMovementsController extends AppController {
 			$auxArray[ $item['InvItem']['id'] ]['Item']['brand']=$item['InvBrand']['name'];
 			$auxArray[ $item['InvItem']['id'] ]['Item']['category']=$item['InvCategory']['name'];
 			$auxArray[ $item['InvItem']['id'] ]['Item']['id']=$item['InvItem']['id'];
+			
+			//Items last price registered 
+			$auxArray[ $item['InvItem']['id'] ] ['Item']['last_fob']= $item[0]['last_fob'];;
+			$auxArray[ $item['InvItem']['id'] ] ['Item']['last_cif']= $item[0]['last_cif'];;
+			$auxArray[ $item['InvItem']['id'] ] ['Item']['last_sale']= $item[0]['last_sale'];;
+			
 			//Totals
 			$auxArray[ $item['InvItem']['id'] ]['TotalMovements']['fobQuantityTotal'] = $fobQuantityTotal;
 			$auxArray[ $item['InvItem']['id'] ]['TotalMovements']['cifQuantityTotal'] = $cifQuantityTotal;
@@ -283,7 +321,7 @@ class InvMovementsController extends AppController {
 		$conditions = array();
 		$fields = array();
 		$initialStocks=array();
-				
+				//debug($initialData['warehouse']);
 		
 		$values['startDate']=$initialData['startDate'];
 		$values['finishDate']=$initialData['finishDate'];
@@ -298,7 +336,9 @@ class InvMovementsController extends AppController {
 				break;
 			case 1000://ENTRADAS Y SALIDAS
 				$values['bindMovementType'] = 1;
-				$initialStocks = $this->_get_stocks($initialData['items'], $initialData['warehouse'], $initialData['startDate'], '<');//before starDate, 'cause it will be added or substracted with movements quantities
+				if($initialData['warehouse'] > 0){
+					$initialStocks = $this->_get_stocks($initialData['items'], $initialData['warehouse'], $initialData['startDate'], '<');//before starDate, 'cause it will be added or substracted with movements quantities
+				}
 				break;
 			case 1001://TRASPASOS ENTRE ALMACENES
 				$values['bindMovementType'] = 1;
@@ -376,49 +416,26 @@ class InvMovementsController extends AppController {
 	}
 	
 	
-	private function _generate_report_items_complete($items){
+	private function _generate_report_items_complete($items, $limitDate, $currency){
 		$this->loadModel('InvItem');
 		$this->InvItem->unbindModel(array('hasMany' => array('InvMovementDetail', 'PurDetail', 'SalDetail', 'InvItemsSupplier', 'InvPrice')));
 		return $this->InvItem->find('all', array(
-			'fields'=>array('InvItem.id', 'InvItem.code', 'InvItem.name', 'InvBrand.name', 'InvCategory.name'),
+			'fields'=>array(
+				'InvItem.id'
+				, 'InvItem.code'
+				, 'InvItem.name'
+				, 'InvBrand.name'
+				, 'InvCategory.name'
+				, '(SELECT '.$currency.'price FROM inv_prices where inv_item_id = "InvItem"."id" AND date <= \''.$limitDate.'\' AND inv_price_type_id=1 order by date DESC, date_created DESC LIMIT 1) AS "last_fob"'
+				, '(SELECT '.$currency.'price FROM inv_prices where inv_item_id = "InvItem"."id" AND date <= \''.$limitDate.'\' AND inv_price_type_id=8 order by date DESC, date_created DESC LIMIT 1) AS "last_cif"'
+				, '(SELECT '.$currency.'price FROM inv_prices where inv_item_id = "InvItem"."id" AND date <= \''.$limitDate.'\' AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1) AS "last_sale"'
+			),
 			'conditions'=>array('InvItem.id'=>$items),
 			'order'=>array('InvItem.code')
 		));
 	}
 	
-	/*
-	public function ajax_generate_report_items_utilities(){
-		if($this->RequestHandler->isAjax()){
-			$this->Session->write('ReportItemsUtilities.year', $this->request->data['year']);
-			$this->Session->write('ReportItemsUtilities.month', $this->request->data['month']);
-			$this->Session->write('ReportItemsUtilities.currency', $this->request->data['currency']);
-			$this->Session->write('ReportItemsUtilities.items', $this->request->data['items']);
-		}
-	}
 	
-	public function vreport_items_utilities(){
-		$this->layout = 'print';
-		
-		//Check if session variables are set otherwise redirect
-		if(!$this->Session->check('ReportItemsUtilities')){
-			$this->redirect(array('action' => 'vreport_items_utilities_generator'));
-		}
-		
-		//put session data sent data into variables
-		$initialData = $this->Session->read('ReportItemsUtilities');
-		//debug($initialData);
-		//$this->InvMovement->InvMovementDetail->InvItem->unbindModel(array('belongsTo' => array('InvBrand', 'InvCategory', 'InvMovementDetail')));
-		$this->loadModel("InvItem");
-		$dataDetail = $this->InvItem->find("all", array(
-			"fields"=>array("InvItem.full_name"),
-			"conditions"=>array("InvItem.id"=>$initialData["items"]),
-			"recursive"=>-1
-		));
-		
-		debug($dataDetail);
-		$this->Session->delete('ReportItemsUtilities');
-	}
-	 */
 	//////////////////////////////////////////// END - REPORT /////////////////////////////////////////////////
 	
 	

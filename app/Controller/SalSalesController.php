@@ -212,7 +212,7 @@ class SalSalesController extends AppController {
 		$initialData = $this->Session->read('ReportMovement');
 		
 //		debug($initialData);
-
+		
 		$settings = $this->_generate_report_settings($initialData);
 		
 		//debug($settings);
