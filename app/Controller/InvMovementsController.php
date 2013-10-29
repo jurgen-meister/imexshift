@@ -70,14 +70,14 @@ class InvMovementsController extends AppController {
 		
 		
 		$warehouseClean = $this->InvWarehouse->find('list');
-		/* //Comment this because in this case I want to show option Todos at the end
+		//Comment this because in this case I want to show option Todos at the end
 		$warehouse[0]="TODOS";
 		foreach ($warehouseClean as $key => $value) {
 			$warehouse[$key] = $value;
 		}
-		*/
-		$warehouse = $warehouseClean;
-		$warehouse[0] = "TODOS";
+		
+		//$warehouse = $warehouseClean;
+		//$warehouse[0] = "TODOS";
 		$item = $this->_find_items();
 		$this->set(compact("warehouse", "item", "warehouseClean"));
 	}
@@ -443,7 +443,7 @@ class InvMovementsController extends AppController {
 	public function vgraphics(){
 		$warehousesClean = $this->InvMovement->InvWarehouse->find("list");
 		//array_unshift($warehouses, "TODOS");// doesn't work 'cause change key values to an order 1,2,3,etc
-		$warehouses[0]="TODOS";
+		//$warehouses[0]="TODOS";
 		foreach ($warehousesClean as $key => $value) {
 			$warehouses[$key] = $value;
 		}
@@ -454,6 +454,14 @@ class InvMovementsController extends AppController {
 			"fields"=>array("name", "name")
 			)
 		);
+		
+		
+		$movementTypesClean = $this->InvMovement->InvMovementType->find("all", array("recursive"=>-1, "fields"=>array("id", "name", "status"), "order"=>array("status", "id")));
+		$movementTypes=array();
+		foreach ($movementTypesClean as $value) {
+			$movementTypes[$value["InvMovementType"]["id"]]=  strtoupper($value["InvMovementType"]["status"])." - ".$value["InvMovementType"]["name"];
+		}
+		//debug($movementTypes);
 		/*
 		$this->loadModel("InvItem");
 		
@@ -466,7 +474,7 @@ class InvMovementsController extends AppController {
 		$item = $this->_find_items();
 //		debug($items);
 		//array_unshift($items, "TODOS"); // doesn't work 'cause change key values to an order 1,2,3,etc
-		$this->set(compact("warehouses", "years", "item"));
+		$this->set(compact("warehouses", "years", "item", "movementTypes"));
 		//debug($this->_get_bars_items_quantity_and_time("entrada", "2013", 0, 0));
 	}
 	
@@ -543,13 +551,15 @@ class InvMovementsController extends AppController {
 	public function ajax_get_graphics_data(){
 		if($this->RequestHandler->isAjax()){
 			$year = $this->request->data['year'];
-			$month = $this->request->data['month'];
+			//$month = $this->request->data['month'];
 			$warehouse = $this->request->data['warehouse'];
 			$item = $this->request->data['item'];
-			$string = $this->_get_pie_items_quantity_and_type("entrada", $year, $warehouse, $item, $month).",";
-			$string .= $this->_get_pie_items_quantity_and_type("salida", $year, $warehouse, $item, $month).",";
-			$string .= $this->_get_bars_items_quantity_and_time("entrada", $year, $warehouse, $item).",";
-			$string .= $this->_get_bars_items_quantity_and_time("salida", $year, $warehouse, $item);
+			$movementType = $this->request->data['movementType'];
+			//$string = $this->_get_pie_items_quantity_and_type("entrada", $year, $warehouse, $item, $month).",";
+			//$string .= $this->_get_pie_items_quantity_and_type("salida", $year, $warehouse, $item, $month).",";
+			//$string .= $this->_get_bars_items_quantity_and_time("entrada", $year, $warehouse, $item).",";
+			//$string = $this->_get_bars_items_quantity_and_time("salida", $year, $warehouse, $item, $movementType);
+			$string = $this->_get_bars_items_quantity_and_time($year, $warehouse, $item, $movementType);
 			echo $string;
 		}
 //		$string = 'Compras-88|Traspasos-33|Aperturas-45|Otros-225,';
@@ -629,7 +639,7 @@ class InvMovementsController extends AppController {
 		return substr($dataString, 0, -1); // remove last character "|"
 	}
 	
-	private function _get_bars_items_quantity_and_time($status, $year, $warehouse, $item){
+	private function _get_bars_items_quantity_and_time($year, $warehouse, $item, $movementType){
 		$conditionWarehouse = null;
 		$conditionItem = null;
 		$dataString = "";
@@ -643,6 +653,7 @@ class InvMovementsController extends AppController {
 		}
 		
 		//get items, types and sum quantities
+		/*
 		$this->InvMovement->InvMovementDetail->bindModel(array(
 				'hasOne'=>array(
 					'InvMovementType'=>array(
@@ -651,12 +662,14 @@ class InvMovementsController extends AppController {
 					)
 				)
 			));
+		 */
 		$this->InvMovement->InvMovementDetail->unbindModel(array('belongsTo' => array('InvItem')));
 		$data = $this->InvMovement->InvMovementDetail->find('all', array(
 			"fields"=>array("to_char(\"InvMovement\".\"date\",'mm') AS month", "SUM(InvMovementDetail.quantity)"),
 			'group'=>array("to_char(InvMovement.date,'mm')"),
 			"conditions"=>array(
-				"InvMovementType.status"=>$status,
+				//"InvMovementType.status"=>$status,
+				"InvMovement.inv_movement_type_id"=>$movementType,
 				"to_char(InvMovement.date,'YYYY')"=>$year,
 				"InvMovement.lc_state"=>"APPROVED",
 				$conditionWarehouse,
@@ -684,18 +697,7 @@ class InvMovementsController extends AppController {
 		return substr($dataString, 0, -1);
 	}
 	
-	/*
-	public function vreport_items_utilities_generator(){
-		$this->loadModel("AdmPeriod");
-		$years = $this->AdmPeriod->find("list", array(
-			"order"=>array("name"=>"desc"),
-			"fields"=>array("name", "name")
-			)
-		);
-		$item = $this->_find_items();
-		$this->set(compact("years", "item"));
-	}
-	*/
+
 	//////////////////////////////////////////// END - GRAPHICS  /////////////////////////////////////////////////
 	
 	
@@ -1755,18 +1757,7 @@ class InvMovementsController extends AppController {
 			'group'=>array('InvMovementDetail.inv_item_id'),
 			'order'=>array('InvMovementDetail.inv_item_id')
 		));
-		//the array format is like this:
-		/*
-		array(
-			(int) 0 => array(
-				'InvMovementDetail' => array(
-					'inv_item_id' => (int) 9
-				),
-				(int) 0 => array(
-					'stock' => '20'
-				)
-			),...etc,etc
-		)	*/
+
 		return $movements;
 	}
 	

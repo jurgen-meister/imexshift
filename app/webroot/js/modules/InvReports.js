@@ -22,7 +22,8 @@ $(document).ready(function(){
 	
 	
 	$('#cbxReportMovementTypes').change(function(){
-        if($(this).val() === '1001'){
+        /*
+		if($(this).val() === '1001'){
 			$('#boxWarehouse2').show();
 			$("#cbxReportWarehouse option[value='0']").remove();
 			$("#cbxReportWarehouse").select2();
@@ -31,6 +32,24 @@ $(document).ready(function(){
 			if($("#cbxReportWarehouse option[value='0']").length === 0){
 				$("#cbxReportWarehouse").append('<option value="0">TODOS</option>');
 			}
+		}
+		*/
+		if($(this).val() === '1000'){ //ins and outs
+			$('#boxWarehouse2').hide();
+			if($("#cbxReportWarehouse option[value='0']").length === 0){
+				//$("#cbxReportWarehouse").append('<option value="0">TODOS</option>'); //at the end
+				$("#cbxReportWarehouse").prepend('<option value="0">TODOS</option>'); //at the begining
+				$("#cbxReportWarehouse option[value='0']").prop('selected', true);
+				$("#cbxReportWarehouse").select2();
+			}
+		}else{
+			if($(this).val() === '1001'){
+				$('#boxWarehouse2').show();
+			}else{
+				$('#boxWarehouse2').hide();
+			}
+			$("#cbxReportWarehouse option[value='0']").remove();
+			$("#cbxReportWarehouse").select2();
 		}
 	});
 	

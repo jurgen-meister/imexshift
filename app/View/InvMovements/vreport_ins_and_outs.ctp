@@ -109,10 +109,21 @@ if($initialData['detail'] == "NO"){
 					}else{
 						//for($i=0; $i < $countKardexWarehouses; $i++){
 						$counterColor = 0;
+						/*
 						foreach($multipleStock as $ms){
 							echo '<th style="background-color:'.$columnColors[$counterColor].'">'.$ms.'</th>';	
 							$counterColor++;
 						}
+						*/
+						foreach ($kardexWarehouses as $key3 => $value3) {
+							$multiplevalue =0;
+							if(isset($multipleStock[$key3])){
+								$multiplevalue = $multipleStock[$key3];
+							}
+							echo '<th style="background-color:'.$columnColors[$counterColor].'">'.$multiplevalue.'</th>';	
+							$counterColor++;
+						}
+						
 					}	
 					?>
 				
@@ -244,16 +255,23 @@ if($initialData['detail'] == "NO"){
 						<td style="font-weight:bold;"><?php echo $inQuantity;?></td>
 						<td style="font-weight:bold;"><?php echo $outQuantity;?></td>
 						
-						<?php if($countKardexWarehouses == 0){?>
+						<?php if($countKardexWarehouses == 0){ //if single?>
 						<td style="font-weight:bold;text-align:center;background-color:<?php echo $columnColors[0];?>"><?php echo $stockQuantity;?></td>
-						<?php }else{
+						<?php }else{//if multiple
+							//d+ehbug($multipleStock);
 	                            $counterColors2 = 0;
 								foreach ($kardexWarehouses as $key2 => $value2) {
 									$tokenStyleBold = "";
 									if($key2 == $movement["warehouse"]){
 										$tokenStyleBold = "font-weight:bold;";
 									}
-									echo '<td style="background-color:'.$columnColors[$counterColors2].';text-align:center;'.$tokenStyleBold.'">'.$multipleStock[$key2].'</td>'; 
+									//use multiple value and isset for fix when there is no stock registered in a warehouse
+									$multiplevalue =0;
+									if(isset($multipleStock[$key2])){
+										$multiplevalue = $multipleStock[$key2];
+									}
+									
+									echo '<td style="background-color:'.$columnColors[$counterColors2].';text-align:center;'.$tokenStyleBold.'">'.$multiplevalue.'</td>'; 
 								$counterColors2++;
 								}
 						}?>
@@ -345,7 +363,11 @@ if($initialData['detail'] == "NO"){
 				}else{
 					$counterColors3=0;
 					foreach ($kardexWarehouses as $key3 => $value3) {
-						echo '<td style="text-align:center; background-color:'.$columnColors[$counterColors3].';">'.$multipleStock[$key3].'</td>';
+						$multiplevalue =0;
+						if(isset($multipleStock[$key3])){
+							$multiplevalue = $multipleStock[$key3];
+						}
+						echo '<td style="text-align:center; background-color:'.$columnColors[$counterColors3].';">'.$multiplevalue.'</td>';
 						$counterColors3++;
 					}
 				}
