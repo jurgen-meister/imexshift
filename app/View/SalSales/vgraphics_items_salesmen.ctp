@@ -31,7 +31,7 @@
 			<span class="icon">
 				<i class=" icon-search"></i>
 			</span>
-			<h5>Gráfica Ventas - Items Vendedores</h5>
+			<h5>Gráfica Ventas - Productos Vendedores</h5>
 		</div>
 		<div class="widget-content nopadding">
 			<?php 
@@ -65,8 +65,18 @@
 					'label' => 'Moneda:',
 					'id'=>'cbxCurrency',
 					'type'=>'select',
+					'class'=>'span2',
 					'options'=>array("bolivianos"=>"BOLIVIANOS", "dolares"=>"DOLARES")
 				));
+				
+				echo $this->BootstrapForm->input('showMode', array(
+					'label' => 'Mostrar Gráficas por:',
+					'id'=>'cbxShowMode',
+					'type'=>'select',
+					'class'=>'span2',
+					'options'=>array("brand"=>"MARCA", "items"=>"PRODUCTOS", "category"=>"CATEGORIA", )
+				));
+				
 				echo $this->BootstrapForm->input('type', array(
 				'label' => '* Agrupar por:',
 				'id'=>'cbxReportGroupTypes',
@@ -113,7 +123,7 @@
 				<span class="icon">
 					<i class=" icon-signal"></i>
 				</span>
-				<h5>Cantidad de Items</h5>
+				<h5>Cantidad de Productos</h5>
 			</div>
 			<div class="widget-content nopadding">
 				<div class="pie"></div>
@@ -126,7 +136,7 @@
 				<span class="icon">
 					<i class=" icon-signal"></i>
 				</span>
-				<h5>Dinero de Items</h5>
+				<h5>Dinero de Productos</h5>
 			</div>
 			<div class="widget-content nopadding">
 				<div class="pie2"></div>
@@ -142,7 +152,7 @@
 				<span class="icon">
 					<i class=" icon-list"></i>
 				</span>
-				<h5>Top 10 - Cantidad Mas vendidos</h5>
+				<h5>Top 10 - Cantidad de Productos Mas Vendidos</h5>
 			</div>
 			<div class="widget-content nopadding">
 				<div id ="topMoreQuantity">
@@ -156,7 +166,7 @@
 				<span class="icon">
 					<i class=" icon-list"></i>
 				</span>
-				<h5>Top 10 - Dinero Mas vendidos</h5>
+				<h5>Top 10 - Dinero de Productos Mas Vendidos</h5>
 			</div>
 			<div class="widget-content nopadding">
 				<div id ="topMoreMoney">
@@ -173,7 +183,7 @@
 				<span class="icon">
 					<i class=" icon-list"></i>
 				</span>
-				<h5>Top 10 - Cantidad Menos vendidos</h5>
+				<h5>Top 10 - Cantidad de Productos Menos Vendidos</h5>
 			</div>
 			<div class="widget-content nopadding">
 				<div id ="topLessQuantity">
@@ -187,7 +197,7 @@
 				<span class="icon">
 					<i class=" icon-list"></i>
 				</span>
-				<h5>Top 10 - Dinero Menos vendidos</h5>
+				<h5>Top 10 - Dinero de Productos Menos Vendidos</h5>
 			</div>
 			<div class="widget-content nopadding">
 				<div id ="topLessMoney">
@@ -204,7 +214,7 @@
 				<span class="icon">
 					<i class=" icon-signal"></i>
 				</span>
-				<h5>(Cantidad de Items) - Meses</h5>
+				<h5>(Cantidad de Productos) - Meses</h5>
 			</div>
 			<div class="widget-content nopadding">
 				<div class="bars"></div>
@@ -217,7 +227,7 @@
 				<span class="icon">
 					<i class=" icon-signal"></i>
 				</span>
-				<h5>(Monto Dinero de Items) - Meses</h5>
+				<h5>(Monto Dinero de Productos) - Meses</h5>
 			</div>
 			<div class="widget-content nopadding">
 				<div class="bars2"></div>

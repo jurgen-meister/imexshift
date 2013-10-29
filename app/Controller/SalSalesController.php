@@ -1142,13 +1142,14 @@ class SalSalesController extends AppController {
 			$groupBy = $this->request->data['groupBy'];
 			$customer = $this->request->data['customer'];
 			
+			$showMode = $this->request->data['showMode'];
 			//$string = $this->_get_bars_sales_and_time($year, $items, $currency, $client);
 			
 			//$string = $this->_get_pie_items_quantity_and_type("entrada", $year, $warehouse, $item).",";
 			//$string .= $this->_get_pie_items_quantity_and_type("salida", $year, $warehouse, $item).",";
 			
 			$barsData = $this->_get_bars_sales_and_time($year, $items, $currency, $customer, "customer");
-			$piesData = $this->_get_pies_sales_and_time($year, $items, $currency, $month, $customer, "customer");
+			$piesData = $this->_get_pies_sales_and_time($year, $items, $currency, $month, $customer, "customer", $showMode);
 			//debug($piesData);
 			$string="";
 			$string .= $barsData["quantity"].",";
@@ -1176,13 +1177,14 @@ class SalSalesController extends AppController {
 			$groupBy = $this->request->data['groupBy'];
 			$salesman = $this->request->data['salesman'];
 			
+			$showMode = $this->request->data['showMode'];
 			//$string = $this->_get_bars_sales_and_time($year, $items, $currency, $client);
 			
 			//$string = $this->_get_pie_items_quantity_and_type("entrada", $year, $warehouse, $item).",";
 			//$string .= $this->_get_pie_items_quantity_and_type("salida", $year, $warehouse, $item).",";
 			
 			$barsData = $this->_get_bars_sales_and_time($year, $items, $currency, $salesman, "salesman");
-			$piesData = $this->_get_pies_sales_and_time($year, $items, $currency, $month, $salesman, "salesman");
+			$piesData = $this->_get_pies_sales_and_time($year, $items, $currency, $month, $salesman, "salesman", $showMode);
 			//debug($piesData);
 			$string="";
 			$string .= $barsData["quantity"].",";
@@ -1278,7 +1280,7 @@ class SalSalesController extends AppController {
 	}
 	
 	
-	private function _get_pies_sales_and_time($year, $items, $currency, $month, $person, $personType){
+	private function _get_pies_sales_and_time($year, $items, $currency, $month, $person, $personType, $showMode){
 		$conditionPerson = null;
 		$conditionMonth = null;
 		$dataString = "";
@@ -1401,6 +1403,67 @@ class SalSalesController extends AppController {
 		   $counter++;
 		   
 	   }
+	   //////////////////////////////////START - Show mode - when option show by groups is selected/////////////////////////////
+	   if($showMode <> "items"){
+		   $dataString = "";
+		   $dataString2 = "";
+		   
+		   //$varGroupId ="InvItem.inv_brand_id";
+		   $varGroupModel ="InvBrand";
+		   $varGroupField ="name";
+		   if($showMode == "category"){
+			   //$varGroupId ="InvItem.inv_category_id";
+			    $varGroupModel ="InvCategory";
+				$varGroupField ="name";
+		   }
+		   
+		   $this->SalSale->SalDetail->bindModel(array(
+				'hasOne'=>array(
+					'SalEmployee'=>array(
+						'foreignKey'=>false,
+						'conditions'=> array('SalSale.sal_employee_id = SalEmployee.id')
+					),
+					'InvBrand'=>array(
+						'foreignKey'=>false,
+						'conditions'=> array('InvItem.inv_brand_id = InvBrand.id')
+					),
+					'InvCategory'=>array(
+						'foreignKey'=>false,
+						'conditions'=> array('InvItem.inv_category_id = InvCategory.id')
+					)
+				)
+			));
+			$this->SalSale->SalDetail->unbindModel(array('belongsTo' => array('InvWarehouse')));
+			$dataGroup = $this->SalSale->SalDetail->find('all', array(
+				"fields"=>array(
+					//"InvItem.code",
+					//"InvItem.name",
+					$varGroupModel.".".$varGroupField,
+					'SUM("SalDetail"."quantity" * "SalDetail"."'.$currencyType.'") as money',
+					'SUM("SalDetail"."quantity") AS quantity'
+				),
+				'group'=>array(
+					//"InvItem.code",
+					//"InvItem.name"
+					$varGroupModel.".".$varGroupField
+					),
+				"conditions"=>array(
+					"to_char(SalSale.date,'YYYY')"=>$year,
+					"SalSale.lc_state"=>"SINVOICE_APPROVED",
+					"SalDetail.inv_item_id" => $items,
+					$conditionPerson,
+					$conditionMonth
+				),
+				"order"=>array('"money"'=> 'desc')
+			));
+			//////////////////////////////////////////
+			foreach ($dataGroup as $value) {
+				$dataString .= $value[$varGroupModel][$varGroupField] ."==".$value['0']['money']."|";
+				$dataString2 .= $value[$varGroupModel][$varGroupField] ."==".$value['0']['quantity']."|";
+			}
+		   
+	   }
+	   //////////////////////////////////END - Show mode - when option show by groups is selected/////////////////////////////
 	   
 	   $counter = 1;
 	   foreach ($topQuantity as $value) {
