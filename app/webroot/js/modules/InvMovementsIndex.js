@@ -13,7 +13,10 @@ $(document).ready(function(){
    
    $("#btnClearSearch").click(function(event){
 	  //return false; 
-	  $('input').val("");
+	  $('#txtDate').val("");
+	  if ($('#txtNoteCode').length > 0){//existe
+		  $('#txtNoteCode').val("");
+	  }
 	  event.preventDefault();
    });
 	
