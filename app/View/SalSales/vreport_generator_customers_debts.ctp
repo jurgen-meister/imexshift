@@ -4,7 +4,7 @@
 <?php echo $this->Html->script('unicorn', FALSE); ?>
 <?php echo $this->Html->script('jquery.dataTables.min.js', FALSE); ?>
 <?php echo $this->Html->script('jquery.uniform.js', FALSE); ?>
-<?php echo $this->Html->script('modules/SalGraphics', FALSE); ?>
+<?php echo $this->Html->script('modules/SalReports', FALSE); ?>
 
 
 <!-- ************************************************************************************************************************ -->
@@ -46,15 +46,15 @@
 					'id'=>'cbxCustomer',
 					'type'=>'select',
 					'class'=>'span5',
-					'options'=>$clients 
+					'options'=>$customers 
 				));
 				
 				echo $this->BootstrapForm->input('show', array(
 					'label' => 'Mostrar Ventas:',
-					'id'=>'cbxShowZero',
+					'id'=>'cbxShowType',
 					'type'=>'select',
 					'class'=>'span2',
-					'options'=>array(555=>"Todas", 666=>"Con Deuda", 777=>"Pagadas") 
+					'options'=>array(555=>"Todas", 666=>"Con Deuda", 777=>"Sin Deuda") 
 				));
 				
 				echo $this->BootstrapForm->input('currency', array(

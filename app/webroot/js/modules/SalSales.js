@@ -1,7 +1,10 @@
 $(document).ready(function(){
-//START SCRIPT
+	///Url Paths
+	var path = window.location.pathname;
+	var arr = path.split('/');
+	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 
-//	var globalPeriod = $('#globalPeriod').text(); // this value is obtained from the main template AND from MainBittion.css
+	var globalPeriod = $('#globalPeriod').text(); // this value is obtained from the main template.
 	
 	var arrayItemsAlreadySaved = []; 
 	var itemsCounter = 0;
@@ -341,7 +344,7 @@ $(document).ready(function(){
 	
 	function createEventClickEditItemButton(itemId,warehouseId){
 			$('#btnEditItem'+itemId+'w'+warehouseId).bind("click",function(){ //must be binded 'cause loaded live with javascript'
-					var objectTableRowSelected = $(this).closest('tr');
+					var objectTableRowSelected = $(this).closest('tr')
 					initiateModalEditItem(objectTableRowSelected);
 					return false; //avoid page refresh
 			});
@@ -349,10 +352,10 @@ $(document).ready(function(){
 	
 	function createEventClickDeleteItemButton(itemId,warehouseId){
 		$('#btnDeleteItem'+itemId+'w'+warehouseId).bind("click",function(e){ //must be binded 'cause loaded live with javascript'
-					var objectTableRowSelected = $(this).closest('tr');
+					var objectTableRowSelected = $(this).closest('tr')
 					deleteItem(objectTableRowSelected);
 					//return false; //avoid page refresh
-					e.preventDefault();
+					e.preventDefault()
 		});
 	}
 	
@@ -363,10 +366,10 @@ $(document).ready(function(){
 		if( error === ''){
 			showBittionAlertModal({content:'¿Está seguro de eliminar este item?'});
 			$('#bittionBtnYes').click(function(){
-				if(urlAction == 'save_order'){
+				if(arr[3] == 'save_order'){
 					ajax_save_movement('DELETE', 'NOTE_PENDANT', objectTableRowSelected, []);
 				}
-				if(urlAction == 'save_invoice'){
+				if(arr[3] == 'save_invoice'){
 					ajax_save_movement('DELETE', 'SINVOICE_PENDANT', objectTableRowSelected, []);
 				}
 				return false; //avoid page refresh
@@ -457,10 +460,10 @@ $(document).ready(function(){
 //		var exCifPrice = 0.00;	//temp var
 		var error = validateItem(warehouse, itemCodeName, salePrice, quantity); 
 		if(error == ''){
-			if(urlAction == 'save_order'){
+			if(arr[3] == 'save_order'){
 				ajax_save_movement('ADD', 'NOTE_PENDANT', '', []);
 			}
-			if(urlAction == 'save_invoice'){
+			if(arr[3] == 'save_invoice'){
 				ajax_save_movement('ADD', 'SINVOICE_PENDANT', '', []);
 			}
 		}else{
@@ -477,10 +480,10 @@ $(document).ready(function(){
 //		var exCifPrice = $('#txtCifExPrice').val();		
 		var error = validateItem(warehouse, itemCodeName, salePrice, quantity); 
 		if(error == ''){
-			if(urlAction == 'save_order'){
+			if(arr[3] == 'save_order'){
 				ajax_save_movement('EDIT', 'NOTE_PENDANT', '', []);
 			}
-			if(urlAction == 'save_invoice'){
+			if(arr[3] == 'save_invoice'){
 				ajax_save_movement('EDIT', 'SINVOICE_PENDANT', '', []);
 			}	
 		}else{
@@ -493,7 +496,7 @@ $(document).ready(function(){
 		var payAmount = $('#txtModalPaidAmount').val();
 		var error = validateAddPay(payDate, parseFloat(payAmount).toFixed(2));  
 		if(error == ''){
-			if(urlAction == 'save_invoice'){
+			if(arr[3] == 'save_invoice'){
 				ajax_save_movement('ADD_PAY', 'SINVOICE_PENDANT', '', []);
 			}
 		}else{
@@ -508,7 +511,7 @@ $(document).ready(function(){
 		
 		var error = validateEditPay(payDate, parseFloat(payAmount).toFixed(2), parseFloat(payHiddenAmount).toFixed(2));  
 		if(error == ''){
-			if(urlAction == 'save_invoice'){
+			if(arr[3] == 'save_invoice'){
 				ajax_save_movement('EDIT_PAY', 'SINVOICE_PENDANT', '', []);
 			}
 		}else{
@@ -668,10 +671,10 @@ $(document).ready(function(){
 //		arrayPaysDetails = getPaysDetails();
 		var error = validateBeforeSaveAll(arrayItemsDetails);
 		if( error == ''){
-			if(urlAction == 'save_order'){
+			if(arr[3] == 'save_order'){
 				ajax_save_movement('DEFAULT', 'NOTE_PENDANT', '', []);
 			}
-			if(urlAction == 'save_invoice'){
+			if(arr[3] == 'save_invoice'){
 				ajax_save_movement('DEFAULT', 'SINVOICE_PENDANT', '', []);
 			}
 		}else{
@@ -687,10 +690,10 @@ $(document).ready(function(){
 			arrayForValidate = getItemsDetails();
 			var error = validateBeforeSaveAll(arrayForValidate);
 			if( error === ''){
-				if(urlAction == 'save_order'){
+				if(arr[3] == 'save_order'){
 					ajax_save_movement('DEFAULT', 'NOTE_APPROVED', '', arrayForValidate);
 				}
-				if(urlAction == 'save_invoice'){
+				if(arr[3] == 'save_invoice'){
 					ajax_save_movement('DEFAULT', 'SINVOICE_APPROVED', '', arrayForValidate);
 				}
 			}else{
@@ -709,10 +712,10 @@ $(document).ready(function(){
 //			arrayPaysDetails = getPaysDetails();
 			var arrayForValidate = [];
 			arrayForValidate = getItemsDetails();
-			if(urlAction == 'save_order'){
+			if(arr[3] == 'save_order'){
 				ajax_save_movement('DEFAULT', 'NOTE_CANCELLED', '', arrayForValidate);
 			}
-			if(urlAction == 'save_invoice'){
+			if(arr[3] == 'save_invoice'){
 				ajax_save_movement('DEFAULT', 'SINVOICE_CANCELLED', '', arrayForValidate);
 			}
 			hideBittionAlertModal();
@@ -729,7 +732,7 @@ $(document).ready(function(){
 			var type;
 //			var type2=0;
 			var index;
-			switch(urlAction){
+			switch(arr[3]){
 				case 'save_order':
 					index = 'index_order';
 					type = 'NOTE_LOGIC_DELETED';
@@ -766,7 +769,9 @@ $(document).ready(function(){
 //			validateOnlyFloatNumbers(event);			
 //	});
 	//Calendar script
-
+	$("#txtDate").datepicker({
+	  showButtonPanel: true
+	});
 	
 	$('#txtDate').focusout(function() {
 			ajax_update_ex_rate();			
@@ -775,7 +780,7 @@ $(document).ready(function(){
 	function ajax_update_ex_rate(){
 		$.ajax({
 		    type:"POST",
-		    url:urlModuleController + "ajax_update_ex_rate",			
+		    url:moduleController + "ajax_update_ex_rate",			
 		    data:{date: $("#txtDate").val()},
 		    beforeSend: showProcessing(),
 				success:function(data){
@@ -785,9 +790,13 @@ $(document).ready(function(){
 		});
     }
 	
-
+	$("#txtModalDate").datepicker({
+	  showButtonPanel: true
+	});
 	
-
+//	$("#txtModalDueDate").datepicker({
+//	  showButtonPanel: true
+//	});
 	//Call modal
 	$('#btnAddItem').click(function(){
 		itemsListWhenExistsItems();			//NEEDS TO BE RUN BEFORE MODAL TO UPDATE ITEMS LIST BY WAREHOUSE
@@ -850,7 +859,13 @@ $(document).ready(function(){
 		return false;
 	});
 	
-	fnBittionSetSelectsStyle();
+	$('#cbxCustomers').select2();
+	
+	$('#cbxEmployees').select2();
+	
+	$('#cbxTaxNumbers').select2();
+	
+	$('#cbxSalesman').select2();
 	
 //	$('#cbxSuppliers').data('pre', $(this).val());
 //	$('#cbxSuppliers').change(function(){
@@ -873,12 +888,15 @@ $(document).ready(function(){
 	function ajax_list_controllers_inside(){
         $.ajax({
             type:"POST",
-            url:urlModuleController + "ajax_list_controllers_inside",			
+            url:moduleController + "ajax_list_controllers_inside",			
             data:{customer: $("#cbxCustomers").val()},
             beforeSend: showProcessing(),
 			success:function(data){
 				$("#processing").text("");
 		        $("#boxControllers").html(data);
+				
+				$('#cbxEmployees').select2();
+				$('#cbxTaxNumbers').select2();
 			}
         });
     }
@@ -921,8 +939,6 @@ $(document).ready(function(){
 		var itemId = 0;
 		var salePrice = 0.00;
 		var quantity = 0;
-//		var cifPrice = 0.00;	//temp var
-//		var exCifPrice = 0.00;	//temp var
 		var subtotal = 0.00;
 		
 		var dateId = '';
@@ -957,8 +973,6 @@ $(document).ready(function(){
 				warehouse = $('#cbxModalWarehouses option:selected').text();
 				itemCodeName = $('#cbxModalItems option:selected').text();
 				stock = $('#txtModalStock').val();
-//				cifPrice = 0.00;	//temp var
-//				exCifPrice = 0.00;	//temp var
 				subtotal = Number(quantity) * Number(salePrice);
 			}
 		}
@@ -1127,12 +1141,12 @@ $(document).ready(function(){
 	}
 	
 	function ajax_save_movement(OPERATION, STATE, objectTableRowSelected, arrayForValidate){//SAVE_IN/ADD/PENDANT
-		var ACTION = urlAction;
+		var ACTION = arr[3];
 		var dataSent = setOnData(ACTION, OPERATION, STATE, objectTableRowSelected, arrayForValidate);
 		//Ajax Interaction	
 		$.ajax({
             type:"POST",
-            url:urlModuleController + "ajax_save_movement",//saveSale			
+            url:moduleController + "ajax_save_movement",//saveSale			
             data:dataSent,
             beforeSend: showProcessing(),
             success: function(data){
@@ -1184,7 +1198,7 @@ $(document).ready(function(){
 	function ajax_logic_delete(purchaseId,/* purchaseId2, */type, /*type2,*/ index, genCode){
 		$.ajax({
             type:"POST",
-            url:urlModuleController + "ajax_logic_delete",			
+            url:moduleController + "ajax_logic_delete",			
             data:{purchaseId: purchaseId
 			//	,purchaseId2: purchaseId2
 				,type: type
@@ -1195,7 +1209,7 @@ $(document).ready(function(){
 				if(data === 'success'){
 					showBittionAlertModal({content:'Se eliminó el documento en estado Pendiente', btnYes:'Aceptar', btnNo:''});
 					$('#bittionBtnYes').click(function(){
-						window.location = urlModuleController + index;
+						window.location = moduleController + index;
 					});
 					
 				}else{
@@ -1212,7 +1226,7 @@ $(document).ready(function(){
 	function ajax_initiate_modal_add_item_in(itemsAlreadySaved, warehouseItemsAlreadySaved){
 		 $.ajax({
             type:"POST",
-            url:urlModuleController + "ajax_initiate_modal_add_item_in",			
+            url:moduleController + "ajax_initiate_modal_add_item_in",			
 			data:{itemsAlreadySaved: itemsAlreadySaved,
 				warehouseItemsAlreadySaved: warehouseItemsAlreadySaved
 			,date: $('#txtDate').val()},				
@@ -1221,16 +1235,18 @@ $(document).ready(function(){
 				$('#processing').text('');
 				$('#boxModalInitiateItemPrice').html(data);
 				$('#txtModalQuantity').val('');  
-				initiateModal();
+				initiateModal()
 				$('#cbxModalWarehouses').bind("change",function(){ //must be binded 'cause dropbox is loaded by a previous ajax'
 					//este es para los items precio y stock
 					ajax_update_items_modal(itemsAlreadySaved, warehouseItemsAlreadySaved);
 				});
+				$('#cbxModalWarehouses').select2();
 				$('#cbxModalItems').bind("change",function(){ //must be binded 'cause dropbox is loaded by a previous ajax'
 					ajax_update_stock_modal();
 					ajax_update_stock_modal_1();
 				});
-				fnBittionSetSelectsStyle();
+				$('#cbxModalItems').select2();
+				
 				$('#txtModalStock').keypress(function(){return false;});//find out why this is necessary
 				
 				$('#txtModalPrice').keydown(function(event) {
@@ -1247,7 +1263,7 @@ $(document).ready(function(){
 	function ajax_update_items_modal(itemsAlreadySaved, warehouseItemsAlreadySaved){ 
 		$.ajax({
             type:"POST",
-            url:urlModuleController + "ajax_update_items_modal",			
+            url:moduleController + "ajax_update_items_modal",			
             data:{itemsAlreadySaved: itemsAlreadySaved,
 				warehouseItemsAlreadySaved: warehouseItemsAlreadySaved,
 				warehouse: $('#cbxModalWarehouses').val()
@@ -1263,7 +1279,7 @@ $(document).ready(function(){
 					//este es para el precio
 					ajax_update_stock_modal();
 				});
-				fnBittionSetSelectsStyle();
+				$('#cbxModalItems').select2();	
 				$('#txtModalPrice').keydown(function(event) {
 					validateOnlyFloatNumbers(event);			
 				});
@@ -1278,7 +1294,7 @@ $(document).ready(function(){
 	function ajax_initiate_modal_add_pay(paysAlreadySaved,payDebt){
 		 $.ajax({
             type:"POST",
-            url:urlModuleController + "ajax_initiate_modal_add_pay",			
+            url:moduleController + "ajax_initiate_modal_add_pay",			
 		    data:{paysAlreadySaved: paysAlreadySaved,
 					payDebt: payDebt
 //				,discount: $('#txtDiscount').val()
@@ -1288,8 +1304,10 @@ $(document).ready(function(){
 				$('#processing').text('');
 				$('#boxModalInitiatePay').html(data); 
 				$('#txtModalDescription').val('');  
-				initiateModalPay();
-				fnBittionSetTypeDate();
+				initiateModalPay()
+				$("#txtModalDate").datepicker({
+					showButtonPanel: true
+				});
 				$('#txtModalPaidAmount').keydown(function(event) {
 					validateOnlyFloatNumbers(event);			
 				});
@@ -1305,7 +1323,7 @@ $(document).ready(function(){
 	function ajax_update_stock_modal(){
 		$.ajax({
             type:"POST",
-            url:urlModuleController + "ajax_update_stock_modal",			
+            url:moduleController + "ajax_update_stock_modal",			
             data:{item: $('#cbxModalItems').val()
 			,date: $('#txtDate').val()},
             beforeSend: showProcessing(),
@@ -1326,7 +1344,7 @@ $(document).ready(function(){
 	function ajax_update_stock_modal_1(){ 
 		$.ajax({
             type:"POST",
-            url:urlModuleController + "ajax_update_stock_modal_1",			
+            url:moduleController + "ajax_update_stock_modal_1",			
             data:{item: $('#cbxModalItems').val(),
 				warehouse: $('#cbxModalWarehouses').val()},
             beforeSend: showProcessing(),
@@ -1365,7 +1383,7 @@ $(document).ready(function(){
 			var type;
 //			var type2=0;
 			var index;
-			switch(urlAction){
+			switch(arr[3]){
 				case 'save_order':
 					index = 'index_order';
 					type = 'NOTE_CANCELLED';
@@ -1383,7 +1401,7 @@ $(document).ready(function(){
 	function ajax_cancell_all(purchaseId,/* purchaseId2, */type, /*type2,*/ index, genCode){
 		$.ajax({
             type:"POST",
-            url:urlModuleController + "ajax_cancell_all",			
+            url:moduleController + "ajax_cancell_all",			
             data:{purchaseId: purchaseId
 			//	,purchaseId2: purchaseId2
 				,type: type
@@ -1394,7 +1412,7 @@ $(document).ready(function(){
 				if(data === 'success'){
 					showBittionAlertModal({content:'Se eliminó el documento su factura y movimientos', btnYes:'Aceptar', btnNo:''});
 					$('#bittionBtnYes').click(function(){
-						window.location = urlModuleController + index;
+						window.location = moduleController + index;
 					});
 					
 				}else{
@@ -1420,7 +1438,7 @@ $(document).ready(function(){
 			arrayItemsDetails = getItemsDetails();
 			var error = validateBeforeSaveAll(arrayItemsDetails);
 			if( error === ''){
-				if(urlAction == 'save_invoice'){
+				if(arr[3] == 'save_invoice'){
 					ajax_generate_movements(arrayItemsDetails);
 				}
 			}else{
@@ -1433,7 +1451,7 @@ $(document).ready(function(){
 	function ajax_generate_movements(arrayItemsDetails){
 		$.ajax({
             type:"POST",
-            url:urlModuleController + "ajax_generate_movements",			
+            url:moduleController + "ajax_generate_movements",			
             data:{arrayItemsDetails: arrayItemsDetails 
 //				  ,purchaseId:$('#txtPurchaseIdHidden').val()
 				  ,date:$('#txtDate').val()
@@ -1493,7 +1511,7 @@ $(document).ready(function(){
 			arrayItemsDetails = getItemsDetails();
 			var error = validateBeforeSaveAll(arrayItemsDetails);
 			if( error === ''){
-				if(urlAction == 'save_order'){
+				if(arr[3] == 'save_order'){
 					ajax_change_state_approved_movement_in_full(arrayItemsDetails);
 				}
 			}else{
@@ -1506,7 +1524,7 @@ $(document).ready(function(){
 	function ajax_change_state_approved_movement_in_full(arrayItemsDetails){
 		$.ajax({
             type:"POST",
-            url:urlModuleController + "ajax_change_state_approved_movement_in_full",			
+            url:moduleController + "ajax_change_state_approved_movement_in_full",			
             data:{arrayItemsDetails: arrayItemsDetails 
 				  ,purchaseId:$('#txtPurchaseIdHidden').val()
 				  ,date:$('#txtDate').val()

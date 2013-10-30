@@ -4,6 +4,7 @@
 			'id'=>'txtModalPrice',
 			'value'=>$price,
 			'class'=>'span3',
-			'maxlength'=>'15'
+			'maxlength'=>'15',
+			'disabled'=>'disabled'	
 			));
 ?>

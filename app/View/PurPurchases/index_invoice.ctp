@@ -1,3 +1,4 @@
+<?php echo $this->Html->script('modules/PurPurchasesIndex', FALSE); ?> 
 <!--<div class="row-fluid">--> <!-- No va porque ya esta dentro del row-fluid del container del template principal-->
 <?php echo  $this->BootstrapPaginator->options(array('url' => $this->passedArgs));?>
 <!-- ************************************************************************************************************************ -->
@@ -18,14 +19,18 @@
 			<?php echo $this->BootstrapForm->create('PurPurchase', array('class' => 'form-search', 'novalidate' => true));?>
 			<fieldset>
 						<?php
-						echo $this->BootstrapForm->input('doc_code', array(				
-										//'label' => 'Codigo Entrada:',
-										'id'=>'txtCode',
-										'value'=>$doc_code,
-										'placeholder'=>'Codigo'
-										));
-						?>
-						<?php
+//						echo $this->BootstrapForm->input('doc_code', array(				
+//										//'label' => 'Codigo Entrada:',
+//										'id'=>'txtCode',
+//										'value'=>$doc_code,
+//										'placeholder'=>'Codigo'
+//										));
+						echo $this->BootstrapForm->input('searchDate', array(				
+							'id'=>'txtDate',
+							'value'=>$searchDate,
+							'placeholder'=>'Fecha'
+						));
+						echo "&nbsp;";
 						echo $this->BootstrapForm->input('note_code', array(				
 								'id'=>'txtNoteCode',
 								'value'=>$note_code,
@@ -35,6 +40,8 @@
 
 					<?php
 						echo $this->BootstrapForm->submit('<i class="icon-search icon-white"></i>',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSearch', 'title'=>'Buscar'));
+						echo "&nbsp;";
+						echo $this->BootstrapForm->submit('<i class="icon-trash icon-white" ></i>',array('class'=>'btn btn-danger','div'=>false, 'id'=>'btnClearSearch', 'title'=>'Limpiar Busqueda'));
 					?>
 
 			</fieldset>
@@ -58,23 +65,21 @@
 		<table class="table table-striped table-bordered table-hover">
 			<tr>
 				<th><?php echo '#';?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('doc_code', 'Código');?></th>
-		<!--	<th><?php echo $this->BootstrapPaginator->sort('doc_code', 'Código Origen');?></th>	-->
-				<th><?php echo $this->BootstrapPaginator->sort('note_code','Código de Factura de Compra');?></th>
-		<!--	<th><?php echo $this->BootstrapPaginator->sort('note_code', 'Código de Proforma');?></th>	-->
+		<!--		<th><?php echo $this->BootstrapPaginator->sort('doc_code', 'Código');?></th>			-->
 				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('note_code','Código de Factura de Compra');?></th>
 		<!--		<th><?php echo $this->BootstrapPaginator->sort('InvSupplier.name','Proveedor');?></th>	-->
+				<th><?php echo $this->BootstrapPaginator->sort('inv_warehouse_id', 'Almacen');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('lc_state', 'Estado Documento');?></th>				
 			</tr>
 		<?php foreach ($purPurchases as $purPurchase): ?>
 			<tr>
 				<td><?php echo $cont++;?></td>				
-				<td><?php echo h($purPurchase['PurPurchase']['doc_code']); ?>&nbsp;</td>
-		<!--	<td><?php echo h($purPurchase['PurPurchase']['doc_code']); ?>&nbsp;</td>		-->
-				<td><?php echo h($purPurchase['PurPurchase']['note_code']); ?>&nbsp;</td>
-		<!--	<td><?php echo h($purPurchase['PurPurchase']['note_code']); ?>&nbsp;</td>		-->
+		<!--		<td><?php echo h($purPurchase['PurPurchase']['doc_code']); ?>&nbsp;</td>	-->
 				<td><?php echo date("d/m/Y", strtotime($purPurchase['PurPurchase']['date'])); ?>&nbsp;</td>
-		<!--		<td><?php echo h($purPurchase['InvSupplier']['name']); ?>&nbsp;</td>		-->			
+				<td><?php echo h($purPurchase['PurPurchase']['note_code']); ?>&nbsp;</td>
+		<!--		<td><?php echo h($purPurchase['InvSupplier']['name']); ?>&nbsp;</td>		-->		
+				<td><?php echo h($purPurchase['InvWarehouse']['name']); ?>&nbsp;</td>
 				<td><?php 
 						$documentState = $purPurchase['PurPurchase']['lc_state'];
 						switch ($documentState){

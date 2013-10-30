@@ -1,10 +1,18 @@
 $(document).ready(function(){
 //START SCRIPT
 
+///Url Paths
+var path = window.location.pathname;
+var arr = path.split('/');
+var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
+
 //ON START
 	//EXECUTE onload
 	//ajax_get_graphics_data();
-	fnBittionSetSelectsStyle();
+	$('select').select2();
+	$("#txtReportStartDate, #txtReportFinishDate").datepicker({
+		showButtonPanel: true
+	});
 	startDataTable();
 	
 	
@@ -64,7 +72,7 @@ $('#btnGenerateReportItemsUtilities').click(function(){
 		$.ajax({
             type:"POST",
 			async:false, // the key to open new windows when success
-            url:urlModuleController + "ajax_generate_report_items_utilities",			
+            url:moduleController + "ajax_generate_report_items_utilities",			
             data:{startDate: $('#txtReportStartDate').val(),
 				finishDate: $('#txtReportFinishDate').val(),
 				currency:$('#cbxReportCurrency').val(),
@@ -78,7 +86,7 @@ $('#btnGenerateReportItemsUtilities').click(function(){
 				$('#boxProcessing').text('Procesando...');
 			},
             success: function(data){
-				open_in_new_tab(urlModuleController+'vreport_items_utilities');
+				open_in_new_tab(moduleController+'vreport_items_utilities');
 				$('#boxProcessing').text('');
 			},
 			error:function(data){
@@ -172,7 +180,7 @@ $('#btnGenerateReportItemsUtilities').click(function(){
 	function ajax_get_graphics_data(){ 
 		$.ajax({
             type:"POST",
-            url:urlModuleController + "ajax_get_graphics_data",			
+            url:moduleController + "ajax_get_graphics_data",			
             data:{year: $('#cbxYear').val(), currency:$('#cbxCurrency').val() ,item:$('#cbxItem').val()},
 			beforeSend: function(){
 				$('#processing').text("Procesando...");
@@ -198,7 +206,7 @@ $('#btnGenerateReportItemsUtilities').click(function(){
 	function ajax_get_graphics_items_customers(dataSent){ 
 		$.ajax({
             type:"POST",
-            url:urlModuleController + "ajax_get_graphics_items_customers",			
+            url:moduleController + "ajax_get_graphics_items_customers",			
             data:dataSent,
 			beforeSend: function(){
 				$('#boxProcessing').text("Procesando...");
@@ -232,7 +240,7 @@ $('#btnGenerateReportItemsUtilities').click(function(){
 	function ajax_get_graphics_items_salesmen(dataSent){ 
 		$.ajax({
             type:"POST",
-            url:urlModuleController + "ajax_get_graphics_items_salesmen",			
+            url:moduleController + "ajax_get_graphics_items_salesmen",			
             data:dataSent,
 			beforeSend: function(){
 				$('#boxProcessing').text("Procesando...");
@@ -385,44 +393,17 @@ $('#btnGenerateReportPurchasesCustomers').click(function(){
 	return false;
 });
 
-$('#btnGenerateReportCustomersDebts').click(function(){
-	var currency = $('#cbxCurrency').val();
-	var groupBy = $('#cbxReportGroupTypes').val();
-	var year =  $("#cbxYear").val();
-	var month =  $("#cbxMonth").val();
-	var zero =  $("#cbxShowZero").val();
-	var monthName =  $("#cbxMonth option:selected").text();
-	var items = getSelectedCheckboxes();
-	if(items.length > 0){
-		var DATA = {
-						currency:currency,
-						groupBy:groupBy,
-						year:year,
-						month:month,
-						zero:zero,
-						monthName:monthName,
-						items:items
-					   };
-			//alert(DATA);
-			ajax_generate_report_purchases_customers(DATA);
-			$('#boxMessage').html('');
-	}else{
-		$('#boxMessage').html('<div class="alert-error"><ul>'+'<li> Debe elegir al menos un "Item" </li>'+'</ul></div>');
-	}
-	return false;
-});
-
 	function ajax_generate_report_purchases_customers(dataSent){ //Report
 		$.ajax({
             type:"POST",
 			async:false, // the key to open new windows when success
-            url:urlModuleController + "ajax_generate_report_purchases_customers",			
+            url:moduleController + "ajax_generate_report_purchases_customers",			
             data:dataSent,
 			beforeSend: function(){
 				$('#boxProcessing').text('Procesando...');
 			},
             success: function(data){
-				open_in_new_tab(urlModuleController+'vreport_purchases_customers');
+				open_in_new_tab(moduleController+'vreport_purchases_customers');
 				$('#boxProcessing').text('');
 			},
 			error:function(data){
@@ -480,7 +461,7 @@ function ajax_get_group_items_and_filters(){ //Report
 		$.ajax({
             type:"POST",
 			//async:false, // the key to open new windows when success
-            url:urlModuleController + "ajax_get_group_items_and_filters",			
+            url:moduleController + "ajax_get_group_items_and_filters",			
             data:{type: $('#cbxReportGroupTypes').val()},
 			beforeSend: function(){
 				$('#boxProcessing').text('Procesando...');
@@ -488,7 +469,7 @@ function ajax_get_group_items_and_filters(){ //Report
 			},
             success: function(data){
 				$('#boxGroupItemsAndFilters').html(data);
-				fnBittionSetSelectsStyle();
+				$('select').select2();
 				startDataTable();
 				$('#boxGroupItemsAndFilters #cbxReportGroupFilters').bind("change",function(){ 
 					var selected = new Array();
@@ -511,7 +492,7 @@ function ajax_get_group_items_and_filters(){ //Report
 	function ajax_get_group_items(selected){ //Report
 		$.ajax({
             type:"POST",
-            url:urlModuleController + "ajax_get_group_items",			
+            url:moduleController + "ajax_get_group_items",			
             data:{type: $('#cbxReportGroupTypes').val(), selected: selected},
 			beforeSend: function(){
 				$('#boxProcessing').text('Procesando...');

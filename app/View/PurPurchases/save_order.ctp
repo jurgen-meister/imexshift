@@ -45,18 +45,22 @@
 							case '':
 								$displayApproved = 'none';
 								$displayCancelled = 'none';
+								$displayToDraft = 'none';
 								break;
 							case 'ORDER_PENDANT':
 								$displayApproved = 'inline';
 								$displayCancelled = 'none';
+								$displayToDraft = 'none';
 								break;
 							case 'ORDER_APPROVED':
 								$displayApproved = 'none';
 								$displayCancelled = 'inline';
+								$displayToDraft = 'none';
 								break;
 							case 'ORDER_CANCELLED':
 								$displayApproved = 'none';
 								$displayCancelled = 'none';
+								$displayToDraft = 'inline';
 								break;
 						}
 			?>
@@ -68,6 +72,8 @@
 			<a href="#" id="btnApproveState" class="btn btn-success" style="display:<?php echo $displayApproved;?>"><i class=" icon-ok icon-white"></i> Aprobar Orden de Compra</a>
 			<a href="#" id="btnLogicDeleteState" class="btn btn-danger" style="display:<?php echo $displayApproved;?>"><i class=" icon-trash icon-white"></i> Eliminar</a>
 			<a href="#" id="btnCancellState" class="btn btn-danger" style="display:<?php echo $displayCancelled;?>"><i class=" icon-remove icon-white"></i> Cancelar Orden de Compra</a>
+			
+			
 			<?php
 				$displayPrint = 'none';
 				if($id <> ''){
@@ -77,7 +83,7 @@
 
 			?>
 			
-			
+			<a href="#" id="btnSetToPendant" class="btn btn-danger" style="display:<?php echo $displayToDraft;?>"><i class=" icon-remove icon-white"></i> Set to Draft</a>
 			
 			
 		</div>
@@ -151,8 +157,15 @@
 					'id'=>'txtDate',
 					'value'=>$date,
 					'disabled'=>$disable,
-					'maxlength'=>'0',
-					'class'=>'input-date-type'
+					'maxlength'=>'0'
+				));
+				
+				echo $this->BootstrapForm->input('inv_warehouse_id', array(
+					'label' => 'Almacén:',
+					'id'=>'cbxWarehouses',
+					'class'=>'span4',
+					'disabled'=>$disable,
+					'selected' => 2
 				));
 				
 //				echo $this->BootstrapForm->input('inv_supplier_id', array(
@@ -166,6 +179,14 @@
 					'label' => 'Descripción:',
 					'disabled'=>$disable,
 					'id'=>'txtDescription'
+				));
+				
+				echo $this->BootstrapForm->input('discount', array(
+					'label' => 'Descuento:',
+					'disabled'=>$disable,
+					'id'=>'txtDiscount',
+					'value'=>$discount,
+					'type'=>'text'
 				));
 				
 				echo '<div id="boxExRate">';
@@ -216,9 +237,9 @@
 							<thead>
 								<tr>
 									<th>Item ( <span id="countItems"><?php echo $limit;?> </span> )</th>
-									<th>Precio Unitario</th>
-									<th>Cantidad</th>
 									<th>Proveedor</th>
+									<th>Cantidad</th>
+									<th>Precio Unitario</th>
 									<th>Subtotal</th>
 									<?php if($documentState == 'ORDER_PENDANT' OR $documentState == ''){ ?>
 									<th class="columnItemsButtons"></th>
@@ -229,13 +250,14 @@
 								<?php
 								$total = '0.00';
 								for($i=0; $i<$limit; $i++){
-									$subtotal = ($purDetails[$i]['cantidad'])*($purDetails[$i]['exFobPrice']);
+//									$subtotal = ($purDetails[$i]['cantidad'])*($purDetails[$i]['exFobPrice']);
 									echo '<tr id="itemRow'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">';
 										echo '<td><span id="spaItemName'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['item'].'</span><input type="hidden" value="'.$purDetails[$i]['itemId'].'" id="txtItemId" ></td>';
-										echo '<td><span id="spaExFobPrice'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">'.$purDetails[$i]['exFobPrice'].'</span></td>';
-										echo '<td><span id="spaQuantity'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">'.$purDetails[$i]['cantidad'].'</span></td>';
 										echo '<td><span id="spaSupplier'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['supplier'].'</span><input type="hidden" value="'.$purDetails[$i]['supplierId'].'" id="txtSupplierId'.$purDetails[$i]['itemId'].'" ></td>';
-										echo '<td><span id="spaSubtotal'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">'.number_format($subtotal, 2, '.', '').'</span></td>';
+										echo '<td><span id="spaQuantity'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">'.$purDetails[$i]['cantidad'].'</span></td>';
+										echo '<td><span id="spaExFobPrice'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">'.$purDetails[$i]['exFobPrice'].'</span></td>';
+//										echo '<td><span id="spaSubtotal'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">'.number_format($subtotal, 2, '.', '').'</span></td>';
+										echo '<td><span id="spaExSubtotal'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">'.$purDetails[$i]['exSubtotal'].'</span></td>';
 										
 										if($documentState == 'ORDER_PENDANT' OR $documentState == ''){
 											echo '<td class="columnItemsButtons">';
@@ -245,32 +267,24 @@
 											echo '</td>';
 										}
 									echo '</tr>';	
-									$total += $subtotal;
+									$total += $purDetails[$i]['exSubtotal'];
 								}?>
 							</tbody>
+							<tfoot>
+								<tr>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td><h4>Total:</h4></td>
+									<td><h4 id="total" ><?php echo number_format($total, 2, '.', '').' $us.'; ?></h4></td>
+									<?php if($documentState == 'ORDER_PENDANT' OR $documentState == ''){ ?>
+										<td></td>
+									<?php }?>
+								</tr>	
+							</tfoot>	
 						</table>
 
-				<div class="row-fluid"> <!-- vers si borrar este row-fluid creo q si -->
-					
-					<?php if($documentState == 'ORDER_APPROVED'){ ?>
-						<div class="span10">	</div>
-						<div class="span1">
-							<h4>Total:</h4>	
-						</div>
-						<div class="span1">
-							<h4 id="total" ><?php echo number_format($total, 2, '.', '').' $us.'; ?></h4>
-						</div>
-					<?php }  else { ?>
-						<div class="span8">	</div>
-						<div class="span1">
-							<h4>Total:</h4>	
-						</div>
-						<div class="span3">
-							<h4 id="total" ><?php echo number_format($total, 2, '.', '').' $us.'; ?></h4>
-						</div>
-					<?php }?>
-					
-				</div>
+				
 					
 			</div>
 		</div>                            
@@ -298,42 +312,54 @@
 					<?php
 					
 					
-					echo '<div id="boxModalInitiateItemPrice">';
+					echo '<div id="boxModalInitiateSupplierItemPrice">';
 						//////////////////////////////////////
-						echo $this->BootstrapForm->input('inv_supplier_id', array(
+						echo $this->BootstrapForm->input('suppliers_id', array(
 						'label' => 'Proveedor:',
 						'id'=>'cbxModalSuppliers',
 						'class'=>'span6'
 						));
 						
-						echo '<div id="boxModalItemPriceStock">';
+						echo '<div id="boxModalItemPrice">';
 							//////////////////////////////////////
 							echo $this->BootstrapForm->input('items_id', array(				
 							'label' => 'Item:',
 							'id'=>'cbxModalItems',
 							'class'=>'span12'
 							));
-							echo '<div id="boxModalPrice">';
-								$price='';
-								echo $this->BootstrapForm->input('ex_fob_price', array(				
-								'label' => 'Precio Unitario:',
-								'id'=>'txtModalPrice',
-								'value'=>$price,
-								'class'=>'span3',
-								'maxlength'=>'15'
-								));
-							echo '</div>';		
+							
+							echo $this->BootstrapForm->input('quantity', array(				
+							'label' => 'Cantidad:',
+							'id'=>'txtModalQuantity',
+							'class'=>'span3',
+							'maxlength'=>'10'
+							));	
+							
+							echo $this->BootstrapForm->input('ex_subtotal', array(				
+							'label' => 'Subtotal:',
+							'id'=>'txtModalExSubtotal',
+							'class'=>'span3',
+							'maxlength'=>'10'
+							));								
+							
+//							echo '<div id="boxModalPrice">';
+//								$price='';
+//								echo $this->BootstrapForm->input('ex_fob_price', array(				
+//								'label' => 'Precio Unitario:',
+//								'id'=>'txtModalPrice',
+//								'value'=>$price,
+//								'class'=>'span3',
+//								'maxlength'=>'15',
+//								'disabled'=>'disabled'
+//								));
+//							echo '</div>';		
 							//////////////////////////////////////
 						echo '</div>';
 						//////////////////////////////////////
 					echo '</div>';
 
-					echo $this->BootstrapForm->input('quantity', array(				
-					'label' => 'Cantidad:',
-					'id'=>'txtModalQuantity',
-					'class'=>'span3',
-					'maxlength'=>'10'
-					));
+				
+					
 					?>
 					  <div id="boxModalValidateItem" class="alert-error"></div> 
 				  </div>

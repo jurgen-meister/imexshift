@@ -1,9 +1,14 @@
 $(document).ready(function(){
-//START SCRIPT
-
+	///Url Paths
+	var path = window.location.pathname;
+	var arr = path.split('/');
+	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 	////////////////////////////////////// START - INITIAL ACTIONS /////////////////////////////////////////
 	
-	fnBittionSetSelectsStyle();
+	$('select').select2();
+	$("#txtReportStartDate, #txtReportFinishDate").datepicker({
+		showButtonPanel: true
+	});
 	startDataTable();
 	
 	$('#txtReportStartDate, #txtReportFinishDate').keydown(function(e){e.preventDefault();});
@@ -230,7 +235,7 @@ $(document).ready(function(){
 		$.ajax({
             type:"POST",
 			async:false, // the key to open new windows when success
-            url:urlModuleController + "ajax_generate_report",			
+            url:moduleController + "ajax_generate_report",			
             data:dataSent,
 			beforeSend: function(){
 				$('#boxProcessing').text('Procesando...');
@@ -238,13 +243,13 @@ $(document).ready(function(){
             success: function(data){
 				switch(data){
 					case '1000'://CLIENTES
-						open_in_new_tab(urlModuleController+'vreport_ins_or_outs');
+						open_in_new_tab(moduleController+'vreport_ins_or_outs');
 						break;
 					case '998'://VENDEDORES
-						open_in_new_tab(urlModuleController+'vreport_transfers');
+						open_in_new_tab(moduleController+'vreport_transfers');
 						break;
 					default://ITEMS
-						open_in_new_tab(urlModuleController+'vreport_ins_and_outs');
+						open_in_new_tab(moduleController+'vreport_ins_and_outs');
 						break;	
 				}
 				$('#boxProcessing').text('');
@@ -261,14 +266,14 @@ $(document).ready(function(){
 	function ajax_get_group_items_and_filters(){ //Report
 		$.ajax({
             type:"POST",
-            url:urlModuleController + "ajax_get_group_items_and_filters",			
+            url:moduleController + "ajax_get_group_items_and_filters",			
             data:{type: $('#cbxReportGroupTypes').val()},
 			beforeSend: function(){
 				$('#boxProcessing').text('Procesando...');
 			},
             success: function(data){
 				$('#boxGroupItemsAndFilters').html(data);
-				fnBittionSetSelectsStyle();
+				$('select').select2();
 				startDataTable();
 				$('#boxGroupItemsAndFilters #cbxReportGroupFilters').bind("change",function(){ 
 					var selected = new Array();
@@ -289,7 +294,7 @@ $(document).ready(function(){
 	function ajax_get_group_items(selected){ //Report
 		$.ajax({
             type:"POST",
-            url:urlModuleController + "ajax_get_group_items",			
+            url:moduleController + "ajax_get_group_items",			
             data:{type: $('#cbxReportGroupTypes').val(), selected: selected},
 			beforeSend: function(){
 				$('#boxProcessing').text('Procesando...');
@@ -307,6 +312,55 @@ $(document).ready(function(){
 	}
 	
 	//////////////////////////////////// END - AJAX ///////////////////////////////////////////////
+	
+	$('#btnGenerateReportCustomersDebts').click(function(){
+		var customer = $('#cbxCustomer').val();
+		var customerName = $('#cbxCustomer option:selected').text();
+		var showType = $('#cbxShowType').val();
+		var currency = $('#cbxCurrency').val();
+		var error = validate1(customer, showType, currency);
+		if(error === ''){
+			var DATA = {
+						customer:customer,
+						customerName:customerName,
+						showType:showType,
+						currency:currency
+					   };
+			ajax_generate_report_customers_debts(DATA);
+			$('#boxMessage').html('');
+		}else{
+			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
+		}
+		return false;
+	});
+	
+	function ajax_generate_report_customers_debts(dataSent){ //Report
+		$.ajax({
+            type:"POST",
+			async:false, // the key to open new windows when success
+            url:moduleController + "ajax_generate_report_customers_debts",			
+            data:dataSent,
+			beforeSend: function(){
+				$('#boxProcessing').text('Procesando...');
+			},
+            success: function(data){
+				open_in_new_tab(moduleController+'vreport_customers_debts');
+				$('#boxProcessing').text('');
+			},
+			error:function(data){
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#boxProcessing').text('');
+			}
+        });
+	}
+
+	function validate1(customer, showType, currency){
+		var  error='';
+		if(showType === ''){error+='<li> El campo "Mostrar Ventas" esta vacio </li>';}
+		if(customer === ''){error+='<li> El campo "Cliente" esta vacio </li>';}
+		if(currency === ''){error+='<li> El campo "Tipo de Cambio" esta vacio </li>';}
+		return error;
+	}	
 	
 //END SCRIPT	
 });

@@ -55,15 +55,15 @@ class PurPurchase extends AppModel {
  *
  * @var array
  */
-//	public $belongsTo = array(
-//		'InvSupplier' => array(
-//			'className' => 'InvSupplier',
-//			'foreignKey' => 'inv_supplier_id',
-//			'conditions' => '',
-//			'fields' => '',
-//			'order' => ''
-//		)
-//	);
+	public $belongsTo = array(
+		'InvWarehouse' => array(
+			'className' => 'InvWarehouse',
+			'foreignKey' => 'inv_warehouse_id',
+			'conditions' => '',
+			'fields' => '',
+			'order' => ''
+		)
+	);
 
 /**
  * hasMany associations
@@ -197,18 +197,17 @@ class PurPurchase extends AppModel {
 					}
 					break;	
 				case 'EDIT':							//array fields
-					if($this->PurDetail->updateAll(array( 
-						'PurDetail.lc_transaction'=>"'MODIFY'",
-						'PurDetail.ex_fob_price'=>$dataPurchaseDetail[0]['PurDetail']['ex_fob_price'], 
-						'PurDetail.quantity'=>$dataPurchaseDetail[0]['PurDetail']['quantity'], 
-						'PurDetail.fob_price'=>$dataPurchaseDetail[0]['PurDetail']['fob_price']/*,
-						'PurDetail.fob_price'=>$dataMovementDetail['PurDetail']['fob_price'],
-						'PurDetail.ex_fob_price'=>$dataMovementDetail['PurDetail']['ex_fob_price'],
-						'PurDetail.cif_price'=>$dataMovementDetail['PurDetail']['cif_price'],
-						'PurDetail.ex_cif_price'=>$dataMovementDetail['PurDetail']['ex_cif_price']*/), 
-						/*array conditions*/array('PurDetail.pur_purchase_id'=>$dataPurchaseDetail[0]['PurDetail']['pur_purchase_id'], 
-					'PurDetail.inv_supplier_id'=>$dataPurchaseDetail[0]['PurDetail']['inv_supplier_id'], 
-					'PurDetail.inv_item_id'=>$dataPurchaseDetail[0]['PurDetail']['inv_item_id']))){
+					if($this->PurDetail->updateAll(array('PurDetail.ex_fob_price'=>$dataPurchaseDetail[0]['PurDetail']['ex_fob_price'], 
+															'PurDetail.quantity'=>$dataPurchaseDetail[0]['PurDetail']['quantity'], 
+															'PurDetail.fob_price'=>$dataPurchaseDetail[0]['PurDetail']['fob_price'],
+															'PurDetail.ex_subtotal'=>$dataPurchaseDetail[0]['PurDetail']['ex_subtotal']/*,
+															'PurDetail.fob_price'=>$dataMovementDetail['PurDetail']['fob_price'],
+															'PurDetail.ex_fob_price'=>$dataMovementDetail['PurDetail']['ex_fob_price'],
+															'PurDetail.cif_price'=>$dataMovementDetail['PurDetail']['cif_price'],
+															'PurDetail.ex_cif_price'=>$dataMovementDetail['PurDetail']['ex_cif_price']*/), 
+								/*array conditions*/array('PurDetail.pur_purchase_id'=>$dataPurchaseDetail[0]['PurDetail']['pur_purchase_id'], 
+														'PurDetail.inv_supplier_id'=>$dataPurchaseDetail[0]['PurDetail']['inv_supplier_id'], 
+														'PurDetail.inv_item_id'=>$dataPurchaseDetail[0]['PurDetail']['inv_item_id']))){
 						$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
 					}
 					if($rowsAffected == 0){
@@ -216,10 +215,10 @@ class PurPurchase extends AppModel {
 						return 'ERROR';
 					}
 					if($ACTION=='save_order'){
-						if($this->PurDetail->updateAll(array('PurDetail.lc_transaction'=>"'MODIFY'",
-																'PurDetail.ex_fob_price'=>$dataPurchaseDetail[1]['PurDetail']['ex_fob_price'], 
+						if($this->PurDetail->updateAll(array('PurDetail.ex_fob_price'=>$dataPurchaseDetail[1]['PurDetail']['ex_fob_price'], 
 																'PurDetail.quantity'=>$dataPurchaseDetail[1]['PurDetail']['quantity'], 
-																'PurDetail.fob_price'=>$dataPurchaseDetail[1]['PurDetail']['fob_price']/*,
+																'PurDetail.fob_price'=>$dataPurchaseDetail[1]['PurDetail']['fob_price'],
+																'PurDetail.ex_subtotal'=>$dataPurchaseDetail[1]['PurDetail']['ex_subtotal']/*,
 																'PurDetail.fob_price'=>$dataMovementDetail['PurDetail']['fob_price'],
 																'PurDetail.ex_fob_price'=>$dataMovementDetail['PurDetail']['ex_fob_price'],
 																'PurDetail.cif_price'=>$dataMovementDetail['PurDetail']['cif_price'],
@@ -234,7 +233,7 @@ class PurPurchase extends AppModel {
 							return 'ERROR';
 						}					
 					}	
-					if(ClassRegistry::init('InvMovement')->InvMovementDetail->updateAll(array('InvMovementDetail.lc_transaction'=>"'MODIFY'", 'InvMovementDetail.quantity'=>$dataMovementDetail['InvMovementDetail']['quantity']), 
+					if(ClassRegistry::init('InvMovement')->InvMovementDetail->updateAll(array('InvMovementDetail.quantity'=>$dataMovementDetail['InvMovementDetail']['quantity']), 
 																						array('InvMovementDetail.inv_movement_id'=>$dataMovementDetail['InvMovementDetail']['inv_movement_id'],	
 																							'InvMovementDetail.inv_item_id'=>$dataMovementDetail['InvMovementDetail']['inv_item_id']))){
 							$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
@@ -245,7 +244,7 @@ class PurPurchase extends AppModel {
 					}
 					break;
 				case 'EDIT_PAY':
-					if($this->PurPayment->updateAll(array('PurPayment.lc_transaction'=>"'MODIFY'", 'PurPayment.amount'=>$dataPayDetail['PurPayment']['amount'], 
+					if($this->PurPayment->updateAll(array('PurPayment.amount'=>$dataPayDetail['PurPayment']['amount'], 
 															'PurPayment.description'=>"'".$dataPayDetail['PurPayment']['description']."'", 
 															'PurPayment.ex_amount'=>$dataPayDetail['PurPayment']['ex_amount']),
 								/*array conditions*/array('PurPayment.pur_purchase_id'=>$dataPayDetail['PurPayment']['pur_purchase_id'], 
@@ -259,7 +258,7 @@ class PurPurchase extends AppModel {
 					}
 					break;
 				case 'EDIT_COST':
-					if($this->PurPrice->updateAll(array('PurPrice.lc_transaction'=>"'MODIFY'", 'PurPrice.amount'=>$dataCostDetail['PurPrice']['amount'], 				
+					if($this->PurPrice->updateAll(array('PurPrice.amount'=>$dataCostDetail['PurPrice']['amount'], 				
 															'PurPrice.ex_amount'=>$dataCostDetail['PurPrice']['ex_amount']),
 								/*array conditions*/array('PurPrice.pur_purchase_id'=>$dataCostDetail['PurPrice']['pur_purchase_id'], 
 														'PurPrice.inv_price_type_id'=>$dataCostDetail['PurPrice']['inv_price_type_id']))){
@@ -329,4 +328,24 @@ class PurPurchase extends AppModel {
 		return array('SUCCESS', $STATE.'|'.$idPurchase1);
 	}
 	
+	public function updateMovement($dataPurchase, $dataMovement){
+		$dataSource = $this->getDataSource();
+		$dataSource->begin();
+		if(!$this->saveAll($dataPurchase)){
+				$dataSource->rollback();
+				return 'ERROR';
+			}else{
+				$idPurchase = $this->id;
+			}
+		if($dataMovement != array()){
+			if(!ClassRegistry::init('InvMovement')->saveAll($dataMovement)){
+				$dataSource->rollback();
+				return 'ERROR';
+			}else{
+				$idMovement = ClassRegistry::init('InvMovement')->id;
+			}
+		}	
+		$dataSource->commit();
+		return array('SUCCESS', $idPurchase);	
+	}
 }
