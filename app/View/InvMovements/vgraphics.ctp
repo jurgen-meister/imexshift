@@ -38,12 +38,22 @@
 					'class'=>'span2',
 					'options'=>$years 
 				));
+				
+				/*
 				echo $this->BootstrapForm->input('month', array(
 					'label' => 'Mes:',
 					'id'=>'cbxMonth',
 					'type'=>'select',
 					'class'=>'span2',
 					'options'=>array(0=>"Todos", 1=>"Enero", 2=>"Febrero", 3=>"Marzo", 4=>"Abril", 5=>"Mayo", 6=>"Junio", 7=>"Julio", 8=>"Agosto", 9=>"Septiembre", 10=>"Octubre", 11=>"Noviembre", 12=>"Diciembre")
+				));
+				 */
+				echo $this->BootstrapForm->input('movementType', array(
+					'label' => 'Tipos de Movimiento:',
+					'id'=>'cbxMovementType',
+					'class'=>'span3',
+					'type'=>'select',
+					'options'=>$movementTypes,
 				));
 				echo $this->BootstrapForm->input('warehouse', array(
 					'label' => 'Almacen:',
@@ -52,21 +62,12 @@
 					'type'=>'select',
 					'options'=>$warehouses,
 				));
-				/*
-				echo $this->BootstrapForm->input('item', array(
-					'label' => 'Item:',
-					'id'=>'cbxItem',
-					'class'=>'span8',
-					'type'=>'select',
-					'options'=>$items,
-				));
-				 */
 				echo $this->BootstrapForm->input('type', array(
-				'label' => '* Agrupar por:',
-				'id'=>'cbxReportGroupTypes',
-				'type'=>'select',
-				'class'=>'span3',    
-				'options'=>array('none'=>'Ninguno','brand'=>'Marca','category'=> 'Categoria')  
+					'label' => '* Agrupar por:',
+					'id'=>'cbxReportGroupTypes',
+					'type'=>'select',
+					'class'=>'span3',    
+					'options'=>array('none'=>'Ninguno','brand'=>'Marca','category'=> 'Categoria')  
 				)); 
 
 				?>
@@ -102,62 +103,22 @@
 	
 <!-- *********************************************** #UNICORN SEARCH WRAP ********************************************-->
 <div class="row-fluid">
-	<div class="span8">
+	<div class="span12">
 		<div class="widget-box">
 			<div class="widget-title">
 				<span class="icon">
 					<i class=" icon-signal"></i>
 				</span>
-				<h5>Entradas (Items - Meses)</h5>
+				<h5>Productos (Unidades - Meses)</h5>
 			</div>
 			<div class="widget-content nopadding">
 				<div class="bars"></div>
 			</div>	
 		</div>
 	</div>
-	<div class="span4">
-		<div class="widget-box">
-			<div class="widget-title">
-				<span class="icon">
-					<i class=" icon-signal"></i>
-				</span>
-				<h5>Entradas (Items - Tipos)</h5>
-			</div>
-			<div class="widget-content nopadding">
-				<div class="pie"></div>
-			</div>	
-		</div>
-	</div>
 </div>
 
-<div class="row-fluid">
-	<div class="span8">
-		<div class="widget-box">
-			<div class="widget-title">
-				<span class="icon">
-					<i class=" icon-signal"></i>
-				</span>
-				<h5>Salidas (Items - Meses)</h5>
-			</div>
-			<div class="widget-content nopadding">
-				<div class="bars2"></div>
-			</div>	
-		</div>
-	</div>
-	<div class="span4">
-		<div class="widget-box">
-			<div class="widget-title">
-				<span class="icon">
-					<i class=" icon-signal"></i>
-				</span>
-				<h5>Salidas (Items - Tipos)</h5>
-			</div>
-			<div class="widget-content nopadding">
-				<div class="pie2"></div>
-			</div>	
-		</div>
-	</div>
-</div>
+
 <!-- *********************************************** #UNICORN SEARCH WRAP ********************************************-->
 		
 	

@@ -70,14 +70,14 @@ class InvMovementsController extends AppController {
 		
 		
 		$warehouseClean = $this->InvWarehouse->find('list');
-		/* //Comment this because in this case I want to show option Todos at the end
+		//Comment this because in this case I want to show option Todos at the end
 		$warehouse[0]="TODOS";
 		foreach ($warehouseClean as $key => $value) {
 			$warehouse[$key] = $value;
 		}
-		*/
-		$warehouse = $warehouseClean;
-		$warehouse[0] = "TODOS";
+		
+		//$warehouse = $warehouseClean;
+		//$warehouse[0] = "TODOS";
 		$item = $this->_find_items();
 		$this->set(compact("warehouse", "item", "warehouseClean"));
 	}
@@ -189,7 +189,20 @@ class InvMovementsController extends AppController {
 		$initialData = $this->Session->read('ReportMovement');
 		
 		//debug($initialData);
-
+		
+		//////////In case option all warehouses selected and report type = ins and outs
+		$kardexWarehouses = array();
+		if($initialData["movementType"] == 1000){
+			if($initialData["warehouse"] == 0 ){
+				$this->loadModel("InvWarehouse");
+				$kardexWarehouses = $this->InvWarehouse->find("list");
+			}
+		}
+		
+		$this->set("kardexWarehouses",$kardexWarehouses);
+		
+		
+		
 		$settings = $this->_generate_report_settings($initialData);
 		
 		//debug($settings);
@@ -205,18 +218,36 @@ class InvMovementsController extends AppController {
 		}
 		
 		
-		$itemsComplete = $this->_generate_report_items_complete($initialData['items']);
+		$itemsComplete = $this->_generate_report_items_complete($initialData['items'], $initialData['finishDate'], $currencyFieldPrefix);
 		//debug($itemsComplete);
 		$itemsMovements = $this->_generate_report_items_movements($itemsComplete, $movements, $currencyFieldPrefix);
 		//debug($itemsMovements);
+		//debug($itemsComplete);
+		//debug($movements);
 		
 		$initialData['currencyAbbreviation']=$currencyAbbreviation;//setting currency abbreviation before send
-		$initialData['items']='';//cleaning items ids 'cause won't be needed begore send
+		//$initialData['items']='';//cleaning items ids 'cause won't be needed begore send
 		//debug($initialData);
 		$this->set('initialData', $initialData);
 		$this->set('itemsMovements', $itemsMovements);
+		//debug($itemsMovements);
 		//debug($settings['initialStocks']);
-		$this->set('initialStocks', $settings['initialStocks']);
+		$varStocks = $settings['initialStocks'];
+		if($initialData["movementType"] == 1000){
+			if($initialData["warehouse"] == 0 ){
+				//for($i=0; $i < count($kardexWarehouses); $i++){
+				//$counter = 0;
+				//debug($kardexWarehouses);
+				//debug($initialData['items']);
+				//debug($initialData['startDate']);
+				foreach ($kardexWarehouses as $key => $value) {
+					$varStocks[$key] = $this->_get_stocks($initialData['items'], $key, $initialData['startDate'], '<');
+					//debug($varStocks);
+					//$counter++;
+				}
+		}}
+		$this->set('initialStocks', $varStocks);
+		//debug($varStocks);
 		$this->Session->delete('ReportMovement');
 	//END FUNCTION	
 	}
@@ -244,6 +275,7 @@ class InvMovementsController extends AppController {
 					$cifQuantityTotal = $cifQuantityTotal + $cifQuantity;
 					$saleQuantityTotal = $saleQuantityTotal + $saleQuantity;
 					$auxArray[$item['InvItem']['id']]['Movements'][$counter] = array(
+						'warehouse'=>$movement['InvMovement']['inv_warehouse_id'],
 						'code'=>$movement['InvMovement']['code'],
 						'document_code'=>$movement['InvMovement']['document_code'],
 						'note_code'=>$movement[$forPricesSubQuery]['note_code'],
@@ -268,6 +300,12 @@ class InvMovementsController extends AppController {
 			$auxArray[ $item['InvItem']['id'] ]['Item']['brand']=$item['InvBrand']['name'];
 			$auxArray[ $item['InvItem']['id'] ]['Item']['category']=$item['InvCategory']['name'];
 			$auxArray[ $item['InvItem']['id'] ]['Item']['id']=$item['InvItem']['id'];
+			
+			//Items last price registered 
+			$auxArray[ $item['InvItem']['id'] ] ['Item']['last_fob']= $item[0]['last_fob'];;
+			$auxArray[ $item['InvItem']['id'] ] ['Item']['last_cif']= $item[0]['last_cif'];;
+			$auxArray[ $item['InvItem']['id'] ] ['Item']['last_sale']= $item[0]['last_sale'];;
+			
 			//Totals
 			$auxArray[ $item['InvItem']['id'] ]['TotalMovements']['fobQuantityTotal'] = $fobQuantityTotal;
 			$auxArray[ $item['InvItem']['id'] ]['TotalMovements']['cifQuantityTotal'] = $cifQuantityTotal;
@@ -283,7 +321,7 @@ class InvMovementsController extends AppController {
 		$conditions = array();
 		$fields = array();
 		$initialStocks=array();
-				
+				//debug($initialData['warehouse']);
 		
 		$values['startDate']=$initialData['startDate'];
 		$values['finishDate']=$initialData['finishDate'];
@@ -298,7 +336,9 @@ class InvMovementsController extends AppController {
 				break;
 			case 1000://ENTRADAS Y SALIDAS
 				$values['bindMovementType'] = 1;
-				$initialStocks = $this->_get_stocks($initialData['items'], $initialData['warehouse'], $initialData['startDate'], '<');//before starDate, 'cause it will be added or substracted with movements quantities
+				if($initialData['warehouse'] > 0){
+					$initialStocks = $this->_get_stocks($initialData['items'], $initialData['warehouse'], $initialData['startDate'], '<');//before starDate, 'cause it will be added or substracted with movements quantities
+				}
 				break;
 			case 1001://TRASPASOS ENTRE ALMACENES
 				$values['bindMovementType'] = 1;
@@ -376,49 +416,26 @@ class InvMovementsController extends AppController {
 	}
 	
 	
-	private function _generate_report_items_complete($items){
+	private function _generate_report_items_complete($items, $limitDate, $currency){
 		$this->loadModel('InvItem');
 		$this->InvItem->unbindModel(array('hasMany' => array('InvMovementDetail', 'PurDetail', 'SalDetail', 'InvItemsSupplier', 'InvPrice')));
 		return $this->InvItem->find('all', array(
-			'fields'=>array('InvItem.id', 'InvItem.code', 'InvItem.name', 'InvBrand.name', 'InvCategory.name'),
+			'fields'=>array(
+				'InvItem.id'
+				, 'InvItem.code'
+				, 'InvItem.name'
+				, 'InvBrand.name'
+				, 'InvCategory.name'
+				, '(SELECT '.$currency.'price FROM inv_prices where inv_item_id = "InvItem"."id" AND date <= \''.$limitDate.'\' AND inv_price_type_id=1 order by date DESC, date_created DESC LIMIT 1) AS "last_fob"'
+				, '(SELECT '.$currency.'price FROM inv_prices where inv_item_id = "InvItem"."id" AND date <= \''.$limitDate.'\' AND inv_price_type_id=8 order by date DESC, date_created DESC LIMIT 1) AS "last_cif"'
+				, '(SELECT '.$currency.'price FROM inv_prices where inv_item_id = "InvItem"."id" AND date <= \''.$limitDate.'\' AND inv_price_type_id=9 order by date DESC, date_created DESC LIMIT 1) AS "last_sale"'
+			),
 			'conditions'=>array('InvItem.id'=>$items),
 			'order'=>array('InvItem.code')
 		));
 	}
 	
-	/*
-	public function ajax_generate_report_items_utilities(){
-		if($this->RequestHandler->isAjax()){
-			$this->Session->write('ReportItemsUtilities.year', $this->request->data['year']);
-			$this->Session->write('ReportItemsUtilities.month', $this->request->data['month']);
-			$this->Session->write('ReportItemsUtilities.currency', $this->request->data['currency']);
-			$this->Session->write('ReportItemsUtilities.items', $this->request->data['items']);
-		}
-	}
 	
-	public function vreport_items_utilities(){
-		$this->layout = 'print';
-		
-		//Check if session variables are set otherwise redirect
-		if(!$this->Session->check('ReportItemsUtilities')){
-			$this->redirect(array('action' => 'vreport_items_utilities_generator'));
-		}
-		
-		//put session data sent data into variables
-		$initialData = $this->Session->read('ReportItemsUtilities');
-		//debug($initialData);
-		//$this->InvMovement->InvMovementDetail->InvItem->unbindModel(array('belongsTo' => array('InvBrand', 'InvCategory', 'InvMovementDetail')));
-		$this->loadModel("InvItem");
-		$dataDetail = $this->InvItem->find("all", array(
-			"fields"=>array("InvItem.full_name"),
-			"conditions"=>array("InvItem.id"=>$initialData["items"]),
-			"recursive"=>-1
-		));
-		
-		debug($dataDetail);
-		$this->Session->delete('ReportItemsUtilities');
-	}
-	 */
 	//////////////////////////////////////////// END - REPORT /////////////////////////////////////////////////
 	
 	
@@ -426,7 +443,7 @@ class InvMovementsController extends AppController {
 	public function vgraphics(){
 		$warehousesClean = $this->InvMovement->InvWarehouse->find("list");
 		//array_unshift($warehouses, "TODOS");// doesn't work 'cause change key values to an order 1,2,3,etc
-		$warehouses[0]="TODOS";
+		//$warehouses[0]="TODOS";
 		foreach ($warehousesClean as $key => $value) {
 			$warehouses[$key] = $value;
 		}
@@ -437,6 +454,14 @@ class InvMovementsController extends AppController {
 			"fields"=>array("name", "name")
 			)
 		);
+		
+		
+		$movementTypesClean = $this->InvMovement->InvMovementType->find("all", array("recursive"=>-1, "fields"=>array("id", "name", "status"), "order"=>array("status", "id")));
+		$movementTypes=array();
+		foreach ($movementTypesClean as $value) {
+			$movementTypes[$value["InvMovementType"]["id"]]=  strtoupper($value["InvMovementType"]["status"])." - ".$value["InvMovementType"]["name"];
+		}
+		//debug($movementTypes);
 		/*
 		$this->loadModel("InvItem");
 		
@@ -449,7 +474,7 @@ class InvMovementsController extends AppController {
 		$item = $this->_find_items();
 //		debug($items);
 		//array_unshift($items, "TODOS"); // doesn't work 'cause change key values to an order 1,2,3,etc
-		$this->set(compact("warehouses", "years", "item"));
+		$this->set(compact("warehouses", "years", "item", "movementTypes"));
 		//debug($this->_get_bars_items_quantity_and_time("entrada", "2013", 0, 0));
 	}
 	
@@ -526,13 +551,15 @@ class InvMovementsController extends AppController {
 	public function ajax_get_graphics_data(){
 		if($this->RequestHandler->isAjax()){
 			$year = $this->request->data['year'];
-			$month = $this->request->data['month'];
+			//$month = $this->request->data['month'];
 			$warehouse = $this->request->data['warehouse'];
 			$item = $this->request->data['item'];
-			$string = $this->_get_pie_items_quantity_and_type("entrada", $year, $warehouse, $item, $month).",";
-			$string .= $this->_get_pie_items_quantity_and_type("salida", $year, $warehouse, $item, $month).",";
-			$string .= $this->_get_bars_items_quantity_and_time("entrada", $year, $warehouse, $item).",";
-			$string .= $this->_get_bars_items_quantity_and_time("salida", $year, $warehouse, $item);
+			$movementType = $this->request->data['movementType'];
+			//$string = $this->_get_pie_items_quantity_and_type("entrada", $year, $warehouse, $item, $month).",";
+			//$string .= $this->_get_pie_items_quantity_and_type("salida", $year, $warehouse, $item, $month).",";
+			//$string .= $this->_get_bars_items_quantity_and_time("entrada", $year, $warehouse, $item).",";
+			//$string = $this->_get_bars_items_quantity_and_time("salida", $year, $warehouse, $item, $movementType);
+			$string = $this->_get_bars_items_quantity_and_time($year, $warehouse, $item, $movementType);
 			echo $string;
 		}
 //		$string = 'Compras-88|Traspasos-33|Aperturas-45|Otros-225,';
@@ -612,7 +639,7 @@ class InvMovementsController extends AppController {
 		return substr($dataString, 0, -1); // remove last character "|"
 	}
 	
-	private function _get_bars_items_quantity_and_time($status, $year, $warehouse, $item){
+	private function _get_bars_items_quantity_and_time($year, $warehouse, $item, $movementType){
 		$conditionWarehouse = null;
 		$conditionItem = null;
 		$dataString = "";
@@ -626,6 +653,7 @@ class InvMovementsController extends AppController {
 		}
 		
 		//get items, types and sum quantities
+		/*
 		$this->InvMovement->InvMovementDetail->bindModel(array(
 				'hasOne'=>array(
 					'InvMovementType'=>array(
@@ -634,12 +662,14 @@ class InvMovementsController extends AppController {
 					)
 				)
 			));
+		 */
 		$this->InvMovement->InvMovementDetail->unbindModel(array('belongsTo' => array('InvItem')));
 		$data = $this->InvMovement->InvMovementDetail->find('all', array(
 			"fields"=>array("to_char(\"InvMovement\".\"date\",'mm') AS month", "SUM(InvMovementDetail.quantity)"),
 			'group'=>array("to_char(InvMovement.date,'mm')"),
 			"conditions"=>array(
-				"InvMovementType.status"=>$status,
+				//"InvMovementType.status"=>$status,
+				"InvMovement.inv_movement_type_id"=>$movementType,
 				"to_char(InvMovement.date,'YYYY')"=>$year,
 				"InvMovement.lc_state"=>"APPROVED",
 				$conditionWarehouse,
@@ -667,18 +697,7 @@ class InvMovementsController extends AppController {
 		return substr($dataString, 0, -1);
 	}
 	
-	/*
-	public function vreport_items_utilities_generator(){
-		$this->loadModel("AdmPeriod");
-		$years = $this->AdmPeriod->find("list", array(
-			"order"=>array("name"=>"desc"),
-			"fields"=>array("name", "name")
-			)
-		);
-		$item = $this->_find_items();
-		$this->set(compact("years", "item"));
-	}
-	*/
+
 	//////////////////////////////////////////// END - GRAPHICS  /////////////////////////////////////////////////
 	
 	
@@ -691,6 +710,7 @@ class InvMovementsController extends AppController {
 		$filters = array();
 		$code = '';
 		$document_code = '';
+		$searchDate = '';
 		$period = $this->Session->read('Period.name');
 		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
 		
@@ -710,7 +730,12 @@ class InvMovementsController extends AppController {
 			}else{
 				$empty++;
 			}
-			if($empty == 2){
+			if(isset($this->request->data['InvMovement']['searchDate']) && $this->request->data['InvMovement']['searchDate']){
+				$parameters['searchDate'] = trim(strip_tags(str_replace("/", "", $this->request->data['InvMovement']['searchDate'])));
+			}else{
+				$empty++;
+			}
+			if($empty == 3){
 				$parameters['search']='empty';
 			}else{
 				$parameters['search']='yes';
@@ -729,6 +754,13 @@ class InvMovementsController extends AppController {
 		if(isset($this->passedArgs['document_code'])){
 			$filters['InvMovement.document_code LIKE'] = '%'.strtoupper($this->passedArgs['document_code']).'%';
 			$document_code = $this->passedArgs['document_code'];
+		}
+		
+		if(isset($this->passedArgs['searchDate'])){
+			$catchDate = $this->passedArgs['searchDate'];
+			$finalDate = substr($catchDate, 0, 2)."/".substr($catchDate, 2, 2)."/".substr($catchDate, 4, 4);		
+			$filters['InvMovement.date'] = $finalDate;
+			$searchDate = $finalDate;
 		}
 		////////////////////////////END - SETTING URL FILTERS//////////////////////////////////////
 		
@@ -756,6 +788,7 @@ class InvMovementsController extends AppController {
 		$this->set('invMovements', $this->paginate('InvMovement'));
 		$this->set('code', $code);
 		$this->set('document_code', $document_code);
+		$this->set('searchDate', $searchDate);
 		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
 	}
 	
@@ -767,6 +800,7 @@ class InvMovementsController extends AppController {
 		$filters = array();
 		$code = '';
 		$document_code = '';
+		$searchDate = '';
 		$period = $this->Session->read('Period.name');
 		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
 		
@@ -786,7 +820,12 @@ class InvMovementsController extends AppController {
 			}else{
 				$empty++;
 			}
-			if($empty == 2){
+			if(isset($this->request->data['InvMovement']['searchDate']) && $this->request->data['InvMovement']['searchDate']){
+				$parameters['searchDate'] = trim(strip_tags(str_replace("/", "", $this->request->data['InvMovement']['searchDate'])));
+			}else{
+				$empty++;
+			}
+			if($empty == 3){
 				$parameters['search']='empty';
 			}else{
 				$parameters['search']='yes';
@@ -805,6 +844,12 @@ class InvMovementsController extends AppController {
 		if(isset($this->passedArgs['document_code'])){
 			$filters['InvMovement.document_code LIKE'] = '%'.strtoupper($this->passedArgs['document_code']).'%';
 			$document_code = $this->passedArgs['document_code'];
+		}
+		if(isset($this->passedArgs['searchDate'])){
+			$catchDate = $this->passedArgs['searchDate'];
+			$finalDate = substr($catchDate, 0, 2)."/".substr($catchDate, 2, 2)."/".substr($catchDate, 4, 4);		
+			$filters['InvMovement.date'] = $finalDate;
+			$searchDate = $finalDate;
 		}
 		////////////////////////////END - SETTING URL FILTERS//////////////////////////////////////
 		
@@ -832,6 +877,7 @@ class InvMovementsController extends AppController {
 		$this->set('invMovements', $this->paginate('InvMovement'));
 		$this->set('code', $code);
 		$this->set('document_code', $document_code);
+		$this->set('searchDate', $searchDate);
 		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
 	}
 	
@@ -842,6 +888,7 @@ class InvMovementsController extends AppController {
 		$code = "";
 		$document_code = '';  //seria code de pur_purchases
 		$note_code = "";
+		$searchDate = '';
 		$period = $this->Session->read('Period.name');
 		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
 		
@@ -866,7 +913,12 @@ class InvMovementsController extends AppController {
 			}else{
 				$empty++;
 			}
-			if($empty == 3){
+			if(isset($this->request->data['InvMovement']['searchDate']) && $this->request->data['InvMovement']['searchDate']){
+				$parameters['searchDate'] = trim(strip_tags(str_replace("/", "", $this->request->data['InvMovement']['searchDate'])));
+			}else{
+				$empty++;
+			}
+			if($empty == 4){
 				$parameters['search']='empty';
 			}else{
 				$parameters['search']='yes';
@@ -884,7 +936,12 @@ class InvMovementsController extends AppController {
 			$filters['InvMovement.document_code LIKE'] = '%'.strtoupper($this->passedArgs['document_code']).'%';
 			$document_code = $this->passedArgs['document_code'];
 		}
-		
+		if(isset($this->passedArgs['searchDate'])){
+			$catchDate = $this->passedArgs['searchDate'];
+			$finalDate = substr($catchDate, 0, 2)."/".substr($catchDate, 2, 2)."/".substr($catchDate, 4, 4);		
+			$filters['InvMovement.date'] = $finalDate;
+			$searchDate = $finalDate;
+		}
 		// Filter by NoteCode, doing like this because there isn't association between movements and sales :( => 2.0 =)
 		/////////////////////////////////////////////
 		
@@ -938,6 +995,7 @@ class InvMovementsController extends AppController {
 		$this->set('code', $code);
 		$this->set('document_code', $document_code);
 		$this->set('note_code', $note_code);
+		$this->set('searchDate', $searchDate);
 		////////////////////////////////END - LIST ONLY SALES MOVEMENTS (easier) /////////////////////////////////////////
 	}
 	
@@ -949,6 +1007,7 @@ class InvMovementsController extends AppController {
 		$code = "";
 		$document_code = '';  //seria code de pur_purchases
 		$note_code = "";
+		$searchDate = "";
 		$period = $this->Session->read('Period.name');
 		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
 		
@@ -973,7 +1032,12 @@ class InvMovementsController extends AppController {
 			}else{
 				$empty++;
 			}
-			if($empty == 3){
+			if(isset($this->request->data['InvMovement']['searchDate']) && $this->request->data['InvMovement']['searchDate']){
+				$parameters['searchDate'] = trim(strip_tags(str_replace("/", "", $this->request->data['InvMovement']['searchDate'])));
+			}else{
+				$empty++;
+			}
+			if($empty == 4){
 				$parameters['search']='empty';
 			}else{
 				$parameters['search']='yes';
@@ -992,7 +1056,12 @@ class InvMovementsController extends AppController {
 			$filters['InvMovement.document_code LIKE'] = '%'.strtoupper($this->passedArgs['document_code']).'%';
 			$document_code = $this->passedArgs['document_code'];
 		}
-		
+		if(isset($this->passedArgs['searchDate'])){
+			$catchDate = $this->passedArgs['searchDate'];
+			$finalDate = substr($catchDate, 0, 2)."/".substr($catchDate, 2, 2)."/".substr($catchDate, 4, 4);		
+			$filters['InvMovement.date'] = $finalDate;
+			$searchDate = $finalDate;
+		}
 		// Filter by NoteCode, doing like this because there isn't association between movements and sales :( => 2.0 =)
 		/////////////////////////////////////////////
 		
@@ -1054,6 +1123,7 @@ class InvMovementsController extends AppController {
 		$this->set('code', $code);
 		$this->set('document_code', $document_code);
 		$this->set('note_code', $note_code);
+		$this->set('searchDate', $searchDate);
 		////////////////////////////////END - LIST ONLY SALES MOVEMENTS (easier) /////////////////////////////////////////
 	}
 	///////////////////////////////////////////// END - INDEX ////////////////////////////////////////////////
@@ -1197,7 +1267,7 @@ class InvMovementsController extends AppController {
 			foreach ($arrMovementsSaved as $key => $value) {
 				$invMovementDetails[$key]['itemId']=$value['itemId'];
 				$invMovementDetails[$key]['item']=$value['item'];
-				$invMovementDetails[$key]['cantidadCompra']=$arrPurchases[$key]['cantidadCompra'];
+				//$invMovementDetails[$key]['cantidadCompra']=$arrPurchases[$key]['cantidadCompra'];
 				$invMovementDetails[$key]['stock']=$value['stock'];
 				$invMovementDetails[$key]['cantidad']=$value['cantidad'];
 			}
@@ -1370,6 +1440,7 @@ class InvMovementsController extends AppController {
 		///////////////////////////////////////START - CREATING VARIABLES//////////////////////////////////////
 		$filters = array();
 		$document_code = '';
+		$searchDate = "";
 		$period = $this->Session->read('Period.name');
 		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
 		
@@ -1384,7 +1455,12 @@ class InvMovementsController extends AppController {
 			}else{
 				$empty++;
 			}
-			if($empty == 1){
+			if(isset($this->request->data['InvMovement']['searchDate']) && $this->request->data['InvMovement']['searchDate']){
+				$parameters['searchDate'] = trim(strip_tags(str_replace("/", "", $this->request->data['InvMovement']['searchDate'])));
+			}else{
+				$empty++;
+			}
+			if($empty == 2){
 				$parameters['search']='empty';
 			}else{
 				$parameters['search']='yes';
@@ -1399,6 +1475,12 @@ class InvMovementsController extends AppController {
 		if(isset($this->passedArgs['document_code'])){
 			$filters['InvMovement.document_code LIKE'] = '%'.strtoupper($this->passedArgs['document_code']).'%';
 			$document_code = $this->passedArgs['document_code'];
+		}
+		if(isset($this->passedArgs['searchDate'])){
+			$catchDate = $this->passedArgs['searchDate'];
+			$finalDate = substr($catchDate, 0, 2)."/".substr($catchDate, 2, 2)."/".substr($catchDate, 4, 4);		
+			$filters['InvMovement.date'] = $finalDate;
+			$searchDate = $finalDate;
 		}
 		////////////////////////////END - SETTING URL FILTERS//////////////////////////////////////
 		
@@ -1443,6 +1525,7 @@ class InvMovementsController extends AppController {
 		$this->set('invMovements', $pagination);
 		$this->set('document_code', $document_code);
 		$this->set('warehouseDestination',$warehouseDestination);
+		$this->set('searchDate', $searchDate);
 		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
 	}
 	
@@ -1738,18 +1821,7 @@ class InvMovementsController extends AppController {
 			'group'=>array('InvMovementDetail.inv_item_id'),
 			'order'=>array('InvMovementDetail.inv_item_id')
 		));
-		//the array format is like this:
-		/*
-		array(
-			(int) 0 => array(
-				'InvMovementDetail' => array(
-					'inv_item_id' => (int) 9
-				),
-				(int) 0 => array(
-					'stock' => '20'
-				)
-			),...etc,etc
-		)	*/
+
 		return $movements;
 	}
 	

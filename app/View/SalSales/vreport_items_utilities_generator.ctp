@@ -30,32 +30,33 @@
 		</div>
 		<div class="widget-content nopadding">
 			<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-horizontal', 'novalidate' => true));?>
-				<?php
-				/*
-				echo $this->BootstrapForm->input('year', array(
-					'label' => 'Gestión:',
-					'id'=>'cbxYear',
-					'type'=>'select',
-					'class'=>'span2',
-					'options'=>$years 
-				));
-				echo $this->BootstrapForm->input('month', array(
-					'label' => 'Mes:',
-					'id'=>'cbxMonth',
-					'type'=>'select',
-					'class'=>'span2',
-					'options'=>array(0=>"Todos", 1=>"Enero", 2=>"Febrero", 3=>"Marzo", 4=>"Abril", 5=>"Mayo", 6=>"Junio", 7=>"Julio", 8=>"Agosto", 9=>"Septiembre", 10=>"Octubre", 11=>"Noviembre", 12=>"Diciembre")
-				));
-				*/
-				echo $this->BootstrapForm->input('start_date', array(
-					'label' => '* Fecha Inicio:',
-					'id'=>'txtReportStartDate'
-				  ));
+			<?php
+			echo $this->BootstrapForm->input('start_date', array(
+				'label' => '* Fecha Inicio:',
+				'id'=>'txtReportStartDate'
+			));
 
-				  echo $this->BootstrapForm->input('finish_date', array(
-					'label' => '* Fecha Fin:',
-					'id'=>'txtReportFinishDate'
-				  ));
+			echo $this->BootstrapForm->input('finish_date', array(
+				'label' => '* Fecha Fin:',
+				'id'=>'txtReportFinishDate'
+			));
+				  
+				  
+			echo $this->BootstrapForm->input('customer', array(
+				'label' => '* Cliente:',
+				'id'=>'cbxCustomer',
+				'type'=>'select',
+				'options'=>$customers,
+				'class'=>'span6'  
+			));
+			
+			echo $this->BootstrapForm->input('salesmen', array(
+				'label' => '* Vendedor:',
+				'id'=>'cbxSalesman',
+				'type'=>'select',
+				'options'=>$salesmen,
+				'class'=>'span6'  
+			));
 				  
 			 echo $this->BootstrapForm->input('currency', array(
 				'label' => '* Moneda:',

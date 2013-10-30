@@ -114,9 +114,9 @@ var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 				"sSearch": "Filtrar:",
 				 "sZeroRecords":  "No se encontro nada.",
 				 //"sInfo":         "Ids from _START_ to _END_ of _TOTAL_ total" //when pagination exists
-				 "sInfo": "Encontrados _TOTAL_ Items",
-				 "sInfoEmpty": "Encontrados 0 Items",
-				 "sInfoFiltered": "(filtrado de _MAX_ Items)"
+				 "sInfo": "Encontrados _TOTAL_ Productos",
+				 "sInfoEmpty": "Encontrados 0 Productos",
+				 "sInfoFiltered": "(filtrado de _MAX_ Productos)"
 			},
 			"aoColumnDefs": [
 			  { 'bSortable': false, 'aTargets': [ 0 ] }// do not sort first column
@@ -320,20 +320,20 @@ function ajax_get_group_items_and_filters(){ //Report
 		$.ajax({
             type:"POST",
             url:moduleController + "ajax_get_graphics_data",			
-            data:{year: $('#cbxYear').val(), month: $('#cbxMonth').val(), warehouse:$('#cbxWarehouse').val(), item:items},
+            data:{year: $('#cbxYear').val(), movementType: $('#cbxMovementType').val(), warehouse:$('#cbxWarehouse').val(), item:items},
 			beforeSend: function(){
 				$('#boxProcessing').text("Procesando...");
 			},
             success: function(data){
-				var arrayData = data.split(",");
-				var pieOptions = createPieOptions();
+				//var arrayData = data.split(",");
+				//var pieOptions = createPieOptions();
 				var barOptions = createBarOptions();
 				
 				//Display graph    
-				$.plot($(".pie"), createPieData(arrayData[0]), pieOptions);
-				$.plot($(".pie2"), createPieData(arrayData[1]), pieOptions);
-				$.plot($(".bars"), createBarData(arrayData[2]), barOptions);
-				$.plot($(".bars2"), createBarData(arrayData[3]), barOptions);
+				//$.plot($(".pie"), createPieData(arrayData[0]), pieOptions);
+				//$.plot($(".pie2"), createPieData(arrayData[1]), pieOptions);
+				$.plot($(".bars"), createBarData(data), barOptions);
+				//$.plot($(".bars2"), createBarData(arrayData[3]), barOptions);
 				
 				//hide message
 				$('#boxProcessing').text("");

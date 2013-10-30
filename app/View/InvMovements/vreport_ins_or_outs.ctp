@@ -44,7 +44,7 @@ if($initialData['detail'] == "NO"){
 ?>
 	<table class="report-table" border="0" style="border-collapse:collapse; width:100%;">
 		<tr>
-			<td colspan="2" ><span style="font-weight:bold;">Item: </span><?php echo $val['Item']['codeName']; ?></td>
+			<td colspan="2" ><span style="font-weight:bold;">Producto: </span><?php echo $val['Item']['codeName']; ?></td>
 		</tr>
 		<tr>
 			<td><span style="font-weight:bold;">Categoria: </span><?php echo $val['Item']['category']; ?></td>
@@ -57,25 +57,35 @@ if($initialData['detail'] == "NO"){
 			<thead>
 				<?php if($initialData['detail'] == 'YES'){ //start - detail YES?>
 				<tr> <th style="width:100%" colspan="11">Movimientos</th></tr>
+				<tr >
+					<th colspan="3" style="text-align:right;"></th>
+					<th colspan="4">Compra</th>
+					<th colspan="2">Venta</th>
+				</tr>
 				<tr>
 					<th>Fecha</th>
-					<th>Codigo</th>
-					<th>Codigo <br> Ref</th>
 					<th>Nota <br> Remisión</th>
-					<th>Cant. <br> (Uni)</th>
-					<th>P.FOB <br><?php echo $currencyAbbr ; ?></th>
-					<th>P.FOB x Cant. <br><?php echo $currencyAbbr ; ?></th>
-					<th>P.CIF <br><?php echo $currencyAbbr ; ?></th>
-					<th>P.CIF x Cant. <br><?php echo $currencyAbbr ; ?></th>
-					<th>P.Venta <br><?php echo $currencyAbbr ; ?></th>
-					<th>P.Venta x Cant. <br><?php echo $currencyAbbr ; ?></th>
+					<th>Cantidad <br> (Unidad)</th>
+					<th>Precio Unitario FOB <br><?php echo $currencyAbbr ; ?></th>
+					<th>Precio Total FOB <br><?php echo $currencyAbbr ; ?></th>
+					<th>Precio Unitario CIF <br><?php echo $currencyAbbr ; ?></th>
+					<th>Precio Total CIF<br><?php echo $currencyAbbr ; ?></th>
+					<th>Precio Unitario Venta <br><?php echo $currencyAbbr ; ?></th>
+					<th>Precio Total Venta <br><?php echo $currencyAbbr ; ?></th>
 				</tr>
 				<?php }else{ //end - detail YES?>
+				<tr >
+					<th colspan="2" style="text-align:right;"></th>
+					<th colspan="2">Compra</th>
+					<th colspan="1">Venta</th>
+				</tr>
+				<tr>
 					<th></th>
-					<th>Cant. <br> (Uni)</th>
-					<th>P.FOB x Cant. <br><?php echo $currencyAbbr ; ?></th>
-					<th>P.CIF x Cant. <br><?php echo $currencyAbbr ; ?></th>
-					<th>P.Venta x Cant. <br><?php echo $currencyAbbr ; ?></th>
+					<th>Cantidad <br> (Unidad)</th>
+					<th>Precio FOB <br><?php echo $currencyAbbr ; ?></th>
+					<th>Precip CIF<br><?php echo $currencyAbbr ; ?></th>
+					<th>Precio Venta<br><?php echo $currencyAbbr ; ?></th>
+				</tr>
 				<?php } //end - detail NO?>
 			</thead>
 			<tbody>
@@ -83,8 +93,6 @@ if($initialData['detail'] == "NO"){
 					<?php if($initialData['detail'] == 'YES'){ //start - detail YES?>
 					<tr style="text-align:center;">
 						<td style="text-align:left;" ><?php echo $movement['date'];?></td>
-						<td style="text-align:left;"><?php echo $movement['code'];?></td>
-						<td style="text-align:left;"><?php echo $movement['document_code'];?></td>
 						<td style="text-align:left;"><?php echo $movement['note_code'];?></td>
 						<td style="font-weight:bold;"><?php echo $movement['quantity'];?></td>
 						<td ><?php echo $movement['fob'];?></td>
@@ -103,7 +111,7 @@ if($initialData['detail'] == "NO"){
 					
 					$extraEmptyTotalTds = "<td ></td>";
 					?>
-					<td colspan="4" style="text-align:right; padding-right: 10px">Total: </td>
+					<td colspan="2" style="text-align:right; padding-right: 10px">Total: </td>
 					<?php }else{//end - detail YES?>
 					<td>Total:</td>
 					<?php }//end - detail NO ?>
@@ -140,12 +148,17 @@ if($initialData['detail'] == 'NO'){ //start - detail NO
 	<div style="font-size: 20px; font-weight: bold; text-align:center; text-decoration: underline;">TOTAL GLOBAL:</div>
 	<br>
 	<table class="report-table" border="1" style="border-collapse:collapse; width:100%;">
+		<tr >
+			<th colspan="2" style="text-align:right;"></th>
+			<th colspan="2">Compra</th>
+			<th colspan="1">Venta</th>
+		</tr>
 		<tr>
 			<th></th>
-			<th>Cant. <br> (Uni)</th>
-			<th>P.FOB x Cant. <br><?php echo $currencyAbbr ; ?></th>
-			<th>P.CIF x Cant. <br><?php echo $currencyAbbr ; ?></th>
-			<th>P.Venta x Cant. <br><?php echo $currencyAbbr ; ?></th>
+			<th>Cantidad <br> (Unidad)</th>
+			<th>Precio FOB <br><?php echo $currencyAbbr ; ?></th>
+			<th>Precio CIF <br><?php echo $currencyAbbr ; ?></th>
+			<th>Precio Venta <br><?php echo $currencyAbbr ; ?></th>
 		</tr>
 		<tr style="text-align:center;font-weight:bold;">
 			<td>TOTAL:</td>

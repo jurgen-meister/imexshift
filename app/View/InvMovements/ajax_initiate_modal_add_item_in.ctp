@@ -1,7 +1,7 @@
 <?php
 						
 		echo $this->BootstrapForm->input('items_id', array(				
-		'label' => 'Item:',
+		'label' => 'Producto:',
 		'id'=>'cbxModalItems',
 		'class'=>'span12',
 		));

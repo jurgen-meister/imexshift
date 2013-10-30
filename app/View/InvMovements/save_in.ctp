@@ -119,11 +119,13 @@
 				
 				echo $this->BootstrapForm->input('code', array(
 					'id'=>'txtCode',
-					'label'=>'Codigo:',
+					//'label'=>'Codigo:',
+					'label'=>false,
 					'autocomplete'=>'off',
-					'style'=>'background-color:#EEEEEE',
+					'style'=>'background-color:#EEEEEE;display:none;',
 					'disabled'=>$disable,
 					'placeholder'=>'El sistema generará el código',
+					'div'=>false
 				));
 				
 				echo $this->BootstrapForm->input('date_in', array(
@@ -250,7 +252,7 @@
 					echo '<div id="boxModalIntiateItemStock">';
 						//////////////////////////////////////
 						echo $this->BootstrapForm->input('items_id', array(				
-						'label' => 'Item:',
+						'label' => 'Producto:',
 						'id'=>'cbxModalItems',
 						'class'=>'span12'
 						));

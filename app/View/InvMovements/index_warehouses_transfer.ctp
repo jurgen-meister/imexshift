@@ -1,3 +1,4 @@
+<?php echo $this->Html->script('modules/InvMovementsIndex', FALSE); ?> 
 <!--<div class="row-fluid">--> <!-- No va porque ya esta dentro del row-fluid del container del template principal-->
 <?php echo  $this->BootstrapPaginator->options(array('url' => $this->passedArgs));?>
 <!-- ************************************************************************************************************************ -->
@@ -21,15 +22,23 @@
 		<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-search', 'novalidate' => true));?>
 		<fieldset>
 					<?php
+					/*
 					echo $this->BootstrapForm->input('document_code', array(				
 							//'label' => 'Codigo Compra:',
 							'id'=>'txtCodeDocument',
 							'value'=>$document_code,
 							'placeholder'=>'Codigo Transferencia'
 							));
+					*/
+					echo $this->BootstrapForm->input('searchDate', array(				
+							'id'=>'txtDate',
+							'value'=>$searchDate,
+							'placeholder'=>'Fecha'
+						));
 					?>
 				<?php
 					echo $this->BootstrapForm->submit('<i class="icon-search icon-white"></i>',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSearch', 'title'=>'Buscar'));
+					echo $this->BootstrapForm->submit('<i class="icon-trash icon-white"></i>',array('class'=>'btn btn-danger','div'=>false, 'id'=>'btnClearSearch', 'title'=>'Limpiar Busqueda'));
 				?>
 		</fieldset>
 		<?php echo $this->BootstrapForm->end();?>
@@ -54,7 +63,7 @@
 		<table class="table table-striped table-bordered table-hover">
 			<tr>
 				<th><?php echo "#";?></th>
-				<th><?php echo 'Codigo Transferencia';?></th>
+				<!--<th><?php// echo 'Codigo Transferencia';?></th>-->
 				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('inv_warehouse_id', 'Almacen Origen (Salida)');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('inv_warehouse_id', 'Almacen Destino (Entrada)');?></th>
@@ -63,17 +72,12 @@
 		<?php foreach ($invMovements as $invMovement): ?>
 			<tr>
 				<td><?php echo $cont++;?></td>
-				<td>
+				<!--<td>
 					<?php 
-					
-					//if(isset($invMovement['InvMovement']['document_code'])){
 					echo h($invMovement['InvMovement']['document_code']); 
-					//}else{
-					//	echo 'Sin codigo';
-					//}
 					?>
 					&nbsp;
-				</td>
+				</td>-->
 				
 				<td>
 					<?php 

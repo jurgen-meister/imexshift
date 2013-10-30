@@ -73,7 +73,15 @@ $('#btnGenerateReportItemsUtilities').click(function(){
             type:"POST",
 			async:false, // the key to open new windows when success
             url:moduleController + "ajax_generate_report_items_utilities",			
-            data:{startDate: $('#txtReportStartDate').val(), finishDate: $('#txtReportFinishDate').val(), currency:$('#cbxReportCurrency').val(), items:items},
+            data:{startDate: $('#txtReportStartDate').val(),
+				finishDate: $('#txtReportFinishDate').val(),
+				currency:$('#cbxReportCurrency').val(),
+				items:items,
+				customer:$('#cbxCustomer').val(),
+				customerName:$('#cbxCustomer option:selected').text(),
+				salesman:$('#cbxSalesman').val(),
+				salesmanName:$('#cbxSalesman option:selected').text()
+			},
 			beforeSend: function(){
 				$('#boxProcessing').text('Procesando...');
 			},
@@ -209,12 +217,10 @@ $('#btnGenerateReportItemsUtilities').click(function(){
 				var barOptions = createBarOptions();
 				
 				//Display graph    
-				
 				$.plot($(".bars"), createBarData(arrayData[0]), barOptions);
 				$.plot($(".bars2"), createBarData(arrayData[1]), barOptions);
 				$.plot($(".pie"), createPieData(arrayData[2]), pieOptions);
 				$.plot($(".pie2"), createPieData(arrayData[3]), pieOptions);
-				
 				
 				
 				$("#topMoreQuantity").html(createTableTops("Cantidad", arrayData[4]));
@@ -332,6 +338,7 @@ $('#btnGenerateReportCustomers').click(function(){
 	var year =  $("#cbxYear").val();
 	var month =  $("#cbxMonth").val();
 	var customer = $("#cbxCustomer").val();
+	var showMode = $("#cbxShowMode").val();
 	
 	var items = getSelectedCheckboxes();
 	if(items.length > 0){
@@ -341,6 +348,7 @@ $('#btnGenerateReportCustomers').click(function(){
 						year:year,
 						month:month,
 						customer:customer,
+						showMode:showMode,
 						items:items
 					   };
 			//ajax_generate_report(DATA);
@@ -360,6 +368,8 @@ $('#btnGenerateReportPurchasesCustomers').click(function(){
 	var year =  $("#cbxYear").val();
 	var month =  $("#cbxMonth").val();
 	var zero =  $("#cbxShowZero").val();
+	var customer = $("#cbxCustomer").val();
+	var customerName = $("#cbxCustomer option:selected").text();
 	var monthName =  $("#cbxMonth option:selected").text();
 	var items = getSelectedCheckboxes();
 	if(items.length > 0){
@@ -368,6 +378,8 @@ $('#btnGenerateReportPurchasesCustomers').click(function(){
 						groupBy:groupBy,
 						year:year,
 						month:month,
+						customer:customer,
+						customerName:customerName,
 						zero:zero,
 						monthName:monthName,
 						items:items
@@ -441,6 +453,7 @@ $('#btnGenerateReportSalesmen').click(function(){
 	var year =  $("#cbxYear").val();
 	var month =  $("#cbxMonth").val();
 	var salesman = $("#cbxSalesman").val();
+	var showMode = $("#cbxShowMode").val();
 	
 	var items = getSelectedCheckboxes();
 	if(items.length > 0){
@@ -450,6 +463,7 @@ $('#btnGenerateReportSalesmen').click(function(){
 						year:year,
 						month:month,
 						salesman:salesman,
+						showMode:showMode,
 						items:items
 					   };
 			ajax_get_graphics_items_salesmen(DATA);
@@ -535,9 +549,9 @@ function ajax_get_group_items_and_filters(){ //Report
 				"sSearch": "Filtrar:",
 				 "sZeroRecords":  "No se encontro nada.",
 				 //"sInfo":         "Ids from _START_ to _END_ of _TOTAL_ total" //when pagination exists
-				 "sInfo": "Encontrados _TOTAL_ Items",
-				 "sInfoEmpty": "Encontrados 0 Items",
-				 "sInfoFiltered": "(filtrado de _MAX_ Items)"
+				 "sInfo": "Encontrados _TOTAL_ Productos",
+				 "sInfoEmpty": "Encontrados 0 Productos",
+				 "sInfoFiltered": "(filtrado de _MAX_ Productos)"
 			},
 			"aoColumnDefs": [
 			  { 'bSortable': false, 'aTargets': [ 0 ] }// do not sort first column
