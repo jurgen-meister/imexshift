@@ -9,7 +9,7 @@ $(document).ready(function(){
 	var itemsCounter = 0;
 	startEventsWhenExistsItems();
 	
-	//$('select').select2(); 
+	$('select').select2(); 
 	//startDataTable();
 	
 	//When exist items, it starts its events and fills arrayItemsAlreadySaved

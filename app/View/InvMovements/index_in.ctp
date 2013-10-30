@@ -1,3 +1,4 @@
+<?php echo $this->Html->script('modules/InvMovementsIndex', FALSE); ?> 
 <!--<div class="row-fluid">--> <!-- No va porque ya esta dentro del row-fluid del container del template principal-->
 <?php echo  $this->BootstrapPaginator->options(array('url' => $this->passedArgs));?>
 <!-- ************************************************************************************************************************ -->
@@ -21,23 +22,30 @@
 			<?php echo $this->BootstrapForm->create('InvMovement', array('class' => 'form-search', 'novalidate' => true));?>
 			<fieldset>
 						<?php
+						/*
 						echo $this->BootstrapForm->input('code', array(				
-										//'label' => 'Codigo Entrada:',
 										'id'=>'txtCode',
 										'value'=>$code,
 										'placeholder'=>'Codigo Entrada'
 										));
-						?>
-						<?php
+						
 						echo $this->BootstrapForm->input('document_code', array(				
 								'id'=>'txtCodeDocument',
 								'value'=>$document_code,
 								'placeholder'=>'Codigo Documento'
 								));
+						 * 
+						 */
+						echo $this->BootstrapForm->input('searchDate', array(				
+							'id'=>'txtDate',
+							'value'=>$searchDate,
+							'placeholder'=>'Fecha'
+						));
 						?>
 
 					<?php
 						echo $this->BootstrapForm->submit('<i class="icon-search icon-white"></i>',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSearch', 'title'=>'Buscar'));
+						echo $this->BootstrapForm->submit('<i class="icon-trash icon-white"></i>',array('class'=>'btn btn-danger','div'=>false, 'id'=>'btnClearSearch', 'title'=>'Limpiar Busqueda'));
 					?>
 
 			</fieldset>
@@ -64,36 +72,26 @@
 		<table class="table table-striped table-bordered table-hover">
 			<tr>
 				<th><?php echo "#";?></th>
-				<th><?php echo 'Codigo Entrada';?></th>
-				<th><?php echo 'Codigo Documento Ref';?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('inv_movement_type_id', 'Movimiento');?></th>
+				<!--<th><?php //echo 'Codigo Entrada';?></th>-->
+				<!--<th><?php //echo 'Codigo Documento Ref';?></th>-->
 				<th><?php echo $this->BootstrapPaginator->sort('date', 'Fecha');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('inv_movement_type_id', 'Movimiento');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('inv_warehouse_id', 'Almacen');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('lc_state', 'Estado Documento');?></th>
 			</tr>
 		<?php foreach ($invMovements as $invMovement): ?>
 			<tr>
 				<td><?php echo $cont++;?></td>
-				<td><?php echo h($invMovement['InvMovement']['code']); ?>&nbsp;</td>
-				<td>
-					<?php 
-					
-					//if(isset($invMovement['InvMovement']['document_code'])){
-					echo h($invMovement['InvMovement']['document_code']); 
-					//}else{
-					//	echo 'Sin codigo';
-					//}
-					?>
-					&nbsp;
-				</td>
-				<td>
-					<?php echo h($invMovement['InvMovementType']['name']); ?>
-				</td>
+				<!--<td><?php //echo h($invMovement['InvMovement']['code']); ?>&nbsp;</td>-->
+				<!--<td><?php //echo h($invMovement['InvMovement']['document_code']); ?></td>-->
 				<td>
 					<?php 
 					echo date("d/m/Y", strtotime($invMovement['InvMovement']['date']));
 					?>
 					&nbsp;
+				</td>
+				<td>
+					<?php echo h($invMovement['InvMovementType']['name']); ?>
 				</td>
 				<td>
 					<?php echo h($invMovement['InvWarehouse']['name']); ?>

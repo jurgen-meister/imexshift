@@ -710,6 +710,7 @@ class InvMovementsController extends AppController {
 		$filters = array();
 		$code = '';
 		$document_code = '';
+		$searchDate = '';
 		$period = $this->Session->read('Period.name');
 		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
 		
@@ -729,7 +730,12 @@ class InvMovementsController extends AppController {
 			}else{
 				$empty++;
 			}
-			if($empty == 2){
+			if(isset($this->request->data['InvMovement']['searchDate']) && $this->request->data['InvMovement']['searchDate']){
+				$parameters['searchDate'] = trim(strip_tags(str_replace("/", "", $this->request->data['InvMovement']['searchDate'])));
+			}else{
+				$empty++;
+			}
+			if($empty == 3){
 				$parameters['search']='empty';
 			}else{
 				$parameters['search']='yes';
@@ -748,6 +754,13 @@ class InvMovementsController extends AppController {
 		if(isset($this->passedArgs['document_code'])){
 			$filters['InvMovement.document_code LIKE'] = '%'.strtoupper($this->passedArgs['document_code']).'%';
 			$document_code = $this->passedArgs['document_code'];
+		}
+		
+		if(isset($this->passedArgs['searchDate'])){
+			$catchDate = $this->passedArgs['searchDate'];
+			$finalDate = substr($catchDate, 0, 2)."/".substr($catchDate, 2, 2)."/".substr($catchDate, 4, 4);		
+			$filters['InvMovement.date'] = $finalDate;
+			$searchDate = $finalDate;
 		}
 		////////////////////////////END - SETTING URL FILTERS//////////////////////////////////////
 		
@@ -775,6 +788,7 @@ class InvMovementsController extends AppController {
 		$this->set('invMovements', $this->paginate('InvMovement'));
 		$this->set('code', $code);
 		$this->set('document_code', $document_code);
+		$this->set('searchDate', $searchDate);
 		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
 	}
 	
@@ -786,6 +800,7 @@ class InvMovementsController extends AppController {
 		$filters = array();
 		$code = '';
 		$document_code = '';
+		$searchDate = '';
 		$period = $this->Session->read('Period.name');
 		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
 		
@@ -805,7 +820,12 @@ class InvMovementsController extends AppController {
 			}else{
 				$empty++;
 			}
-			if($empty == 2){
+			if(isset($this->request->data['InvMovement']['searchDate']) && $this->request->data['InvMovement']['searchDate']){
+				$parameters['searchDate'] = trim(strip_tags(str_replace("/", "", $this->request->data['InvMovement']['searchDate'])));
+			}else{
+				$empty++;
+			}
+			if($empty == 3){
 				$parameters['search']='empty';
 			}else{
 				$parameters['search']='yes';
@@ -824,6 +844,12 @@ class InvMovementsController extends AppController {
 		if(isset($this->passedArgs['document_code'])){
 			$filters['InvMovement.document_code LIKE'] = '%'.strtoupper($this->passedArgs['document_code']).'%';
 			$document_code = $this->passedArgs['document_code'];
+		}
+		if(isset($this->passedArgs['searchDate'])){
+			$catchDate = $this->passedArgs['searchDate'];
+			$finalDate = substr($catchDate, 0, 2)."/".substr($catchDate, 2, 2)."/".substr($catchDate, 4, 4);		
+			$filters['InvMovement.date'] = $finalDate;
+			$searchDate = $finalDate;
 		}
 		////////////////////////////END - SETTING URL FILTERS//////////////////////////////////////
 		
@@ -851,6 +877,7 @@ class InvMovementsController extends AppController {
 		$this->set('invMovements', $this->paginate('InvMovement'));
 		$this->set('code', $code);
 		$this->set('document_code', $document_code);
+		$this->set('searchDate', $searchDate);
 		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
 	}
 	
@@ -861,6 +888,7 @@ class InvMovementsController extends AppController {
 		$code = "";
 		$document_code = '';  //seria code de pur_purchases
 		$note_code = "";
+		$searchDate = '';
 		$period = $this->Session->read('Period.name');
 		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
 		
@@ -885,7 +913,12 @@ class InvMovementsController extends AppController {
 			}else{
 				$empty++;
 			}
-			if($empty == 3){
+			if(isset($this->request->data['InvMovement']['searchDate']) && $this->request->data['InvMovement']['searchDate']){
+				$parameters['searchDate'] = trim(strip_tags(str_replace("/", "", $this->request->data['InvMovement']['searchDate'])));
+			}else{
+				$empty++;
+			}
+			if($empty == 4){
 				$parameters['search']='empty';
 			}else{
 				$parameters['search']='yes';
@@ -903,7 +936,12 @@ class InvMovementsController extends AppController {
 			$filters['InvMovement.document_code LIKE'] = '%'.strtoupper($this->passedArgs['document_code']).'%';
 			$document_code = $this->passedArgs['document_code'];
 		}
-		
+		if(isset($this->passedArgs['searchDate'])){
+			$catchDate = $this->passedArgs['searchDate'];
+			$finalDate = substr($catchDate, 0, 2)."/".substr($catchDate, 2, 2)."/".substr($catchDate, 4, 4);		
+			$filters['InvMovement.date'] = $finalDate;
+			$searchDate = $finalDate;
+		}
 		// Filter by NoteCode, doing like this because there isn't association between movements and sales :( => 2.0 =)
 		/////////////////////////////////////////////
 		
@@ -957,6 +995,7 @@ class InvMovementsController extends AppController {
 		$this->set('code', $code);
 		$this->set('document_code', $document_code);
 		$this->set('note_code', $note_code);
+		$this->set('searchDate', $searchDate);
 		////////////////////////////////END - LIST ONLY SALES MOVEMENTS (easier) /////////////////////////////////////////
 	}
 	
@@ -968,6 +1007,7 @@ class InvMovementsController extends AppController {
 		$code = "";
 		$document_code = '';  //seria code de pur_purchases
 		$note_code = "";
+		$searchDate = "";
 		$period = $this->Session->read('Period.name');
 		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
 		
@@ -992,7 +1032,12 @@ class InvMovementsController extends AppController {
 			}else{
 				$empty++;
 			}
-			if($empty == 3){
+			if(isset($this->request->data['InvMovement']['searchDate']) && $this->request->data['InvMovement']['searchDate']){
+				$parameters['searchDate'] = trim(strip_tags(str_replace("/", "", $this->request->data['InvMovement']['searchDate'])));
+			}else{
+				$empty++;
+			}
+			if($empty == 4){
 				$parameters['search']='empty';
 			}else{
 				$parameters['search']='yes';
@@ -1011,7 +1056,12 @@ class InvMovementsController extends AppController {
 			$filters['InvMovement.document_code LIKE'] = '%'.strtoupper($this->passedArgs['document_code']).'%';
 			$document_code = $this->passedArgs['document_code'];
 		}
-		
+		if(isset($this->passedArgs['searchDate'])){
+			$catchDate = $this->passedArgs['searchDate'];
+			$finalDate = substr($catchDate, 0, 2)."/".substr($catchDate, 2, 2)."/".substr($catchDate, 4, 4);		
+			$filters['InvMovement.date'] = $finalDate;
+			$searchDate = $finalDate;
+		}
 		// Filter by NoteCode, doing like this because there isn't association between movements and sales :( => 2.0 =)
 		/////////////////////////////////////////////
 		
@@ -1073,6 +1123,7 @@ class InvMovementsController extends AppController {
 		$this->set('code', $code);
 		$this->set('document_code', $document_code);
 		$this->set('note_code', $note_code);
+		$this->set('searchDate', $searchDate);
 		////////////////////////////////END - LIST ONLY SALES MOVEMENTS (easier) /////////////////////////////////////////
 	}
 	///////////////////////////////////////////// END - INDEX ////////////////////////////////////////////////
@@ -1389,6 +1440,7 @@ class InvMovementsController extends AppController {
 		///////////////////////////////////////START - CREATING VARIABLES//////////////////////////////////////
 		$filters = array();
 		$document_code = '';
+		$searchDate = "";
 		$period = $this->Session->read('Period.name');
 		///////////////////////////////////////END - CREATING VARIABLES////////////////////////////////////////
 		
@@ -1403,7 +1455,12 @@ class InvMovementsController extends AppController {
 			}else{
 				$empty++;
 			}
-			if($empty == 1){
+			if(isset($this->request->data['InvMovement']['searchDate']) && $this->request->data['InvMovement']['searchDate']){
+				$parameters['searchDate'] = trim(strip_tags(str_replace("/", "", $this->request->data['InvMovement']['searchDate'])));
+			}else{
+				$empty++;
+			}
+			if($empty == 2){
 				$parameters['search']='empty';
 			}else{
 				$parameters['search']='yes';
@@ -1418,6 +1475,12 @@ class InvMovementsController extends AppController {
 		if(isset($this->passedArgs['document_code'])){
 			$filters['InvMovement.document_code LIKE'] = '%'.strtoupper($this->passedArgs['document_code']).'%';
 			$document_code = $this->passedArgs['document_code'];
+		}
+		if(isset($this->passedArgs['searchDate'])){
+			$catchDate = $this->passedArgs['searchDate'];
+			$finalDate = substr($catchDate, 0, 2)."/".substr($catchDate, 2, 2)."/".substr($catchDate, 4, 4);		
+			$filters['InvMovement.date'] = $finalDate;
+			$searchDate = $finalDate;
 		}
 		////////////////////////////END - SETTING URL FILTERS//////////////////////////////////////
 		
@@ -1462,6 +1525,7 @@ class InvMovementsController extends AppController {
 		$this->set('invMovements', $pagination);
 		$this->set('document_code', $document_code);
 		$this->set('warehouseDestination',$warehouseDestination);
+		$this->set('searchDate', $searchDate);
 		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
 	}
 	

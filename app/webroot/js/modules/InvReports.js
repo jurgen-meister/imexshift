@@ -179,9 +179,9 @@ $(document).ready(function(){
 				"sSearch": "Filtrar:",
 				 "sZeroRecords":  "No se encontro nada.",
 				 //"sInfo":         "Ids from _START_ to _END_ of _TOTAL_ total" //when pagination exists
-				 "sInfo": "Encontrados _TOTAL_ Items",
-				 "sInfoEmpty": "Encontrados 0 Items",
-				 "sInfoFiltered": "(filtrado de _MAX_ Items)"
+				 "sInfo": "Encontrados _TOTAL_ Productos",
+				 "sInfoEmpty": "Encontrados 0 Productos",
+				 "sInfoFiltered": "(filtrado de _MAX_ Productos)"
 			},
 			"aoColumnDefs": [
 			  { 'bSortable': false, 'aTargets': [ 0 ] }// do not sort first column

@@ -151,20 +151,24 @@
 				
 				echo $this->BootstrapForm->input('code', array(
 					'id'=>'txtCode',
-					'label'=>'Codigo:',
+					//'label'=>'Codigo:',
+					'label'=>false,
 					'autocomplete'=>'off',
-					'style'=>'background-color:#EEEEEE',
+					'style'=>'background-color:#EEEEEE;display:none;',
 					'disabled'=>$disable,
 					'placeholder'=>'El sistema generará el código',
+					'div'=>false
 				));
 				
 				echo $this->BootstrapForm->input('document_code', array(
 					'id'=>'txtDocumentCode',
 					'autocomplete'=>'off',
-					'label'=>'Codigo Documento Ref:',
-					'style'=>'background-color:#EEEEEE',
+					//'label'=>'Codigo Documento Ref:',
+					'label'=>false,
+					'style'=>'background-color:#EEEEEE;display:none;',
 					'disabled'=>$disable,
-					'value'=>$documentCode
+					'value'=>$documentCode,
+					'div'=>false
 				));
 				
 				echo $this->BootstrapForm->input('note_code', array(
@@ -291,7 +295,7 @@
 						//////////////////////////////////////
 
 						echo $this->BootstrapForm->input('items_id', array(				
-						'label' => 'Item:',
+						'label' => 'Producto:',
 						'id'=>'cbxModalItems',
 						'class'=>'span12',
 						));
