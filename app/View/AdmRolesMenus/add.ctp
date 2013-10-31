@@ -26,7 +26,7 @@
 				));
 				echo $this->BootstrapForm->input('adm_module_id', array(
 					'id'=>'parentMenus',
-					'label'=>'Módulo:',
+					'label'=>'Menu Padre:',
 					'options'=>$parentsMenus,
 					'class'=>'span3'
 				));

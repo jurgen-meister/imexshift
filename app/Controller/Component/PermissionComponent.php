@@ -24,17 +24,21 @@ class PermissionComponent extends Component{
 		$allowed = array_unique(array_merge($normalActions, $ajaxActions));
 		
 		//To always allow login actions, otherwise it won't work
-		if($controllerName == 'AdmUsers'){
-			$allowed['welcome'] = 'welcome';
-			$allowed['login'] = 'login';
-			$allowed['logout'] = 'logout';
-			$allowed['choose_role'] = 'choose_role';
-			$allowed['change_password'] = 'change_password';
-			$allowed['change_user_restriction'] = 'change_user_restriction';
-			$allowed['change_email'] = 'change_email';
-			$allowed['view_user_profile'] = 'view_user_profile';
-			$allowed['ie_denied'] = 'ie_denied';
-		}
+		//I moving this permission to AdmUser direct to the session Permision, because with the new AdmRolesAction it's not working unless it has one 
+		//Permission User in the session THEREFORE I better move everything there
+		
+//		if($controllerName == 'AdmUsers'){
+//			$allowed['welcome'] = 'welcome';
+//			$allowed['login'] = 'login';
+//			$allowed['logout'] = 'logout';
+//			$allowed['choose_role'] = 'choose_role';
+//			$allowed['change_password'] = 'change_password';
+//			$allowed['change_user_restriction'] = 'change_user_restriction';
+//			$allowed['change_email'] = 'change_email';
+//			$allowed['view_user_profile'] = 'view_user_profile';
+//			$allowed['ie_denied'] = 'ie_denied';
+//		}
+		
 		//debug($allowed);
 		
 		if(count($allowed)>0){

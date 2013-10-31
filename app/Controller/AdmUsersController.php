@@ -588,81 +588,78 @@ class AdmUsersController extends AppController {
 	}
 	
 	private function _createPermissions($roleId){
-		$this->loadModel('AdmRolesMenu');
+		$this->loadModel('AdmRolesAction');
 		
-		//$array=$this->AdmRolesMenu->find('all');
 		//debug($array);
-		$this->AdmRolesMenu->unbindModel(array(
+		$this->AdmRolesAction->unbindModel(array(
 			'belongsTo'=>array('AdmRole', 'AdmMenu'),
 		));
 		
-		$this->AdmRolesMenu->bindModel(array(
-			'hasOne'=>array(
-				'AdmMenu'=>array(
-					'foreignKey'=>false,
-					'conditions' => array('AdmRolesMenu.adm_menu_id = AdmMenu.id')
-				),
-				'AdmAction'=>array(
-					'foreignKey'=>false,
-					'conditions' => array('AdmMenu.adm_action_id = AdmAction.id')
-				),
-				'AdmController'=>array(
-					'foreignKey'=>false,
-					'conditions' => array('AdmAction.adm_controller_id = AdmController.id')
-				),
-				
+		$this->AdmRolesAction->bindModel(array(
+			'belongsTo'=>array(
+				'AdmController' => array(
+					'foreignKey' => false,
+					'conditions' => array('AdmAction.adm_controller_id = AdmController.id', '')
+				)
 			)
 		));
 		
-		$vec = $this->AdmRolesMenu->find('all', array(
-			 'conditions'=>array('AdmRolesMenu.adm_role_id'=>$roleId)
-			,'fields'=>array('AdmRolesMenu.adm_role_id','AdmMenu.adm_action_id', 'AdmAction.id','AdmAction.name', 'AdmController.name')
+//		$this->AdmRolesMenu->bindModel(array(
+//			'hasOne'=>array(
+//				'AdmMenu'=>array(
+//					'foreignKey'=>false,
+//					'conditions' => array('AdmRolesMenu.adm_menu_id = AdmMenu.id')
+//				),
+//				'AdmAction'=>array(
+//					'foreignKey'=>false,
+//					'conditions' => array('AdmMenu.adm_action_id = AdmAction.id')
+//				),
+//				'AdmController'=>array(
+//					'foreignKey'=>false,
+//					'conditions' => array('AdmAction.adm_controller_id = AdmController.id')
+//				),
+//				
+//			)
+//		));
+		
+		$vec = $this->AdmRolesAction->find('all', array(
+			 'conditions'=>array('AdmRolesAction.adm_role_id'=>$roleId)
+			,'fields'=>array('AdmRolesAction.adm_role_id','AdmRolesAction.adm_action_id', 'AdmAction.id','AdmAction.name', 'AdmController.name')
 			));
 		//debug($vec);
 		$formated = array();
-		$extra = array();
+//		$extra = array();
 		if(count($vec) >0){
 			foreach ($vec as $key => $value) {
 				if($value['AdmAction']['name'] != ''){
 					$formated[$key]['controller'] = Inflector::camelize($value['AdmController']['name']);
 					$formated[$key]['action'] = strtolower($value['AdmAction']['name']);
-					//echo $value['AdmAction']['id'].'<br>';
-					//$extra[$key] = $this->_findControllerActionAjax($value['AdmAction']['id']);
 				}
 			}
 		}
 		//debug($formated);
 		
 		$formatExtra = array();
-		/*
-		if(count($extra) > 0){
-			foreach ($extra as $key => $value) {
-				if(count($value) > 0){
-					$formatExtra[$key]['controller'] = $value[0]['AdmController']['name'];
-					$formatExtra[$key]['action'] = $value[0]['AdmAction']['name'];
-				}
-			}
-		}
-		*/
-		//echo "extra";
+
 		//debug($formatExtra);
-		//debug(array_merge($formated,$formatExtra));
-		
-		//return array_merge($formated,$formatExtra);
 		$merge = array_merge($formated,$formatExtra);
 		//debug($merge);
-		///// save in session array 
 		
+		//Initial Session Permision Data
+		$this->Session->write('Permission.AdmUsers.welcome', 'welcome');
+		//$this->Session->write('Permission.AdmUsers.login', 'login');
+		$this->Session->write('Permission.AdmUsers.logout', 'logout');
+		$this->Session->write('Permission.AdmUsers.choose_role', 'choose_role');
+		$this->Session->write('Permission.AdmUsers.change_password', 'change_password');
+		$this->Session->write('Permission.AdmUsers.change_user_restriction', 'change_user_restriction');
+		$this->Session->write('Permission.AdmUsers.change_email', 'change_email');
+		$this->Session->write('Permission.AdmUsers.view_user_profile', 'view_user_profile');
+		$this->Session->write('Permission.AdmUsers.ie_denied', 'ie_denied');
+		
+		///// save in session array 
 		for($i=0; $i<count($merge); $i++){
 			$this->Session->write('Permission.'.$merge[$i]['controller'].'.'.$merge[$i]['action'], $merge[$i]['action']);
-			//'Permission.AdmController.index'=index
-			/*
-			$this->Session->write('Role.name', $infoRole[0]['AdmRole']['name']);
-			$this->Session->write('Role.id', $infoRole[0]['AdmRole']['id']);
-			 */
-			//echo 'Permission.'.$merge[$i]['controller'].'.'.$merge[$i]['action'];
 		}
-		//debug($merge);
 		
 	}
 	
@@ -681,6 +678,7 @@ class AdmUsersController extends AppController {
 		//$avaliableRoles[1]=2020;
 		//debug($avaliableRoles);
 		//debug(max($avaliableRoles[0]));
+		//debug($this->Session->read("Permission"));
 	}
 	
 	private function _listAvaliableRoles($userId, $userRestrictionId){

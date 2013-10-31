@@ -42,15 +42,15 @@ $(document).ready(function(){
         });
     }
 	
-	function ajax_list_menus_inside(){
-        $.ajax({
-            type:"POST",
-            url:moduleController +"ajax_list_menu_inside",			
-            data:{role: $("#roles_inside").val(), module: $("#modules_inside").val()},
-            beforeSend: showProcessing,
-            success: showMenusInside
-        });
-    }
+//	function ajax_list_menus_inside(){
+//        $.ajax({
+//            type:"POST",
+//            url:moduleController +"ajax_list_menu_inside",			
+//            data:{role: $("#roles_inside").val(), module: $("#modules_inside").val()},
+//            beforeSend: showProcessing,
+//            success: showMenusInside
+//        });
+//    }
 	
 	$('#saveButton').click(function(){
 		//$("#message").hide();
@@ -122,12 +122,12 @@ $(document).ready(function(){
 	   return allVals;
 	}
 	
-	function captureCheckboxInside(){
-	 var allVals =[];
-     $('#boxMenusInside :checked').each(function(){
-       allVals.push($(this).val());});	   
-	   return allVals;
-	}
+//	function captureCheckboxInside(){
+//	 var allVals =[];
+//     $('#boxMenusInside :checked').each(function(){
+//       allVals.push($(this).val());});	   
+//	   return allVals;
+//	}
 	
 	function showProcessing(){
         $("#processing").text("Procesando...");
@@ -138,10 +138,10 @@ $(document).ready(function(){
 		$('#tree1').checkboxTree();
     }
 	
-	function showMenusInside(data){
-		$("#processing").text("");
-        $("#boxMenusInside").html(data);
-	}
+//	function showMenusInside(data){
+//		$("#processing").text("");
+//        $("#boxMenusInside").html(data);
+//	}
 	
 });
 

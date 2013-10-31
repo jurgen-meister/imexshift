@@ -106,9 +106,9 @@ class AdmRolesMenusController extends AppController {
 				"conditions"=>array(
 					"AdmMenu.parent_node"=>null,// don't have parent
 					"AdmMenu.inside "=>null //this will dissapear
-				),
-
-				"recursive"=>-1
+				)
+				,'order'=>array('AdmMenu.order_menu') 
+				,"recursive"=>-1
 			));
 		//$parentsMenus[0] = "Ninguno";
 		///////////////////////***************************************//////////////////
@@ -250,22 +250,22 @@ class AdmRolesMenusController extends AppController {
 		}
 	}
 	
-	public function ajax_list_menu_inside(){
-		if($this->RequestHandler->isAjax()){
-			$role = $this->request->data['role'];		
-			$module = $this->request->data['module'];
-			//echo $role .'_>'.$module;
-			$chk = "";
-			if($role == "" OR $module == ""){
-					$chk = "Debe existir un rol y un modulo";
-				}else{
-					$this->_createCheckboxInsideMenu($role, $module); //Crestes checkbox tree 5 level, must improve
-			}
-			$this->set('chk', $chk);
-		}else{
-			$this->redirect($this->Auth->logout());
-		}
-	}
+//	public function ajax_list_menu_inside(){
+//		if($this->RequestHandler->isAjax()){
+//			$role = $this->request->data['role'];		
+//			$module = $this->request->data['module'];
+//			//echo $role .'_>'.$module;
+//			$chk = "";
+//			if($role == "" OR $module == ""){
+//					$chk = "Debe existir un rol y un modulo";
+//				}else{
+//					$this->_createCheckboxInsideMenu($role, $module); //Crestes checkbox tree 5 level, must improve
+//			}
+//			$this->set('chk', $chk);
+//		}else{
+//			$this->redirect($this->Auth->logout());
+//		}
+//	}
 	
 	public function ajax_save(){
 		if($this->RequestHandler->isAjax()){
@@ -275,14 +275,14 @@ class AdmRolesMenusController extends AppController {
 			//Capture checkbox values
 			$type = $this->request->data['type'];
 			//Solve problem when array is empty
-			/*
-			$menu = '';
+
+//			$menu = $this->request->data['menu'];
+//			if($menu <> ''){
+//				$new = $this->request->data['menu']; 
+//			}else{
+//				$new = array();
+//			}
 			if(isset($this->request->data['menu'])){
-				$menu = $this->request->data['menu'];
-			}
-			*/
-			$menu = $this->request->data['menu'];
-			if($menu <> ''){
 				$new = $this->request->data['menu']; 
 			}else{
 				$new = array();
@@ -353,61 +353,62 @@ class AdmRolesMenusController extends AppController {
 		}
 	}
 	
-	public function add_inside(){
-		
-		$admRoles = $this->AdmRolesMenu->AdmRole->find('list', array('order'=>array('AdmRole.id'=>'ASC')));
-		$role =key($admRoles);
-		$admModules = $this->AdmRolesMenu->AdmMenu->AdmModule->find('list');
-		$module = key($admModules);
-	////////////////////////////////////////////////////////////////////////////////////////	
-		$this->_createCheckboxInsideMenu($module, $role);
-		$this->set('admRoles',$admRoles);
-		$this->set('admModules',$admModules);
-	}
 	
-	private function _createCheckboxInsideMenu($role, $module){
-		//clave 1
-		$controllers = $this->AdmRolesMenu->AdmMenu->AdmAction->AdmController->find('list', array('conditions'=>array('AdmController.adm_module_id'=>$module)));
-		//clave 1
-		//debug($controllers);
-		$this->loadModel('AdmAction');
-
-		$menusCheckBoxes =array();
-
-		$auxMenus = array();
-		$cont = 0;
-		foreach ($controllers as $key1 => $value1) {
-			$menusCheckBoxes[$key1]=array();
-			//$checked[$key1]=array();
-			$menus = $this->AdmAction->find('all', array(
-				'conditions'=>array('AdmAction.adm_controller_id'=>$key1)
-			));
-			//debug($menus);
-			if(count($menus) > 0){
-				//$cont=0;
-				foreach ($menus as $key2 => $value2) {
-					if(count($value2['AdmMenu']) > 0){
-						if($value2['AdmMenu'][0]['inside'] == 1){
-							$menusCheckBoxes[$key1][$value2['AdmMenu'][0]['id']]=$value2['AdmAction']['name']; //$value2['AdmMenu'][0]['name']
-							$auxMenus[$cont] = $value2['AdmMenu'][0]['id'];
-						}
-						$cont++;
-					}
-				}
-			}
-		}
-		
-		//debug($auxMenus);
-		//clave 2
-		$checks = $this->AdmRolesMenu->find('list', array(
-			'conditions'=>array('AdmRolesMenu.adm_menu_id'=>$auxMenus, 'AdmRolesMenu.adm_role_id'=>$role)
-			,'fields'=>array('AdmRolesMenu.adm_menu_id', 'AdmRolesMenu.adm_menu_id')
-		));
-		//clave 2
-		//debug($checks);
-		
-		$this->set(compact('controllers', 'menusCheckBoxes', 'checks'));
-	}
+//	public function add_inside(){
+//		
+//		$admRoles = $this->AdmRolesMenu->AdmRole->find('list', array('order'=>array('AdmRole.id'=>'ASC')));
+//		$role =key($admRoles);
+//		$admModules = $this->AdmRolesMenu->AdmMenu->AdmModule->find('list');
+//		$module = key($admModules);
+//	////////////////////////////////////////////////////////////////////////////////////////	
+//		$this->_createCheckboxInsideMenu($module, $role);
+//		$this->set('admRoles',$admRoles);
+//		$this->set('admModules',$admModules);
+//	}
+	
+//	private function _createCheckboxInsideMenu($role, $module){
+//		//clave 1
+//		$controllers = $this->AdmRolesMenu->AdmMenu->AdmAction->AdmController->find('list', array('conditions'=>array('AdmController.adm_module_id'=>$module)));
+//		//clave 1
+//		//debug($controllers);
+//		$this->loadModel('AdmAction');
+//
+//		$menusCheckBoxes =array();
+//
+//		$auxMenus = array();
+//		$cont = 0;
+//		foreach ($controllers as $key1 => $value1) {
+//			$menusCheckBoxes[$key1]=array();
+//			//$checked[$key1]=array();
+//			$menus = $this->AdmAction->find('all', array(
+//				'conditions'=>array('AdmAction.adm_controller_id'=>$key1)
+//			));
+//			//debug($menus);
+//			if(count($menus) > 0){
+//				//$cont=0;
+//				foreach ($menus as $key2 => $value2) {
+//					if(count($value2['AdmMenu']) > 0){
+//						if($value2['AdmMenu'][0]['inside'] == 1){
+//							$menusCheckBoxes[$key1][$value2['AdmMenu'][0]['id']]=$value2['AdmAction']['name']; //$value2['AdmMenu'][0]['name']
+//							$auxMenus[$cont] = $value2['AdmMenu'][0]['id'];
+//						}
+//						$cont++;
+//					}
+//				}
+//			}
+//		}
+//		
+//		//debug($auxMenus);
+//		//clave 2
+//		$checks = $this->AdmRolesMenu->find('list', array(
+//			'conditions'=>array('AdmRolesMenu.adm_menu_id'=>$auxMenus, 'AdmRolesMenu.adm_role_id'=>$role)
+//			,'fields'=>array('AdmRolesMenu.adm_menu_id', 'AdmRolesMenu.adm_menu_id')
+//		));
+//		//clave 2
+//		//debug($checks);
+//		
+//		$this->set(compact('controllers', 'menusCheckBoxes', 'checks'));
+//	}
 	
 	
 	/**
