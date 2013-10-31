@@ -1,3 +1,4 @@
+<? //debug($this->request->data);?>
 <?php echo $this->Html->script('modules/AdmMenus', FALSE); ?>
 <!-- ************************************************************************************************************************ -->
 <div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
@@ -14,24 +15,32 @@ echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' =>
 				<span class="icon">
 					<i class="icon-search"></i>
 				</span>
-				<h5>Filtro</h5>
+				<h5>Filtro - Menus padres</h5>
 			</div>
 			<div class="widget-content nopadding">
 			<!-- ////////////////////////////////////////INCIO - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->
-			<?php echo $this->BootstrapForm->create('formAdmMenuIndexOut', array('id'=>'formAdmMenuIndexOut','class' => 'form-search', 'novalidate' => true));?>
+			<?php echo $this->BootstrapForm->create('formAdmMenuIndexOut', array('id'=>'formAdmMenuIndexOut','class' => 'form-search span3', 'novalidate' => true));?>
 			<fieldset>
 						<?php
-						echo $this->BootstrapForm->input('modules', array(				
+						echo $this->BootstrapForm->input('parentsMenus', array(				
 										//'label' => 'Módulo:',
 										'id'=>'cbxSearchModules',
 										//'value'=>$code,
-										'options'=>$modules,
+										'options'=>$parentsMenus,
 										'type'=>'select',
-										'placeholder'=>'Codigo Entrada'
+										'placeholder'=>'Codigo Entrada',
+										'class'=>'span12'
 										));
 						?>
 			</fieldset>
 			<?php echo $this->BootstrapForm->end();?>
+			<? 
+			echo ' ';
+			$url['action'] = 'edit_out';
+			echo $this->Html->link('<i class="icon-pencil icon-white"></i>'.__(''),  array_merge($url,array($idParentMenu)), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Editar')); 
+			//I took out this delete postLink from the main form because is generates its own form and it doesn't work if it is inside the other form
+			echo ' '.$this->Form->postLink('<i class="icon-trash icon-white"></i>', array_merge(array('action' => 'delete_out'), array($idParentMenu)), array('class'=>'btn btn-danger', 'escape'=>false, 'title'=>'Eliminar'), __('¿Esta seguro de borrar este menu?', $idParentMenu)); 
+			?>
 			<!-- ////////////////////////////////////////FIN - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->		
 			</div>
 		</div>
@@ -55,6 +64,7 @@ echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' =>
 				<th><?php echo '#';?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('name', 'Menu');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('order_menu', 'Orden');?></th>
+				<th><?php echo $this->BootstrapPaginator->sort('AdmModule.id', 'Módulo');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('AdmController.id', 'Controlador');?></th>
 				<th><?php echo $this->BootstrapPaginator->sort('adm_action_id', 'Acción');?></th>
 				<th></th>
@@ -64,6 +74,7 @@ echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' =>
 				<td><?php echo $cont++; ?>&nbsp;</td>
 				<td><?php echo h($admMenu['AdmMenu']['name']); ?>&nbsp;</td>
 				<td><?php echo h($admMenu['AdmMenu']['order_menu']); ?>&nbsp;</td>
+				<td><?php echo $admMenu['AdmModule']['name'];?></td>
 				<td><?php echo $admMenu['AdmController']['name'];?></td>
 				<td><?php echo strtolower($admMenu['AdmAction']['name']); ?></td>
 				<td>

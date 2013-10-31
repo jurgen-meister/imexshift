@@ -15,29 +15,44 @@
 			<fieldset>
 				<?php
 				echo $this->BootstrapForm->input('adm_module_id', array(
-					'label'=>'* Modulo'
+					'label'=>'* Módulo'
 					,'id'=>'modules'
+					,'class'=>'span3'
 				));
 				echo $this->BootstrapForm->input('name', array(
 					'label'=>'* Nombre menu',
-					'required' => 'required',
+					'required' => 'required'
+					
+				));
+				echo $this->BootstrapForm->input('icon', array(
+					'label'=>'* Icono',
+					//'required' => 'required'
+					
 				));
 				echo $this->BootstrapForm->input('order_menu', array(
 					'label'=>'* Orden menu',
 					'default'=>0,
-					'required' => 'required',
+					'required' => 'required'
+					,'class'=>'span1'
 				));
 				echo '<div id="boxActions">';
-				echo $this->BootstrapForm->input('adm_action_id', array('default'=>0, 'label'=>'* Control->Acción'
+				echo $this->BootstrapForm->input('adm_action_id', array(
+					'default'=>0
+					, 'label'=>' Controlador->Acción'
+					,'class'=>'span6'
 				));
-				echo $this->BootstrapForm->input('adm_menu_id', array('label'=>'* Padre', 'default'=>0
-				,'name'=>'AdmMenu[parent_node]'	
+				echo $this->BootstrapForm->input('adm_menu_id', array(
+					 'label'=>' Menu padre'
+					,'default'=>0
+					,'class'=>'span3'
+					,'name'=>'AdmMenu[parent_node]'	
+					,'options'=>$parentsMenus
 				));
 				echo '</div>';
 				?>
 				<div class="form-actions" style="text-align: center">
 					<?php echo $this->BootstrapForm->submit(__('Crear menu'), array('div'=>false, 'class'=>'btn btn-primary'));?>
-					<?php echo ' '.$this->Html->link('Cancelar', array('action'=>'index_out'), array('class'=>'btn') );?>
+					<?php echo ' '.$this->Html->link('Volver', array('action'=>'index_out'), array('class'=>'btn') );?>
 				</div>
 			</fieldset>
 		<?php echo $this->BootstrapForm->end();?>

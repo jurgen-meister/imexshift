@@ -34,11 +34,22 @@ class AdmMenusController extends AppController {
 	 */
 	
 	public function index_out(){
-		$modules = $this->AdmMenu->AdmModule->find('list');
+		////////////////////////////////////////////////////////
+		$parentsMenus = $this->AdmMenu->find("list", array(
+			"conditions"=>array(
+				"AdmMenu.parent_node"=>null,// don't have parent
+				"AdmMenu.inside "=>null //th
+			),
+			"order"=>array("AdmMenu.order_menu", "AdmMenu.name"),
+			"recursive"=>-1
+		));
+		//debug($array);
+		///////////////////////////////////////////////////////
+		//$modules = $this->AdmMenu->AdmModule->find('list');
 		if ($this->request->is('post')) {
-			$idModule = $this->request->data['formAdmMenuIndexOut']['modules'];
+			$idParentMenu = $this->request->data['formAdmMenuIndexOut']['parentsMenus'];
 		}else{
-			$idModule = key($modules);
+			$idParentMenu = key($parentsMenus);
 		}
 		
 		$this->AdmMenu->unbindModel(array(
@@ -50,7 +61,7 @@ class AdmMenusController extends AppController {
 				'AdmController'=> array(
 					'foreignKey' => false,
 					'conditions' => array('AdmAction.adm_controller_id = AdmController.id')
-				)
+				),
 			)
 		));
 		$filters = '';
@@ -58,13 +69,16 @@ class AdmMenusController extends AppController {
 			'conditions'=>array(
 				$filters
 			 ),
-			'conditions'=>array('AdmMenu.inside'=>null, 'AdmMenu.adm_module_id'=>$idModule),
+			'conditions'=>array('AdmMenu.inside'=>null, 'AdmMenu.parent_node'=>$idParentMenu),
 			'order'=>array('AdmMenu.parent_node'=>'desc', 'AdmMenu.order_menu'=>'asc'),
 			'limit' => 50,
 		);
 		$this->set('admMenus', $this->paginate('AdmMenu'));
-		$this->set(compact('modules'));
+		$this->set(compact('parentsMenus', 'idParentMenu'));
+		
 		//debug($this->paginate('AdmMenu')); //IMPORTANT.- this debug is not capturing de bind and unbind, but is working. Is better if I put it inside an array then do debug
+		/////////////////////////////////
+		
 	}
 
 	
@@ -141,16 +155,26 @@ class AdmMenusController extends AppController {
 			}
 			///////////////	
 		}
+		$parentsMenus = $this->AdmMenu->find("list", array(
+			"conditions"=>array(
+				"AdmMenu.parent_node"=>null,// don't have parent
+				"AdmMenu.inside "=>null
+			),
+			"order"=>array("AdmMenu.order_menu", "AdmMenu.name"),
+			"recursive"=>-1
+		));
 		$admModules = $this->AdmMenu->AdmModule->find('list');
 		$module = key($admModules);
 		$admActions = $this->_list_actions($module);
 		//$admMenus = $this->AdmMenu->find('list', array("conditions"=>array("AdmMenu.adm_module_id"=>$module)));
+		/*
 		$admMenus = $this->AdmMenu->find('list', array(
 				'conditions'=>array('AdmMenu.adm_module_id'=>$module, 'AdmMenu.inside'=>null),
 				'order'=>array('AdmMenu.parent_node'=>'DESC')
 		));
-		$admMenus[0] = "Ninguno";
-		$this->set(compact('admModules', 'admActions', 'admMenus'));
+		 */
+		$parentsMenus[0] = "Ninguno";
+		$this->set(compact('admModules', 'admActions', 'parentsMenus'));
 	}
 	
 	public function add_inside(){
@@ -337,12 +361,21 @@ class AdmMenusController extends AppController {
 		if($this->RequestHandler->isAjax()){
 			$module = $this->request->data['module'];
 			$admActions = $this->_list_actions($module);
-			$admMenus = $this->AdmMenu->find('list', array(
-				'conditions'=>array('AdmMenu.adm_module_id'=>$module, 'AdmMenu.inside'=>null),
-				'order'=>array('AdmMenu.parent_node'=>'DESC')
+//			$admMenus = $this->AdmMenu->find('list', array(
+//				'conditions'=>array('AdmMenu.adm_module_id'=>$module, 'AdmMenu.inside'=>null),
+//				'order'=>array('AdmMenu.parent_node'=>'DESC')
+//			));
+			$parentsMenus = $this->AdmMenu->find("list", array(
+				"conditions"=>array(
+					"AdmMenu.parent_node"=>null,// don't have parent
+					"AdmMenu.inside "=>null,
+					
+				),
+				"order"=>array("AdmMenu.order_menu", "AdmMenu.name"),
+				"recursive"=>-1
 			));
-			$admMenus[0] = "Ninguno";
-			$this->set(compact('admActions', 'admMenus'));			
+			$parentsMenus[0] = "Ninguno";
+			$this->set(compact('admActions', 'parentsMenus'));			
 		}else{
 			$this->redirect($this->Auth->logout());
 		}
@@ -360,14 +393,23 @@ class AdmMenusController extends AppController {
 		}
 		
 		if ($this->request->is('post') || $this->request->is('put')) {
-
-			If($this->request->data['AdmMenu']['adm_action_id'] == 0){
+			//debug($this->request->data);
+			If(!isset($this->request->data['AdmMenu']['adm_action_id'])){
 				//hay habilitar allowEmpty en el modelo para guardar con null, para update no hay otra
 				$this->request->data['AdmMenu']['adm_action_id'] = null;
+			}else{
+				if($this->request->data['AdmMenu']['adm_action_id'] == 0){
+					$this->request->data['AdmMenu']['adm_action_id'] = null;
+				}
 			}
-			If($this->request->data['AdmMenu']['parent_node'] == 0){
+			
+			If(!isset($this->request->data['AdmMenu']['parent_node'])){
 				//unset($this->request->data['AdmMenu']['parent_node']);
 				$this->request->data['AdmMenu']['parent_node'] = null;
+			}else{
+				if($this->request->data['AdmMenu']['parent_node'] == 0){
+					$this->request->data['AdmMenu']['parent_node'] = null;
+				}
 			}
 			/*
 			If($this->request->data['AdmMenu']['inside'] == 0){
@@ -435,11 +477,20 @@ class AdmMenusController extends AppController {
 		}
 		
 		//debug($children);
-		$admMenus = $this->AdmMenu->find('list', array("conditions"=>array("AdmMenu.adm_module_id"=>$module, "NOT"=>array("AdmMenu.id"=>$children))));
-		$admMenus[0] = "Ninguno";
-		//$insides = array("No","Si");
-		//$this->set(compact('admModules', 'admActions', 'admMenus', 'insides'));
-		$this->set(compact('admModules', 'admActions', 'admMenus'));
+		//$admMenus = $this->AdmMenu->find('list', array("conditions"=>array("AdmMenu.adm_module_id"=>$module, "NOT"=>array("AdmMenu.id"=>$children))));
+		//$admMenus[0] = "Ninguno";
+		$parentsMenus = $this->AdmMenu->find("list", array(
+				"conditions"=>array(
+					"AdmMenu.parent_node"=>null,// don't have parent
+					"AdmMenu.inside "=>null,
+					
+				),
+				"order"=>array("AdmMenu.order_menu", "AdmMenu.name"),
+				"recursive"=>-1
+			));
+		$parentsMenus[0] = "Ninguno";
+		
+		$this->set(compact('admModules', 'admActions', 'parentsMenus'));
 	}
 
 /**
@@ -449,6 +500,7 @@ class AdmMenusController extends AppController {
  * @return void
  */
 	public function delete_out($id = null) {
+		
 		if (!$this->request->is('post')) {
 			throw new MethodNotAllowedException();
 		}

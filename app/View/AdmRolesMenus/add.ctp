@@ -21,11 +21,14 @@
 				<?php
 				echo $this->BootstrapForm->input('adm_role_id', array(
 					'label'=>'Rol:',
-					'id'=>'roles'
+					'id'=>'roles',
+					'class'=>'span3'
 				));
 				echo $this->BootstrapForm->input('adm_module_id', array(
-					'id'=>'modules',
-					'label'=>'Módulo:'
+					'id'=>'parentMenus',
+					'label'=>'Módulo:',
+					'options'=>$parentsMenus,
+					'class'=>'span3'
 				));
 		?>		
 		<?php //echo $this->BootstrapForm->submit('Guardar', array('id'=>'saveButton')); ?>		

@@ -4,13 +4,16 @@ $(document).ready(function(){
 	var arr = path.split('/');
 	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');
 	///Initialize checkboxTree behavior
-	if(arr[3] == 'add'){
+	if(arr[3] === 'add'){
 		 $('#roles option:nth-child(1)').attr("selected", "selected");
 		 $('#modules option:nth-child(1)').attr("selected", "selected");
 		 $('#tree1').checkboxTree();
 	}
+	
+	$("select").select2();
+	
 	//Initialize dropdown lists to position 0 for firefox refresh bug
-    $('#modules option:nth-child(1)').attr("selected", "selected");
+    $('#parentMenus option:nth-child(1)').attr("selected", "selected");
     $('#roles option:nth-child(1)').attr("selected", "selected");
 	$('#modules_inside option:nth-child(1)').attr("selected", "selected");
     $('#roles_inside option:nth-child(1)').attr("selected", "selected");
@@ -18,7 +21,7 @@ $(document).ready(function(){
 	$('#roles').change(function(){
         ajax_list_menus();		
     });
-	$('#modules').change(function(){
+	$('#parentMenus').change(function(){
         ajax_list_menus();		
     });
 	
@@ -33,7 +36,7 @@ $(document).ready(function(){
         $.ajax({
             type:"POST",
             url: moduleController + "ajax_list_menus",			
-            data:{role: $("#roles").val(), module: $("#modules").val()},
+            data:{parentMenus: $("#parentMenus").val(), role: $("#roles").val()},
             beforeSend: showProcessing,
             success: showMenus
         });
@@ -59,11 +62,11 @@ $(document).ready(function(){
 	
 	function ajax_save(){
 		var roleGeneric = $("#roles").val();
-		var moduleGeneric = $("#modules").val();
+		var parentMenusGeneric = $("#parentMenus").val();
 		var menuGeneric = [];
 		menuGeneric = captureCheckbox();
 		var type = 'outside';
-		if(arr[3] == 'add_inside'){
+		if(arr[3] === 'add_inside'){
 			roleGeneric = $("#roles_inside").val();
 			moduleGeneric = $("#modules_inside").val();
 			menuGeneric = captureCheckboxInside();
@@ -73,7 +76,7 @@ $(document).ready(function(){
 		$.ajax({
             type:"POST",
             url:moduleController +"ajax_save",
-            data:{role: roleGeneric, module: moduleGeneric, menu: menuGeneric, type: type },
+            data:{role: roleGeneric, parentMenus: parentMenusGeneric, menu: menuGeneric, type: type },
             beforeSend:showProcessing,
             success:showSave,
 			error:function(data){

@@ -466,17 +466,18 @@ class AdmUsersController extends AppController {
 	private function _createMenu($roleId){
 		$this->loadModel('AdmRolesMenu');
 		$parents = $this->AdmRolesMenu->find('all', array(
-			'fields'=>array('AdmMenu.id', 'AdmMenu.name')
+			'fields'=>array('AdmMenu.id', 'AdmMenu.name', 'AdmMenu.icon')
 			,'conditions'=>array('AdmRolesMenu.adm_role_id'=>$roleId, "AdmMenu.parent_node"=>null, 'AdmMenu.inside'=>null)
 			, 'order'=>array('AdmMenu.order_menu')
 		));
+		
 		
 		/////////////////////////////////////////////////////////////////////
 		$str = '';
 			/////////////////////////////////////START - Parents///////////////////////////////////////////////////////
 				$str.='<ul>';
 				foreach ($parents as $key2 => $value2) {
-					$arrLinkContent = $this->_createLink($value2['AdmMenu']['id'], $value2['AdmMenu']['name'], 'SI');
+					$arrLinkContent = $this->_createLink($value2['AdmMenu']['id'], $value2['AdmMenu']['name'], $value2['AdmMenu']['icon']);
 						if($arrLinkContent['idForLi'] <> ''){$idForLi = 'id="'.$arrLinkContent['idForLi'].'"';}else{$idForLi='';}
 							$str.='<li '.$idForLi.' class="submenu">'.$arrLinkContent['link'];//$value2['AdmMenu']['name'];
 					////////////////////////////////////START - Children 1////////////////////////////////////////////////
@@ -534,6 +535,7 @@ class AdmUsersController extends AppController {
 		}
 		//debug($vec);
 		if($icon <> ''){
+			/*
 			$idName = '';
 			$nameIcon='';
 			switch($nameMenu){
@@ -554,8 +556,11 @@ class AdmUsersController extends AppController {
 					$idName = 'sal';
 					break;
 			}
-			if($vec[0]['AdmAction']['name'] == null){$idForLi = 'mod-'.$idName;}
-			$str = '<a href="'.$link.'"><i class="icon '.$nameIcon.'"></i> <span>'.$nameMenu.'</span></a>';
+			 * 
+			 */
+			if($vec[0]['AdmAction']['name'] == null){$idForLi = 'menu-'.$nameMenu;}
+			$str = '<a href="'.$link.'"><i class="icon '.$icon.'"></i> <span>'.$nameMenu.'</span></a>';
+			
 		}else{
 			if($vec[0]['AdmAction']['name'] == null){$idForLi = '';}
 			$str = '<a href="'.$link.'">'.$nameMenu.'</a>';
