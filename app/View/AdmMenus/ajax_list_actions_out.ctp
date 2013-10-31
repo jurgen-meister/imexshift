@@ -1,9 +1,15 @@
 <?php
-echo $this->BootstrapForm->input('adm_action_id', array('default'=>0, 'label'=>'* Control->Acción'
+echo $this->BootstrapForm->input('adm_action_id', array('default'=>0, 'label'=>' Controlador->Acción'
 ,'required' => 'required'
 ,'name'=>'AdmMenu[adm_action_id]'	
+,'class'=>'span6'
 ));
-echo $this->BootstrapForm->input('adm_menu_id', array('label'=>'* Padre', 'default'=>0
-,'required' => 'required'
-,'name'=>'AdmMenu[parent_node]'	
-));
+echo "<br>";
+echo $this->BootstrapForm->input('adm_menu_id', array(
+					 'label'=>' Menu padre'
+					,'default'=>0
+					,'class'=>'span3'
+					,'name'=>'AdmMenu[parent_node]'	
+					,'options'=>$parentsMenus
+				));
+echo "<br>";

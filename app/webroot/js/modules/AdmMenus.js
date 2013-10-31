@@ -4,6 +4,8 @@ $(document).ready(function(){
 	var arr = path.split('/');
 	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');
 	
+	$('select').select2();
+	
 	//Initialize AJAX
     $('#modules').change(function(){
         ajax_list_actions_out();		
@@ -63,6 +65,7 @@ $(document).ready(function(){
     function showActions(data){
         $("#processing").text("");
         $("#boxActions").html(data);
+		$('select').select2();
     }
 	function showControllersInside(data){
         $("#processing").text("");

@@ -5,11 +5,15 @@
 $(document).ready(function(){
 
 	//My script for set active menus when page loads
+	
 	var url = window.location.pathname; 
 	var urlArr = url.split('/');
 	var urlCompare = urlArr[2]+'-'+urlArr[3];
 	$('#' + urlCompare).addClass('active');
-	$('#mod-' + urlArr[2].substr(0,3)).addClass('active open');
+	//$('#mod-' + urlArr[2].substr(0,3)).addClass('active open');//old doesn't work anymore
+	//alert($('#' + urlCompare).closest("li").closest("ul").closest("li").attr('id')); //for check li id parent
+	
+	$('#' + urlCompare).closest("li").closest("ul").closest("li").addClass('active open');
 	
 	// === Sidebar navigation === //
 	

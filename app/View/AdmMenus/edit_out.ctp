@@ -1,3 +1,10 @@
+<? //debug($this->request->data);
+$disable = false;
+if($this->request->data['AdmMenu']['parent_node'] == null){
+	$disable = true;
+}
+
+?>
 <?php echo $this->Html->script('modules/AdmMenus', FALSE); ?>
 <!-- ************************************************************************************************************************ -->
 <div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
@@ -15,31 +22,44 @@
 			<fieldset>
 				<?php
 				echo $this->BootstrapForm->input('adm_module_id', array(
-					'label'=>'Modulo'
+					'label'=>'Módulo'
 					,'id'=>'modules'
-					,'disabled'=>'true'
+					,'class'=>'span3'
+					,'disabled'=>$disable
+					//,$disable
 				));
 				echo $this->BootstrapForm->input('name', array(
 					'label'=>'Nombre menu',
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
+					//'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+				));
+				echo $this->BootstrapForm->input('icon', array(
+					'label'=>'* Icono',
+					//'required' => 'required'
+				));
 				echo $this->BootstrapForm->input('order_menu', array(
 					'label'=>'Orden menu',
 					'default'=>0,
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
-				);
+					'class'=>'span1',
+					//'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;')
+					
+				));
 				
 				echo '<div id="boxActions">';
-				echo $this->BootstrapForm->input('adm_action_id', array('label'=>'Control->Acción'
+				echo $this->BootstrapForm->input('adm_action_id', array('label'=>'Controlador->Acción'
 				//,'required' => 'required'
 				//,'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;'	
+					,'class'=>'span6'
+					,'disabled'=>$disable
 					));
-				echo $this->BootstrapForm->input('adm_menu_id', array('label'=>'Padre' 
+				echo $this->BootstrapForm->input('adm_menu_id', array('label'=>'Menu padre' 
 				,'name'=>'AdmMenu[parent_node]'	
+				,'options'=>$parentsMenus	
 				//,'required' => 'required'
 				//,'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;'	
+					,'class'=>'span3'
+					,'disabled'=>$disable
 				));
 				echo '</div>';
 				/*
@@ -51,7 +71,7 @@
 				?>
 				<div class="form-actions" style="text-align: center">
 					<?php echo $this->BootstrapForm->submit(__('Guardar cambios'), array('div'=>false, 'class'=>'btn btn-primary'));?>
-					<?php echo ' '.$this->Html->link('Cancelar', array('action'=>'index_out'), array('class'=>'btn') );?>
+					<?php echo ' '.$this->Html->link('Volver', array('action'=>'index_out'), array('class'=>'btn') );?>
 				</div>
 			</fieldset>
 		<?php echo $this->BootstrapForm->end();?>

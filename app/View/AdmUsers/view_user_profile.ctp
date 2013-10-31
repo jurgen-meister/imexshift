@@ -134,7 +134,7 @@
 					?>
 					<div class="form-actions" style="text-align: center">
 					<?php //echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));
-					echo ' '.$this->Html->link('Cancelar', array_merge(array('action'=>'index')), array('class'=>'btn') );
+					echo ' '.$this->Html->link('Cancelar', array_merge(array('action'=>'welcome')), array('class'=>'btn') );
 					?>
 					</div>
 					<?php	echo $this->BootstrapForm->end(); ?>
