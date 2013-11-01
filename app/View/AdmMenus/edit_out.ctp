@@ -52,6 +52,7 @@ if($this->request->data['AdmMenu']['parent_node'] == null){
 				//,'helpInline' => '<span class="label label-important">' . __('Required') . '</span>&nbsp;'	
 					,'class'=>'span6'
 					,'disabled'=>$disable
+					,'id'=>'cbxAction'
 					));
 				echo $this->BootstrapForm->input('adm_menu_id', array('label'=>'Menu padre' 
 				,'name'=>'AdmMenu[parent_node]'	

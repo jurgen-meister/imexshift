@@ -27,7 +27,7 @@ $(document).ready(function(){
         $.ajax({
             type:"POST",
             url:moduleController + "ajax_list_actions_out",			
-            data:{module: $("#modules").val()},
+            data:{module: $("#modules").val(), action:$("#cbxAction").val()},
             beforeSend: showProcessing,
             success: showActions
         });

@@ -382,7 +382,8 @@ class AdmMenusController extends AppController {
 	public function ajax_list_actions_out(){
 		if($this->RequestHandler->isAjax()){
 			$module = $this->request->data['module'];
-			$admActions = $this->_list_actions($module);
+			$action = $this->request->data['action'];
+			$admActions = $this->_list_actions($module, $action);
 //			$admMenus = $this->AdmMenu->find('list', array(
 //				'conditions'=>array('AdmMenu.adm_module_id'=>$module, 'AdmMenu.inside'=>null),
 //				'order'=>array('AdmMenu.parent_node'=>'DESC')
