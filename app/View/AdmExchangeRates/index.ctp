@@ -5,7 +5,7 @@
 <?php
 echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' => 'add'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo')); 
 ?>
-<?php echo __(' Tipos de Cambio');?></h3>
+<?php echo __(' Tipo de Cambio');?></h3>
 
 		<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
 		<div class="widget-box">
@@ -22,17 +22,17 @@ echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' =>
 		<table class="table table-striped table-bordered table-hover">
 			<tr>
 				<th><?php echo '#';?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('Moneda');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('Fecha');?></th>
-				<th><?php echo $this->BootstrapPaginator->sort('Monto');?></th>				
+				<th><?php echo 'Fecha';?></th>
+				<th><?php echo 'Dolares';?></th>
+				<th><?php echo 'Bolivianos';?></th>				
 				<th></th>
 			</tr>
 		<?php foreach ($admExchangeRates as $admExchangeRate): ?>
-			<tr>
-				<td><?php echo $cont++; ?>&nbsp;</td>
-				<td><?php echo h($admExchangeRate['AdmExchangeRate']['currency']); ?>&nbsp;</td>
-				<td><?php echo h($admExchangeRate['AdmExchangeRate']['date']); ?>&nbsp;</td>				
-				<td><?php echo h($admExchangeRate['AdmExchangeRate']['value']); ?>&nbsp;</td>				
+			<tr >
+				<td style="text-align:center"><?php echo $cont++; ?>&nbsp;</td>
+				<td style="text-align:center"><?php echo date("d/m/Y", strtotime($admExchangeRate['AdmExchangeRate']['date'])); ?>&nbsp;</td>				
+				<td style="text-align:center"><?php echo h($admExchangeRate['AdmExchangeRate']['currency']); ?>&nbsp;</td>
+				<td style="text-align:center"><?php echo h($admExchangeRate['AdmExchangeRate']['value']); ?>&nbsp;</td>				
 				<td>
 					<?php 
 					$url['action'] = 'edit';

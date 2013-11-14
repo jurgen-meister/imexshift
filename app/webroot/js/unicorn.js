@@ -8,7 +8,14 @@ $(document).ready(function(){
 	
 	var url = window.location.pathname; 
 	var urlArr = url.split('/');
-	var urlCompare = urlArr[2]+'-'+urlArr[3];
+	var urlCompare = '';
+	//alert(urlArr[3]);
+	if(urlArr[3] === undefined){// when go back or cancell word index is not showed at the url, therefore is undefined and the menu doesn't work properly. This is the solution
+		//alert(urlCompare);
+		urlArr[3] = 'index';
+	}
+	urlCompare = urlArr[2]+'-'+urlArr[3];
+	
 	$('#' + urlCompare).addClass('active');
 	//$('#mod-' + urlArr[2].substr(0,3)).addClass('active open');//old doesn't work anymore
 	//alert($('#' + urlCompare).closest("li").closest("ul").closest("li").attr('id')); //for check li id parent

@@ -38,7 +38,10 @@ class AdmExchangeRatesController extends AppController {
  */
 	public function index() {
 		$this->AdmExchangeRate->recursive = 0;
-		$this->set('admExchangeRates', $this->paginate());
+		$this->paginate = array(
+			'order' => array('AdmExchangeRate.date' => 'asc', 'AdmExchangeRate.id'=>'desc'),
+		);
+		$this->set('admExchangeRates', $this->paginate("AdmExchangeRate"));
 	}
 
 
@@ -125,6 +128,8 @@ class AdmExchangeRatesController extends AppController {
 			}
 		} else {
 			$this->request->data = $this->AdmExchangeRate->read(null, $id);
+			$this->request->data["AdmExchangeRate"]["date"] = date("d/m/Y", strtotime($this->request->data["AdmExchangeRate"]["date"]));
+			//debug($this->request->data);
 		}
 	}
 
