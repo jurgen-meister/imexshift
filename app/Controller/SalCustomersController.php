@@ -194,4 +194,16 @@ class SalCustomersController extends AppController {
 		);
 		$this->redirect(array('action' => 'index'));
 	}
+	
+	////////////////////////////////////////////////////////////BEGINS MULTI INTERFACE/////////////////////////////////////////////////////////////////////////////////
+	
+	public function vsave(){
+		
+		
+		
+		
+	}
+	
+	
+//END OF THE CLASS	
 }
