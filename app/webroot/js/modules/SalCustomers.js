@@ -9,9 +9,119 @@ $(document).ready(function() {
 
 
 
+
+	
+	$("#saveCustomer").click(function(event){
+//		alert("saveCustomer");
+		event.preventDefault();
+		var id = $("#txtIdCustomer").val();
+		var name = $("#txtNameCustomer").val();
+		var address = $("#txtAddressCustomer").val();
+		var phone = $("#txtPhoneCustomer").val();
+		var email = $("#txtEmailCustomer").val();
+		
+		var error = validateBeforeSaveCustomer(name);
+		if(error === ""){
+			ajax_save_customer(id, name, address, phone, email);
+			$('#boxMessage').html('');
+		}else{
+			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
+		}
+		
+	});
+	
+	function showGrowlMessage(type, text, sticky){
+		if(typeof(sticky)==='undefined') sticky = false;
+		
+		var title;
+		var image;
+		switch(type){
+			case 'ok':
+				title = 'EXITO!';
+				image= '/imexport/img/check.png';
+				break;
+			case 'error':
+				title = 'OCURRIO UN PROBLEMA!';
+				image= '/imexport/img/error.png';
+				break;
+			case 'warning':
+				title = 'PRECAUCIÓN!';
+				image= '/imexport/img/warning.png';
+				break;
+		}
+		$.gritter.add({
+			title:	title,
+			text: text,
+			sticky: sticky,
+			image: image
+		});	
+	}
+	
+	function ajax_save_customer(id, name, address, phone, email){
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_save_customer",			
+            data:{id: id, name: name, address:address, phone:phone, email:email},
+            beforeSend: function(){
+				$('#boxProcessing').text(" Procesando...");
+			},
+            success: function(data){
+				var arrayData = data.split('|');
+				if(arrayData[0] === "success"){
+					showGrowlMessage('ok', 'Cambios guardados.');
+					$("#txtIdCustomer").val(arrayData[1]);
+				}else{
+					showGrowlMessage('error', 'Vuelva a intentarlo.');
+				}
+				$('#boxProcessing').text('');
+			},
+			error:function(data){
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#boxProcessing').text('');
+			}
+        });
+	}
+	
+	function ajax_save_employee(id, name, phone, email, idCustomer){
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_save_employee",			
+            data:{id: id, name: name, phone:phone, email:email, idCustomer:idCustomer},
+            beforeSend: function(){
+				$('#boxProcessingEmployee').text(" Procesando...");
+			},
+            success: function(data){
+				var arrayData = data.split('|');
+				if(arrayData[0] === "success"){
+					showGrowlMessage('ok', 'Cambios guardados.');
+					if(arrayData[2] === "add"){
+						addRowEmployee(arrayData[1], name, phone, email);
+					}
+					if(arrayData[2] === "edit"){
+						editEmployee(arrayData[1], name, phone, email);
+					}
+				}else{
+					showGrowlMessage('error', 'Vuelva a intentarlo.');
+				}
+				$('#boxProcessingEmployee').text('');
+			},
+			error:function(data){
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#boxProcessingEmployee').text('');
+			}
+        });
+	}
+	
+	function addRowEmployee(id, name, phone, email) {
+		var pruebaRow = createRowEmployee(id, name, phone, email);
+		$('#tblEmployees tbody').append(pruebaRow);
+		bindButtonEventsRowEmployee();
+		$('#SalEmployeeVsaveForm input[type=hidden], #SalEmployeeVsaveForm input[type=text]').val(""); //clear all after add
+	}
+	
 	function createRowEmployee(id, name, phone, email) {
 		var rowCount = $('#tblEmployees tbody tr').length + 1;
-		var row = '<tr>';
+		var row = '<tr id="rowEmployee' + id + '">';
 		row += '<td style="text-align:center;"><span class="spaNumber">' + rowCount + '</span><input type="text" value="' + id + '" class="spaIdEmployee"></td>';
 		row += '<td><span class="spaNameEmployee">' + name + '</span></td>';
 		row += '<td><span class="spaPhoneEmployee">' + phone + '</span></td>';
@@ -23,7 +133,56 @@ $(document).ready(function() {
 		row += '</tr>';
 		return row;
 	}
+	
+	function addEmployee(idCustomer) {
+		var id = $("#txtIdEmployee").val();
+		var name = $("#txtNameEmployee").val();
+		var phone = $("#txtPhoneEmployee").val();
+		var email = $("#txtEmailEmployee").val();
+//		var idCustomer = 
+		var error = validateBeforeAddEmployee(name);
 
+		if (error === "") {
+			ajax_save_employee(id, name, phone, email, idCustomer);
+			$('#boxMessageEmployee').html('');
+		} else {
+			$('#boxMessageEmployee').html('<div class="alert-error"><ul>' + error + '</ul></div>');
+		}
+	}
+	
+	$("#btnAddEmployee").click(function(event) {
+		event.preventDefault();
+		var idCustomer = $("#txtIdCustomer").val();
+		if(idCustomer !== ""){
+			addEmployee(idCustomer);
+		}else{
+			alert('Debe "Guardar Cambios" del Cliente antes de adicionar un Empleado');
+		}
+	});
+	
+	$("#btnEditEmployee").click(function(event) {
+		event.preventDefault();
+		var id = $("#txtIdEmployee").val();
+		var name = $("#txtNameEmployee").val();
+		var phone = $("#txtPhoneEmployee").val();
+		var email = $("#txtEmailEmployee").val();
+		var idCustomer = $("#txtIdCustomer").val();
+//		if(idCustomer !== ""){
+//			editEmployee(id, name, phone, email);
+		var error = validateBeforeAddEmployee(name);
+
+		if (error === "") {
+			ajax_save_employee(id, name, phone, email, idCustomer);
+			$('#boxMessageEmployee').html('');
+		} else {
+			$('#boxMessageEmployee').html('<div class="alert-error"><ul>' + error + '</ul></div>');
+		}
+//		}else{
+//			alert('Debe "Guardar Cambios" del Cliente antes de editar un Empleado');
+//		}
+		
+	});
+	
 	function bindButtonEventsRowEmployee() {
 		$('#tblEmployees tbody tr:last .btnRowEditEmployee').bind("click", function(event) {
 			editRowEmployee($(this), event);
@@ -35,17 +194,9 @@ $(document).ready(function() {
 	}
 
 	////////////EVENTS
-	$("#btnAddEmployee").click(function(event) {
-		event.preventDefault();
-		if($("#txtIdCustomer").val() !== ""){
-			addEmployee();
-		}else{
-			alert('Debe "Guardar Cambios" del Cliente antes de adicionar un Empleado');
-		}
-	});
-				
+			
 
-	function reordeRowNumbers(table){
+	function reorderRowNumbers(table){
 		var counter = 1;
 		$('#'+table+' tbody tr').each(function() {
 			$(this).find('.spaNumber').text(counter);
@@ -53,32 +204,25 @@ $(document).ready(function() {
 		});
 	}
 	
-	function addEmployee(){
-		var id = $("#txtIdEmployee").val();
-		var name = $("#txtNameEmployee").val();
-		var phone = $("#txtPhoneEmployee").val();
-		var email = $("#txtEmailEmployee").val();
 
-		var error = validateBeforeAddEmployee(name);
-
-		if (error === "") {
-			//this will go inside ajax success
-			addRowEmployee(id, name, phone, email);
-		} else {
-//			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
-			alert(error);
-		}
-	}
 	
 	function validateBeforeAddEmployee(name) {
 		var error = '';
-		
 		if (name === '') {
-			error += '<li> Debe registrar un nombre para el empleado </li>';
+			error += '<li> El campo "Nombre" del Empleado no puede estar vacio </li>';
 		}
 		return error;
 	}
-
+	
+	function validateBeforeSaveCustomer(name) {
+		var error = '';
+		if (name === '') {
+			error += '<li> El campo "Nombre" del Cliente no puede estar vacio </li>';
+		}
+		return error;
+	}
+	
+	
 	$(".btnRowEditEmployee").click(function(event) {
 		editRowEmployee($(this), event);
 	});
@@ -87,37 +231,96 @@ $(document).ready(function() {
 		deleteRowEmployee($(this), event);
 		
 	});
+	
 
+	
+	$("#btnCancelEmployee").click(function(event) {
+		$("#btnAddEmployee").show();
+		$("#btnEditEmployee, #btnCancelEmployee").hide();
+		$('#SalEmployeeVsaveForm input[type=hidden], #SalEmployeeVsaveForm input[type=text]').val("");
+		$('#SalEmployeeVsaveForm input[type=text]').removeAttr('style');
+		event.preventDefault();
+	});
+	
+	function editEmployee(id, name, phone, email){
+		$("#rowEmployee"+id).find('.spaNameEmployee').text(name);
+		$("#rowEmployee"+id).find('.spaPhoneEmployee').text(phone);
+		$("#rowEmployee"+id).find('.spaEmailEmployee').text(email);
+		$('#SalEmployeeVsaveForm input[type=hidden], #SalEmployeeVsaveForm input[type=text]').val("");
+		$('#SalEmployeeVsaveForm input[type=text]').removeAttr('style');
+		$("#btnAddEmployee").show();
+		$("#btnEditEmployee, #btnCancelEmployee").hide();
+//		highlightTemporally(id);
+	}
+	//not working :( ??
+//	function highlightTemporally(id) {
+//		$("#tblEmployees #rowEmployee1").fadeIn(4000).css("background-color", "#FFFF66");
+//		setTimeout(function() {
+//			$("#rowEmployee1").removeAttr('style');
+//		}, 4000);
+//	}
+	
 	///////////PAGE FUNCTIONS
 	function editRowEmployee(object, event) {
 		event.preventDefault();
 		var objectTableRowSelected = object.closest('tr');
-		var valor = objectTableRowSelected.find('.spaNameEmployee').text();
-		alert(valor);
+		var id = objectTableRowSelected.find('.spaIdEmployee').val();
+		var name = objectTableRowSelected.find('.spaNameEmployee').text();
+		var phone = objectTableRowSelected.find('.spaPhoneEmployee').text();
+		var email = objectTableRowSelected.find('.spaEmailEmployee').text();
+		$("#txtIdEmployee").val(id);
+		$("#txtNameEmployee").val(name);
+		$("#txtPhoneEmployee").val(phone);
+		$("#txtEmailEmployee").val(email);
+		$("#btnAddEmployee").hide();
+		$("#btnEditEmployee, #btnCancelEmployee").show();
+		$('#SalEmployeeVsaveForm input[type=text]').css("background-color","#FFFF66");
+		//alert(valor);
 	}
 
 	function deleteRowEmployee(object, event) {
-		showBittionAlertModal({content: '¿Está seguro de eliminar este item?'});
+		showBittionAlertModal({content: '¿Está seguro de eliminar este empleado?'});
 		$('#bittionBtnYes').click(function(event) {
+			var objectTableRowSelected = object.closest('tr');
+			var id = objectTableRowSelected.find('.spaIdEmployee').val();
 			hideBittionAlertModal();
-			object.closest('tr').fadeOut("slow", function() {
-				$(this).remove();
-				reordeRowNumbers('tblEmployees');//must go inside due the fadeout efect
-			});
+			ajax_delete_employee(id, objectTableRowSelected);
 			event.preventDefault();
-			
 		});
 		
 		event.preventDefault();
 	}
 
-	function addRowEmployee(id, name, phone, email) {
-		var pruebaRow = createRowEmployee(id, name, phone, email);
-		$('#tblEmployees tbody').append(pruebaRow);
-		bindButtonEventsRowEmployee();
-		$('#SalEmployeeVsaveForm input[type=hidden], #SalEmployeeVsaveForm input[type=text]').val(""); //clear all after add
-	}
 	
+	function ajax_delete_employee(id, objectTableRowSelected){
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_delete_employee",			
+            data:{id: id},
+            beforeSend: function(){
+				$('#boxProcessingEmployee').text(" Procesando...");
+			},
+            success: function(data){
+//				var arrayData = data.split('|');
+				if(data === "success"){
+					showGrowlMessage('ok', 'Cambios guardados.');
+					objectTableRowSelected.fadeOut("slow", function() {
+						$(this).remove();
+						reorderRowNumbers('tblEmployees');//must go inside due the fadeout efect
+					});
+				}else if(data === "children"){
+					alert("El Empleado tiene Ventas registradas, no se puede eliminar!");
+				}else{
+					showGrowlMessage('error', 'Vuelva a intentarlo.');
+				}
+				$('#boxProcessingEmployee').text('');
+			},
+			error:function(data){
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#boxProcessingEmployee').text('');
+			}
+        });
+	}
 
 	///////////AJAX FUNCTIONS
 

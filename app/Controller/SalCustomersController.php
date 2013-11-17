@@ -98,6 +98,7 @@ class SalCustomersController extends AppController {
 	public function add() {
 		if ($this->request->is('post')) {
 			$this->SalCustomer->create();
+			debug($this->request->data);
 			if ($this->SalCustomer->save($this->request->data)) {
 				$this->Session->setFlash(
 					__('The %s has been saved', __('sal customer')),
@@ -107,7 +108,7 @@ class SalCustomersController extends AppController {
 						'class' => 'alert-success'
 					)
 				);
-				$this->redirect(array('action' => 'index'));
+				//$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
 					__('The %s could not be saved. Please, try again.', __('sal customer')),
@@ -203,6 +204,70 @@ class SalCustomersController extends AppController {
 		
 		
 	}
+	
+	public function ajax_save_customer(){
+		if($this->RequestHandler->isAjax()){
+			$data = array();
+			if(isset($this->request->data['id']) && $this->request->data['id'] <> ""){
+				$data["SalCustomer"]["id"] = $this->request->data['id'];
+			}else{
+				$this->SalCustomer->create();
+			}
+			$data["SalCustomer"]["name"] = $this->request->data['name'];
+			$data["SalCustomer"]["address"] = $this->request->data['address'];
+			$data["SalCustomer"]["phone"] = $this->request->data['phone'];
+			$data["SalCustomer"]["email"] = $this->request->data['email'];
+			
+			//debug($data);
+			
+			if($this->SalCustomer->save($data)){
+				echo "success|".$this->SalCustomer->id;
+			}
+		}
+	}
+	
+	public function ajax_save_employee(){
+		if($this->RequestHandler->isAjax()){
+			$data = array();
+			$action = "add";
+			if(isset($this->request->data['id']) && $this->request->data['id'] <> ""){
+				$data["SalEmployee"]["id"] = $this->request->data['id'];
+				$action = "edit";
+			}else{
+				$this->SalCustomer->SalEmployee->create();
+			}
+			$data["SalEmployee"]["sal_customer_id"] = $this->request->data['idCustomer'];
+			$data["SalEmployee"]["name"] = $this->request->data['name'];
+			$data["SalEmployee"]["phone"] = $this->request->data['phone'];
+			$data["SalEmployee"]["email"] = $this->request->data['email'];
+			
+			//debug($data);
+			
+			if($this->SalCustomer->SalEmployee->save($data)){
+				echo "success|".$this->SalCustomer->SalEmployee->id."|".$action;
+			}
+		}
+	}
+	
+	public function ajax_delete_employee(){
+		if($this->RequestHandler->isAjax()){
+			$id = $this->request->data['id'];
+			
+			$children = $this->SalCustomer->SalEmployee->SalSale->find("count", array("conditions"=>array("SalSale.sal_employee_id"=>$id)));
+			if($children == 0){
+				$this->SalCustomer->SalEmployee->id = $id;
+				if($this->SalCustomer->SalEmployee->delete()){
+					echo "success";
+				}else{
+					echo "error";
+				}
+			}else{
+				echo "children";
+			}
+			
+		}
+	}
+	
 	
 	
 //END OF THE CLASS	

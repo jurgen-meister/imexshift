@@ -25,31 +25,6 @@ $(document).ready(function(){
 			}
 		}
 	}
-//alert(itemsCounter);
-///datatable not working when add o delete a row need to be with its own properties, not with the code written here
-/*
-function startDataTable(){
-	   $('.data-table').dataTable({
-			"bJQueryUI": true,
-			//"sPaginationType": "full_numbers",
-			"sDom": '<"">t<"F"f>i',
-			//"sDom": 'frtiS',
-			"sScrollY": "300px",
-			"bScrollCollapse": true,
-			"bPaginate": false,
-			"aaSorting":[], //on start sorting setting to empty
-			"oLanguage": {
-				"sSearch": "Filtrar:",
-				 "sZeroRecords":  "No se encontro nada.",
-				 //"sInfo":         "Ids from _START_ to _END_ of _TOTAL_ total" //when pagination exists
-				 "sInfo": "Encontrados _TOTAL_ Items",
-				 "sInfoEmpty": "Encontrados 0 Items",
-				 "sInfoFiltered": "(filtrado de _MAX_ Items)"
-			}
-		});
-   }
-*/
-
 
 	//validates before add item quantity
 	function validateItem(item, quantity, documentQuantity){
