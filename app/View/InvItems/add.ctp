@@ -1,28 +1,42 @@
-	<div class="span9">
+<?php echo $this->Html->script('modules/InvItems', FALSE); ?>
+<div class="span12">
+	
+	<div class="widget-box">
+		<div class="widget-title">
+			<span class="icon">
+				<i class="icon-edit"></i>								
+			</span>
+			<h5>Crear Producto</h5>			
+		</div>
+	<div class="widget-content nopadding">
 		<?php echo $this->BootstrapForm->create('InvItem', array('class' => 'form-horizontal'));?>
 			<fieldset>
-				<legend><?php echo __('Adicionar %s', __('Item')); ?></legend>				
 					<?php
-					echo $this->BootstrapForm->input('code', array(								
-						'label' => 'Código:',
-						'required' => 'required',
-						'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
+					
+					echo $this->BootstrapForm->input('InvItemsSupplier.0.inv_supplier_id', array(
+						'id' => 'supplier',
+						'label' => '* Proveedor:',
+						'required' => 'required'
+						,'class'=>'span3'
+						//'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
+						)
+					);
+					
+					echo $this->BootstrapForm->input('code', array(
+						'id' => 'code',
+						'style' => 'width:400px',
+						'label' => '* Código:',
+						'required' => 'required'
+						
+						//'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
 						)
 					);
 					echo $this->BootstrapForm->input('inv_brand_id', array(
-//						'after' => $this->BootstrapForm->input('Crear Marca',array(
-//							'type' => 'button',
-//							'href' => '#modalAddBrand', 
-//							'role' => 'button', 
-//							'class' => 'btn btn-info', 						
-//							'data-toggle' =>'modal',
-//							'label' => false,						
-//							'div' => false,						
-//							)
-//						),					
-						'label' => 'Marca:',
+//		
+						'id' => 'brand',
+						'label' => '* Marca:',
 						'required' => 'required',					
-						'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
+						'class'=>'span3'
 						)
 					);
 					echo $this->BootstrapForm->input('inv_category_id', array(
@@ -36,94 +50,93 @@
 //							'div' => false,
 //							)
 //						),
-						'label' => 'Categoría:',
+						'id' => 'category',
+						'label' => '* Categoría:',
 						'required' => 'required',
-						'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
+						'class'=>'span3'
+						//'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
+						)
 					);				
 					echo $this->BootstrapForm->input('name', array(
-						'label' => 'Nombre:',
+						'id' => 'name',
+						'style' => 'width:400px',
+						'label' => '* Nombre:',
 						'rows' => 3,
 						'required' => 'required',
-						'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
+						//'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
+						)
 					);
 					echo $this->BootstrapForm->input('description', array(
 						//'class=' => 'input-xxlarge',
 						//'type' => 'text',
+						'id' => 'description',
 						'rows' => 5,
 						'style'=>'width:400px',
-						'label' => 'Descripccion:',
+						'label' => '* Descripcción:',
 						'required' => 'required',
-						'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')				
+						//'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
+						)				
 					);
-					echo $this->BootstrapForm->input('min_quantity', array(
-						'label' => 'Cantidad Mínima:',
-						'default'=>0,)				
-					);							
-					echo $this->BootstrapForm->input('picture', array(
+					
+					
+					
+					echo $this->BootstrapForm->input('Aux.neutralPrice', array(
+						'id' => 'txtPrice',
+						'style' => 'width:200px',
+						'label' => '* Precio FOB:',
+						'required' => 'required',
+						//'type'=>'number'
 						)
-					);				
+					);
+					
+					echo $this->BootstrapForm->input('Aux.priceType', array(
+						'id' => 'cbxPriceType',
+						'label' => '* Moneda:',
+						'required' => 'required',					
+						'class'=>'span3',
+						'type'=>'select',
+						'options'=>array("BOLIVIANOS"=>"BOLIVIANOS", "DOLARES"=>"DOLARES")
+						)
+					);
+					
+					echo $this->BootstrapForm->input('InvPrice.0.date', array(
+						'id' => 'txtPriceDate',
+						'style' => 'width:200px',
+						'label' => '* Precio valido desde fecha: ',
+						'required' => 'required',
+						'type'=>'text',
+						//'class'=>'span4'
+						//'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
+						)
+					);
 					?>
 					
 				<div class="row-fluid">
-					<div class="span2"></div>
-					<div class="span6">
-					<div class="btn-toolbar">
-					<?php echo $this->BootstrapForm->submit('Guardar', array('id'=>'saveButton', 'class' => 'btn btn-primary', 'div' => false));
-						   echo $this->Html->link('Cancelar', array('action' => 'index'), array('class'=>'btn') );
+					<div class="btn-toolbar" style="text-align:center">
+					<?php echo $this->BootstrapForm->submit('Guardar', array('id'=>'btnAdd', 'class' => 'btn btn-primary', 'div' => false));
+					//debug($this->passedArgs['stock']);
+					$url = array('action' => 'index');
+					$parameters = array();
+					if(isset($this->passedArgs['stock'])){
+						$parameters = array("stock"=>$this->passedArgs['stock']);
+					}
+					if(isset($this->passedArgs['page'])){
+						$parameters["page"] = $this->passedArgs['page'];
+					}
+					if(isset($this->passedArgs['code'])){
+						$parameters["code"] = $this->passedArgs['code'];
+					}
+						   echo $this->Html->link('Cancelar', array_merge($url, $parameters), array('class'=>'btn') );
 					?>
 					</div>				
-					</div>
 					<div class="span4"></div>
 				</div>	
 			</fieldset>
 		<?php echo $this->BootstrapForm->end();?>
 	</div>
-	<!-- Brands Modal -->
-<div id="modalAddBrand" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3 id="myModalLabel">Nueva Marca</h3>
-  </div>
-  <div class="modal-body form-horizontal">
-    <?php	echo'<div id="boxModalAddBrand">';
-			echo $this->BootstrapForm->input('name', array(
-				'rows' => 3,				
-				'label' => 'Nombre',
-				'required' => 'required',
-				'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
-			);
-			echo $this->BootstrapForm->input('description', array(
-				'rows' => 5,
-				//'style'=>'width:300px',
-				'label' => 'Descripcion',
-				'required' => 'required',
-				'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
-			);
-			echo $this->BootstrapForm->input('country_source', array(
-				'label' => 'Pais de Origen',
-				'required' => 'required',
-				'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
-			);
-			echo '</div>';
-			?>	
-  </div>
-  <div class="modal-footer">
-    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
-    <button class="btn btn-primary" id="btnModalAddBrand">Guardar</button>
-  </div>
-</div>
+	</div>
 
-	<!-- Categories Modal -->
-<div id="modalAddCategorie" class="modal hide fade" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
-  <div class="modal-header">
-    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-    <h3 id="myModalLabel">Nueva Categoria</h3>
-  </div>
-  <div class="modal-body form-horizontal">
-    
-  </div>
-  <div class="modal-footer">
-    <button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
-    <button class="btn btn-primary" id="btnModalAddCategorie">Guardar</button>
-  </div>
-</div>
+		<div id="boxMessage"></div>
+		<div id="processing"></div>
+	</div>
+	

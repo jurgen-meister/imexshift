@@ -6,7 +6,7 @@
 			<span class="icon">
 				<i class="icon-edit"></i>								
 			</span>
-			<h5>Adicionar Item</h5>			
+			<h5>Editar Producto</h5>			
 		</div>
 	<div class="widget-content nopadding">
 		<?php echo $this->BootstrapForm->create('InvItem', array('class' => 'form-horizontal'));?>
@@ -20,18 +20,19 @@
 					
 					echo $this->BootstrapForm->input('inv_supplier_id', array(
 						'id' => 'supplier',
-						'label' => 'Proveedor',
-						'required' => 'required',
-						'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
+						'label' => '* Proveedor',
+						'required' => 'required'
+						,'class'=>'span3'
+						//'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
 						)
 					);
 					
 					echo $this->BootstrapForm->input('code', array(
 						'id' => 'code',
 						'style' => 'width:400px',
-						'label' => 'Código',
+						'label' => '* Código',
 						'required' => 'required',
-						'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
+						//'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
 						)
 					);
 					echo $this->BootstrapForm->input('inv_brand_id', array(
@@ -46,9 +47,10 @@
 //							)
 //						),					
 						'id' => 'brand',
-						'label' => 'Marca',
+						'label' => '* Marca',
 						'required' => 'required',					
-						'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
+						'class'=>'span3'
+						//'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
 						)
 					);
 					echo $this->BootstrapForm->input('inv_category_id', array(
@@ -63,17 +65,20 @@
 //							)
 //						),
 						'id' => 'category',
-						'label' => 'Categoría',
+						'label' => '* Categoría',
 						'required' => 'required',
-						'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
+						'class'=>'span3'
+						//'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
+						)
 					);				
 					echo $this->BootstrapForm->input('name', array(
 						'id' => 'name',
 						'style' => 'width:400px',
-						'label' => 'Nombre',
+						'label' => '* Nombre',
 						'rows' => 3,
 						'required' => 'required',
-						'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
+						//'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
+						)
 					);
 					echo $this->BootstrapForm->input('description', array(
 						//'class=' => 'input-xxlarge',
@@ -81,10 +86,12 @@
 						'id' => 'description',
 						'rows' => 5,
 						'style'=>'width:400px',
-						'label' => 'Descripccion',
+						'label' => '* Descripcción',
 						'required' => 'required',
-						'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')				
+						//'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
+						)				
 					);
+					/*
 					echo $this->BootstrapForm->input('min_quantity', array(
 						'id' => 'minquantity',
 						'label' => 'Cantidad Mínima',
@@ -93,7 +100,8 @@
 					echo $this->BootstrapForm->input('picture', array(
 						'id' => 'picture',
 						)
-					);				
+					);
+					 */				
 					?>
 				  
 	  
@@ -119,7 +127,8 @@
 					<tr>
 						<th>Tipo de Precio</th>
 						<th>Fecha</th>
-						<th>Monto</th>
+						<th>Precio Bolivianos</th>
+						<th>Precio Dolares</th>
 						<th>Descripcion</th>
 						<th class="columnItemsButtons"></th>
 					</tr>
@@ -127,7 +136,7 @@
 				<tbody>
 					<?php for($i=0; $i<count($invPrices); $i++){?>
 						<tr>							
-							<td>
+							<td style="text-align:center;">
 								<span id="<?php echo 'spaPriceType'.$invPrices[$i]['priceId']?>">
 								<?php 
 										echo $this->BootstrapForm->input($invPrices[$i]['priceId'], array(
@@ -144,12 +153,20 @@
 											//'id' => 'txtPriceId'.$invPrices[$i]['priceId']
 											));
 										
+										echo $this->BootstrapForm->input($invPrices[$i]['priceTypeId'], array(
+											'type' => 'hidden',
+											'value' => $invPrices[$i]['priceTypeId'],
+											'id' => 'txtPriceTypeId'
+											//'id' => 'txtPriceId'.$invPrices[$i]['priceId']
+											));
+										
 										echo h($invPrices[$i]['priceType']); 
 								?> 
 								</span>
 							</td>
-							<td><span id="<?php echo 'spaDate'.$invPrices[$i]['priceId']?>"><?php echo h(date("d/m/Y",  strtotime($invPrices[$i]['date']))); ?></span></td>
-							<td><span id="<?php echo 'spaPrice'.$invPrices[$i]['priceId']?>"><?php echo h($invPrices[$i]['price']); ?></span></td>
+							<td style="text-align:center;"><span id="<?php echo 'spaDate'.$invPrices[$i]['priceId']?>"><?php echo h(date("d/m/Y",  strtotime($invPrices[$i]['date']))); ?></span></td>
+							<td style="text-align:center;"><span id="<?php echo 'spaPrice'.$invPrices[$i]['priceId']?>"><?php echo h($invPrices[$i]['price']); ?></span></td>
+							<td style="text-align:center;"><span id="<?php echo 'spaExPrice'.$invPrices[$i]['priceId']?>"><?php echo h($invPrices[$i]['ex_price']); ?></span></td>
 							<td><span id="<?php echo 'spaDescription'.$invPrices[$i]['priceId']?>"><?php echo h($invPrices[$i]['description']); ?></span></td>
 							<td class="columnItemsButtons">
 								<?php 
@@ -178,14 +195,24 @@
 	</div>		
 	</div>
 	</div>			
-				<div class="row-fluid">
-					<div class="span2"></div>
-					<div class="span10">
+				<div class="row-fluid" style="text-align:center;">
+					
 					<div class="btn-toolbar">
 					<?php echo $this->BootstrapForm->submit('Guardar', array('id'=>'saveButton', 'class' => 'btn btn-primary', 'div' => false));
-						   echo $this->Html->link('Cancelar', array('action' => 'index'), array('class'=>'btn') );
+					//debug($this->passedArgs['stock']);
+					$url = array('action' => 'index');
+					$parameters = array();
+					if(isset($this->passedArgs['stock'])){
+						$parameters = array("stock"=>$this->passedArgs['stock']);
+					}
+					if(isset($this->passedArgs['page'])){
+						$parameters["page"] = $this->passedArgs['page'];
+					}
+					if(isset($this->passedArgs['code'])){
+						$parameters["code"] = $this->passedArgs['code'];
+					}
+						   echo $this->Html->link('Cancelar', array_merge($url, $parameters), array('class'=>'btn') );
 					?>
-					</div>				
 					</div>
 					<div class="span4"></div>
 				</div>	
@@ -197,6 +224,7 @@
 
 		<div id="boxMessage"></div>
 		<div id="processing"></div>
+
 	</div>
 
 	<!-- Prices Modal -->
@@ -207,38 +235,63 @@
 	  <h3 id="myModalLabel">Precios</h3>
 	</div>
 
-	<div class="modal-body form-horizontal">
+	<div class="modal-body ">
 	  
 	  <?php
 		echo '<div id="boxModalIntiatePrice">';
-		
+		/*
 		echo $this->BootstrapForm->input('invPriceTypes', array(
 			'id' => 'cbxModalPriceTypes',
-			'label' => 'Tipo de Precio:',			
+			'label' => '* Tipo de Precio:',			
 			'required' => 'required',
-			'div' => false,
-			'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')			
+			//'div' => false,
+			'class'=>'span12'
+//			'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
+			)			
 		);
+		 * 
+		 */
 		echo '</div>';
 		echo '<br>';
+		//echo '<br>';
 		echo $this->BootstrapForm->input('date', array(			
 			'id' => 'txtModalDate',
-			'label' => 'Fecha:',
+			'label' => '* Fecha:',
 			'required' => 'required',			
-			'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
+			//'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
+			)
 		);		
+		
+		
+		
+		
+		echo $this->BootstrapForm->input('priceType', array(
+			'id' => 'cbxCurrencyType',
+			'label' => '* Moneda:',
+			'required' => 'required',					
+			//'class'=>'span3',
+			'type'=>'select',
+			'options'=>array("BOLIVIANOS"=>"BOLIVIANOS", "DOLARES"=>"DOLARES")
+			)
+		);
+		
 		echo $this->BootstrapForm->input('price', array(
 			'id' => 'txtModalPrice',
-			'label' => 'Monto:',
+			'label' => '* Monto:',
 			'required' => 'required',
-			'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
+			//'type'=>'number'
+			//'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
+			)
 		);
+		echo '<div id="boxModalValidateItem" class="alert-error"></div>';
 		echo $this->BootstrapForm->input('description', array(
 			'id' => 'txtModalDescription',
-			'label' => 'Descripcion:',
+			'label' => 'Descripción:',
+			'type'=>'textarea',
+			'class'=>'span12'
 		));						
 	  ?>
-	<div id="boxModalValidatePrice" class="alert-error"></div> 
+	  
 	</div>
 
 	<div class="modal-footer">

@@ -217,8 +217,8 @@ $('#btnGenerateReportItemsUtilities').click(function(){
 				var barOptions = createBarOptions();
 				
 				//Display graph    
-				$.plot($(".bars"), createBarData(arrayData[0]), barOptions);
-				$.plot($(".bars2"), createBarData(arrayData[1]), barOptions);
+//				$.plot($(".bars"), createBarData(arrayData[0]), barOptions);
+//				$.plot($(".bars2"), createBarData(arrayData[1]), barOptions);
 				$.plot($(".pie"), createPieData(arrayData[2]), pieOptions);
 				$.plot($(".pie2"), createPieData(arrayData[3]), pieOptions);
 				
@@ -252,8 +252,8 @@ $('#btnGenerateReportItemsUtilities').click(function(){
 				
 				//Display graph    
 				
-				$.plot($(".bars"), createBarData(arrayData[0]), barOptions);
-				$.plot($(".bars2"), createBarData(arrayData[1]), barOptions);
+//				$.plot($(".bars"), createBarData(arrayData[0]), barOptions);
+//				$.plot($(".bars2"), createBarData(arrayData[1]), barOptions);
 				$.plot($(".pie"), createPieData(arrayData[2]), pieOptions);
 				$.plot($(".pie2"), createPieData(arrayData[3]), pieOptions);
 				

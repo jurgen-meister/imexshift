@@ -7,6 +7,7 @@ $(document).ready(function(){
 	var arrayPricesAlreadySaved = [];
 	var cont = 0;
 	
+//	$('select').select2();
 	
 	startEventsWhenExistsPrices();
 	
@@ -17,11 +18,11 @@ $(document).ready(function(){
 	//************************************************************************//
 	
 	//Validate only numbers
-	$('#txtModalPrice').keydown(function(event) {
+	$('#txtModalPrice, #txtPrice').keydown(function(event) {
 			validateOnlyNumbers(event);			
 	});
 	//Enable Datepicker
-	$("#txtModalDate").datepicker({		
+	$("#txtModalDate, #txtPriceDate").datepicker({		
 	  showButtonPanel: true	  
 	  //inline : true
 	});	
@@ -34,7 +35,7 @@ $(document).ready(function(){
 	$('#btnModalAddPrice').click(function(event){
 		addPrice();
 		event.preventDefault(); //avoid page refresh
-		location.reload();
+		//location.reload();
 	});
 	//edit an existing price
 	$('#btnModalEditPrice').click(function(event){
@@ -46,7 +47,7 @@ $(document).ready(function(){
 		ajax_save_item();
 		event.preventDefault();		
 	});
-	$("#txtModalDate").keypress(function(event){
+	$("#txtModalDate, #txtPriceDate").keypress(function(event){
 		event.preventDefault();
 	});	
 	
@@ -107,6 +108,9 @@ $(document).ready(function(){
 					show: 'true',
 					backdrop:'static'
 		});
+//		$('#modalAddPrice').on('show', function () {
+//			$(document).find('body').css('overflow', 'hidden');
+//		});
 	}	
 	
 	function validateOnlyNumbers(event){
@@ -134,19 +138,27 @@ $(document).ready(function(){
 		var priceDate = $('#txtModalDate').val();
 		var priceAmount = $('#txtModalPrice').val();
 		var priceDescription = $('#txtModalDescription').val();		
-		var error = validatePrice(priceTypeId, priceAmount); 
-		if(error == ''){
-			ajax_save_price();
-			createRowPriceTable(contTable,priceTypeId, priceTypeName, priceDate,priceAmount, priceDescription);
-			createEventClickEditPriceButton(contTable);
-			createEventClickDeletePriceButton(contTable);			
-			arrayPricesAlreadySaved.push(contTable);  //push into array of the added item
-			$('#modalAddPrice').modal('hide');
+		var error = validatePrice(priceTypeId, priceAmount, priceDate); 
+		var exRate = 0;
+		if(error === ""){
+//			ajax_check_exists_ex_rate();
+//			exRate = $("#tokenAle").val();
+//			alert(exRate);
+//			if(exRate > 0){
+				ajax_save_price();
+//				createRowPriceTable(contTable,priceTypeId, priceTypeName, priceDate,priceAmount, priceDescription);
+//				createEventClickEditPriceButton(contTable);
+//				createEventClickDeletePriceButton(contTable);			
+//				arrayPricesAlreadySaved.push(contTable);  //push into array of the added item
+//				$('#modalAddPrice').modal('hide');
+//			}
 		}
 		else{
-			$('#boxModalValidatePrice').html('<ul>'+error+'</ul>');
+			$('#boxModalValidateItem').html('<ul>'+error+'</ul>');
 		}
 	}
+	
+	
 	
 	function editPrice(){
 		
@@ -158,7 +170,7 @@ $(document).ready(function(){
 		var priceDescription = $('#txtModalDescription').val();		
 		
 			
-		var error = validatePrice(priceTypeId, priceAmount); 
+		var error = validatePrice(priceTypeId, priceAmount, priceDate); 
 		if(error == ''){
 			
 			$('#spaPriceName'+priceTypeId).text(priceTypeName);
@@ -195,16 +207,22 @@ $(document).ready(function(){
 	}
 	
 	//validates before add price
-	function validatePrice(priceType, priceAmount){
+	function validatePrice(priceType, priceAmount, priceDate){
 		var error = '';
 		
-		if(priceType == ''){
+		if(priceType === ''){
 			error+='<li>El campo "Tipo de Precio" no puede estar vacio</li>'; 
 		}
 		
-		if(priceAmount == ''){
+		if(priceDate === ''){
+			error+='<li>El campo "Fecha" no puede estar vacio</li>'; 
+		}		
+		
+		if(priceAmount === ''){
 			error+='<li>El campo "Monto" no puede estar vacio</li>'; 
 		}		
+		
+		
 		return error;
 	}
 	
@@ -258,12 +276,13 @@ $(document).ready(function(){
 		if(confirm('Esta seguro de Eliminar el Precio?')){	
 
 			var priceIdForDelete = objectTableRowSelected.find('#txtPriceId').val();  //
+			var priceTypeId = objectTableRowSelected.find('#txtPriceTypeId').val();  //
 			arrayPricesAlreadySaved = jQuery.grep(arrayPricesAlreadySaved, function(value){
 				return value != priceIdForDelete;
 			});
 			
-			ajax_delete_price(priceIdForDelete);
-			objectTableRowSelected.remove();			
+			ajax_delete_price(priceIdForDelete, objectTableRowSelected, priceTypeId);
+			//objectTableRowSelected.remove();			
 			
 		}
 	}
@@ -322,8 +341,9 @@ $(document).ready(function(){
             success: function(data){
 				$('#processing').text('');
 				$('#boxModalIntiatePrice').html(data);
-				
-				initiateModal()			
+				$('#boxModalValidateItem').text('');
+				initiateModal();
+				//$('#cbxModalPriceTypes').select2(); //is off due the scroll error with modal and select2
 //				$('#cbxModalPriceTypes').bind("change",function(){ //must be binded 'cause dropbox is loaded by a previous ajax'
 //					
 //				});
@@ -347,14 +367,19 @@ $(document).ready(function(){
 					priceTypeName : $('#cbxModalPriceTypes option:selected').text(),
 				    priceDate : $('#txtModalDate').val(),
 					priceAmount : $('#txtModalPrice').val(),
-					priceDescription : $('#txtModalDescription').val()		 
-		 //error = validatePrice(priceTypeId, priceAmount);			  
+					priceDescription : $('#txtModalDescription').val(),		
+					currencyType: $("#cbxCurrencyType").val()
 			  },
             beforeSend: showProcessing(),
             success: function(data){
 				
-				$('#boxMessage').html('<div class="alert alert-success">\n\
-				<button type="button" class="close" data-dismiss="alert">&times;</button>Guardado con exito<div>');
+				if(data === "noExRate"){
+					//alert("mierda");
+					$("#boxModalValidateItem").text('No hay un "Tipo de Cambio" registrado para la fecha elegida');
+				}
+				if(data === "success"){
+					location.reload();
+				}
 				$('#processing').text('');
 			},
 			error:function(data){
@@ -366,18 +391,25 @@ $(document).ready(function(){
 	}
 	
 	//Delete price
-	function ajax_delete_price(priceIdForDelete){
+	function ajax_delete_price(priceIdForDelete, objectTableRowSelected, priceTypeId){
 				
 		$.ajax({
             type:"POST",
             url:moduleController + "ajax_delete_price",			
-            data:{	priceId : priceIdForDelete},
+            data:{	priceId : priceIdForDelete, itemId: $("#txtItemIdHidden").val(), priceTypeId:priceTypeId},
             
 			beforeSend: showProcessing(),
             success: function(data){
-
-				$('#boxMessage').html('<div class="alert alert">\n\
-				<button type="button" class="close" data-dismiss="alert">&times;</button>Precio eliminado<div>');
+				if(data === "success"){
+					$('#boxMessage').html('<div class="alert alert">\n\
+					<button type="button" class="close" data-dismiss="alert">&times;</button>Precio eliminado<div>');
+					objectTableRowSelected.remove();
+					
+				}
+				if(data === "mustExistOne"){
+					//alert("No se puede eliminar el precio porque debe existir al menos uno de su tipo");
+					showBittionAlertModal({content:'No se puede eliminar el PRECIO porque debe existir al menos 1 de su TIPO', btnYes:'', btnNo:'ok'});
+				}
 				$('#processing').text('');
 				
 			},

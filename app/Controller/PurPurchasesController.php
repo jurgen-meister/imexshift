@@ -112,7 +112,8 @@ class PurPurchasesController extends AppController {
 					$this->set('group', $group);
 					break;
 			}
-			$item = $this->_find_items($type, array_keys($group));
+//			$item = $this->_find_items($type, array_keys($group));
+			$item = $this->_find_items($type, array_keys(array()));
 			$this->set(compact("item"));
 		}
 	}

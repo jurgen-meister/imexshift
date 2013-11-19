@@ -122,7 +122,8 @@ class InvMovementsController extends AppController {
 					$this->set('group', $group);
 					break;
 			}
-			$item = $this->_find_items($type, array_keys($group));
+//			$item = $this->_find_items($type, array_keys($group));
+			$item = $this->_find_items($type, array_keys(array()));
 			$this->set(compact("item"));
 		}
 	}
@@ -195,7 +196,9 @@ class InvMovementsController extends AppController {
 		if($initialData["movementType"] == 1000){
 			if($initialData["warehouse"] == 0 ){
 				$this->loadModel("InvWarehouse");
-				$kardexWarehouses = $this->InvWarehouse->find("list");
+				$kardexWarehouses = $this->InvWarehouse->find("list", array(
+					"order"=>array("InvWarehouse.id"=>"DESC") //is in the order required for IMEXPORT :\
+				));
 			}
 		}
 		
@@ -770,8 +773,10 @@ class InvMovementsController extends AppController {
 		$this->paginate = array(
 			"conditions"=>array(
 				//"InvMovement.lc_state !="=>"LOGIC_DELETED",
-				"NOT"=>array("InvMovement.lc_state" => array("LOGIC_DELETED", "DRAFT")),
-				"NOT"=>array("InvMovementType.id" => array(1,2)),//new
+				
+				"NOT"=>array("InvMovementType.id" => array(1,2)),// new
+//				"NOT"=>array("InvMovement.lc_state" => array("LOGIC_DELETED", "DRAFT")), //it denies the first NOT :S
+				"InvMovement.lc_state" => array("PENDANT", "APPROVED", "CANCELLED"),
 				"to_char(InvMovement.date,'YYYY')"=> $period,
 				"InvMovementType.status"=> "entrada",
 				$filters
@@ -859,8 +864,9 @@ class InvMovementsController extends AppController {
 		$this->paginate = array(
 			"conditions"=>array(
 				//"InvMovement.lc_state !="=>"LOGIC_DELETED",
-				"NOT"=>array("InvMovement.lc_state" => array("LOGIC_DELETED", "DRAFT")),
-				"NOT"=>array("InvMovementType.id" => array(1,2)),//new
+				"NOT"=>array("InvMovementType.id" => array(1,2)),// new
+//				"NOT"=>array("InvMovement.lc_state" => array("LOGIC_DELETED", "DRAFT")), //it denies the first NOT :S
+				"InvMovement.lc_state" => array("PENDANT", "APPROVED", "CANCELLED"),
 				"to_char(InvMovement.date,'YYYY')"=> $period,
 				"InvMovementType.status"=> "salida",
 				$filters

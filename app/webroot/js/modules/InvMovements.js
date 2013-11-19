@@ -25,31 +25,6 @@ $(document).ready(function(){
 			}
 		}
 	}
-//alert(itemsCounter);
-///datatable not working when add o delete a row need to be with its own properties, not with the code written here
-/*
-function startDataTable(){
-	   $('.data-table').dataTable({
-			"bJQueryUI": true,
-			//"sPaginationType": "full_numbers",
-			"sDom": '<"">t<"F"f>i',
-			//"sDom": 'frtiS',
-			"sScrollY": "300px",
-			"bScrollCollapse": true,
-			"bPaginate": false,
-			"aaSorting":[], //on start sorting setting to empty
-			"oLanguage": {
-				"sSearch": "Filtrar:",
-				 "sZeroRecords":  "No se encontro nada.",
-				 //"sInfo":         "Ids from _START_ to _END_ of _TOTAL_ total" //when pagination exists
-				 "sInfo": "Encontrados _TOTAL_ Items",
-				 "sInfoEmpty": "Encontrados 0 Items",
-				 "sInfoFiltered": "(filtrado de _MAX_ Items)"
-			}
-		});
-   }
-*/
-
 
 	//validates before add item quantity
 	function validateItem(item, quantity, documentQuantity){
@@ -642,7 +617,14 @@ function startDataTable(){
 				 //$('#itemRow'+itemId).animate({ backgroundColor: "#f6f6f6" }, 'slow');
 			}, 4000);
 	}
-		
+	
+	
+	function fixPrintButtonUrlWhenNewDocument(id){
+		var a_href = $('#btnPrint').attr("href");
+		var new_href = a_href.replace(a_href.substr(a_href.lastIndexOf('/') + 1), id+".pdf");
+		$('#btnPrint').attr("href", new_href);
+	}
+	
 	function setOnPendant(DATA, ACTION, OPERATION, STATE, objectTableRowSelected , itemId, itemCodeName, quantity, stock, stock2){
 		if($('#txtMovementIdHidden').val() === ''){
 			if(ACTION === 'save_warehouses_transfer'){
@@ -666,12 +648,14 @@ function startDataTable(){
 		   itemsCounter = itemsCounter + 1;
 			//////////////////
 			$('#countItems').text(itemsCounter);
+			fixPrintButtonUrlWhenNewDocument(DATA[1]);
 			$('#modalAddItem').modal('hide');
 			highlightTemporally('#itemRow'+itemId);
 			//$('.dataTables_scrollBody').scrollTop(0);//after add row scroll go back to the top to show created row, for datatable
 		}
 		if(OPERATION === 'EDIT'){
 			$('#spaQuantity'+itemId).text(parseInt(quantity,10));
+			fixPrintButtonUrlWhenNewDocument(DATA[1]);
 			$('#modalAddItem').modal('hide');
 			highlightTemporally('#itemRow'+itemId);
 		}

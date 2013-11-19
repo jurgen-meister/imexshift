@@ -8,7 +8,8 @@ if(isset($group)){
 	  'multiple'=>'multiple',	
 	  'class'=>'span12',    
 	  'options'=>$group,
-	  'selected'=>  array_keys($group),
+//	  'selected'=>  array_keys($group),
+	  'placeholder'=>'Haga click para seleccionar agrupaciones'
 	));
 	echo '</div>';	
 }

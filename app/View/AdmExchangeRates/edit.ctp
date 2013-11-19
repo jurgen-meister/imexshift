@@ -15,22 +15,29 @@
 			<fieldset>
 				<?php
 				echo $this->BootstrapForm->input('currency', array(
-					'label' => 'Moneda:',
+					'label' => '* Moneda:',
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
+					//'disabled'=>true,
+					'type'=>'select',
+					'options'=>array(1=>"Dolar"),
+					"value"=>0
+					//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
+					)
 				);
 				echo $this->BootstrapForm->input('date', array(
 					'style' => 'width: 400px',
 					'id' => 'txtDate',
-					'label' => 'Fecha',
+					'label' => '* Fecha',
 					'required' => 'required',
 					'type' => 'text',
-					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')					
+					//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
+					)					
 				);
 				echo $this->BootstrapForm->input('value', array(
-					'label' => 'Monto:',
+					'label' => '* Monto en bolivianos:',
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
+					//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
+					)
 				);				
 				echo $this->BootstrapForm->hidden('id');
 				?>

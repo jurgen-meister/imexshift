@@ -1,7 +1,7 @@
 <div class="span12">
 	<h3>
-		<?php echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' => 'add'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo'));?>
-		<?php echo __('Lista de %s', __('Clientes'));?>
+		<?php echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' => 'vsave'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo'));?>
+		<?php echo __('%s', __('Clientes'));?>
 	</h3>
 	
 	<div class="widget-box">
@@ -19,7 +19,8 @@
 						echo $this->BootstrapForm->input('name', array(											
 										'id'=>'txtName',
 										'value'=>$name,
-										'placeholder'=>'Nombre Cliente'
+										'placeholder'=>'Nombre Cliente',
+										'class'=>'span4'
 										));
 						?>				
 
@@ -64,10 +65,10 @@
 							$parameters = $this->passedArgs;
 						
 							
-							$url['action'] = 'edit';
+							$url['action'] = 'vsave';
 							$parameters['id'] = $salCustomer['SalCustomer']['id'];
-					   echo $this->Html->link('<i class= "icon-pencil icon-white"></i>',array('action' => 'edit', $salCustomer['SalCustomer']['id']),array('class' => 'btn btn-primary', 'escape'=>false, 'title'=>'Editar')); ?>
-				<?php echo $this->Form->postLink('<i class= "icon-trash icon-white"></i>', array('action' => 'delete', $salCustomer['SalCustomer']['id']), array('class'=>'btn btn-danger', 'escape'=>false, 'title' => 'Eliminar'), __('Are you sure you want to delete # %s?', $salCustomer['SalCustomer']['id'])); ?>
+					   echo $this->Html->link('<i class= "icon-pencil icon-white"></i>',array_merge($url, $parameters),array('class' => 'btn btn-primary', 'escape'=>false, 'title'=>'Editar')); ?>
+				<?php echo $this->Form->postLink('<i class= "icon-trash icon-white"></i>', array('action' => 'delete', $salCustomer['SalCustomer']['id']), array('class'=>'btn btn-danger', 'escape'=>false, 'title' => 'Eliminar'), __('Está seguro de eliminar este cliente?', $salCustomer['SalCustomer']['id'])); ?>
 			</td>
 		</tr>
 	<?php endforeach; ?>

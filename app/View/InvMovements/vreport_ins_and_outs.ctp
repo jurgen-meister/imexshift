@@ -1,5 +1,6 @@
 <?php 
 $countKardexWarehouses = count($kardexWarehouses); 
+//debug($kardexWarehouses);
 $columnColors = array("Yellow", "LightGreen", "SkyBlue", "Coral", "DarkGray", "LightSalmon", "YellowGreen", "PowderBlue", "SandyBrown", "Thistle");
 ?>
 <span style="font-size: 25px; font-weight: bold">IMEXPORT</span><span style="font-weight: bold">SRL</span>
@@ -73,13 +74,15 @@ if($initialData['detail'] == "NO"){
 		}
 	}else{
 		foreach($kardexWarehouses as $key => $nm){
-			//debug($initialStocks);
+//			debug($initialStocks);
+			$multipleStock[$key] = 0;
 			foreach ($initialStocks[$key] as $valStock) {
 				if($valStock['InvMovementDetail']['inv_item_id'] == $val['Item']['id']){
 					$multipleStock[$key] = $valStock[0]['stock'];
 				}
 			}
-			
+//			debug($key);
+//			debug($multipleStock);
 		}
 	}
 ?>
@@ -211,11 +214,14 @@ if($initialData['detail'] == "NO"){
 				}else{
 					if($movement['status'] == 'entrada'){
 						$inQuantity = $movement['quantity'];
-						$multipleStock[$movement['warehouse']] = $multipleStock[$movement['warehouse']] + $inQuantity;
+//						debug($multipleStock);
+//						debug($movement['warehouse']);
+							$multipleStock[$movement['warehouse']] = $multipleStock[$movement['warehouse']] + $inQuantity;
+						
 						$inQuantityTotal = $inQuantityTotal + $inQuantity;  
 					}else{//salida
 						$outQuantity = $movement['quantity'];
-						$multipleStock[$movement['warehouse']] = $multipleStock[$movement['warehouse']] - $outQuantity;
+							$multipleStock[$movement['warehouse']] = $multipleStock[$movement['warehouse']] - $outQuantity;
 						$outQuantityTotal = $outQuantityTotal + $outQuantity;  
 					}
 				}
