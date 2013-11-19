@@ -82,6 +82,7 @@ $(document).ready(function() {
         });
 	}
 	
+	//Employee
 	function ajax_save_employee(id, name, phone, email, idCustomer){
 		$.ajax({
             type:"POST",
@@ -122,7 +123,7 @@ $(document).ready(function() {
 	function createRowEmployee(id, name, phone, email) {
 		var rowCount = $('#tblEmployees tbody tr').length + 1;
 		var row = '<tr id="rowEmployee' + id + '">';
-		row += '<td style="text-align:center;"><span class="spaNumber">' + rowCount + '</span><input type="text" value="' + id + '" class="spaIdEmployee"></td>';
+		row += '<td style="text-align:center;"><span class="spaNumber">' + rowCount + '</span><input type="hidden" value="' + id + '" class="spaIdEmployee"></td>';
 		row += '<td><span class="spaNameEmployee">' + name + '</span></td>';
 		row += '<td><span class="spaPhoneEmployee">' + phone + '</span></td>';
 		row += '<td><span class="spaEmailEmployee">' + email + '</span></td>';
@@ -323,7 +324,218 @@ $(document).ready(function() {
 	}
 
 	///////////AJAX FUNCTIONS
+	
+	//Tax Numbers functions
+	
+	//Employee
+	function ajax_save_tax_number(id, nit, name, idCustomer){
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_save_tax_number",			
+            data:{id: id, nit:nit, name: name, idCustomer:idCustomer},
+            beforeSend: function(){
+				$('#boxProcessingTaxNumber').text(" Procesando...");
+			},
+            success: function(data){
+				var arrayData = data.split('|');
+				if(arrayData[0] === "success"){
+					showGrowlMessage('ok', 'Cambios guardados.');
+					if(arrayData[2] === "add"){
+						addRowTaxNumber(arrayData[1], nit, name);
+					}
+					if(arrayData[2] === "edit"){
+						editTaxNumber(arrayData[1], nit, name);
+					}
+				}else{
+					showGrowlMessage('error', 'Vuelva a intentarlo.');
+				}
+				$('#boxProcessingTaxNumber').text('');
+			},
+			error:function(data){
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#boxProcessingTaxNumber').text('');
+			}
+        });
+	}
+	
+	function addRowTaxNumber(id, nit, name) {
+		var pruebaRow = createRowTaxNumber(id, nit, name);
+		$('#tblTaxNumbers tbody').append(pruebaRow);
+		bindButtonEventsRowTaxNumber();
+		$('#SalTaxNumberVsaveForm input[type=hidden], #SalTaxNumberVsaveForm input[type=text]').val(""); //clear all after add
+	}
+	
+	function createRowTaxNumber(id, nit, name) {
+		var rowCount = $('#tblTaxNumbers tbody tr').length + 1;
+		var row = '<tr id="rowTaxNumber' + id + '">';
+		row += '<td style="text-align:center;"><span class="spaNumber">' + rowCount + '</span><input type="hidden" value="' + id + '" class="spaIdTaxNumber"></td>';
+		row += '<td><span class="spaNitTaxNumber">' + nit + '</span></td>';
+		row += '<td><span class="spaNameTaxNumber">' + name + '</span></td>';
+		row += '<td>';
+		row += '<a href="#" class="btn btn-primary btnRowEditTaxNumber" title="Editar"><i class="icon-pencil icon-white"></i></a>';
+		row += ' <a href="#" class="btn btn-danger btnRowDeleteTaxNumber" title="Eliminar"><i class="icon-trash icon-white"></i></a>';
+		row += '</td>';
+		row += '</tr>';
+		return row;
+	}
+	
+	function addTaxNumber(idCustomer) {
+		var id = $("#txtIdTaxNumber").val();
+		var nit = $("#txtNitTaxNumber").val();
+		var name = $("#txtNameTaxNumber").val();
+		var error = validateBeforeAddTaxNumber(nit, name);
+		if (error === "") {
+			ajax_save_tax_number(id, nit, name,idCustomer);
+			$('#boxMessageTaxNumber').html('');
+		} else {
+			$('#boxMessageTaxNumber').html('<div class="alert-error"><ul>' + error + '</ul></div>');
+		}
+	}
+	
+	$("#btnAddTaxNumber").click(function(event) {
+		event.preventDefault();
+		var idCustomer = $("#txtIdCustomer").val();
+		if(idCustomer !== ""){
+			addTaxNumber(idCustomer);
+		}else{
+			alert('Debe "Guardar Cambios" del Cliente antes de adicionar un Nit');
+		}
+	});
+	
+	$("#btnEditTaxNumber").click(function(event) {
+		event.preventDefault();
+		var id = $("#txtIdTaxNumber").val();
+		var nit = $("#txtNitTaxNumber").val();
+		var name = $("#txtNameTaxNumber").val();
+		var idCustomer = $("#txtIdCustomer").val();
+//		if(idCustomer !== ""){
+//			editEmployee(id, name, phone, email);
+		var error = validateBeforeAddTaxNumber(nit, name);
+		if (error === "") {
+			ajax_save_tax_number(id, nit, name, idCustomer);
+			$('#boxMessageTaxNumber').html('');
+		} else {
+			$('#boxMessageTaxNumber').html('<div class="alert-error"><ul>' + error + '</ul></div>');
+		}
+//		}else{
+//			alert('Debe "Guardar Cambios" del Cliente antes de editar un Empleado');
+//		}
+		
+	});
+	
+	function bindButtonEventsRowTaxNumber() {
+		$('#tblTaxNumbers tbody tr:last .btnRowEditTaxNumber').bind("click", function(event) {
+			editRowTaxNumber($(this), event);
+		});
 
+		$('#tblTaxNumbers tbody tr:last .btnRowDeleteTaxNumber').bind("click", function(event) {
+			deleteRowTaxNumber($(this), event);
+		});
+	}
+
+	////////////EVENTS
+			
+	function validateBeforeAddTaxNumber(nit, name) {
+		var error = '';
+		if (nit === '') {
+			error += '<li> El campo "Nit" no puede estar vacio </li>';
+		}
+		if (name === '') {
+			error += '<li> El campo "Nombre" no puede estar vacio </li>';
+		}
+		return error;
+	}
+	
+	$(".btnRowEditTaxNumber").click(function(event) {
+		editRowTaxNumber($(this), event);
+	});
+
+	$(".btnRowDeleteTaxNumber").click(function(event) {
+		deleteRowTaxNumber($(this), event);
+		
+	});
+	
+
+	
+	$("#btnCancelTaxNumber").click(function(event) {
+		$("#btnAddTaxNumber").show();
+		$("#btnEditTaxNumber, #btnCancelTaxNumber").hide();
+		$('#SalTaxNumberVsaveForm input[type=hidden], #SalTaxNumberVsaveForm input[type=text]').val("");
+		$('#SalTaxNumberVsaveForm input[type=text]').removeAttr('style');
+		event.preventDefault();
+	});
+	
+	function editTaxNumber(id, nit, name){
+		$("#rowTaxNumber"+id).find('.spaNitTaxNumber').text(nit);
+		$("#rowTaxNumber"+id).find('.spaNameTaxNumber').text(name);
+		$('#SalTaxNumberVsaveForm input[type=hidden], #SalTaxNumberVsaveForm input[type=text]').val("");
+		$('#SalTaxNumberVsaveForm input[type=text]').removeAttr('style');
+		$("#btnAddTaxNumber").show();
+		$("#btnEditTaxNumber, #btnCancelTaxNumber").hide();
+	}
+
+	
+	///////////PAGE FUNCTIONS
+	function editRowTaxNumber(object, event) {
+		event.preventDefault();
+		var objectTableRowSelected = object.closest('tr');
+		var id = objectTableRowSelected.find('.spaIdTaxNumber').val();
+		var nit = objectTableRowSelected.find('.spaNitTaxNumber').text();
+		var name = objectTableRowSelected.find('.spaNameTaxNumber').text();
+		
+		$("#txtIdTaxNumber").val(id);
+		$("#txtNitTaxNumber").val(nit);
+		$("#txtNameTaxNumber").val(name);
+		$("#btnAddTaxNumber").hide();
+		$("#btnEditTaxNumber, #btnCancelTaxNumber").show();
+		$('#SalTaxNumberVsaveForm input[type=text]').css("background-color","#FFFF66");
+		//alert(valor);
+	}
+
+	function deleteRowTaxNumber(object, event) {
+		showBittionAlertModal({content: '¿Está seguro de eliminar este nit?'});
+		$('#bittionBtnYes').click(function(event) {
+			var objectTableRowSelected = object.closest('tr');
+			var id = objectTableRowSelected.find('.spaIdTaxNumber').val();
+			hideBittionAlertModal();
+			ajax_delete_tax_number(id, objectTableRowSelected);
+			event.preventDefault();
+		});
+		
+		event.preventDefault();
+	}
+
+	
+	function ajax_delete_tax_number(id, objectTableRowSelected){
+		$.ajax({
+            type:"POST",
+            url:moduleController + "ajax_delete_tax_number",			
+            data:{id: id},
+            beforeSend: function(){
+				$('#boxProcessingTaxNumber').text(" Procesando...");
+			},
+            success: function(data){
+//				var arrayData = data.split('|');
+				if(data === "success"){
+					showGrowlMessage('ok', 'Cambios guardados.');
+					objectTableRowSelected.fadeOut("slow", function() {
+						$(this).remove();
+						reorderRowNumbers('tblTaxNumbers');//must go inside due the fadeout efect
+					});
+				}else if(data === "children"){
+					alert("El Nit ya fue usado en Ventas, no se puede eliminar!");
+				}else{
+					showGrowlMessage('error', 'Vuelva a intentarlo.');
+				}
+				$('#boxProcessingTaxNumber').text('');
+			},
+			error:function(data){
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#boxProcessingTaxNumber').text('');
+			}
+        });
+	}
+	
 //END SCRIPT	
 });
 
