@@ -54,6 +54,7 @@
 					'class'=>'span3',
 					'type'=>'select',
 					'options'=>$movementTypes,
+					'class'=>'span4'
 				));
 				echo $this->BootstrapForm->input('warehouse', array(
 					'label' => 'Almacen:',

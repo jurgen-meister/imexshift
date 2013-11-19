@@ -207,7 +207,7 @@
 	</div>
 </div>
 
-<div class="row-fluid">
+<div class="row-fluid" style="display:none;"> <!-- must take off display none to function -->
 	<div class="span6">
 		<div class="widget-box">
 			<div class="widget-title">
