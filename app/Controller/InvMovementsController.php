@@ -299,6 +299,7 @@ class InvMovementsController extends AppController {
 				}
 			}
 			//Items
+//			debug($item['InvItem']['id']);
 			$auxArray[ $item['InvItem']['id'] ]['Item']['codeName']='[ '.$item['InvItem']['code'].' ] '.$item['InvItem']['name'];
 			$auxArray[ $item['InvItem']['id'] ]['Item']['brand']=$item['InvBrand']['name'];
 			$auxArray[ $item['InvItem']['id'] ]['Item']['category']=$item['InvCategory']['name'];

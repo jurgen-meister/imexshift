@@ -1,4 +1,4 @@
-<? //debug($this->request->data);?>
+<?php //debug($this->request->data);?>
 <?php echo $this->Html->script('modules/AdmMenus', FALSE); ?>
 <!-- ************************************************************************************************************************ -->
 <div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
@@ -34,7 +34,7 @@ echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' =>
 						?>
 			</fieldset>
 			<?php echo $this->BootstrapForm->end();?>
-			<? 
+			<?php 
 			echo ' ';
 			$url['action'] = 'edit_out';
 			echo $this->Html->link('<i class="icon-pencil icon-white"></i>'.__(''),  array_merge($url,array($idParentMenu)), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Editar')); 

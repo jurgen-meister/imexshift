@@ -763,7 +763,7 @@ class PurPurchasesController extends AppController {
 				'recursive'=>-1
 			)); 	
 			
-			$itemsAlreadyTakenFromSupplier = [];
+			$itemsAlreadyTakenFromSupplier = array();
 			for($i=0; $i<count($itemsAlreadySaved); $i++){
 				if($supplierItemsAlreadySaved[$i] == $supplier){
 					$itemsAlreadyTakenFromSupplier[] = $itemsAlreadySaved[$i];
@@ -814,7 +814,7 @@ class PurPurchasesController extends AppController {
 				'recursive'=>-1
 			)); 	
 			
-			$itemsAlreadyTakenFromSupplier = [];
+			$itemsAlreadyTakenFromSupplier = array();
 			for($i=0; $i<count($itemsAlreadySaved); $i++){
 				if($supplierItemsAlreadySaved[$i] == $supplier){
 					$itemsAlreadyTakenFromSupplier[] = $itemsAlreadySaved[$i];

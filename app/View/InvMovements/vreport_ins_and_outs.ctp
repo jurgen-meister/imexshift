@@ -456,7 +456,7 @@ if($initialData['detail'] == 'NO'){ //start - detail NO
 		</tr>	
 		<tr>
 			<th></th>
-			<? if($countKardexWarehouses == 0){?>
+			<?php if($countKardexWarehouses == 0){?>
 			<th>Saldo <br> (Unidad)</th>
 			<?php }else{
 	             foreach ($kardexWarehouses as $value4) {
@@ -470,7 +470,7 @@ if($initialData['detail'] == 'NO'){ //start - detail NO
 		</tr>
 		<tr style="text-align:center;font-weight:bold;">
 			<td>Total:</td>
-			<? if($countKardexWarehouses == 0){?>
+			<?php if($countKardexWarehouses == 0){?>
 				<td><?php echo $globalStock;?></td>
 			<?php }else{?>
 				<?php foreach ($kardexWarehouses as $key5 => $value5) {

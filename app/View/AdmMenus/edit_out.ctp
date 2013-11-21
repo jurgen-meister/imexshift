@@ -1,4 +1,4 @@
-<? //debug($this->request->data);
+<?php //debug($this->request->data);
 $disable = false;
 if($this->request->data['AdmMenu']['parent_node'] == null){
 	$disable = true;

@@ -1831,7 +1831,7 @@ class SalSalesController extends AppController {
 			
 			$warehouse = key($invWarehouses);
 			
-			$itemsAlreadySavedInWarehouse = [];
+			$itemsAlreadySavedInWarehouse = array();
 			for($i=0; $i<count($itemsAlreadySaved); $i++){
 				if($warehouseItemsAlreadySaved[$i] == $warehouse){
 					$itemsAlreadySavedInWarehouse[] = $itemsAlreadySaved[$i];
@@ -1936,7 +1936,7 @@ class SalSalesController extends AppController {
 			$warehouse = $this->request->data['warehouse'];
 			$date = $this->request->data['date'];
 			
-			$itemsAlreadySavedInWarehouse = [];
+			$itemsAlreadySavedInWarehouse = array();
 			for($i=0; $i<count($itemsAlreadySaved); $i++){
 				if($warehouseItemsAlreadySaved[$i] == $warehouse){
 					$itemsAlreadySavedInWarehouse[] = $itemsAlreadySaved[$i];
