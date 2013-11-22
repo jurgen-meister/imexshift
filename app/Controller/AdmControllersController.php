@@ -38,12 +38,77 @@ class AdmControllersController extends AppController {
  * @return void
  */
 	public function index() {
-		$this->AdmController->recursive = 0;
-		 $this->paginate = array(
-			'order'=>array('AdmController.name'=>'asc'),
-			'limit' => 20
-		);
-		$this->set('admControllers', $this->paginate());
+		//BEFORE dataTable
+//		$this->AdmController->recursive = 0;
+//		 $this->paginate = array(
+//			'order'=>array('AdmController.name'=>'asc'),
+//			'limit' => 20
+//		);
+//		$this->set('admControllers', $this->paginate());
+		
+		//NEW - DATATABLE FEATURES ;)
+		if($this->RequestHandler->isAjax()){
+			//Data Catch
+			$sEcho = $initialModule = $this->request->data['sEcho'];
+			$iDisplayLength = $this->request->data['iDisplayLength'];
+			$iDisplayStart = $this->request->data['iDisplayStart'];
+			$sSearch = $this->request->data['sSearch'];
+			
+			//Query/Search
+			
+			$searchConditions = array(
+					'OR'=>array(
+						'lower(AdmModule.name) LIKE' => '%'.strtolower($sSearch).'%',
+						'AdmController.name LIKE' => '%'.$sSearch.'%',
+						'AdmController.initials LIKE' => '%'.$sSearch.'%',
+						'lower(AdmController.description) LIKE' => '%'.strtolower($sSearch).'%'
+					)
+				);
+			
+			$this->AdmController->recursive = 0;
+			$this->paginate = array(
+				'order' => array('AdmController.name' => 'asc'),
+				'limit' => $iDisplayLength,
+				'offset'=>$iDisplayStart,
+				'fields'=>array(
+					  'AdmModule.name'
+					, 'AdmController.name'
+					, 'AdmController.initials'
+					, 'AdmController.description'
+					, 'AdmController.id'
+				),
+				'conditions'=>$searchConditions
+			);
+			
+			$controller = $this->paginate();
+			
+			$total = $this->AdmController->find("count", array(
+				'conditions'=>$searchConditions
+			));
+			//Data Json Formating
+			$array = array("sEcho" => $sEcho);
+			$counter= $iDisplayStart + 1;
+			$controllerName = $this->name;
+			foreach ($controller as $key => $value) {
+				$deleteButton = '<form action="/imexport/'.$controllerName.'/delete/'.$value["AdmController"]["id"].'" name="post_528ed874d2239" id="post_528ed874d2239" style="display:none;" method="post">';
+				$deleteButton .='<input type="hidden" name="_method" value="POST"></form>';
+				$deleteButton .= '<a href="#" class="btn btn-danger" title="Eliminar" onclick="if (confirm(\'¿Esta seguro de borrar?\')) { document.post_528ed874d2239.submit(); } event.returnValue = false; return false;"><i class="icon-trash icon-white"></i></a>';
+				$editButton = '<a href="/imexport/'.$controllerName.'/edit/'.$value["AdmController"]["id"].'" class="btn btn-primary" title="Editar"><i class="icon-pencil icon-white"></i></a> ';
+				
+				$array["aaData"][$key][0] = $counter;
+				$array["aaData"][$key][1] = $value["AdmModule"]["name"];
+				$array["aaData"][$key][2] = $value["AdmController"]["name"];
+				$array["aaData"][$key][3] = $value["AdmController"]["initials"];
+				$array["aaData"][$key][4] = $value["AdmController"]["description"];
+				$array["aaData"][$key][5] = $editButton.$deleteButton; //must find a better way to create these buttons or not?
+				$counter++;
+			}
+			$array["iTotalRecords"] = $total;
+			$array["iTotalDisplayRecords"]=$total;
+			
+			//Send data
+			return new CakeResponse(array('body' => json_encode($array)));
+		}
 	}
 
 /**
