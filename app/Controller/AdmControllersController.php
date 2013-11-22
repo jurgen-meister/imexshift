@@ -88,7 +88,7 @@ class AdmControllersController extends AppController {
 			//Data Json Formating
 			$array = array("sEcho" => $sEcho);
 			$counter= $iDisplayStart + 1;
-			$controllerName = $this->name;
+			$controllerName = 'adm_controllers';//$this->name;//with this menu javascript doesn't work cause goes AdmControllers and no adm_controllers, I should format strings on unicorn.js to work no matter how, but meanwhile just with text
 			foreach ($controller as $key => $value) {
 				$deleteButton = '<form action="/imexport/'.$controllerName.'/delete/'.$value["AdmController"]["id"].'" name="post_528ed874d2239" id="post_528ed874d2239" style="display:none;" method="post">';
 				$deleteButton .='<input type="hidden" name="_method" value="POST"></form>';
