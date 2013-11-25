@@ -285,7 +285,6 @@
 					<a href='#' class="btn btn-primary" id="btnModalAddItem">Guardar</a>
 					<a href='#' class="btn btn-primary" id="btnModalEditItem">Guardar</a>
 					<button class="btn" data-dismiss="modal" aria-hidden="true">Cancelar</button>
-					
 				  </div>
 					
 			</div>

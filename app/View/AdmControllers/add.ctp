@@ -16,7 +16,6 @@
 				<?php
 				echo $this->BootstrapForm->input('adm_module_id', array('label'=>'Modulos:', 'id'=>'modules'));
 				echo '<div id="boxControllers">';
-				//echo $this->BootstrapForm->input('adm_controllers_id', array('type'=>'select', 'multiple'=>'checkbox', 'selected'=>$checkedControllers,'id'=>'controllers', 'label'=>'Controladores:' ));
 				echo $this->BootstrapForm->input('adm_controllers_id', array('id'=>'controllers', 'label'=>'Controladores:', 'name'=>'AdmController[name]' 
 					,'required' => 'required'
 					,'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'

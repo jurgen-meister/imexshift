@@ -103,7 +103,7 @@ $(document).ready(function(){
 	function initiateModal(){
 		$('#modalAddItem').modal({
 					show: 'true',
-					backdrop:'static'
+					backdrop:'static',
 		});
 	}
 

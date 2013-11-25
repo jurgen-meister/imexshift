@@ -9,6 +9,8 @@
 		?>
 		<?php echo __(' Controladores'); ?></h3>
 		<?php echo $this->BootstrapForm->button("Add Datatable", array("id"=>"btnAddDataTable", "type"=>"button"));?>
+		<?php echo $this->BootstrapForm->button("Start Modal", array("id"=>"btnPruebaModal", "type"=>"button"));?>
+	<?php //echo $this->BootstrapForm->button("PRUEBA", array("id"=>"btnPrueba", "type"=>"button"));?>
 	<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->
 	<div class="widget-box">
 <!--		<div class="widget-title">
@@ -45,3 +47,13 @@
 	<!-- ************************************************************************************************************************ -->
 </div><!-- FIN CONTAINER FLUID/ROW FLUID/SPAN12 - Del Template Principal #UNICORN
 <!-- ************************************************************************************************************************ --></div>
+
+
+<!--<div id="modalGeneric" class="modal hide fade ">
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+		<h3>TITULO DEL MODAL</h3>
+	</div>
+	<div class="modal-body">
+	</div>
+</div>-->

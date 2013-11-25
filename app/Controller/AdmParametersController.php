@@ -149,4 +149,85 @@ class AdmParametersController extends AppController {
 		);
 		$this->redirect(array('action' => 'index'));
 	}	
+
+	//////////////////////////////////////////////Test version 2.0/////////////////////////////////////
+	public function vindex(){
+		//Everything is through ajax now due the datatable plugin
+		if ($this->RequestHandler->isAjax()) {
+			//Data Catch
+			$sEcho = $initialModule = $this->request->data['sEcho'];
+			$iDisplayLength = $this->request->data['iDisplayLength'];
+			$iDisplayStart = $this->request->data['iDisplayStart'];
+			$sSearch = $this->request->data['sSearch'];
+			
+			$controller = 'AdmParameter'; //only replace this variable will help a lot of work for main controller
+			//Query/Search
+
+			$searchConditions = array(
+				'OR' => array(
+					'lower('.$controller.'.name) LIKE' => '%' . strtolower($sSearch) . '%',
+					'lower('.$controller.'.description) LIKE' => '%' . strtolower($sSearch) . '%'
+				)
+			);
+			
+			//First query
+			$this->$controller->recursive = 0;
+			$this->paginate = array(
+				'order' => array($controller.'.name' => 'asc'),
+				'limit' => $iDisplayLength,
+				'offset' => $iDisplayStart,
+				'fields' => array(
+					  $controller.'.id'
+					, $controller.'.name'
+					, $controller.'.description'
+				),
+				'conditions' => $searchConditions
+			);
+			$data = $this->paginate();
+			
+			//Second query without pagination limits, must see if there is a way to eliminate this for improve perfomance
+			$total = $this->$controller->find("count", array( 
+				'conditions' => $searchConditions
+			));
+			
+			
+			//Data Json Formating
+			$json = array("sEcho" => $sEcho);
+			$json["aaData"]=array();
+			$counter = $iDisplayStart + 1;
+			foreach ($data as $key => $value) {
+				$editButton = '<a href="#" class="btn btn-primary btnEditRow" title="Editar"><i class="icon-pencil icon-white"></i></a> ';
+				$deleteButton = '<a href="#" class="btn btn-danger btnDeleteRow" title="Eliminar"><i class="icon-trash icon-white"></i></a> ';
+				$json["aaData"][$key][0] = $counter;
+				$json["aaData"][$key][1] = $value[$controller]["name"];
+				$json["aaData"][$key][2] = $value[$controller]["description"];
+				$json["aaData"][$key][3] = $editButton . $deleteButton; //must find a another way to create these buttons or not?
+				$json["aaData"][$key]["DT_RowId"] = 'tr-'.$value[$controller]["id"];
+				$counter++;
+			}
+			$json["iTotalRecords"] = $total;
+			$json["iTotalDisplayRecords"] = $total;
+
+			//Send data
+			return new CakeResponse(array('body' => json_encode($json)));  //convert to json format and send
+		}
+	}
+	
+	public function vmodal(){
+		
+	}
+	
+	public function ajax_save(){
+		if ($this->RequestHandler->isAjax()) {
+			$this->autoRender = false;
+			Configure::write('debug', 0);//To show a clean error for production, comment it when developing
+			if (!empty($this->request->data)) {
+				if ($this->AdmParameter->save($this->request->data)) {
+					echo 'success';
+				} 
+			}
+		}
+	}
+	
+//END CLASS	
 }
