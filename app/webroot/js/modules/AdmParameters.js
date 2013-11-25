@@ -34,28 +34,47 @@ $(document).ready(function() {
 				}
 			};
 	
+	//***********************************************************************************************************************************//
+	///////////////////////////////////////////////////START - AJAX CRUD MAIN//////////////////////////////////////////////////////////////
+	var crudModalId = 'modalSave';
+	var crudFormId = 'formSave';
+	var crudDataTableId = 'dataTable';
+	
+	
+	var crudModalAction ='ajax_modal_save';
+	var crudFormSaveAction ='fnAjaxSaveForm';
+	var crudFormDeleteAction ='fnAjaxDeleteRow';
+	var crudDataTableAction ='index';
+	
+	var crudModalTitle = 'Parámetro';
+	var crudFieldMainFocus = 'btnAdd';
+	var crudFieldModalFocus = 'AdmParameterName';
 	
 	
 	//MAIN
-	if (urlAction === 'vindex') {
-		startDataTable(urlAction);
-		$('#btnAdd').focus();
+	if (urlAction === crudDataTableAction || urlAction === undefined) {
+		startDataTable();
+		$('#'+crudFieldMainFocus).focus();
 //		$('#dataTable_wrapper #dataTable_filter input').focus(); //FOCUS on dataTable Searcher
 	}
 	
 	//EVENTS
 	$('#btnAdd').click(function(event){
-		generateDynamicModal('modalSave', 'Parámetro');
-//		validateForm();
-//		alert('hola');
+		ajaxGenerateModal();
 		event.preventDefault();
 	});
+	///////////////////////////////////////////////////END - AJAX CRUD MAIN//////////////////////////////////////////////////////////////
+	//***********************************************************************************************************************************//
 	
 	
+	
+	
+	//***********************************************************************************************************************************//
+	///////////////////////////////////////////////////START - AJAX CRUD CORE//////////////////////////////////////////////////////////////
 	//FUNCTIONS
 	//Datatable generator
-	function startDataTable(action) {
-		$("#dataTable").dataTable({
+	function startDataTable() {
+		$('#'+crudDataTableId).dataTable({
 			"bJQueryUI": true //creates speciall rows F and H
 			,"sPaginationType": "full_numbers"
 			,"sDom": '<"F"fl>t<"H"p>ir' //I had to take the widget-title for the table in order to work properly
@@ -68,18 +87,49 @@ $(document).ready(function() {
 			/////////Ajax
 			, "bProcessing": true //show message of processing  r
 			, "bServerSide": true //ajax enabled
-			, "sAjaxSource": urlModuleController + action //the server side source
+			, "sAjaxSource": urlModuleController + crudDataTableAction //the server side source
 			, "sServerMethod": "POST" 
+			,"fnDrawCallback": function () {
+				$('#'+crudDataTableId+' tbody .btnEditRow').on('click',function(event){
+					editRow($(this));
+					event.preventDefault();
+				});
+				$('#'+crudDataTableId+' tbody .btnDeleteRow').on('click',function(event){
+					deleteRow($(this));
+					event.preventDefault();
+				});
+			}
 		});//end dataTable
 	}//end function startDataTable
 	
+	//btnEdit rows function
+	function editRow(object){
+		var tr = object.closest('tr');
+		var trId = tr.attr('id');
+		var trIdSplited = trId.split('-');
+		ajaxGenerateModal(trIdSplited[1]);
+	}
+	
+	//btnDelete rows function
+	function deleteRow(object){
+		var tr = object.closest('tr');
+		var trId = tr.attr('id');
+		var trIdSplited = trId.split('-');
+		showBittionAlertModal({content:'¿Está seguro de eliminar?'});
+		$('#bittionBtnYes').click(function(event){
+			ajaxDeleteRow(trIdSplited[1]);
+			hideBittionAlertModal();
+			event.preventDefault();
+		});
+	}
+	
 	//Modal generator, only need to create a view with a form helper and that's it
-	function createModal(id, title){
+	function createModal(){
 		var modal = '';
-		modal += '<div id="'+id+'" class="modal hide ">'; //took off "fade" from the class to be faster
+		modal += '<div id="'+crudModalId+'" class="modal hide ">'; //took off "fade" from the class to be faster
 		modal +='<div class="modal-header">';
 		modal +='<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>';
-		modal +='<h3>'+title+'</h3>';
+		modal +='<h3>'+crudModalTitle+'</h3>';
 		modal +='</div>';
 		modal +='<div class="modal-body">';
 		modal +='</div>';
@@ -87,24 +137,27 @@ $(document).ready(function() {
 		$('body #content').prepend(modal);
 	}
 	
-	
 	//Through ajax generate dynamically the modal
-	function generateDynamicModal(id, title){
-		if($('#'+id).length === 0){
-			createModal(id, title);
+	function ajaxGenerateModal(id){
+		if(id === undefined){
+			id = 0;
+		}
+		if($('#'+crudModalId).length === 0){
+			createModal();
 		}
 		$.ajax({
 			type: "POST",
-			url: urlModuleController + "vmodal",
+			url: urlModuleController + crudModalAction,
 			data: {id:id},
 //			beforeSend: showProcessing,
 			success: function(data){
-				$('#'+id+' .modal-body').html(data);//load the modal
-				$('#'+id).modal({//show modal
+				$('#'+crudModalId+' .modal-body').html(data);//load the modal
+				$('#'+crudModalId).modal({//show modal
 					show: 'true',
 					backdrop:'static'
 				});
-				bindEventsToModal();//bind events if needed, always after modal show
+				bindEventsToModal();//bind events if needed, ALWAYS after modal show, otherwise won't work
+				$("html,body").css("overflow","hidden");//remove scroll, but I can't find a trigger to put it back
 			},
 			error:function(data){
 				alert(data);
@@ -112,61 +165,90 @@ $(document).ready(function() {
 		});
 	}
 	
+
+	
 	//Binding events if need, because the modal is generated dinamically
 	function bindEventsToModal(){
 //		$('#btnPrueba').on('click', function(event) {
 //			alert('modal remote de mierda');
 //			event.preventDefault();
 //		});
-		validateForm();
-		$('#AdmParameterName').focus();
+		validateSaveForm();
+		$('#'+crudFieldModalFocus).focus();
+		$('#' + crudModalId).on('hidden', function() {
+			$("html,body").css("overflow", "auto");
+		});
 	}
 	
 	//Main Save function
-	function ajaxSaveForm(idForm, idModal, idDataTable) {
-		var form = $('#'+idForm);
+	function ajaxSaveForm() {
+		var form = $('#'+crudFormId);
 		var formData = form.serialize();
-//		var formUrl = form.attr('action');
-//		var formId = form.attr('id');
 		$.ajax({
 			type: 'POST',
 			async:false,//hang request and prevent for multi submit, however there is no processing message
-			url: urlModuleController+'ajax_save',
+			url: urlModuleController + crudFormSaveAction,
 			data: formData,
 			beforeSend: function() {
 			},
 			success: function(data, textStatus, xhr) {
 				if(data === 'success'){
-					$('#'+idModal).modal('hide');
-					var countTh = $('#dataTable thead tr th').length;
+					$('#'+crudModalId).modal('hide');
+					var countTh = $('#'+crudDataTableId+' thead tr th').length;
 					var arrayThPositions = [];
 					for(var i=0; i< countTh; i++){
 						arrayThPositions[i]=i;
 					}
-					$('#'+idDataTable).dataTable().fnAddData(
+					$('#'+crudDataTableId).dataTable().fnAddData(
 						arrayThPositions//Could be filled just with anything, because is SERVER SIDE just need the same quantity of columns
 					);
-					showGrowlMessage('ok', 'Cambios guardados.');	
+					$.gritter.add({title: 'EXITO!', text: 'Cambios guardados.',	sticky: false,	image: '/imexport/img/check.png'});	
 				}else{
-					$('#'+idModal).modal('hide');
-					showGrowlMessage('error', 'Vuelva a intentarlo.');
+					$('#'+crudModalId).modal('hide');
+					$.gritter.add({title: 'OCURRIO UN PROBLEMA!', text: data,	sticky: false,	image: '/imexport/img/error.png'});	
 				}
+				$('#'+crudFieldMainFocus).focus();
 			},
 			error: function(xhr, textStatus, error) {
-				$('#'+idModal).modal('hide');
-				showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#'+crudModalId).modal('hide');
+				$('#'+crudFieldMainFocus).focus();
+				$.gritter.add({title: 'ERROR!', text: 'Vuelva a intentarlo.',	sticky: false,	image: '/imexport/img/error.png'});	
+			}
+		});
+	}
+	
+	function ajaxDeleteRow(id){
+		$.ajax({
+			type: 'POST',
+			async:false,//hang request and prevent for multi submit, however there is no processing message
+			url: urlModuleController + crudFormDeleteAction,
+			data: {id:id},
+			beforeSend: function() {
+			},
+			success: function(data, textStatus, xhr) {
+				if(data === 'success'){
+					$('#'+crudDataTableId).dataTable().fnDeleteRow();
+					$.gritter.add({title: 'EXITO!', text: 'Eliminado.',	sticky: false,	image: '/imexport/img/check.png'});	
+				}else{
+					$('#'+crudModalId).modal('hide');
+					$.gritter.add({title: 'OCURRIO UN PROBLEMA!', text: data,	sticky: false,	image: '/imexport/img/error.png'});	
+				}
+				$('#'+crudFieldMainFocus).focus();
+			},
+			error: function(xhr, textStatus, error) {
+				$('#'+crudModalId).modal('hide');
+				$('#'+crudFieldMainFocus).focus();
+				$.gritter.add({title: 'ERROR!', text: 'Vuelva a intentarlo.',	sticky: false,	image: '/imexport/img/error.png'});	
 			}
 		});
 	}
 	
 	//Validate Plugin
-	function validateForm() {
-		$("#AdmParameterVmodalForm").validate({
+	function validateSaveForm() {
+		$("#"+crudFormId).validate({
 			onkeyup: false,
 			submitHandler: function() {
-				//Replace form submit for:
-//			disableSubmit('saveForm');//prevent insert duplicate
-				ajaxSaveForm('AdmParameterVmodalForm', 'modalSave', 'dataTable');
+				ajaxSaveForm();
 			},
 			rules: {
 				'AdmParameterName': {
@@ -175,14 +257,13 @@ $(document).ready(function() {
 				},
 				'AdmParameterDescription': {
 					required: true
-							//,date:true
 				}
 			},
 			errorClass: "help-inline",
 			errorElement: "span",
 			errorPlacement: function(error, element) {
 				if (element.attr("type") === "checkbox" || element.attr("type") === "radio")
-					error.insertAfter(element.parent().siblings().last());//this will insert the error message at the end of the checkboxes
+					error.insertAfter(element.parent().siblings().last());//this will insert the error message at the end of the checkboxes and radiobuttons
 				else
 					error.insertAfter(element);
 			},
@@ -196,36 +277,8 @@ $(document).ready(function() {
 			}
 		});
 	}
-	
-
-	
-	
-	//Growl Message
-	function showGrowlMessage(type, text, sticky){
-		if(typeof(sticky)==='undefined') sticky = false;
-		var title;
-		var image;
-		switch(type){
-			case 'ok':
-				title = 'EXITO!';
-				image= '/imexport/img/check.png';
-				break;
-			case 'error':
-				title = 'OCURRIO UN PROBLEMA!';
-				image= '/imexport/img/error.png';
-				break;
-			case 'warning':
-				title = 'PRECAUCIÓN!';
-				image= '/imexport/img/warning.png';
-				break;
-		}
-		$.gritter.add({
-			title:	title,
-			text: text,
-			sticky: sticky,
-			image: image
-		});	
-	}
+	/////////////////////////////////////////////////////END - AJAX CRUD CORE//////////////////////////////////////////////////////////////
+	//***********************************************************************************************************************************//
 	
 	
 //END SCRIPT

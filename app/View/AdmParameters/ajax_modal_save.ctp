@@ -1,7 +1,8 @@
 <?php // echo $this->Html->script('jquery.validate', FALSE);?>
-<?php echo $this->BootstrapForm->create('AdmParameter', array('class' => 'form-horizontal')); ?>
+<?php echo $this->BootstrapForm->create('AdmParameter', array('class' => 'form-horizontal', 'id'=>'formSave')); ?>
 <fieldset>			
 	<?php
+	echo $this->BootstrapForm->hidden('id');
 	echo $this->BootstrapForm->input('name', array(
 		'label' => 'Nombre:',
 		'required' => 'required',

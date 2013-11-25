@@ -33,7 +33,7 @@ class AdmParametersController extends AppController {
  *
  * @return void
  */
-	public function index() {
+	public function index_old() {
 		$this->AdmParameter->recursive = 0;
 		$this->set('admParameters', $this->paginate());
 	}
@@ -150,8 +150,10 @@ class AdmParametersController extends AppController {
 		$this->redirect(array('action' => 'index'));
 	}	
 
+	
+	
 	//////////////////////////////////////////////Test version 2.0/////////////////////////////////////
-	public function vindex(){
+	public function index(){
 		//Everything is through ajax now due the datatable plugin
 		if ($this->RequestHandler->isAjax()) {
 			//Data Catch
@@ -202,7 +204,7 @@ class AdmParametersController extends AppController {
 				$json["aaData"][$key][1] = $value[$controller]["name"];
 				$json["aaData"][$key][2] = $value[$controller]["description"];
 				$json["aaData"][$key][3] = $editButton . $deleteButton; //must find a another way to create these buttons or not?
-				$json["aaData"][$key]["DT_RowId"] = 'tr-'.$value[$controller]["id"];
+				$json["aaData"][$key]["DT_RowId"] = 'tr'.$controller.'-'.$value[$controller]["id"];
 				$counter++;
 			}
 			$json["iTotalRecords"] = $total;
@@ -213,19 +215,63 @@ class AdmParametersController extends AppController {
 		}
 	}
 	
-	public function vmodal(){
-		
+	public function ajax_modal_save(){
+		if ($this->RequestHandler->isAjax()) {
+			$id = $this->request->data['id'];
+			if($id > 0){
+				$this->request->data = $this->AdmParameter->read(null, $id);
+			}
+		}else{
+			$this->redirect($this->Auth->logout());//only accesible through ajax otherwise logout
+		}
 	}
 	
-	public function ajax_save(){
+	public function fnAjaxSaveForm(){
 		if ($this->RequestHandler->isAjax()) {
 			$this->autoRender = false;
-			Configure::write('debug', 0);//To show a clean error for production, comment it when developing
-			if (!empty($this->request->data)) {
-				if ($this->AdmParameter->save($this->request->data)) {
-					echo 'success';
-				} 
+//			Configure::write('debug', 0);//To show a clean error for production, comment it when developing
+			if($this->request->data['AdmParameter']['id'] == ''){//if true prepare for insert
+				unset($this->request->data['AdmParameter']['id']);
+				$this->AdmParameter->create();
 			}
+			if (!empty($this->request->data)) {
+				try{
+					$this->AdmParameter->save($this->request->data);
+					echo 'success';
+				}catch(Exception $e){
+					if ($e->getCode() == 23502) {//Not null violation
+						echo 'Un campo obligatorio esta vacio';
+					} elseif($e->getCode() == 23505) {//Unique violation
+						echo 'No puede haber duplicado';
+					}elseif($e->getCode() == 23503) {//children
+						echo 'Error al guardar los dependendientes';
+					}else{
+						echo 'Vuelva a intentarlo';//None of the above errors
+					}
+				}
+			}
+		}else{
+			$this->redirect($this->Auth->logout());//only accesible through ajax otherwise logout
+		}
+	}
+	
+	public function fnAjaxDeleteRow(){
+		if ($this->RequestHandler->isAjax()) {
+			$this->autoRender = false;
+			$id = $this->request->data['id'];
+			$this->AdmParameter->id = $id;
+			try{
+				$this->AdmParameter->delete();
+				echo 'success';
+			}catch(Exception $e){
+				if ($e->getCode() == 23503) {//children
+					echo 'No se puede eliminar, tiene dependendientes';
+				} else {
+					echo 'Vuelva a intentarlo';//None of the above errors
+				}
+			}	
+		}else{
+			$this->redirect($this->Auth->logout());//only accesible through ajax otherwise logout
 		}
 	}
 	

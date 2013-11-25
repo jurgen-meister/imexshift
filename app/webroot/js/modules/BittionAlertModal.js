@@ -36,8 +36,9 @@
 
 		$('#content').append(createAlertModal(arg));
 		if($('#bittionBtnNo').length > 0){
-			$('#bittionBtnNo').bind("click",function(){ 
+			$('#bittionBtnNo').bind("click",function(event){ 
 						hideBittionAlertModal();
+						event.preventDefault();
 			});
 		}
 		$('#bittionAlertModal').modal({
