@@ -700,7 +700,8 @@ class AdmUsersController extends AppController {
 	}
 	
 	public function logout() {
-		$this->Session->destroy();
+//		$this->Session->destroy(); //Some servers have issues with cakephp session component
+		session_destroy();//Therefore I'll use defaul php session
 		$this->_createMessage('La sesión termino!', 'info');
 		$this->redirect($this->Auth->logout());
 	}

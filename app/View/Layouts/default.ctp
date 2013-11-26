@@ -47,7 +47,7 @@
 	</div>
 
 	<div id="user-nav" class="navbar navbar-inverse"> 
-		<?php if($logged_in):?>
+		<?php // if($logged_in): //Redundant because if there isn't a session set this view won't appear'?>
 			<ul class="nav btn-group">
 				
 				<li class="btn btn-inverse dropdown" id="user-menu">
@@ -102,7 +102,7 @@
 				</li>
 			</ul>
 		
-		<?php endif;?>
+		<?php // endif;?>
 	</div>
 	
 	<!-- MENU -->
@@ -138,7 +138,6 @@
 			</div>
 			<div class="row-fluid">
 				<div id="footer" class="span12">
-					<!--2013 &copy IMERPORT SRL-->
 					<?php echo $this->element('sql_dump'); ?>
 				</div>
 			</div>
@@ -159,7 +158,7 @@
 	echo $this->Html->script('select2.min'); //enhanced selects
 	
 	?>
-	<?php echo $this->fetch('script'); //maybe not necessary?>
+	<?php echo $this->fetch('script'); //here goes scripts created on the views?>
 	
 </body>
 </html>
