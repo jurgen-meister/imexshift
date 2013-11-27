@@ -1033,8 +1033,8 @@ class AdmUsersController extends AppController {
 			$idUser = $this->request->data['idUser'];
 			$AdmUser['id']=$idUser;
 			$idProfile = $this->AdmUser->AdmProfile->find('list', array('conditions'=>array('AdmProfile.adm_user_id'=>$idUser)));
-			$AdmProfile['id']= reset($idProfile); //get first element value
-			
+			$AdmProfile['id']= key($idProfile); //get first element value
+//			debug($AdmProfile['id']);
 			$AdmUser['active'] = $this->request->data['cbxActive'];
 			$AdmUser['active_date'] = $this->request->data['txtActiveDate'];
 			//$AdmUser['creator'] = $this->Session->read('UserRestriction.id');
