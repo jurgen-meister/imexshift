@@ -17,7 +17,7 @@
 </div>
 <?php echo $this->Session->flash('flash_change_user_restriction');?>
 
-<?php if(strtolower($this->Session->read('Role.name')) <> 'vendedor'){ ?>
+<?php if(count($total) > 0){ ?>
 
 <div class="row-fluid">
 	<div class="span12">

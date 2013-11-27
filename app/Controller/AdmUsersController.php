@@ -770,33 +770,35 @@ class AdmUsersController extends AppController {
 	public function welcome(){
 
 		$period = $this->Session->read('Period.name');
-		$this->_countDocuments($period, 'InvMovement', 'APPROVED', 'SAL');//must improve with subquery, for now 82ms with 6000 rows, it's not that bad
+//		$this->_countDocuments($period, 'InvMovement', 'APPROVED', 'SAL');//must improve with subquery, for now 82ms with 6000 rows, it's not that bad
 		$total = array();
-		//Movements
-		$total['inApproved'] = $this->_countDocuments($period, 'InvMovement', 'APPROVED', 'ENT');
-		$total['inPendant'] = $this->_countDocuments($period, 'InvMovement', 'PENDANT', 'ENT');
-		$total['inCancelled'] = $this->_countDocuments($period, 'InvMovement', 'CANCELLED', 'ENT');
-		
-		$total['outApproved'] = $this->_countDocuments($period, 'InvMovement', 'APPROVED', 'SAL');
-		$total['outPendant'] = $this->_countDocuments($period, 'InvMovement', 'PENDANT', 'SAL');
-		$total['outCancelled'] = $this->_countDocuments($period, 'InvMovement', 'CANCELLED', 'SAL');
-		//Sales
-		$total['sinvoiceApproved'] = $this->_countDocuments($period, 'SalSale', 'SINVOICE_APPROVED', 'VEN');
-		$total['sinvoicePendant'] = $this->_countDocuments($period, 'SalSale', 'SINVOICE_PENDANT', 'VEN');
-		$total['sinvoiceCancelled'] = $this->_countDocuments($period, 'SalSale', 'SINVOICE_CANCELLED', 'VEN');
-		
-		$total['snoteApproved'] = $this->_countDocuments($period, 'SalSale', 'NOTE_APPROVED', 'VEN');
-		$total['snotePendant'] = $this->_countDocuments($period, 'SalSale', 'NOTE_PENDANT', 'VEN');
-		$total['snoteCancelled'] = $this->_countDocuments($period, 'SalSale', 'NOTE_CANCELLED', 'VEN');
-		//Purchases
-		$total['pinvoiceApproved'] = $this->_countDocuments($period, 'PurPurchase', 'PINVOICE_APPROVED', 'COM');
-		$total['pinvoicePendant'] = $this->_countDocuments($period, 'PurPurchase', 'PINVOICE_PENDANT', 'COM');
-		$total['pinvoiceCancelled'] = $this->_countDocuments($period, 'PurPurchase', 'PINVOICE_CANCELLED', 'COM');
-		
-		$total['porderApproved'] = $this->_countDocuments($period, 'PurPurchase', 'ORDER_APPROVED', 'COM');
-		$total['porderPendant'] = $this->_countDocuments($period, 'PurPurchase', 'ORDER_PENDANT', 'COM');
-		$total['porderCancelled'] = $this->_countDocuments($period, 'PurPurchase', 'ORDER_CANCELLED', 'COM');
-		//debug($total);
+		if(strtolower($this->Session->read('Role.name')) <> 'vendedor'){
+			//Movements
+			$total['inApproved'] = $this->_countDocuments($period, 'InvMovement', 'APPROVED', 'ENT');
+			$total['inPendant'] = $this->_countDocuments($period, 'InvMovement', 'PENDANT', 'ENT');
+			$total['inCancelled'] = $this->_countDocuments($period, 'InvMovement', 'CANCELLED', 'ENT');
+
+			$total['outApproved'] = $this->_countDocuments($period, 'InvMovement', 'APPROVED', 'SAL');
+			$total['outPendant'] = $this->_countDocuments($period, 'InvMovement', 'PENDANT', 'SAL');
+			$total['outCancelled'] = $this->_countDocuments($period, 'InvMovement', 'CANCELLED', 'SAL');
+			//Sales
+			$total['sinvoiceApproved'] = $this->_countDocuments($period, 'SalSale', 'SINVOICE_APPROVED', 'VEN');
+			$total['sinvoicePendant'] = $this->_countDocuments($period, 'SalSale', 'SINVOICE_PENDANT', 'VEN');
+			$total['sinvoiceCancelled'] = $this->_countDocuments($period, 'SalSale', 'SINVOICE_CANCELLED', 'VEN');
+
+			$total['snoteApproved'] = $this->_countDocuments($period, 'SalSale', 'NOTE_APPROVED', 'VEN');
+			$total['snotePendant'] = $this->_countDocuments($period, 'SalSale', 'NOTE_PENDANT', 'VEN');
+			$total['snoteCancelled'] = $this->_countDocuments($period, 'SalSale', 'NOTE_CANCELLED', 'VEN');
+			//Purchases
+			$total['pinvoiceApproved'] = $this->_countDocuments($period, 'PurPurchase', 'PINVOICE_APPROVED', 'COM');
+			$total['pinvoicePendant'] = $this->_countDocuments($period, 'PurPurchase', 'PINVOICE_PENDANT', 'COM');
+			$total['pinvoiceCancelled'] = $this->_countDocuments($period, 'PurPurchase', 'PINVOICE_CANCELLED', 'COM');
+
+			$total['porderApproved'] = $this->_countDocuments($period, 'PurPurchase', 'ORDER_APPROVED', 'COM');
+			$total['porderPendant'] = $this->_countDocuments($period, 'PurPurchase', 'ORDER_PENDANT', 'COM');
+			$total['porderCancelled'] = $this->_countDocuments($period, 'PurPurchase', 'ORDER_CANCELLED', 'COM');
+			//debug($total);
+		}
 		$this->set(compact('total'));
 	}
 	
