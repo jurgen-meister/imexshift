@@ -116,15 +116,27 @@ class AdmUser extends AppModel {
 		$dataSource = $this->getDataSource();
 		$dataSource->begin();
 		////////////////////////////////////////////////
-		if($this->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected'=>0), array('AdmUserRestriction.adm_user_id'=>$idUser))){
-			if($this->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected'=>1), array('AdmUserRestriction.id'=>$idUserRestrictionSelected))){
-				$dataSource->commit();
-				//return true;
-			}
+		$exist = $this->AdmUserRestriction->find('count', array(
+			'conditions'=>array(
+				'AdmUserRestriction.id'=>$idUserRestrictionSelected
+			)
+		));
+		if($exist == 0){
+			$dataSource->rollback();
+			return false;
 		}
+			
+		if(!$this->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected'=>0), array('AdmUserRestriction.adm_user_id'=>$idUser))){
+			$dataSource->rollback();
+			return false;
+		}
+		if(!$this->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected'=>1), array('AdmUserRestriction.id'=>$idUserRestrictionSelected))){
+			$dataSource->rollback();
+			return false;
+		}
+		$dataSource->commit();
+		return true;
 		///////////////////////////////////////////////
-		$dataSource->rollback();
-		//return false;
 	}
 	
 

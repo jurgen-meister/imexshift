@@ -327,8 +327,27 @@ class AdmUsersController extends AppController {
 	
 	private function _createUserAccountSession($userId, $tipo = 'login'){
 		////////Fill of sessions distinct to auth component users table
+		
+		$this->AdmUser->AdmUserRestriction->bindModel(array(
+			'hasOne'=>array(
+				'AdmProfile'=>array(
+					'foreignKey'=>false,
+					'conditions'=>array('AdmUser.id = AdmProfile.adm_user_id')
+				)
+			)
+		));
+		
 		$infoRole = $this->AdmUser->AdmUserRestriction->find('all', array(
-			'fields'=>array('AdmUser.login','AdmRole.name','AdmRole.id', 'AdmUserRestriction.period', 'AdmUserRestriction.id'),
+			'fields'=>array(
+				'AdmUser.login'
+				,'AdmRole.name'
+				,'AdmRole.id'
+				, 'AdmUserRestriction.period'
+				, 'AdmUserRestriction.id'
+				, 'AdmProfile.first_name'
+				, 'AdmProfile.last_name1'
+				, 'AdmProfile.last_name2'
+			),
 			'conditions'=>array('AdmUserRestriction.adm_user_id'=>$userId, 'AdmUserRestriction.active'=>1, 'AdmUserRestriction.selected'=>1)
 		));
 		
@@ -339,12 +358,25 @@ class AdmUsersController extends AppController {
 		$this->Session->write('Role.id', $infoRole[0]['AdmRole']['id']);
 		$this->Session->write('Menu', $this->_createMenu($this->Session->read('Role.id')));
 		$this->Session->write('Period.name', $infoRole[0]['AdmUserRestriction']['period']);
+		$this->Session->write('Profile.fullname', $infoRole[0]['AdmProfile']['first_name'].' '.$infoRole[0]['AdmProfile']['last_name1'].' '.$infoRole[0]['AdmProfile']['last_name2']);
 		$this->Session->delete('Message.auth');//to avoid bug showing auth messages when you are kickout and do login again
 		$this->_createPermissions($this->Session->read('Role.id'));
 		//////////////////////////////////////////////////////////////////////////
 		
 		/////////////////////////////Create USER,ROLE,PERIOD Session Buttons///////////////////////////////////////////
-		$avaliableRoles = $this->_listAvaliableRoles($userId, $infoRole[0]['AdmUserRestriction']['id']);
+		$avaliableRoles = $this->_listAvaliableRoles($userId, $infoRole[0]['AdmRole']['id']);
+		$avaliableRolePeriods = $this->AdmUser->AdmUserRestriction->find('list', array(
+			'fields'=>array(
+				'AdmUserRestriction.id','AdmUserRestriction.period'
+			),
+			'conditions'=>array(
+				'AdmUserRestriction.adm_user_id'=>$userId,
+				'AdmUserRestriction.adm_role_id'=>$infoRole[0]['AdmRole']['id'],
+				'AdmUserRestriction.period !='=>$infoRole[0]['AdmUserRestriction']['period'],
+			)
+		));
+		
+		$this->Session->write('Avaliable.rolesPeriods', $avaliableRolePeriods);
 		$this->Session->write('Avaliable.roles', $avaliableRoles);
 		/////////////////////////////Create USER,ROLE,PERIOD Session Buttons///////////////////////////////////////////
 		
@@ -354,18 +386,20 @@ class AdmUsersController extends AppController {
 			$this->AdmUserLog->save(array('tipo'=>$tipo,'creator'=>$infoRole[0]['AdmUserRestriction']['id']));
 			if($tipo == 'cambio rol'){
 				$this->Session->setFlash(
-					'<strong>Se cambio el rol a "'.$infoRole[0]['AdmRole']['name'].'" y a la gestión "'.$infoRole[0]['AdmUserRestriction']['period'].'"!</strong> Todos los cambios que haga este usuario se registraran con este rol y esta gestión',
+					'Se modificó la sessión de usuario, el rol es <strong>'.$infoRole[0]['AdmRole']['name'].'</strong> y la gestión es <strong>'.$infoRole[0]['AdmUserRestriction']['period'].'</strong>',
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
 						'class' => 'alert-success'
-					)
+					),
+					'flash_change_user_restriction'
 				);
 			}
 				$this->redirect($this->Auth->redirect());
 			
 		}catch (Exception $e){
-			$this->_createMessage('Ocurrio un problema vuelva a intentarlo');
+			$this->_createMessage('Ocurrio un problema con el log, vuelva a intentarlo');
+//			$this->_createMessage($e);
 			$this->redirect($this->Auth->logout());
 		} 
 		
@@ -405,21 +439,70 @@ class AdmUsersController extends AppController {
 	}
 
 
-	public function change_user_restriction($idUserRestrictionSelected){
+	public function change_user_restriction(){
+		$args = $this->passedArgs;
 		$idUser = $this->Session->read('User.id');
+		
+		if(isset($args['role'])){
+			$idRole = $args['role'];
+//			$period = $this->Session->read('Period.name');
+			$period =  $this->AdmUser->AdmUserRestriction->find('list', array(
+				'limit'=>1,
+				'order'=>array('AdmUserRestriction.period'=>'DESC'),
+				'conditions'=>array(
+					'AdmUserRestriction.adm_user_id'=>$idUser, 
+//					'AdmUserRestriction.selected'=>0, //Redundant
+					'AdmUserRestriction.active'=>1, 
+					'AdmUserRestriction.active_date > now()',
+					'AdmUserRestriction.adm_role_id '=>$idRole, 
+				),
+				'fields'=>array('AdmUserRestriction.id', 'AdmUserRestriction.period')
+			));  //find last period avaliable
+		}elseif(isset($args['period'])){
+			$period = $args['period'];
+			$idRole = $this->Session->read('Role.id');
+		}
+		
+		
+		
+		$idUserRestrictionSelected = $this->AdmUser->AdmUserRestriction->find('list',array(
+			'conditions'=>array(
+				'AdmUserRestriction.adm_user_id'=>$idUser,
+				'AdmUserRestriction.adm_role_id'=>$idRole,
+				'AdmUserRestriction.period'=>$period
+			),
+			'limit'=>1,
+			'fields'=>array('AdmUserRestriction.id', 'AdmUserRestriction.id')
+		));
+				
+//		debug($idUser);
+//		debug($idUserRestrictionSelected);
 		try{
-				$this->AdmUser->change_user_restriction($idUser, $idUserRestrictionSelected);
-				$this->_createUserAccountSession($idUser, 'cambio rol');
-		}catch(Exception $e){
-			$this->Session->setFlash(
-					'Ocurrio un problema, vuelva a intentarlo',
+				if(!$this->AdmUser->change_user_restriction($idUser, key($idUserRestrictionSelected))){
+					$this->Session->setFlash(
+					'<strong>Error!</strong> No se pudo cambiar el <strong>Rol / Gestión</strong>',
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
 						'class' => 'alert-error'
-					)
+					),
+					'flash_change_user_restriction'
+					);
+					$this->redirect(array('action'=>'welcome'));
+				}
+				$this->_createUserAccountSession($idUser, 'cambio rol');
+		}catch(Exception $e){
+			$this->Session->setFlash(
+					'Ocurrio un problema al cambiar de <strong>Rol / Gestión</strong>',
+					'alert',
+					array(
+						'plugin' => 'TwitterBootstrap',
+						'class' => 'alert-error'
+					),
+					'flash_change_user_restriction'
 				);
 			$this->redirect(array('action'=>'welcome'));
+//			debug($e);
 		}
 		 
 	}
@@ -466,7 +549,9 @@ class AdmUsersController extends AppController {
 	private function _createMenu($roleId){
 		$this->loadModel('AdmRolesMenu');
 		$parents = $this->AdmRolesMenu->find('all', array(
-			'fields'=>array('AdmMenu.id', 'AdmMenu.name', 'AdmMenu.icon')
+			'fields'=>array('AdmMenu.id', 'AdmMenu.name', 'AdmMenu.icon'
+//				, 'AdmAction.name', 'AdmController.name', 'AdmMenu.adm_action_id'
+				)
 			,'conditions'=>array('AdmRolesMenu.adm_role_id'=>$roleId, "AdmMenu.parent_node"=>null, 'AdmMenu.inside'=>null)
 			, 'order'=>array('AdmMenu.order_menu')
 		));
@@ -477,9 +562,14 @@ class AdmUsersController extends AppController {
 			/////////////////////////////////////START - Parents///////////////////////////////////////////////////////
 				$str.='<ul>';
 				foreach ($parents as $key2 => $value2) {
+					//////must improve this function for 2.0
 					$arrLinkContent = $this->_createLink($value2['AdmMenu']['id'], $value2['AdmMenu']['name'], $value2['AdmMenu']['icon']);
+					//////////////Check if submenu only for parents/////////////////
+					$submenu = 'class="submenu"';
+					if($arrLinkContent['actionEmpty']=='no') $submenu ='';
+					///////////////////////////////////////////////////////////////
 						if($arrLinkContent['idForLi'] <> ''){$idForLi = 'id="'.$arrLinkContent['idForLi'].'"';}else{$idForLi='';}
-							$str.='<li '.$idForLi.' class="submenu">'.$arrLinkContent['link'];//$value2['AdmMenu']['name'];
+							$str.='<li '.$idForLi.' '.$submenu.' >'.$arrLinkContent['link'];//$value2['AdmMenu']['name'];
 					////////////////////////////////////START - Children 1////////////////////////////////////////////////
 					$str.='<ul>';
 						$children1 = $this->_findMenus($value2['AdmMenu']['id'], $roleId);
@@ -530,8 +620,10 @@ class AdmUsersController extends AppController {
 		$link = '/'.$projectName.'/'.$controlerName.'/'.$actionName;
 		$idForLi =$controlerName.'-'.$actionName;
 		
+		$actionEmpty = 'no';
 		if($vec[0]['AdmAction']['name'] == null){
 			$link = '#';
+			$actionEmpty = 'yes';
 		}
 		//debug($vec);
 		if($icon <> ''){
@@ -566,8 +658,10 @@ class AdmUsersController extends AppController {
 			$str = '<a href="'.$link.'">'.$nameMenu.'</a>';
 		}
 		
+		
+		
 		//return $str;
-		return array('link'=>$str, 'idForLi'=>$idForLi);
+		return array('link'=>$str, 'idForLi'=>$idForLi, 'actionEmpty'=>$actionEmpty);
 	}
 
 	
@@ -674,33 +768,86 @@ class AdmUsersController extends AppController {
 	
 
 	public function welcome(){
-		//$avaliableRoles = $this->_listAvaliableRoles(1, 1);
-		//$avaliableRoles[1]=2020;
-		//debug($avaliableRoles);
-		//debug(max($avaliableRoles[0]));
-		//debug($this->Session->read("Permission"));
+
+		$period = $this->Session->read('Period.name');
+		$this->_countDocuments($period, 'InvMovement', 'APPROVED', 'SAL');//must improve with subquery, for now 82ms with 6000 rows, it's not that bad
+		$total = array();
+		//Movements
+		$total['inApproved'] = $this->_countDocuments($period, 'InvMovement', 'APPROVED', 'ENT');
+		$total['inPendant'] = $this->_countDocuments($period, 'InvMovement', 'PENDANT', 'ENT');
+		$total['inCancelled'] = $this->_countDocuments($period, 'InvMovement', 'CANCELLED', 'ENT');
+		
+		$total['outApproved'] = $this->_countDocuments($period, 'InvMovement', 'APPROVED', 'SAL');
+		$total['outPendant'] = $this->_countDocuments($period, 'InvMovement', 'PENDANT', 'SAL');
+		$total['outCancelled'] = $this->_countDocuments($period, 'InvMovement', 'CANCELLED', 'SAL');
+		//Sales
+		$total['sinvoiceApproved'] = $this->_countDocuments($period, 'SalSale', 'SINVOICE_APPROVED', 'VEN');
+		$total['sinvoicePendant'] = $this->_countDocuments($period, 'SalSale', 'SINVOICE_PENDANT', 'VEN');
+		$total['sinvoiceCancelled'] = $this->_countDocuments($period, 'SalSale', 'SINVOICE_CANCELLED', 'VEN');
+		
+		$total['snoteApproved'] = $this->_countDocuments($period, 'SalSale', 'NOTE_APPROVED', 'VEN');
+		$total['snotePendant'] = $this->_countDocuments($period, 'SalSale', 'NOTE_PENDANT', 'VEN');
+		$total['snoteCancelled'] = $this->_countDocuments($period, 'SalSale', 'NOTE_CANCELLED', 'VEN');
+		//Purchases
+		$total['pinvoiceApproved'] = $this->_countDocuments($period, 'PurPurchase', 'PINVOICE_APPROVED', 'COM');
+		$total['pinvoicePendant'] = $this->_countDocuments($period, 'PurPurchase', 'PINVOICE_PENDANT', 'COM');
+		$total['pinvoiceCancelled'] = $this->_countDocuments($period, 'PurPurchase', 'PINVOICE_CANCELLED', 'COM');
+		
+		$total['porderApproved'] = $this->_countDocuments($period, 'PurPurchase', 'ORDER_APPROVED', 'COM');
+		$total['porderPendant'] = $this->_countDocuments($period, 'PurPurchase', 'ORDER_PENDANT', 'COM');
+		$total['porderCancelled'] = $this->_countDocuments($period, 'PurPurchase', 'ORDER_CANCELLED', 'COM');
+		//debug($total);
+		$this->set(compact('total'));
 	}
 	
-	private function _listAvaliableRoles($userId, $userRestrictionId){
+	private function _countDocuments($period, $model, $lcState, $codePrefix){
+		
+		$this->loadModel($model);
+		$count = $this->$model->find('count', array(
+			'conditions' => array(
+				"to_char(".$model.".date,'YYYY')"=> $period,
+				$model.'.lc_state'=>$lcState,
+				'substring('.$model.'.code from 1 for 3) ='=>$codePrefix
+			),
+			'recursive'=>-1
+		));
+		
+		return $count;
+		
+	}
+	
+	private function _listAvaliableRoles($userId, $roleId){
 		$avaliableRoles = $this->AdmUser->AdmUserRestriction->find('all',array(
+			'fields'=>array(
+//				'AdmUserRestriction.id',
+				'AdmRole.name',
+				'AdmRole.id'
+			),
 			'conditions'=>array(
 				'AdmUserRestriction.adm_user_id'=>$userId, 
 				'AdmUserRestriction.selected'=>0, 
 				'AdmUserRestriction.active'=>1, 
 				'AdmUserRestriction.active_date > now()',
-				//'AdmUserRestriction.adm_role_id !='=>$roleId, 
-				'AdmUserRestriction.id !='=>$userRestrictionId, 
+				'AdmUserRestriction.adm_role_id !='=>$roleId, 
+//				'AdmUserRestriction.id !='=>$userRestrictionId, 
+			),
+			'group'=>array(
+				'AdmRole.id',
+				'AdmRole.name'
 			)
 		));
+		
 		$array=array();
 		for($i=0; $i < count($avaliableRoles); $i++){
-			$array[$avaliableRoles[$i]['AdmUserRestriction']['id']]=  $avaliableRoles[$i]['AdmRole']['name'].' | '.$avaliableRoles[$i]['AdmUserRestriction']['period'];
+			$queryRole = $avaliableRoles[$i]['AdmRole']['id'];
+			$array[$queryRole]=  $avaliableRoles[$i]['AdmRole']['name']; //.' | '.$avaliableRoles[$i]['AdmUserRestriction']['period'];
 		}
 		return $array;
 	}
 	
 	public function logout() {
-		$this->Session->destroy();
+//		$this->Session->destroy(); //Some servers have issues with cakephp session component
+		session_destroy();//Therefore I'll use defaul php session
 		$this->_createMessage('La sesión termino!', 'info');
 		$this->redirect($this->Auth->logout());
 	}

@@ -64,10 +64,10 @@ class AppController extends Controller {
 	
 
 	public function beforeFilter() {
-			//$this->Auth->allow('index', 'view');
-			$this->set('logged_in', $this->Auth->loggedIn());
-			//$this->set('current_user', $this->Auth->user()); //I store this inside a session
-			//$this->set('menu', $this->Session->read('Role'));
+//			$this->set('logged_in', $this->Auth->loggedIn());
+			
+			//Some servers have issues with cakephp session component and give error session.auto_start, so this is a backup
+			if(!isset($_SESSION)) session_start(); //If session didn't start, then start it
 	}
 	
 	

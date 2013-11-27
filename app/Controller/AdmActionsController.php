@@ -150,31 +150,41 @@ class AdmActionsController extends AppController {
 		$parentClassMethods = get_class_methods(get_parent_class(Inflector::camelize($initialController).'Controller'));
         //debug($parentClassMethods);
         $subClassMethods    = get_class_methods(Inflector::camelize($initialController).'Controller');
-        $classMethods       = array_diff($subClassMethods, $parentClassMethods);
-		$appActions=array();
-		foreach ($classMethods as $value) {
-			if(strtolower(substr($value, 0, 4)) <> 'ajax'){
-				if(substr($value, 0, 1) <> '_'){ 
-					$appActions[$value]=$value;
+//		debug($subClassMethods);
+//		debug($parentClassMethods);
+		$classMethods = array();
+		if($subClassMethods <> null and $parentClassMethods <> null) $classMethods = array_diff($subClassMethods, $parentClassMethods);
+        
+//		debug($parentClassMethods);
+		
+		if(count($classMethods) > 0){
+			$appActions = array();
+			foreach ($classMethods as $value) {
+				if (strtolower(substr($value, 0, 4)) <> 'ajax') {
+					if (substr($value, 0, 1) <> '_') {
+						$appActions[$value] = $value;
+					}
 				}
 			}
-		}
 
-		//DB
-		$dbActions = $this->AdmAction->find('all', array(
-			'recursive'=>0, 
-			'fields'=>array('AdmAction.name'), 
-			'conditions'=>array('AdmAction.adm_controller_id'=>$idController),
-			'order'=>array('AdmAction.name'=>'ASC')
-		));
-		$formatDbActions = array();
-		foreach ($dbActions as $key => $value) {
-			$formatDbActions[$key] = strtolower($value['AdmAction']['name']);
+			//DB
+			$dbActions = $this->AdmAction->find('all', array(
+				'recursive' => 0,
+				'fields' => array('AdmAction.name'),
+				'conditions' => array('AdmAction.adm_controller_id' => $idController),
+				'order' => array('AdmAction.name' => 'ASC')
+			));
+			$formatDbActions = array();
+			foreach ($dbActions as $key => $value) {
+				$formatDbActions[$key] = strtolower($value['AdmAction']['name']);
+			}
+			//debug(array_diff($appActions, $formatDbActions));
+			//debug($formatDbActions);
+			//debug($appActions);
+			return array_diff($appActions, $formatDbActions);
 		}
-		//debug(array_diff($appActions, $formatDbActions));
-		//debug($formatDbActions);
-		//debug($appActions);
-		return array_diff($appActions, $formatDbActions);
+		
+		return array();
 	}
 	
 	private function _getActionsAjax($initialController, $idController, $idAction){
