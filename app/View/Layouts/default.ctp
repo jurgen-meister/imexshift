@@ -4,7 +4,7 @@
 <head>
 	<?php echo $this->Html->charset(); ?>
 	<title>
-		<?php echo $cakeDescription; ?>-
+		<?php echo $cakeDescription; ?>
 		<?php echo $title_for_layout; ?>
 	</title>
 	<!--  meta info -->
@@ -49,11 +49,18 @@
 	<div id="user-nav" class="navbar navbar-inverse"> 
 		<?php // if($logged_in): //Redundant because if there isn't a session set this view won't appear'?>
 			<ul class="nav btn-group">
-				
+				<?php //declare variables
+//					$userId = $this->session->read('User.id');
+					$period = $this->Session->read('Period.name');
+					$login = $this->session->read('User.username');
+					$roleName = $this->Session->read('Role.name');
+					$avaliableRoles=$this->Session->read('Avaliable.roles');
+					$avaliableRolesPeriods=$this->Session->read('Avaliable.rolesPeriods');
+				?>
 				<li class="btn btn-inverse dropdown" id="user-menu">
 					<a href="#" data-toggle="dropdown" data-target="#user-menu" class="dropdown-toggle">
 						<i class="icon icon-user"></i> 
-						<span class="text"><?php echo ' Usuario: '.$this->session->read('User.username');?></span> 
+						<span class="text"><?php echo ' Usuario: '.$login; ?></span> 
 						<b class="caret"></b>
 					</a>
                     <ul class="dropdown-menu">
@@ -66,17 +73,16 @@
 				<li class="btn btn-inverse dropdown" id="role-menu">
 					<a href="#" data-toggle="dropdown" data-target="#role-menu" class="dropdown-toggle">
 						<i class="icon icon-briefcase"></i> 
-						<span class="text"><?php echo ' Rol: '.$this->Session->read('Role.name');?></span> 
+						<span class="text"><?php echo ' Rol: '.$roleName;?></span> 
 					<?php 
-					$array=$this->Session->read('Avaliable.roles');
-					if(count($array) > 0){?>
+					if(count($avaliableRoles) > 0){?>
 						<b class="caret"></b>
 					<?php } ?>
 					</a>
-					<?php if(count($array) > 0){?>
+					<?php if(count($avaliableRoles) > 0){?>
                     <ul class="dropdown-menu">
-						<?php foreach ($array as $key => $value) {
-							echo '<li>'.$this->Html->link($value, array('controller'=>'AdmUsers','action'=>'change_user_restriction', $key)).'</li>';
+						<?php foreach ($avaliableRoles as $avaliablesRolesId => $avaliablesRolesIdName) {
+							echo '<li>'.$this->Html->link($avaliablesRolesIdName, array('controller'=>'AdmUsers','action'=>'change_user_restriction', 'role'=>$avaliablesRolesId)).'</li>';
 						}?>
                     </ul>
 					<?php  }?>
@@ -86,10 +92,21 @@
 					<a href="#" data-toggle="dropdown" data-target="#period-menu" class="dropdown-toggle">
 						<i class="icon icon-time"></i> 
 						<span class="text"><?php
-						echo ' Gestión: <span id="globalPeriod">'.$this->Session->read('Period.name').'</span>';
+						echo ' Gestión: <span id="globalPeriod">'.$period.'</span>';
 						?>
 						</span> 
+						<?php 
+						if(count($avaliableRolesPeriods) > 0){?>
+							<b class="caret"></b>
+						<?php } ?>
 					</a>
+					<?php if(count($avaliableRolesPeriods) > 0){?>
+                    <ul class="dropdown-menu">
+						<?php foreach ($avaliableRolesPeriods as $avaliableRolesPeriodsName) {
+							echo '<li>'.$this->Html->link($avaliableRolesPeriodsName, array('controller'=>'AdmUsers','action'=>'change_user_restriction', 'period'=>$avaliableRolesPeriodsName)).'</li>';
+						}?>
+                    </ul>
+					<?php  }?>
                 </li>
 				
 				
