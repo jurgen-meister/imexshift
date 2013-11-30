@@ -139,7 +139,65 @@ class AdmUser extends AppModel {
 		///////////////////////////////////////////////
 	}
 	
-
-
+	public function fnChangePassword($idUser, $password, $username){
+		$dataSource = $this->getDataSource();
+		$dataSource->begin();
+		////////////////////////////////////////////
+		if(!$this->save(array('id'=>$idUser,'password'=>$password))){
+			$dataSource->rollback();
+			return false;
+		}
+		
+		$sql = "ALTER USER ".$username." WITH PASSWORD '".$password."';";
+		try{
+			$this->query($sql);	
+		}catch(Exception $e){
+			debug($e);
+			$dataSource->rollback();
+			return false;
+		}
+		///////////////////////////////////////////
+		$dataSource->commit();
+		return true;
+	}
+	
+	public function fnAddUserProfile($data, $username, $password){
+		$dataSource = $this->getDataSource();
+		$dataSource->begin();
+		////////////////////////////////////////////
+		if(!$this->saveAssociated($data)){
+			$dataSource->rollback();
+			return false;
+		}
+		$sql = "CREATE USER ".$username." WITH PASSWORD '".$password."';";
+		try{
+			$this->query($sql);	
+		}catch(Exception $e){
+			debug($e);
+			$dataSource->rollback();
+			return false;
+		}
+		//every user can create a role, this is not good, but to fix this without depending on a DBA need to build a grant permission interface per user
+		$sql = "ALTER ROLE ".$username." WITH CREATEROLE;";
+		try{
+			$this->query($sql);	
+		}catch(Exception $e){
+			debug($e);
+			$dataSource->rollback();
+			return false;
+		}
+		$sql = "GRANT grupal to ".$username.";";
+		try{
+			$this->query($sql);	
+		}catch(Exception $e){
+			debug($e);
+			$dataSource->rollback();
+			return false;
+		}
+		///////////////////////////////////////////
+		$dataSource->commit();
+		return true;
+	}
+	
 ///////////
 }

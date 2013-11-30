@@ -1,5 +1,7 @@
 <?php
+
 App::uses('AppController', 'Controller');
+
 /**
  * AdmUsers Controller
  *
@@ -7,71 +9,69 @@ App::uses('AppController', 'Controller');
  */
 class AdmUsersController extends AppController {
 
-/**
- *  Layout
- *
- * @var string
- */
+	/**
+	 *  Layout
+	 *
+	 * @var string
+	 */
 	public $layout = 'default';
 
-/**
- * Helpers
- *
- * @var array
- */
+	/**
+	 * Helpers
+	 *
+	 * @var array
+	 */
 	//public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
-/**
- * Components
- *
- * @var array
- */
+	/**
+	 * Components
+	 *
+	 * @var array
+	 */
 	//public $components = array('Session');
-	
 	//public  function isAuthorized($user){
-		/*
-		$array=$this->Session->read('Permission.'.$this->name);
-		$array['welcome'] = 'welcome';
-		$array['login'] = 'login';
-		$array['logout'] = 'logout';
-		$array['choose_role'] = 'choose_role';
-		debug($array);
-		if(count($array)>0){
-			if(in_array($this->action, $array)){
-				return true;
-			}
-		}
-		$this->redirect($this->Auth->logout());
-		 * 
-		 */
-		
-		
-		//return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
+	/*
+	  $array=$this->Session->read('Permission.'.$this->name);
+	  $array['welcome'] = 'welcome';
+	  $array['login'] = 'login';
+	  $array['logout'] = 'logout';
+	  $array['choose_role'] = 'choose_role';
+	  debug($array);
+	  if(count($array)>0){
+	  if(in_array($this->action, $array)){
+	  return true;
+	  }
+	  }
+	  $this->redirect($this->Auth->logout());
+	 * 
+	 */
+
+
+	//return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
 	//	return true;
 	//}
 	/*
-	public  function isAuthorized($user){
-		return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
-	}
-	*/
+	  public  function isAuthorized($user){
+	  return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
+	  }
+	 */
 
-
-   /**
- * index method
- *
- * @return void
- */
+	/**
+	 * index method
+	 *
+	 * @return void
+	 */
 	public function index() {
 		//$this->AdmUser->recursive = 0;
 		//$this->set('admUsers', $this->paginate());
 		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
 		$filters = '';
 		$this->paginate = array(
-			'conditions'=>array(
+			'conditions' => array(
 				$filters
-			 ),
-			'recursive'=>0,
+			),
+			'recursive' => 0,
 			//'fields'=>array('InvMovement.id', 'InvMovement.code', 'InvMovement.document_code', 'InvMovement.date','InvMovement.inv_movement_type_id','InvMovementType.name', 'InvMovement.inv_warehouse_id', 'InvWarehouse.name', 'InvMovement.lc_state'),
-			'order'=> array('AdmUser.id'=>'desc'),
+			'order' => array('AdmUser.id' => 'desc'),
 			'limit' => 20,
 		);
 		////////////////////////////END - SETTING PAGINATING VARIABLES//////////////////////////////////////
@@ -80,140 +80,148 @@ class AdmUsersController extends AppController {
 		////////////////////////START - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
 		$this->set('admUsers', $array);
 	}
-	
-	private function _paintUserActiveDateField($array){
-		for($i=0; $i <count($array); $i++){
+
+	private function _paintUserActiveDateField($array) {
+		for ($i = 0; $i < count($array); $i++) {
 			$res = $this->AdmUser->find('count', array(
-				'conditions'=>array(
+				'conditions' => array(
 					'AdmUser.active_date > now()',
-					'AdmUser.id'=>$array[$i]['AdmUser']['id'])
+					'AdmUser.id' => $array[$i]['AdmUser']['id'])
 			));
 			$array[$i]['AdmUser']['token_valide_date'] = $res;
 		}
 		return $array;
 	}
-	
-	public function add_user_restriction($id = null){
-		if($id == null){
-			$this->redirect(array('action'=>'index'));
+
+	public function add_user_restriction($id = null) {
+		if ($id == null) {
+			$this->redirect(array('action' => 'index'));
 		}
 		$userInfo = $this->AdmUser->find('all', array(
-			'conditions'=>array('AdmUser.id'=>$id),
-			'fields'=>array('AdmUser.login'),
-			'recursive'=>-1
+			'conditions' => array('AdmUser.id' => $id),
+			'fields' => array('AdmUser.login'),
+			'recursive' => -1
 		));
-		
+
 		$this->loadModel('AdmPeriod');
-		$periods = $this->AdmPeriod->find('list', array('fields'=>array('AdmPeriod.name','AdmPeriod.name')));
-		$periodInitial =  key($periods);
-		$areas = $this->AdmUser->AdmUserRestriction->AdmArea->find('list', array('conditions'=>array('AdmArea.period'=>$periodInitial)));
+		$periods = $this->AdmPeriod->find('list', array('fields' => array('AdmPeriod.name', 'AdmPeriod.name')));
+		$periodInitial = key($periods);
+		$areas = $this->AdmUser->AdmUserRestriction->AdmArea->find('list', array('conditions' => array('AdmArea.period' => $periodInitial)));
 		$rolesTaken = array();
 		$admUserRestriction = $this->AdmUser->AdmUserRestriction->find('all', array(
-				'conditions'=>array('AdmUserRestriction.adm_user_id'=>$id, 'AdmUserRestriction.period'=>$periodInitial),
-				'fields'=>array('AdmUserRestriction.adm_role_id')
+			'conditions' => array('AdmUserRestriction.adm_user_id' => $id, 'AdmUserRestriction.period' => $periodInitial),
+			'fields' => array('AdmUserRestriction.adm_role_id')
 		));
 		//debug($admUserRestriction);
-		for($i=0; $i < count($admUserRestriction); $i++){
-				$rolesTaken[$admUserRestriction[$i]['AdmUserRestriction']['adm_role_id']] = $admUserRestriction[$i]['AdmUserRestriction']['adm_role_id'];
+		for ($i = 0; $i < count($admUserRestriction); $i++) {
+			$rolesTaken[$admUserRestriction[$i]['AdmUserRestriction']['adm_role_id']] = $admUserRestriction[$i]['AdmUserRestriction']['adm_role_id'];
 		}
-		
-		$roles =$this->AdmUser->AdmUserRestriction->AdmRole->find('list',array(
-			'conditions'=>array('NOT'=>array('AdmRole.id'=>$rolesTaken))
+
+		$roles = $this->AdmUser->AdmUserRestriction->AdmRole->find('list', array(
+			'conditions' => array('NOT' => array('AdmRole.id' => $rolesTaken))
 		));
-		
+
 		$this->set('username', $userInfo[0]['AdmUser']['login']);
 		$this->set('userId', $id);
 		$this->set('areas', $areas);
-		$this->set('roles',$roles);
-		$this->set('periods',$periods);
+		$this->set('roles', $roles);
+		$this->set('periods', $periods);
 	}
-	
-	
-	public function edit_user_restriction(){
-		
-		if(!isset($this->passedArgs['idUserRestriction'])){
-			$this->redirect(array('action'=>'index'));
+
+	public function edit_user_restriction() {
+
+		if (!isset($this->passedArgs['idUserRestriction'])) {
+			$this->redirect(array('action' => 'index'));
 		}
-		 
+
 		//$id = $this->passedArgs['id'];
 		$idUserRestriction = $this->passedArgs['idUserRestriction'];
-		
+
 		$AdmUserRestriction = $this->AdmUser->AdmUserRestriction->find('all', array(
-			'conditions'=>array('AdmUserRestriction.id'=>$idUserRestriction),
-			'fields'=>array('AdmUserRestriction.selected','AdmUser.id','AdmUser.login','AdmUserRestriction.active_date','AdmUserRestriction.active','AdmUserRestriction.adm_role_id', 'AdmUserRestriction.adm_area_id', 'AdmUserRestriction.period'),
+			'conditions' => array('AdmUserRestriction.id' => $idUserRestriction),
+			'fields' => array('AdmUserRestriction.selected', 'AdmUser.id', 'AdmUser.login', 'AdmUserRestriction.active_date', 'AdmUserRestriction.active', 'AdmUserRestriction.adm_role_id', 'AdmUserRestriction.adm_area_id', 'AdmUserRestriction.period'),
 		));
-		
+
 		$this->loadModel('AdmPeriod');
-		$periods = $this->AdmPeriod->find('list', array('fields'=>array('AdmPeriod.name','AdmPeriod.name')));
-		$roles =$this->AdmUser->AdmUserRestriction->AdmRole->find('list');
+		$periods = $this->AdmPeriod->find('list', array('fields' => array('AdmPeriod.name', 'AdmPeriod.name')));
+		$roles = $this->AdmUser->AdmUserRestriction->AdmRole->find('list');
 		$areas = $this->AdmUser->AdmUserRestriction->AdmArea->find('list', array(
-			'conditions'=>array('AdmArea.period'=>$AdmUserRestriction[0]['AdmUserRestriction']['period'])
+			'conditions' => array('AdmArea.period' => $AdmUserRestriction[0]['AdmUserRestriction']['period'])
 		));
-		
+
 		$periodId = $AdmUserRestriction[0]['AdmUserRestriction']['period'];
 		$roleId = $AdmUserRestriction[0]['AdmUserRestriction']['adm_role_id'];
 		$areaId = $AdmUserRestriction[0]['AdmUserRestriction']['adm_area_id'];
 		$active = $AdmUserRestriction[0]['AdmUserRestriction']['active'];
 		$activeDate = date("d/m/Y", strtotime($AdmUserRestriction[0]['AdmUserRestriction']['active_date']));
 		$selected = $AdmUserRestriction[0]['AdmUserRestriction']['selected'];
-		
+
 		$this->set('username', $AdmUserRestriction[0]['AdmUser']['login']);
 		$this->set('userId', $AdmUserRestriction[0]['AdmUser']['id']);
 		$this->set('areas', $areas);
-		$this->set('roles',$roles);
-		$this->set('periods',$periods);
+		$this->set('roles', $roles);
+		$this->set('periods', $periods);
 		$this->set(compact('periodId', 'roleId', 'areaId', 'active', 'activeDate', 'idUserRestriction', 'selected'));
 	}
-	
-	public function ajax_list_roles_areas(){
-		if($this->RequestHandler->isAjax()){
+
+	public function ajax_list_roles_areas() {
+		if ($this->RequestHandler->isAjax()) {
 			////////////////////////////////////////////START AJAX/////////////////////////////////////////////
-			$period= $this->request->data['period'];
-			$userId= $this->request->data['userId'];
+			$period = $this->request->data['period'];
+			$userId = $this->request->data['userId'];
 			$rolesTaken = array();
-			
-			$areas = $this->AdmUser->AdmUserRestriction->AdmArea->find('list', array('conditions'=>array('AdmArea.period'=>$period)));
-			
+
+			$areas = $this->AdmUser->AdmUserRestriction->AdmArea->find('list', array(
+				'conditions' => array(
+					'AdmArea.period' => $period
+					)
+				));
+
 			$admUserRestriction = $this->AdmUser->AdmUserRestriction->find('all', array(
-				'conditions'=>array('AdmUserRestriction.adm_user_id'=>$userId, 'AdmUserRestriction.period'=>$period),
-				'fields'=>array('AdmUserRestriction.adm_role_id')
+				'conditions' => array(
+					'AdmUserRestriction.adm_user_id' => $userId
+					, 'AdmUserRestriction.period' => $period
+					, 'AdmUserRestriction.lc_state !='=>'LOGIC_DELETED'
+				),
+				'fields' => array('AdmUserRestriction.adm_role_id')
 			));
-			
-			for($i=0; $i < count($admUserRestriction); $i++){
+//			debug($period);
+//			debug($admUserRestriction);
+			for ($i = 0; $i < count($admUserRestriction); $i++) {
 				$rolesTaken[$admUserRestriction[$i]['AdmUserRestriction']['adm_role_id']] = $admUserRestriction[$i]['AdmUserRestriction']['adm_role_id'];
 			}
-			
-			$roles =$this->AdmUser->AdmUserRestriction->AdmRole->find('list',array(
-				'conditions'=>array('NOT'=>array('AdmRole.id'=>$rolesTaken))
+//			debug($rolesTaken);
+			$roles = $this->AdmUser->AdmUserRestriction->AdmRole->find('list', array(
+				'conditions' => array('NOT' => array('AdmRole.id' => $rolesTaken))
 			));
-			
+
 			$this->set('roles', $roles);
 			$this->set('areas', $areas);
 		}
 		////////////////////////////////////////////END AJAX///////////////////////////////////////////////
 	}
-	
-	public function index_user_restriction($id = null){
-		
-		if($id == null){
-			$this->redirect(array('action'=>'index'));
+
+	public function index_user_restriction($id = null) {
+
+		if ($id == null) {
+			$this->redirect(array('action' => 'index'));
 		}
-		
-		$filters = array('AdmUserRestriction.adm_user_id'=>$id);
+
+		$filters = array('AdmUserRestriction.adm_user_id' => $id, 'AdmUserRestriction.lc_state !='=>'LOGIC_DELETED');
 		$this->paginate = array(
-			'conditions'=>array(
+			'conditions' => array(
 				$filters
-			 ),
-			'recursive'=>0,
+			),
+			'recursive' => 0,
 			//'fields'=>array('InvMovement.id', 'InvMovement.code', 'InvMovement.document_code', 'InvMovement.date','InvMovement.inv_movement_type_id','InvMovementType.name', 'InvMovement.inv_warehouse_id', 'InvWarehouse.name', 'InvMovement.lc_state'),
-			'order'=> array('AdmUserRestriction.id'=>'desc'),
+			'order' => array('AdmUserRestriction.period' => 'desc'),
 			'limit' => 15,
 		);
 		//debug($this->paginate('AdmUserRestriction'));
 		$userInfo = $this->AdmUser->find('all', array(
-			'conditions'=>array('AdmUser.id'=>$id),
-			'fields'=>array('AdmUser.login'),
-			'recursive'=>-1
+			'conditions' => array('AdmUser.id' => $id),
+			'fields' => array('AdmUser.login'),
+			'recursive' => -1
 		));
 		$array = $this->_paintUserRestrictionActiveDateField($this->paginate('AdmUserRestriction'));
 		//debug($array);
@@ -221,136 +229,140 @@ class AdmUsersController extends AppController {
 		$this->set('username', $userInfo[0]['AdmUser']['login']);
 		$this->set('admUsers', $array);
 	}
-	
-	private function _paintUserRestrictionActiveDateField($array){
-		for($i=0; $i <count($array); $i++){
+
+	private function _paintUserRestrictionActiveDateField($array) {
+		for ($i = 0; $i < count($array); $i++) {
 			$res = $this->AdmUser->AdmUserRestriction->find('count', array(
-				'conditions'=>array(
-					'AdmUserRestriction.active_date > now()'/* => date('Y-m-d H:i:s')*/,
-					'AdmUserRestriction.id'=>$array[$i]['AdmUserRestriction']['id'])
+				'conditions' => array(
+					'AdmUserRestriction.active_date > now()'/* => date('Y-m-d H:i:s') */,
+					'AdmUserRestriction.id' => $array[$i]['AdmUserRestriction']['id'])
 			));
 			$array[$i]['AdmUserRestriction']['token_valide_date'] = $res;
 		}
 		return $array;
 	}
-	
+
 	public function login() {
 		//before everything verify if the browser is IE from windows
-		if(eregi("MSIE",getenv("HTTP_USER_AGENT")) || eregi("Internet Explorer",getenv("HTTP_USER_AGENT"))){
-			$this->redirect(array('controller'=>'Pages', 'action'=>'ie_denied'));
-	   }
-		
+		if (eregi("MSIE", getenv("HTTP_USER_AGENT")) || eregi("Internet Explorer", getenv("HTTP_USER_AGENT"))) {
+			$this->redirect(array('controller' => 'Pages', 'action' => 'ie_denied'));
+		}
+
 		//if is not, then go on
 		$this->layout = 'login';
 		if ($this->request->is('post')) {
 			if ($this->Auth->login()) { //If authentication is valid username and password
-							
-			/////////////////////////////////////////////BEGIN OF VALIDATION///////////////////////////////////////////////////
+				/////////////////////////////////////////////BEGIN OF VALIDATION///////////////////////////////////////////////////
 				$userInfo = $this->Auth->user();
-				$active=$userInfo['active'];
-				$activeDate = $this->AdmUser->find('count', array('conditions'=>array('AdmUser.active_date > now()', 'AdmUser.id'=>$userInfo['id']))); //The DB does the comparition between dates, it's simpler than creating a php function for this
-				$role = $this->AdmUser->AdmUserRestriction->find('count', array('conditions'=> array('AdmUserRestriction.adm_user_id'=>$userInfo['id'])));
-				$roleActive = $this->AdmUser->AdmUserRestriction->find('count', array('conditions'=> array('AdmUserRestriction.adm_user_id'=>$userInfo['id'], 'AdmUserRestriction.active'=>1, 'AdmUserRestriction.selected'=>1)));
-				$roleActiveDate = $this->AdmUser->AdmUserRestriction->find('count', array('conditions'=> array('AdmUserRestriction.adm_user_id'=>$userInfo['id'], 'AdmUserRestriction.active_date > now()', 'AdmUserRestriction.selected'=>1)));;
-				$error=0;
-				
+				$active = $userInfo['active'];
+				$activeDate = $this->AdmUser->find('count', array('conditions' => array('AdmUser.active_date > now()', 'AdmUser.id' => $userInfo['id']))); //The DB does the comparition between dates, it's simpler than creating a php function for this
+				$role = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'])));
+				$roleActive = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.active' => 1, 'AdmUserRestriction.selected' => 1)));
+				$roleActiveDate = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.active_date > now()', 'AdmUserRestriction.selected' => 1)));
+				;
+				$error = 0;
+				$userPassword = $this->request->data['AdmUser']['password'];
+
 				//User active
-				if($active != 1){
+				if ($active != 1) {
 					$this->_createMessage('El usuario esta inactivo');
 					$error++;
 					$this->redirect($this->Auth->logout());
 				}
-				
+
 				//User date active
-				if($activeDate == 0){
+				if ($activeDate == 0) {
 					$this->_createMessage('El usuario expiró');
 					$error++;
 					$this->redirect($this->Auth->logout());
 				}
-				
+
 				//Roles Validation
-				if ($role == 0){//No roles found
+				if ($role == 0) {//No roles found
 					$this->_createMessage('El usuario no tiene ningun rol asignado');
 					$error++;
 					$this->redirect($this->Auth->logout());
-				}else{
-					if($roleActive == 0 OR $roleActiveDate == 0){
+				} else {
+					if ($roleActive == 0 OR $roleActiveDate == 0) {
 						$otherRoles = $this->AdmUser->AdmUserRestriction->find('all', array(
-							'conditions'=> array('AdmUserRestriction.adm_user_id'=>$userInfo['id'],
+							'conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'],
 								'AdmUserRestriction.active_date > now()',
-								'AdmUserRestriction.active'=>1),
-							'fields'=>array('AdmUser.id', 'AdmUser.login', 'AdmRole.name', 'AdmUserRestriction.period', 'AdmUserRestriction.id'),
-							'order'=>array('AdmUserRestriction.adm_role_id', 'AdmUserRestriction.period')
+								'AdmUserRestriction.active' => 1),
+							'fields' => array('AdmUser.id', 'AdmUser.login', 'AdmRole.name', 'AdmUserRestriction.period', 'AdmUserRestriction.id'),
+							'order' => array('AdmUserRestriction.adm_role_id', 'AdmUserRestriction.period')
 						));
-						if(count($otherRoles) > 0 ){
+						if (count($otherRoles) > 0) {
 							$roleInactive = $this->AdmUser->AdmUserRestriction->find('all', array(
-								'conditions'=>array('AdmUserRestriction.selected'=>1, 'AdmUserRestriction.adm_user_id'=>$userInfo['id']),
-								'fields'=>array('AdmRole.name', 'AdmUserRestriction.period')
-								));
-							if(count($roleInactive) > 0){//if there is one role selected
+								'conditions' => array('AdmUserRestriction.selected' => 1, 'AdmUserRestriction.adm_user_id' => $userInfo['id']),
+								'fields' => array('AdmRole.name', 'AdmUserRestriction.period')
+							));
+							if (count($roleInactive) > 0) {//if there is one role selected
 								$this->Session->write('RoleInactive.name', $roleInactive[0]['AdmRole']['name']);
 								$this->Session->write('PeriodInactive.name', $roleInactive[0]['AdmUserRestriction']['period']);
 								$this->Session->write('User.chooserole', $otherRoles);
 								$error++;
-								$this->redirect(array('action'=>'choose_role'));
-							}else{
+								$this->redirect(array('action' => 'choose_role'));
+							} else {
 								$this->_createMessage('No hay ningun rol asignado a esta cuenta');
 								$error++;
 								$this->redirect($this->Auth->logout());
 							}
 						}
-						if($roleActive == 0){
+						if ($roleActive == 0) {
 							$this->_createMessage('El rol del usuario esta inactivo');
 							$error++;
 							$this->redirect($this->Auth->logout());
 						}
-						if($roleActiveDate == 0){
+						if ($roleActiveDate == 0) {
 							$this->_createMessage('El rol del usuario expiró');
 							$error++;
 							$this->redirect($this->Auth->logout());
 						}
-						
 					}
 				}
-			///////////////////////////////////////////////END OF VALIDATION////////////////////////////////////////////////////
-			
-			//////////////////////////////////////////////START - LOGIN /////////////////////////////////////////////////////////
-				if($error == 0){//if there is no error
-					$this->_createUserAccountSession($userInfo['id']);
-				} 
-			//////////////////////////////////////////////END - LOGIN /////////////////////////////////////////////////////////		
+				///////////////////////////////////////////////END OF VALIDATION////////////////////////////////////////////////////
+				//////////////////////////////////////////////START - LOGIN /////////////////////////////////////////////////////////
+				if ($error == 0) {//if there is no error
+					$this->_createUserAccountSession($userInfo['id'], 'login', $userPassword);
+				}
+				//////////////////////////////////////////////END - LOGIN /////////////////////////////////////////////////////////		
 			} else {
-					$this->_createMessage('Usuario o contraseña incorrecta, intente de nuevo');
+				$this->_createMessage('Usuario o contraseña incorrecta, intente de nuevo');
 			}
 		}
 	}
-	
-	private function _createUserAccountSession($userId, $tipo = 'login'){
+
+	private function _createUserAccountSession($userId, $tipo, $userPassword = null) {
 		////////Fill of sessions distinct to auth component users table
-		
+
 		$this->AdmUser->AdmUserRestriction->bindModel(array(
-			'hasOne'=>array(
-				'AdmProfile'=>array(
-					'foreignKey'=>false,
-					'conditions'=>array('AdmUser.id = AdmProfile.adm_user_id')
+			'hasOne' => array(
+				'AdmProfile' => array(
+					'foreignKey' => false,
+					'conditions' => array('AdmUser.id = AdmProfile.adm_user_id')
 				)
 			)
 		));
-		
+
 		$infoRole = $this->AdmUser->AdmUserRestriction->find('all', array(
-			'fields'=>array(
+			'fields' => array(
 				'AdmUser.login'
-				,'AdmRole.name'
-				,'AdmRole.id'
+				, 'AdmRole.name'
+				, 'AdmRole.id'
 				, 'AdmUserRestriction.period'
 				, 'AdmUserRestriction.id'
 				, 'AdmProfile.first_name'
 				, 'AdmProfile.last_name1'
 				, 'AdmProfile.last_name2'
 			),
-			'conditions'=>array('AdmUserRestriction.adm_user_id'=>$userId, 'AdmUserRestriction.active'=>1, 'AdmUserRestriction.selected'=>1)
+			'conditions' => array('AdmUserRestriction.adm_user_id' => $userId, 'AdmUserRestriction.active' => 1, 'AdmUserRestriction.selected' => 1)
 		));
-		
+
+		if ($userPassword <> null) {//for dynamic user password change
+			$userPasswordEncrypted = $this->BittionSecurity->encryptUserSessionPassword($userPassword);
+			$this->Session->write('User.password', $userPasswordEncrypted);
+		}
+
 		$this->Session->write('UserRestriction.id', $infoRole[0]['AdmUserRestriction']['id']);  //in case there is no trigger postgres user integration, it will help
 		$this->Session->write('User.username', $infoRole[0]['AdmUser']['login']);
 		$this->Session->write('User.id', $userId);
@@ -358,156 +370,157 @@ class AdmUsersController extends AppController {
 		$this->Session->write('Role.id', $infoRole[0]['AdmRole']['id']);
 		$this->Session->write('Menu', $this->_createMenu($this->Session->read('Role.id')));
 		$this->Session->write('Period.name', $infoRole[0]['AdmUserRestriction']['period']);
-		$this->Session->write('Profile.fullname', $infoRole[0]['AdmProfile']['first_name'].' '.$infoRole[0]['AdmProfile']['last_name1'].' '.$infoRole[0]['AdmProfile']['last_name2']);
-		$this->Session->delete('Message.auth');//to avoid bug showing auth messages when you are kickout and do login again
+		$this->Session->write('Profile.fullname', $infoRole[0]['AdmProfile']['first_name'] . ' ' . $infoRole[0]['AdmProfile']['last_name1'] . ' ' . $infoRole[0]['AdmProfile']['last_name2']);
+		$this->Session->delete('Message.auth'); //to avoid bug showing auth messages when you are kickout and do login again
 		$this->_createPermissions($this->Session->read('Role.id'));
 		//////////////////////////////////////////////////////////////////////////
-		
 		/////////////////////////////Create USER,ROLE,PERIOD Session Buttons///////////////////////////////////////////
 		$avaliableRoles = $this->_listAvaliableRoles($userId, $infoRole[0]['AdmRole']['id']);
 		$avaliableRolePeriods = $this->AdmUser->AdmUserRestriction->find('list', array(
-			'fields'=>array(
-				'AdmUserRestriction.id','AdmUserRestriction.period'
+			'fields' => array(
+				'AdmUserRestriction.id', 'AdmUserRestriction.period'
 			),
-			'conditions'=>array(
-				'AdmUserRestriction.adm_user_id'=>$userId,
-				'AdmUserRestriction.adm_role_id'=>$infoRole[0]['AdmRole']['id'],
-				'AdmUserRestriction.period !='=>$infoRole[0]['AdmUserRestriction']['period'],
+			'conditions' => array(
+				'AdmUserRestriction.adm_user_id' => $userId,
+				'AdmUserRestriction.adm_role_id' => $infoRole[0]['AdmRole']['id'],
+				'AdmUserRestriction.period !=' => $infoRole[0]['AdmUserRestriction']['period'],
 			)
 		));
-		
+
 		$this->Session->write('Avaliable.rolesPeriods', $avaliableRolePeriods);
 		$this->Session->write('Avaliable.roles', $avaliableRoles);
 		/////////////////////////////Create USER,ROLE,PERIOD Session Buttons///////////////////////////////////////////
-		
 		//////////////////////////////////////////////////////////////////////////
 		$this->loadModel('AdmUserLog');
-		try{
-			$this->AdmUserLog->save(array('tipo'=>$tipo,'creator'=>$infoRole[0]['AdmUserRestriction']['id']));
-			if($tipo == 'cambio rol'){
+		try {
+			$this->AdmUserLog->save(array('tipo' => $tipo, 'creator' => $infoRole[0]['AdmUserRestriction']['id']));
+			if ($tipo == 'cambio rol') {
 				$this->Session->setFlash(
-					'Se modificó la sessión de usuario, el rol es <strong>'.$infoRole[0]['AdmRole']['name'].'</strong> y la gestión es <strong>'.$infoRole[0]['AdmUserRestriction']['period'].'</strong>',
-					'alert',
-					array(
-						'plugin' => 'TwitterBootstrap',
-						'class' => 'alert-success'
-					),
-					'flash_change_user_restriction'
+						'Se modificó la sessión de usuario, el rol es <strong>' . $infoRole[0]['AdmRole']['name'] . '</strong> y la gestión es <strong>' . $infoRole[0]['AdmUserRestriction']['period'] . '</strong>', 'alert', array(
+					'plugin' => 'TwitterBootstrap',
+					'class' => 'alert-success'
+						), 'flash_change_user_restriction'
 				);
 			}
-				$this->redirect($this->Auth->redirect());
-			
-		}catch (Exception $e){
+			$this->redirect($this->Auth->redirect());
+		} catch (Exception $e) {
 			$this->_createMessage('Ocurrio un problema con el log, vuelva a intentarlo');
 //			$this->_createMessage($e);
 			$this->redirect($this->Auth->logout());
-		} 
+		}
+	}
+
+	public function change_password() {
 		
 	}
 
-	
-	public function change_password(){
-	}
-	
-	public function ajax_change_password(){
-		if($this->RequestHandler->isAjax()){
+	public function ajax_change_password() {
+		if ($this->RequestHandler->isAjax()) {
 			$password = $this->request->data['password'];
 			$idUser = $this->Session->read('User.id');
-			if($this->AdmUser->save(array('id'=>$idUser,'password'=>$password))){
-				echo 'success';
+			$usernameArray = $this->AdmUser->find('list', array(
+				'conditions' => array('AdmUser.id' => $idUser),
+				'fields' => array('AdmUser.id', 'AdmUser.login')
+			));
+			$username = reset($usernameArray);
+//			if($this->AdmUser->save(array('id'=>$idUser,'password'=>$password))){
+//			debug($username);
+//			debug($idUser);
+//			debug($password);
+			if ($this->AdmUser->fnChangePassword($idUser, $password, $username)) {
+				if ($password <> '') {
+					if ($username == $this->Session->read('User.username')) {
+						$this->Session->write('User.username', $username);
+						$this->Session->write('User.password', $this->BittionSecurity->encryptUserSessionPassword($password));
+					}
+					echo 'success';
+				}
+			} else {
+				echo 'save error';
 			}
 		}
 	}
 
-	
-	public function change_email(){
+	public function change_email() {
+		
 	}
-	
-	public function ajax_change_email(){
-		if($this->RequestHandler->isAjax()){
+
+	public function ajax_change_email() {
+		if ($this->RequestHandler->isAjax()) {
 			$email = $this->request->data['email'];
 			$idUser = $this->Session->read('User.id');
-			$idProfile =$this->AdmUser->AdmProfile->find('list', array(
-				'conditions'=>array('AdmProfile.adm_user_id'=>$idUser),
-				'fields'=>array('AdmProfile.id', 'AdmProfile.id')
+			$idProfile = $this->AdmUser->AdmProfile->find('list', array(
+				'conditions' => array('AdmProfile.adm_user_id' => $idUser),
+				'fields' => array('AdmProfile.id', 'AdmProfile.id')
 			));
-			if($this->AdmUser->AdmProfile->save(array('id'=>key($idProfile),'email'=>$email))){
+			if ($this->AdmUser->AdmProfile->save(array('id' => key($idProfile), 'email' => $email))) {
 				echo 'success';
 			}
-			
 		}
 	}
 
-
-	public function change_user_restriction(){
+	public function change_user_restriction() {
 		$args = $this->passedArgs;
 		$idUser = $this->Session->read('User.id');
-		
-		if(isset($args['role'])){
+
+		if (isset($args['role'])) {
 			$idRole = $args['role'];
 //			$period = $this->Session->read('Period.name');
-			$period =  $this->AdmUser->AdmUserRestriction->find('list', array(
-				'limit'=>1,
-				'order'=>array('AdmUserRestriction.period'=>'DESC'),
-				'conditions'=>array(
-					'AdmUserRestriction.adm_user_id'=>$idUser, 
+			$period = $this->AdmUser->AdmUserRestriction->find('list', array(
+				'limit' => 1,
+				'order' => array('AdmUserRestriction.period' => 'DESC'),
+				'conditions' => array(
+					'AdmUserRestriction.adm_user_id' => $idUser,
 //					'AdmUserRestriction.selected'=>0, //Redundant
-					'AdmUserRestriction.active'=>1, 
+					'AdmUserRestriction.active' => 1,
 					'AdmUserRestriction.active_date > now()',
-					'AdmUserRestriction.adm_role_id '=>$idRole, 
+					'AdmUserRestriction.adm_role_id ' => $idRole,
 				),
-				'fields'=>array('AdmUserRestriction.id', 'AdmUserRestriction.period')
+				'fields' => array('AdmUserRestriction.id', 'AdmUserRestriction.period')
 			));  //find last period avaliable
-		}elseif(isset($args['period'])){
+		} elseif (isset($args['period'])) {
 			$period = $args['period'];
 			$idRole = $this->Session->read('Role.id');
 		}
-		
-		
-		
-		$idUserRestrictionSelected = $this->AdmUser->AdmUserRestriction->find('list',array(
-			'conditions'=>array(
-				'AdmUserRestriction.adm_user_id'=>$idUser,
-				'AdmUserRestriction.adm_role_id'=>$idRole,
-				'AdmUserRestriction.period'=>$period
+
+
+
+		$idUserRestrictionSelected = $this->AdmUser->AdmUserRestriction->find('list', array(
+			'conditions' => array(
+				'AdmUserRestriction.adm_user_id' => $idUser,
+				'AdmUserRestriction.adm_role_id' => $idRole,
+				'AdmUserRestriction.period' => $period
 			),
-			'limit'=>1,
-			'fields'=>array('AdmUserRestriction.id', 'AdmUserRestriction.id')
+			'limit' => 1,
+			'fields' => array('AdmUserRestriction.id', 'AdmUserRestriction.id')
 		));
-				
+
 //		debug($idUser);
 //		debug($idUserRestrictionSelected);
-		try{
-				if(!$this->AdmUser->change_user_restriction($idUser, key($idUserRestrictionSelected))){
-					$this->Session->setFlash(
-					'<strong>Error!</strong> No se pudo cambiar el <strong>Rol / Gestión</strong>',
-					'alert',
-					array(
-						'plugin' => 'TwitterBootstrap',
-						'class' => 'alert-error'
-					),
-					'flash_change_user_restriction'
-					);
-					$this->redirect(array('action'=>'welcome'));
-				}
-				$this->_createUserAccountSession($idUser, 'cambio rol');
-		}catch(Exception $e){
-			$this->Session->setFlash(
-					'Ocurrio un problema al cambiar de <strong>Rol / Gestión</strong>',
-					'alert',
-					array(
-						'plugin' => 'TwitterBootstrap',
-						'class' => 'alert-error'
-					),
-					'flash_change_user_restriction'
+		try {
+			if (!$this->AdmUser->change_user_restriction($idUser, key($idUserRestrictionSelected))) {
+				$this->Session->setFlash(
+						'<strong>Error!</strong> No se pudo cambiar el <strong>Rol / Gestión</strong>', 'alert', array(
+					'plugin' => 'TwitterBootstrap',
+					'class' => 'alert-error'
+						), 'flash_change_user_restriction'
 				);
-			$this->redirect(array('action'=>'welcome'));
+				$this->redirect(array('action' => 'welcome'));
+			}
+			$this->_createUserAccountSession($idUser, 'cambio rol');
+		} catch (Exception $e) {
+			$this->Session->setFlash(
+					'Ocurrio un problema al cambiar de <strong>Rol / Gestión</strong>', 'alert', array(
+				'plugin' => 'TwitterBootstrap',
+				'class' => 'alert-error'
+					), 'flash_change_user_restriction'
+			);
+			$this->redirect(array('action' => 'welcome'));
 //			debug($e);
 		}
-		 
 	}
-	
-	public function choose_role(){
+
+	public function choose_role() {
 		//echo "Aqui va para elegir roles con fecha activa en caso de que un rol este inactivo y tenga otros roles";
 		if ($this->request->is('post')) {
 			//debug($this->request->data);
@@ -517,187 +530,191 @@ class AdmUsersController extends AppController {
 			$this->_selectOtherRole($data[0], $data[1]);
 		}
 	}
-	
-	private function _selectOtherRole($userRestrictionId, $userId){
-		try{
-			$this->AdmUser->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected'=>0), array('AdmUserRestriction.adm_user_id'=>$userId));
-			try{
-				$this->AdmUser->AdmUserRestriction->save(array('id'=>$userRestrictionId, 'selected'=>1));
-				try{
+
+	private function _selectOtherRole($userRestrictionId, $userId) {
+		try {
+			$this->AdmUser->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected' => 0), array('AdmUserRestriction.adm_user_id' => $userId));
+			try {
+				$this->AdmUser->AdmUserRestriction->save(array('id' => $userRestrictionId, 'selected' => 1));
+				try {
 					$this->_createUserAccountSession($userId, 'login escogiendo rol');
-				}catch(Exception $e){
+				} catch (Exception $e) {
 					$this->_createMessage('Ocurrio un error, comuniquese con su administrador para habilitar su cuenta');
 					$this->redirect($this->Auth->logout());
 				}
-			}catch(Exception $e){
+			} catch (Exception $e) {
 				$this->_createMessage('Ocurrio un error, comuniquese con su administrador para habilitar su cuenta');
 				$this->redirect($this->Auth->logout());
 			}
-		}catch(Exception $e){
+		} catch (Exception $e) {
 			$this->_createMessage('Ocurrio un error, vuelva a intentarlo');
 			$this->redirect($this->Auth->logout());
 		}
 	}
-	
-	private function _createMessage($message, $key = 'error'){
-		$this->Session->setFlash('<strong>'.$message.'</strong>',
-								 'alert',
-								 array('plugin' => 'TwitterBootstrap','class' => 'alert-'.$key)
+
+	private function _createMessage($message, $key = 'error') {
+		$this->Session->setFlash('<strong>' . $message . '</strong>', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-' . $key)
 		);
 	}
-	
-	private function _createMenu($roleId){
+
+	private function _createMenu($roleId) {
 		$this->loadModel('AdmRolesMenu');
 		$parents = $this->AdmRolesMenu->find('all', array(
-			'fields'=>array('AdmMenu.id', 'AdmMenu.name', 'AdmMenu.icon'
+			'fields' => array('AdmMenu.id', 'AdmMenu.name', 'AdmMenu.icon'
 //				, 'AdmAction.name', 'AdmController.name', 'AdmMenu.adm_action_id'
-				)
-			,'conditions'=>array('AdmRolesMenu.adm_role_id'=>$roleId, "AdmMenu.parent_node"=>null, 'AdmMenu.inside'=>null)
-			, 'order'=>array('AdmMenu.order_menu')
+			)
+			, 'conditions' => array('AdmRolesMenu.adm_role_id' => $roleId, "AdmMenu.parent_node" => null, 'AdmMenu.inside' => null)
+			, 'order' => array('AdmMenu.order_menu')
 		));
-		
-		
+
+
 		/////////////////////////////////////////////////////////////////////
 		$str = '';
-			/////////////////////////////////////START - Parents///////////////////////////////////////////////////////
-				$str.='<ul>';
-				foreach ($parents as $key2 => $value2) {
-					//////must improve this function for 2.0
-					$arrLinkContent = $this->_createLink($value2['AdmMenu']['id'], $value2['AdmMenu']['name'], $value2['AdmMenu']['icon']);
-					//////////////Check if submenu only for parents/////////////////
-					$submenu = 'class="submenu"';
-					if($arrLinkContent['actionEmpty']=='no') $submenu ='';
-					///////////////////////////////////////////////////////////////
-						if($arrLinkContent['idForLi'] <> ''){$idForLi = 'id="'.$arrLinkContent['idForLi'].'"';}else{$idForLi='';}
-							$str.='<li '.$idForLi.' '.$submenu.' >'.$arrLinkContent['link'];//$value2['AdmMenu']['name'];
-					////////////////////////////////////START - Children 1////////////////////////////////////////////////
-					$str.='<ul>';
-						$children1 = $this->_findMenus($value2['AdmMenu']['id'], $roleId);
-						foreach ($children1 as $key3 => $value3) {
-							$arrLinkContent = $this->_createLink($key3, $value3, '');
-							if($arrLinkContent['idForLi'] <> ''){$idForLi = 'id="'.$arrLinkContent['idForLi'].'"';}else{$idForLi='';}
-							$str.='<li '.$idForLi.'>'.$arrLinkContent['link'];//$value3;
-								//more children.....
-							$str.='</li>';
-						}
-					$str.='</ul>';
-					////////////////////////////////////END - Children 1////////////////////////////////////////////////
-					$str.='</li>';
+		/////////////////////////////////////START - Parents///////////////////////////////////////////////////////
+		$str.='<ul>';
+		foreach ($parents as $key2 => $value2) {
+			//////must improve this function for 2.0
+			$arrLinkContent = $this->_createLink($value2['AdmMenu']['id'], $value2['AdmMenu']['name'], $value2['AdmMenu']['icon']);
+			//////////////Check if submenu only for parents/////////////////
+			$submenu = 'class="submenu"';
+			if ($arrLinkContent['actionEmpty'] == 'no')
+				$submenu = '';
+			///////////////////////////////////////////////////////////////
+			if ($arrLinkContent['idForLi'] <> '') {
+				$idForLi = 'id="' . $arrLinkContent['idForLi'] . '"';
+			} else {
+				$idForLi = '';
+			}
+			$str.='<li ' . $idForLi . ' ' . $submenu . ' >' . $arrLinkContent['link']; //$value2['AdmMenu']['name'];
+			////////////////////////////////////START - Children 1////////////////////////////////////////////////
+			$str.='<ul>';
+			$children1 = $this->_findMenus($value2['AdmMenu']['id'], $roleId);
+			foreach ($children1 as $key3 => $value3) {
+				$arrLinkContent = $this->_createLink($key3, $value3, '');
+				if ($arrLinkContent['idForLi'] <> '') {
+					$idForLi = 'id="' . $arrLinkContent['idForLi'] . '"';
+				} else {
+					$idForLi = '';
 				}
-				$str.='</ul>';
-			//////////////////////////////////////END - Parents///////////////////////////////////////////////////////
+				$str.='<li ' . $idForLi . '>' . $arrLinkContent['link']; //$value3;
+				//more children.....
+				$str.='</li>';
+			}
+			$str.='</ul>';
+			////////////////////////////////////END - Children 1////////////////////////////////////////////////
+			$str.='</li>';
+		}
+		$str.='</ul>';
+		//////////////////////////////////////END - Parents///////////////////////////////////////////////////////
 		return $str;
 	}
-	
-	
-	private function _createLink($idMenu, $nameMenu, $icon){
+
+	private function _createLink($idMenu, $nameMenu, $icon) {
 		$projectName = 'imexport';
 		$this->loadModel('AdmMenu');
-		
+
 		$this->AdmMenu->unbindModel(array(
-			'belongsTo'=>array('AdmAction', 'AdmModule'),
-			'hasMany'=>array('AdmRolesMenu')
+			'belongsTo' => array('AdmAction', 'AdmModule'),
+			'hasMany' => array('AdmRolesMenu')
 		));
-		
+
 		$this->AdmMenu->bindModel(array(
-			'hasOne'=>array(
-				'AdmAction'=>array(
-					'foreignKey'=>false,
+			'hasOne' => array(
+				'AdmAction' => array(
+					'foreignKey' => false,
 					'conditions' => array('AdmMenu.adm_action_id = AdmAction.id')
 				),
-				'AdmController'=>array(
-					'foreignKey'=>false,
+				'AdmController' => array(
+					'foreignKey' => false,
 					'conditions' => array('AdmAction.adm_controller_id = AdmController.id')
 				),
-				
 			)
 		));
-		
-		$vec = $this->AdmMenu->find('all', array('fields'=>array('AdmAction.name', 'AdmController.name'),'conditions'=>array("AdmMenu.id"=>$idMenu)));
-		
+
+		$vec = $this->AdmMenu->find('all', array('fields' => array('AdmAction.name', 'AdmController.name'), 'conditions' => array("AdmMenu.id" => $idMenu)));
+
 		$controlerName = $vec[0]['AdmController']['name'];
 		$actionName = strtolower($vec[0]['AdmAction']['name']);
-		$link = '/'.$projectName.'/'.$controlerName.'/'.$actionName;
-		$idForLi =$controlerName.'-'.$actionName;
-		
+		$link = '/' . $projectName . '/' . $controlerName . '/' . $actionName;
+		$idForLi = $controlerName . '-' . $actionName;
+
 		$actionEmpty = 'no';
-		if($vec[0]['AdmAction']['name'] == null){
+		if ($vec[0]['AdmAction']['name'] == null) {
 			$link = '#';
 			$actionEmpty = 'yes';
 		}
 		//debug($vec);
-		if($icon <> ''){
+		if ($icon <> '') {
 			/*
-			$idName = '';
-			$nameIcon='';
-			switch($nameMenu){
-				case 'ADMINISTRACION':
-					$nameIcon='icon-wrench';
-					$idName = 'adm';
-					break;
-				case 'INVENTARIO':
-					$nameIcon='icon-list-alt';
-					$idName = 'inv';
-					break;
-				case 'COMPRAS':
-					$nameIcon='icon-shopping-cart';
-					$idName = 'pur';
-					break;
-				case 'VENTAS':
-					$nameIcon='icon-tags';
-					$idName = 'sal';
-					break;
-			}
+			  $idName = '';
+			  $nameIcon='';
+			  switch($nameMenu){
+			  case 'ADMINISTRACION':
+			  $nameIcon='icon-wrench';
+			  $idName = 'adm';
+			  break;
+			  case 'INVENTARIO':
+			  $nameIcon='icon-list-alt';
+			  $idName = 'inv';
+			  break;
+			  case 'COMPRAS':
+			  $nameIcon='icon-shopping-cart';
+			  $idName = 'pur';
+			  break;
+			  case 'VENTAS':
+			  $nameIcon='icon-tags';
+			  $idName = 'sal';
+			  break;
+			  }
 			 * 
 			 */
-			if($vec[0]['AdmAction']['name'] == null){$idForLi = 'menu-'.$nameMenu;}
-			$str = '<a href="'.$link.'"><i class="icon '.$icon.'"></i> <span>'.$nameMenu.'</span></a>';
-			
-		}else{
-			if($vec[0]['AdmAction']['name'] == null){$idForLi = '';}
-			$str = '<a href="'.$link.'">'.$nameMenu.'</a>';
+			if ($vec[0]['AdmAction']['name'] == null) {
+				$idForLi = 'menu-' . $nameMenu;
+			}
+			$str = '<a href="' . $link . '"><i class="icon ' . $icon . '"></i> <span>' . $nameMenu . '</span></a>';
+		} else {
+			if ($vec[0]['AdmAction']['name'] == null) {
+				$idForLi = '';
+			}
+			$str = '<a href="' . $link . '">' . $nameMenu . '</a>';
 		}
-		
-		
-		
+
+
+
 		//return $str;
-		return array('link'=>$str, 'idForLi'=>$idForLi, 'actionEmpty'=>$actionEmpty);
+		return array('link' => $str, 'idForLi' => $idForLi, 'actionEmpty' => $actionEmpty);
 	}
 
-	
-	
-	private function _findMenus($parent, $roleId){
+	private function _findMenus($parent, $roleId) {
 		$this->loadModel('AdmRolesMenu');
-		$vec = $this->AdmRolesMenu->find('all', array('fields'=>array('AdmMenu.id', 'AdmMenu.name') , 'order'=>array('AdmMenu.order_menu'),'conditions'=>array("AdmMenu.parent_node"=>$parent, "AdmRolesMenu.adm_role_id"=>$roleId)));
-		$found=array();
-		if(count($vec)>0){
+		$vec = $this->AdmRolesMenu->find('all', array('fields' => array('AdmMenu.id', 'AdmMenu.name'), 'order' => array('AdmMenu.order_menu'), 'conditions' => array("AdmMenu.parent_node" => $parent, "AdmRolesMenu.adm_role_id" => $roleId)));
+		$found = array();
+		if (count($vec) > 0) {
 			foreach ($vec as $key => $value) {
 				$found[$value['AdmMenu']['id']] = $value['AdmMenu']['name'];
-				
 			}
 			//debug($found);
 		}
 		return $found;
-		
 	}
-	
-	private function _createPermissions($roleId){
+
+	private function _createPermissions($roleId) {
 		$this->loadModel('AdmRolesAction');
-		
+
 		//debug($array);
 		$this->AdmRolesAction->unbindModel(array(
-			'belongsTo'=>array('AdmRole', 'AdmMenu'),
+			'belongsTo' => array('AdmRole', 'AdmMenu'),
 		));
-		
+
 		$this->AdmRolesAction->bindModel(array(
-			'belongsTo'=>array(
+			'belongsTo' => array(
 				'AdmController' => array(
 					'foreignKey' => false,
 					'conditions' => array('AdmAction.adm_controller_id = AdmController.id', '')
 				)
 			)
 		));
-		
+
 //		$this->AdmRolesMenu->bindModel(array(
 //			'hasOne'=>array(
 //				'AdmMenu'=>array(
@@ -715,30 +732,29 @@ class AdmUsersController extends AppController {
 //				
 //			)
 //		));
-		
+
 		$vec = $this->AdmRolesAction->find('all', array(
-			 'conditions'=>array('AdmRolesAction.adm_role_id'=>$roleId)
-			,'fields'=>array('AdmRolesAction.adm_role_id','AdmRolesAction.adm_action_id', 'AdmAction.id','AdmAction.name', 'AdmController.name')
-			));
+			'conditions' => array('AdmRolesAction.adm_role_id' => $roleId)
+			, 'fields' => array('AdmRolesAction.adm_role_id', 'AdmRolesAction.adm_action_id', 'AdmAction.id', 'AdmAction.name', 'AdmController.name')
+		));
 		//debug($vec);
 		$formated = array();
 //		$extra = array();
-		if(count($vec) >0){
+		if (count($vec) > 0) {
 			foreach ($vec as $key => $value) {
-				if($value['AdmAction']['name'] != ''){
+				if ($value['AdmAction']['name'] != '') {
 					$formated[$key]['controller'] = Inflector::camelize($value['AdmController']['name']);
 					$formated[$key]['action'] = strtolower($value['AdmAction']['name']);
 				}
 			}
 		}
 		//debug($formated);
-		
+
 		$formatExtra = array();
 
 		//debug($formatExtra);
-		$merge = array_merge($formated,$formatExtra);
+		$merge = array_merge($formated, $formatExtra);
 		//debug($merge);
-		
 		//Initial Session Permision Data
 		$this->Session->write('Permission.AdmUsers.welcome', 'welcome');
 		//$this->Session->write('Permission.AdmUsers.login', 'login');
@@ -749,30 +765,28 @@ class AdmUsersController extends AppController {
 		$this->Session->write('Permission.AdmUsers.change_email', 'change_email');
 		$this->Session->write('Permission.AdmUsers.view_user_profile', 'view_user_profile');
 		$this->Session->write('Permission.AdmUsers.ie_denied', 'ie_denied');
-		
+
 		///// save in session array 
-		for($i=0; $i<count($merge); $i++){
-			$this->Session->write('Permission.'.$merge[$i]['controller'].'.'.$merge[$i]['action'], $merge[$i]['action']);
+		for ($i = 0; $i < count($merge); $i++) {
+			$this->Session->write('Permission.' . $merge[$i]['controller'] . '.' . $merge[$i]['action'], $merge[$i]['action']);
 		}
-		
 	}
-	
-	private function _findControllerActionAjax($parent){
-		$this->loadModel('AdmAction');	
+
+	private function _findControllerActionAjax($parent) {
+		$this->loadModel('AdmAction');
 		$array = $this->AdmAction->find('all', array(
-			 'conditions'=>array('AdmAction.parent'=>$parent)
-			,'fields'=>array('AdmAction.name', 'AdmController.name')
-			));
+			'conditions' => array('AdmAction.parent' => $parent)
+			, 'fields' => array('AdmAction.name', 'AdmController.name')
+		));
 		return $array;
 	}
-	
 
-	public function welcome(){
+	public function welcome() {
 
 		$period = $this->Session->read('Period.name');
 //		$this->_countDocuments($period, 'InvMovement', 'APPROVED', 'SAL');//must improve with subquery, for now 82ms with 6000 rows, it's not that bad
 		$total = array();
-		if(strtolower($this->Session->read('Role.name')) <> 'vendedor'){
+		if (strtolower($this->Session->read('Role.name')) <> 'vendedor') {
 			//Movements
 			$total['inApproved'] = $this->_countDocuments($period, 'InvMovement', 'APPROVED', 'ENT');
 			$total['inPendant'] = $this->_countDocuments($period, 'InvMovement', 'PENDANT', 'ENT');
@@ -801,143 +815,150 @@ class AdmUsersController extends AppController {
 		}
 		$this->set(compact('total'));
 	}
-	
-	private function _countDocuments($period, $model, $lcState, $codePrefix){
-		
+
+	private function _countDocuments($period, $model, $lcState, $codePrefix) {
+
 		$this->loadModel($model);
 		$count = $this->$model->find('count', array(
 			'conditions' => array(
-				"to_char(".$model.".date,'YYYY')"=> $period,
-				$model.'.lc_state'=>$lcState,
-				'substring('.$model.'.code from 1 for 3) ='=>$codePrefix
+				"to_char(" . $model . ".date,'YYYY')" => $period,
+				$model . '.lc_state' => $lcState,
+				'substring(' . $model . '.code from 1 for 3) =' => $codePrefix
 			),
-			'recursive'=>-1
+			'recursive' => -1
 		));
-		
+
 		return $count;
-		
 	}
-	
-	private function _listAvaliableRoles($userId, $roleId){
-		$avaliableRoles = $this->AdmUser->AdmUserRestriction->find('all',array(
-			'fields'=>array(
+
+	private function _listAvaliableRoles($userId, $roleId) {
+		$avaliableRoles = $this->AdmUser->AdmUserRestriction->find('all', array(
+			'fields' => array(
 //				'AdmUserRestriction.id',
 				'AdmRole.name',
 				'AdmRole.id'
 			),
-			'conditions'=>array(
-				'AdmUserRestriction.adm_user_id'=>$userId, 
-				'AdmUserRestriction.selected'=>0, 
-				'AdmUserRestriction.active'=>1, 
+			'conditions' => array(
+				'AdmUserRestriction.adm_user_id' => $userId,
+				'AdmUserRestriction.selected' => 0,
+				'AdmUserRestriction.active' => 1,
 				'AdmUserRestriction.active_date > now()',
-				'AdmUserRestriction.adm_role_id !='=>$roleId, 
+				'AdmUserRestriction.adm_role_id !=' => $roleId,
 //				'AdmUserRestriction.id !='=>$userRestrictionId, 
 			),
-			'group'=>array(
+			'group' => array(
 				'AdmRole.id',
 				'AdmRole.name'
 			)
 		));
-		
-		$array=array();
-		for($i=0; $i < count($avaliableRoles); $i++){
+
+		$array = array();
+		for ($i = 0; $i < count($avaliableRoles); $i++) {
 			$queryRole = $avaliableRoles[$i]['AdmRole']['id'];
-			$array[$queryRole]=  $avaliableRoles[$i]['AdmRole']['name']; //.' | '.$avaliableRoles[$i]['AdmUserRestriction']['period'];
+			$array[$queryRole] = $avaliableRoles[$i]['AdmRole']['name']; //.' | '.$avaliableRoles[$i]['AdmUserRestriction']['period'];
 		}
 		return $array;
 	}
-	
+
 	public function logout() {
 //		$this->Session->destroy(); //Some servers have issues with cakephp session component
-		session_destroy();//Therefore I'll use defaul php session
+		session_destroy(); //Therefore I'll use defaul php session
 		$this->_createMessage('La sesión termino!', 'info');
 		$this->redirect($this->Auth->logout());
 	}
-	
+
 /////////////////////////////////////////////////////////////////////////////////////
-	
-	public  function ajax_generate_user_name(){
-		if($this->RequestHandler->isAjax()){
+
+	public function ajax_generate_user_name() {
+		if ($this->RequestHandler->isAjax()) {
 			////////////////////////////////////////////START AJAX/////////////////////////////////////////////
 			return $this->_generate_user_name($this->request->data['first_name'], $this->request->data['last_name']);
 			////////////////////////////////////////////END AJAX///////////////////////////////////////////////
 		}
 	}
 
-	private function _generate_user_name($first_name, $last_name){
-		
-			$firstName = explode(' ',  strtolower($first_name));
-			//debug($firstName);
-			$lastName = explode(' ',  strtolower($last_name));
-			//debug($lastName);
-			$userNameSimple = substr(trim($firstName[0]), 0, 1).trim($lastName[0]);
-			//debug($userNameSimple);
-			$userNameFull = '';
-			if(isset($lastName[1]) && $lastName[1] <> ''){
-				$userNameFull = $userNameSimple.substr(trim($lastName[1]), 0, 1); 
-				//debug($userNameFull);
-			}
-			
-			if($userNameFull == ''){
-				$userNameAux = $userNameSimple;
-			}else{
-				$userNameAux = $userNameFull;
-			}
-			//debug($userNameAux);
-			$userName = $userNameAux;
-			$founded = $this->AdmUser->find('count', array('conditions'=>array('AdmUser.login LIKE'=>'%'.$userNameAux.'%')));
-			//debug($founded);
-			
-			if($founded > 0){
-				$userName = $userNameAux.'_'.($founded+1);
-			}
-			
-			return $userName;
+	private function _generate_user_name($first_name, $last_name) {
+
+		$firstName = explode(' ', strtolower($first_name));
+		//debug($firstName);
+		$lastName = explode(' ', strtolower($last_name));
+		//debug($lastName);
+		$userNameSimple = substr(trim($firstName[0]), 0, 1) . trim($lastName[0]);
+		//debug($userNameSimple);
+		$userNameFull = '';
+		if (isset($lastName[1]) && $lastName[1] <> '') {
+			$userNameFull = $userNameSimple . substr(trim($lastName[1]), 0, 1);
+			//debug($userNameFull);
+		}
+
+		if ($userNameFull == '') {
+			$userNameAux = $userNameSimple;
+		} else {
+			$userNameAux = $userNameFull;
+		}
+		//debug($userNameAux);
+		$userName = $userNameAux;
+		$founded = $this->AdmUser->find('count', array('conditions' => array('AdmUser.login LIKE' => '%' . $userNameAux . '%')));
+		//debug($founded);
+
+		if ($founded > 0) {
+			$userName = $userNameAux . '_' . ($founded + 1);
+		}
+
+		return $userName;
 	}
-	
-	private function _generate_password($length=10){
+
+	private function _generate_password($length = 10) {
 		return substr(str_shuffle("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"), 0, $length);
 	}
 
 	/**
- * add method
- *
- * @return void
- */
-	public function add(){
+	 * add method
+	 *
+	 * @return void
+	 */
+	public function add() {
 		//everything is done with ajax thats why is empty
 	}
 
-	public function ajax_verify_unique_di_number(){
-		if($this->RequestHandler->isAjax()){
+	public function ajax_verify_unique_di_number() {
+		if ($this->RequestHandler->isAjax()) {
 			$diNumber = $this->request->data['diNumber'];
-			
+
 			$res = $this->AdmUser->AdmProfile->find('count', array(
-				'conditions'=>array('AdmProfile.di_number'=>$diNumber),
-				'recursive'=>-1
-				));
+				'conditions' => array('AdmProfile.di_number' => $diNumber),
+				'recursive' => -1
+			));
 			echo $res;
 		}
 	}
-	
-	public function ajax_reset_password(){
-		if($this->RequestHandler->isAjax()){
+
+	public function ajax_reset_password() {
+		if ($this->RequestHandler->isAjax()) {
 			$idUser = $this->request->data['idUser'];
 			$password = $this->_generate_password(8);
-			$this->AdmUser->save(array('id'=>$idUser, 'password'=>$password));
-			$username = $this->AdmUser->find('list', array(
-				'conditions'=>array('AdmUser.id'=>$idUser),
-				'fields'=>array('AdmUser.id', 'AdmUser.login')
-				));
-			//debug(reset($username));
-			$this->Session->write('Temp.username', reset($username));
-			$this->Session->write('Temp.password', $password);
-			echo 'success';
+//			$this->AdmUser->save(array('id'=>$idUser, 'password'=>$password));
+			$usernameArray = $this->AdmUser->find('list', array(
+				'conditions' => array('AdmUser.id' => $idUser),
+				'fields' => array('AdmUser.id', 'AdmUser.login')
+			));
+			$username = reset($usernameArray);
+			if ($this->AdmUser->fnChangePassword($idUser, $password, $username)) {
+				if ($password <> '') {
+					if ($username == $this->Session->read('User.username')) {
+						$this->Session->write('User.username', $username);
+						$this->Session->write('User.password', $this->BittionSecurity->encryptUserSessionPassword($password));
+					}
+					$this->Session->write('Temp.username', $username);
+					$this->Session->write('Temp.password', $password);
+					echo 'success';
+				}
+			}
 		}
 	}
-	
-	public function ajax_add_user_restrictions(){
-		if($this->RequestHandler->isAjax()){
+
+	public function ajax_add_user_restrictions() {
+		if ($this->RequestHandler->isAjax()) {
 			$AdmUserRestriction['adm_role_id'] = $this->request->data['roleId'];
 			$AdmUserRestriction['adm_area_id'] = $this->request->data['areaId'];
 			$AdmUserRestriction['adm_user_id'] = $this->request->data['userId'];
@@ -945,155 +966,175 @@ class AdmUsersController extends AppController {
 			$AdmUserRestriction['active'] = $this->request->data['active'];
 			$AdmUserRestriction['active_date'] = $this->request->data['activeDate'];
 			//$AdmUserRestriction['creator'] = $this->Session->read('UserRestriction.id');
-			$selected = $this->request->data['selected'];;
-			if($selected == 0){
+			$selected = $this->request->data['selected'];
+			;
+			if ($selected == 0) {
 				$AdmUserRestriction['selected'] = 0;
-			}else{
-				$this->AdmUser->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected'=>0), array('AdmUserRestriction.adm_user_id'=>$this->request->data['userId']));
+			} else {
+				$this->AdmUser->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected' => 0), array('AdmUserRestriction.adm_user_id' => $this->request->data['userId']));
 				$AdmUserRestriction['selected'] = 1;
 			}
-			 
-			if($this->AdmUser->AdmUserRestriction->save($AdmUserRestriction)){
-				echo 'success|'.$this->request->data['roleId'];
+			
+			$idUserRestriction = $this->AdmUser->AdmUserRestriction->find('list', array(
+				'fields'=>array('AdmUserRestriction.id','AdmUserRestriction.id'),
+				'conditions'=>array(
+					'AdmUserRestriction.adm_role_id'=>$AdmUserRestriction['adm_role_id'],
+					'AdmUserRestriction.adm_user_id'=>$AdmUserRestriction['adm_user_id'],
+					'AdmUserRestriction.adm_area_id'=>$AdmUserRestriction['adm_area_id']
+				),
+				'limit'=>1
+			));
+			
+			if(count($idUserRestriction) == 1){
+				$AdmUserRestriction['id'] = reset($idUserRestriction);
+				$AdmUserRestriction['lc_state'] = 'ELABORTED';
+			}
+			
+//			debug($AdmUserRestriction);
+			
+			if ($this->AdmUser->AdmUserRestriction->save($AdmUserRestriction)) {
+				echo 'success|' . $this->request->data['roleId'];
 			}
 		}
 	}
 
-	public function ajax_edit_user_restrictions(){
-		if($this->RequestHandler->isAjax()){
+	public function ajax_edit_user_restrictions() {
+		if ($this->RequestHandler->isAjax()) {
 			$AdmUserRestriction['id'] = $this->request->data['userRestrictionId'];
 			$AdmUserRestriction['adm_area_id'] = $this->request->data['areaId'];
 			$AdmUserRestriction['active'] = $this->request->data['active'];
 			$AdmUserRestriction['active_date'] = $this->request->data['activeDate'];
 			$AdmUserRestriction['modifier'] = $this->Session->read('UserRestriction.id');
 			$AdmUserRestriction['lc_transaction'] = 'MODIFY';
-			
-			$selected = $this->request->data['selected'];;
-			if($selected == 0){
+
+			$selected = $this->request->data['selected'];
+			;
+			if ($selected == 0) {
 				$AdmUserRestriction['selected'] = 0;
-			}else{
-				$this->AdmUser->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected'=>0), array('AdmUserRestriction.adm_user_id'=>$this->request->data['userId']));
+			} else {
+				$this->AdmUser->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected' => 0), array('AdmUserRestriction.adm_user_id' => $this->request->data['userId']));
 				$AdmUserRestriction['selected'] = 1;
 			}
-			
-			if($this->AdmUser->AdmUserRestriction->save($AdmUserRestriction)){
+
+			if ($this->AdmUser->AdmUserRestriction->save($AdmUserRestriction)) {
 				echo 'success';
 			}
 		}
 	}
 
-	public function ajax_add_user_profile(){
-		if($this->RequestHandler->isAjax()){
+	public function ajax_add_user_profile() {
+		if ($this->RequestHandler->isAjax()) {
 			////////////////////////////////////////////START AJAX///////////////////////////////////////////////
 			$AdmUser = array();
 			$AdmProfile = array();
-			
-			$username = $this->_generate_user_name(trim($this->request->data['txtFirstName']), str_replace(' ', '', $this->request->data['txtLastName1']).' '.str_replace(' ', '', $this->request->data['txtLastName2']));
+
+			$username = $this->_generate_user_name(trim($this->request->data['txtFirstName']), str_replace(' ', '', $this->request->data['txtLastName1']) . ' ' . str_replace(' ', '', $this->request->data['txtLastName2']));
 			$password = $this->_generate_password(8);
 			$AdmUser['login'] = $username;
 			$AdmUser['password'] = $password;
 			$AdmUser['active'] = $this->request->data['cbxActive'];
 			$AdmUser['active_date'] = $this->request->data['txtActiveDate'];
 			//$AdmUser['creator'] = $this->Session->read('UserRestriction.id');
-			
-			
+
+
 			$AdmProfile['di_number'] = $this->request->data['txtDiNumber'];
 			$AdmProfile['di_place'] = $this->request->data['txtDiPlace'];
-			$AdmProfile['first_name'] = trim($this->request->data['txtFirstName']);	
-			$AdmProfile['last_name1'] = trim($this->request->data['txtLastName1']);	
+			$AdmProfile['first_name'] = trim($this->request->data['txtFirstName']);
+			$AdmProfile['last_name1'] = trim($this->request->data['txtLastName1']);
 			$AdmProfile['last_name2'] = trim($this->request->data['txtLastName2']);
 			$AdmProfile['email'] = $this->request->data['txtEmail'];
 			$AdmProfile['job'] = $this->request->data['txtJob'];
 			$AdmProfile['birthdate'] = $this->request->data['txtBirthdate'];
 			$AdmProfile['birthplace'] = $this->request->data['txtBirthplace'];
-			if($this->request->data['txtAddress'] <> ''){
+			if ($this->request->data['txtAddress'] <> '') {
 				$AdmProfile['address'] = $this->request->data['txtAddress'];
 			}
-			if($this->request->data['txtPhone'] <> ''){
+			if ($this->request->data['txtPhone'] <> '') {
 				$AdmProfile['phone'] = $this->request->data['txtPhone'];
 			}
 			//$AdmProfile['creator'] = $this->Session->read('UserRestriction.id');
 
-			
-			$data = array('AdmUser'=>$AdmUser, 'AdmProfile'=>$AdmProfile);
-			if($this->AdmUser->saveAssociated($data)){
+
+			$data = array('AdmUser' => $AdmUser, 'AdmProfile' => $AdmProfile);
+//			if($this->AdmUser->saveAssociated($data)){
+			if ($this->AdmUser->fnAddUserProfile($data, $username, $password)) {
 				$this->Session->write('Temp.username', $username);
 				$this->Session->write('Temp.password', $password);
 				echo 'success';
 			}
-			
+
 			////////////////////////////////////////////END AJAX///////////////////////////////////////////////
 		}
 	}
-	
-	public function ajax_edit_user_profile(){
-		if($this->RequestHandler->isAjax()){
+
+	public function ajax_edit_user_profile() {
+		if ($this->RequestHandler->isAjax()) {
 			$AdmUser = array();
 			$AdmProfile = array();
 			$idUser = $this->request->data['idUser'];
-			$AdmUser['id']=$idUser;
-			$idProfile = $this->AdmUser->AdmProfile->find('list', array('conditions'=>array('AdmProfile.adm_user_id'=>$idUser)));
-			$AdmProfile['id']= key($idProfile); //get first element value
+			$AdmUser['id'] = $idUser;
+			$idProfile = $this->AdmUser->AdmProfile->find('list', array('conditions' => array('AdmProfile.adm_user_id' => $idUser)));
+			$AdmProfile['id'] = key($idProfile); //get first element value
 //			debug($AdmProfile['id']);
 			$AdmUser['active'] = $this->request->data['cbxActive'];
 			$AdmUser['active_date'] = $this->request->data['txtActiveDate'];
 			//$AdmUser['creator'] = $this->Session->read('UserRestriction.id');
-			
+
 			$AdmProfile['di_number'] = $this->request->data['txtDiNumber'];
 			$AdmProfile['di_place'] = $this->request->data['txtDiPlace'];
-			$AdmProfile['first_name'] = trim($this->request->data['txtFirstName']);	
-			$AdmProfile['last_name1'] = trim($this->request->data['txtLastName1']);	
-			$AdmProfile['last_name2'] = trim($this->request->data['txtLastName2']);	
+			$AdmProfile['first_name'] = trim($this->request->data['txtFirstName']);
+			$AdmProfile['last_name1'] = trim($this->request->data['txtLastName1']);
+			$AdmProfile['last_name2'] = trim($this->request->data['txtLastName2']);
 			$AdmProfile['email'] = $this->request->data['txtEmail'];
 			$AdmProfile['job'] = $this->request->data['txtJob'];
 			$AdmProfile['birthdate'] = $this->request->data['txtBirthdate'];
 			$AdmProfile['birthplace'] = $this->request->data['txtBirthplace'];
-			if($this->request->data['txtAddress'] <> ''){
+			if ($this->request->data['txtAddress'] <> '') {
 				$AdmProfile['address'] = $this->request->data['txtAddress'];
 			}
-			if($this->request->data['txtPhone'] <> ''){
+			if ($this->request->data['txtPhone'] <> '') {
 				$AdmProfile['phone'] = $this->request->data['txtPhone'];
 			}
 			$AdmProfile['modifier'] = $this->Session->read('UserRestriction.id');
 			$AdmProfile['lc_transaction'] = 'MODIFY';
-			
-			$cont=0;
-			if($this->AdmUser->save($AdmUser)){
+
+			$cont = 0;
+			if ($this->AdmUser->save($AdmUser)) {
 				$cont++;
 			}
-			if($this->AdmUser->AdmProfile->save($AdmProfile)){
+			if ($this->AdmUser->AdmProfile->save($AdmProfile)) {
 				$cont++;
 			}
-			if($cont == 2){
+			if ($cont == 2) {
 				echo 'success';
 			}
 		}
 	}
-	
-	public function view_user_created(){
-		if($this->Session->check('Temp.username') && $this->Session->check('Temp.password')){
+
+	public function view_user_created() {
+		if ($this->Session->check('Temp.username') && $this->Session->check('Temp.password')) {
 			$this->set('username', $this->Session->read('Temp.username'));
-			$this->set('password',$this->Session->read('Temp.password'));
+			$this->set('password', $this->Session->read('Temp.password'));
 			$this->Session->delete('Temp.username');
 			$this->Session->delete('Temp.password');
-		}else{
+		} else {
 			//throw new NotFoundException(__('Invalid post'));
-			$this->redirect(array('action'=>'add'));
+			$this->redirect(array('action' => 'add'));
 		}
 	}
 
 	/**
- * edit method
- *
- * @param string $id
- * @return void
- */
+	 * edit method
+	 *
+	 * @param string $id
+	 * @return void
+	 */
 	public function edit() {
 		$id = '';
-		if(isset($this->passedArgs['id'])){
+		if (isset($this->passedArgs['id'])) {
 			$id = $this->passedArgs['id'];
-		}else{
-			$this->redirect(array('action'=>'index'));
+		} else {
+			$this->redirect(array('action' => 'index'));
 		}
 		$this->AdmUser->id = $id;
 		if (!$this->AdmUser->exists()) {
@@ -1102,102 +1143,129 @@ class AdmUsersController extends AppController {
 		$this->request->data = $this->AdmUser->read(null, $id);
 		$this->set('data', $this->request->data);
 	}
-	
-	public function view_user_profile(){
-		$id = $this->Session->read('User.id');;
+
+	public function view_user_profile() {
+		$id = $this->Session->read('User.id');
+		;
 		$this->AdmUser->id = $id;
 		$this->request->data = $this->AdmUser->read(null, $id);
 		$this->set('data', $this->request->data);
 	}
 
 	/**
- * delete method
- *
- * @param string $id
- * @return void
- */
+	 * delete method
+	 *
+	 * @param string $id
+	 * @return void
+	 */
 	public function delete($id = null) {
 		if (!$this->request->is('post')) {
 			throw new MethodNotAllowedException();
 		}
 		//$this->AdmUser->id = $id;
 		/*
-		if (!$this->AdmUser->exists()) {
-			throw new NotFoundException(__('Invalido'));
-		}*/
+		  if (!$this->AdmUser->exists()) {
+		  throw new NotFoundException(__('Invalido'));
+		  } */
 		/*
-		if ($this->AdmUser->delete()) {
+		  if ($this->AdmUser->delete()) {
+		  $this->Session->setFlash(
+		  __('The %s deleted', __('adm user')),
+		  'alert',
+		  array(
+		  'plugin' => 'TwitterBootstrap',
+		  'class' => 'alert-success'
+		  )
+		  );
+		  $this->redirect(array('action' => 'index'));
+		  } */
+		if ($this->AdmUser->AdmUserRestriction->find('count') > 0) {
 			$this->Session->setFlash(
-				__('The %s deleted', __('adm user')),
-				'alert',
-				array(
-					'plugin' => 'TwitterBootstrap',
-					'class' => 'alert-success'
-				)
-			);
-			$this->redirect(array('action' => 'index'));
-		}*/
-		if ($this->AdmUser->AdmUserRestriction->find('count') > 0){
-			$this->Session->setFlash(
-				'No se puede eliminar este Usuario, ya que tiene Roles asignados!',
-				'alert',
-				array(
-					'plugin' => 'TwitterBootstrap',
-					'class' => 'alert-error'
-				)
+					'No se puede eliminar este Usuario, ya que tiene Roles asignados!', 'alert', array(
+				'plugin' => 'TwitterBootstrap',
+				'class' => 'alert-error'
+					)
 			);
 			$this->redirect(array('action' => 'index'));
 		}
-		
-		try{
-			$this->AdmUser->AdmProfile->deleteAll(array('AdmProfile.adm_user_id'=>$id));
-			try{
-				$this->AdmUser->deleteAll(array('AdmUser.id'=>$id));
+
+		try {
+			$this->AdmUser->AdmProfile->deleteAll(array('AdmProfile.adm_user_id' => $id));
+			try {
+				$this->AdmUser->deleteAll(array('AdmUser.id' => $id));
 				$this->Session->setFlash(
-				'Eliminado con exito!',
-				'alert',
-				array(
+						'Eliminado con exito!', 'alert', array(
 					'plugin' => 'TwitterBootstrap',
 					'class' => 'alert-success'
-				)
+						)
 				);
 				$this->redirect(array('action' => 'index'));
-			}catch(Exception $e){
+			} catch (Exception $e) {
 				$this->Session->setFlash(
-				'Ocurrio un problema, vuelva a intentarlo',
-				'alert',
-				array(
+						'Ocurrio un problema, vuelva a intentarlo', 'alert', array(
 					'plugin' => 'TwitterBootstrap',
 					'class' => 'alert-error'
-				)
+						)
 				);
 				$this->redirect(array('action' => 'index'));
 			}
-		}catch(Exception $e){
+		} catch (Exception $e) {
 			$this->Session->setFlash(
-			'Ocurrio un problema, vuelva a intentarlo',
-			'alert',
-			array(
+					'Ocurrio un problema, vuelva a intentarlo', 'alert', array(
 				'plugin' => 'TwitterBootstrap',
 				'class' => 'alert-error'
-			)
+					)
 			);
 			$this->redirect(array('action' => 'index'));
 		}
-		
-		
+
+
 		/*
-		$this->Session->setFlash(
-			__('The %s was not deleted', __('adm user')),
-			'alert',
-			array(
-				'plugin' => 'TwitterBootstrap',
-				'class' => 'alert-error'
-			)
-		);
-		$this->redirect(array('action' => 'index'));
+		  $this->Session->setFlash(
+		  __('The %s was not deleted', __('adm user')),
+		  'alert',
+		  array(
+		  'plugin' => 'TwitterBootstrap',
+		  'class' => 'alert-error'
+		  )
+		  );
+		  $this->redirect(array('action' => 'index'));
 		 * 
 		 */
 	}
+
+	public function delete_user_restriction($idUserRestriction = null, $idUser = null) {
+		if (!$this->request->is('post')) {
+			throw new MethodNotAllowedException();
+		}
+		$this->AdmUser->AdmUserRestriction->id = $idUserRestriction;
+		if (!$this->AdmUser->AdmUserRestriction->exists()) {
+			throw new NotFoundException(__('Invalido %s', __('rol usuario')));
+		}
+		$data = array();
+		if ($this->request->is('post') || $this->request->is('put')) {
+			$data['AdmUserRestriction']['lc_state']='LOGIC_DELETED';
+			if($this->AdmUser->AdmUserRestriction->save($data)){
+				$this->Session->setFlash(
+						'Eliminado con exito!', 'alert', array(
+					'plugin' => 'TwitterBootstrap',
+					'class' => 'alert-success'
+						)
+				);
+				$this->redirect(array('action' => 'index_user_restriction', $idUser));
+			}else{
+				$this->Session->setFlash(
+					'Ocurrio un problema, vuelva a intentarlo', 'alert', array(
+				'plugin' => 'TwitterBootstrap',
+				'class' => 'alert-error'
+					)
+				);
+				$this->redirect(array('action' => 'index_user_restriction', $idUser));
+			}
+		}
+		
+	}
+
+//END Class	
 }
 

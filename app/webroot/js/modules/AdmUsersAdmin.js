@@ -26,7 +26,7 @@ $(document).ready(function(){
 
 $.validator.addMethod('diNumberUnique', function(value,element){
 	if($('#txtDiNumberHidden').length > 0){
-		if($('#txtDiNumberHidden').val() == value){
+		if($('#txtDiNumberHidden').val() === value){
 			return true;
 		}
 	}
@@ -46,7 +46,7 @@ $.validator.addMethod('diNumberUnique', function(value,element){
 			$('#txtDiNumber').val('');
 		}
 	});
-	if (response == '0'){
+	if (response === '0'){
 		return true;
 	}else{
 		return false;
@@ -279,11 +279,11 @@ $.validator.addMethod('diNumberUnique', function(value,element){
 			  },
 			 // beforeSend:function(data){alert('sdhfjdshk')},
 			success: function(data){			
-				if(data == 'success'){
+				if(data === 'success'){
 					$.gritter.add({
 						title:	'EXITO!',
 						text: 'Usuario creado',
-						sticky: true,
+						sticky: false,
 						image:'/imexport/img/check.png'
 					});	
 						$('input').val('');
@@ -333,7 +333,7 @@ $.validator.addMethod('diNumberUnique', function(value,element){
 			  },
 			 // beforeSend:function(data){alert('sdhfjdshk')},
 			success: function(data){
-				if(data == 'success'){
+				if(data === 'success'){
 					$.gritter.add({
 						title:	'EXITO!',
 						text: 'Cambios guardados',
@@ -369,7 +369,7 @@ $.validator.addMethod('diNumberUnique', function(value,element){
 					idUser:$('#txtIdHidden').val()
 			  },
 			success: function(data){
-				if(data=='success'){
+				if(data === 'success'){
 					$.gritter.add({
 						title:	'EXITO!',
 						text: 'Contraseña reseteada',
@@ -413,7 +413,7 @@ $.validator.addMethod('diNumberUnique', function(value,element){
 			  },
 			success: function(data){			
 				var arrayCatch = data.split('|');
-					if(arrayCatch[0] == 'success'){
+					if(arrayCatch[0] === 'success'){
 						$.gritter.add({
 						title:	'EXITO!',
 						text: 'Rol adicionado al Usuario',
@@ -421,7 +421,7 @@ $.validator.addMethod('diNumberUnique', function(value,element){
 						image:'/imexport/img/check.png'
 					});	
 				$('#cbxRoles option[value='+arrayCatch[1]+']').remove();
-				$('input').val('');
+				$('input[type=text]').val('');
 				}else{
 					$.gritter.add({
 					title:	'OCURRIO UN PROBLEMA!',
@@ -456,7 +456,7 @@ $.validator.addMethod('diNumberUnique', function(value,element){
 					,userId:$('#txtUserIdHidden').val()
 			  },
 			success: function(data){			
-					if(data == 'success'){
+					if(data === 'success'){
 						$.gritter.add({
 						title:	'EXITO!',
 						text: 'Cambios Guardados',

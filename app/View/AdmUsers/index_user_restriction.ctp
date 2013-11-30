@@ -63,6 +63,7 @@ echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' =>
 					//$parameters['id']=$admUser['AdmUser']['id'];
 					$parameters['idUserRestriction']=$admUser['AdmUserRestriction']['id'];
 					echo $this->Html->link('<i class="icon-pencil icon-white"></i>'.__(''),  array_merge($url,$parameters), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Editar')); 
+					echo ' '.$this->Form->postLink('<i class="icon-trash icon-white"></i>', array('action' => 'delete_user_restriction', $admUser['AdmUserRestriction']['id'], $userId), array('class'=>'btn btn-danger', 'escape'=>false, 'title'=>'Eliminar'), __('¿Esta seguro de eliminar este rol de usuario?', $admUser['AdmUserRestriction']['id']));
 					?>
 				</td>
 			</tr>
