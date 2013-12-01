@@ -126,11 +126,11 @@ class AdmUser extends AppModel {
 			return false;
 		}
 			
-		if(!$this->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected'=>0), array('AdmUserRestriction.adm_user_id'=>$idUser))){
+		if(!$this->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected'=>0, 'AdmUserRestriction.lc_transaction'=>"'MODIFY'"), array('AdmUserRestriction.adm_user_id'=>$idUser))){
 			$dataSource->rollback();
 			return false;
 		}
-		if(!$this->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected'=>1), array('AdmUserRestriction.id'=>$idUserRestrictionSelected))){
+		if(!$this->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected'=>1, 'AdmUserRestriction.lc_transaction'=>"'MODIFY'"), array('AdmUserRestriction.id'=>$idUserRestrictionSelected))){
 			$dataSource->rollback();
 			return false;
 		}
@@ -186,7 +186,7 @@ class AdmUser extends AppModel {
 			$dataSource->rollback();
 			return false;
 		}
-		$sql = "GRANT grupal to ".$username.";";
+		$sql = "GRANT group_average_users to ".$username.";";
 		try{
 			$this->query($sql);	
 		}catch(Exception $e){

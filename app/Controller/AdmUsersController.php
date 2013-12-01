@@ -248,7 +248,6 @@ class AdmUsersController extends AppController {
 			$this->redirect(array('controller' => 'Pages', 'action' => 'ie_denied'));
 		}
 
-		//if is not, then go on
 		$this->layout = 'login';
 		if ($this->request->is('post')) {
 			if ($this->Auth->login()) { //If authentication is valid username and password
@@ -259,31 +258,32 @@ class AdmUsersController extends AppController {
 				$role = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'])));
 				$roleActive = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.active' => 1, 'AdmUserRestriction.selected' => 1)));
 				$roleActiveDate = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.active_date > now()', 'AdmUserRestriction.selected' => 1)));
-				;
-				$error = 0;
 				$userPassword = $this->request->data['AdmUser']['password'];
 
 				//User active
 				if ($active != 1) {
 					$this->_createMessage('El usuario esta inactivo');
-					$error++;
+//					$error++;
 					$this->redirect($this->Auth->logout());
 				}
 
 				//User date active
 				if ($activeDate == 0) {
 					$this->_createMessage('El usuario expiró');
-					$error++;
+//					$error++;
 					$this->redirect($this->Auth->logout());
 				}
 
 				//Roles Validation
 				if ($role == 0) {//No roles found
 					$this->_createMessage('El usuario no tiene ningun rol asignado');
-					$error++;
+//					$error++;
 					$this->redirect($this->Auth->logout());
 				} else {
+					////////////////////////////////////////////////////////////////////////////////////////////////
 					if ($roleActive == 0 OR $roleActiveDate == 0) {
+////							$this->_createMessage('aqui esta fallando la vaina');
+////							$this->redirect($this->Auth->logout());
 						$otherRoles = $this->AdmUser->AdmUserRestriction->find('all', array(
 							'conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'],
 								'AdmUserRestriction.active_date > now()',
@@ -291,40 +291,17 @@ class AdmUsersController extends AppController {
 							'fields' => array('AdmUser.id', 'AdmUser.login', 'AdmRole.name', 'AdmUserRestriction.period', 'AdmUserRestriction.id'),
 							'order' => array('AdmUserRestriction.adm_role_id', 'AdmUserRestriction.period')
 						));
-						if (count($otherRoles) > 0) {
-							$roleInactive = $this->AdmUser->AdmUserRestriction->find('all', array(
-								'conditions' => array('AdmUserRestriction.selected' => 1, 'AdmUserRestriction.adm_user_id' => $userInfo['id']),
-								'fields' => array('AdmRole.name', 'AdmUserRestriction.period')
-							));
-							if (count($roleInactive) > 0) {//if there is one role selected
-								$this->Session->write('RoleInactive.name', $roleInactive[0]['AdmRole']['name']);
-								$this->Session->write('PeriodInactive.name', $roleInactive[0]['AdmUserRestriction']['period']);
-								$this->Session->write('User.chooserole', $otherRoles);
-								$error++;
-								$this->redirect(array('action' => 'choose_role'));
-							} else {
-								$this->_createMessage('No hay ningun rol asignado a esta cuenta');
-								$error++;
-								$this->redirect($this->Auth->logout());
-							}
-						}
-						if ($roleActive == 0) {
-							$this->_createMessage('El rol del usuario esta inactivo');
-							$error++;
+						if (count($otherRoles) == 0) {
+							$this->_createMessage('El usuario no tiene ningun rol activo');
 							$this->redirect($this->Auth->logout());
 						}
-						if ($roleActiveDate == 0) {
-							$this->_createMessage('El rol del usuario expiró');
-							$error++;
-							$this->redirect($this->Auth->logout());
-						}
+
 					}
+					////////////////////////////////////////////////////////////////////////////////////////////////
 				}
 				///////////////////////////////////////////////END OF VALIDATION////////////////////////////////////////////////////
 				//////////////////////////////////////////////START - LOGIN /////////////////////////////////////////////////////////
-				if ($error == 0) {//if there is no error
-					$this->_createUserAccountSession($userInfo['id'], 'login', $userPassword);
-				}
+				$this->_createUserAccountSession($userInfo['id'], 'login', $userPassword);
 				//////////////////////////////////////////////END - LOGIN /////////////////////////////////////////////////////////		
 			} else {
 				$this->_createMessage('Usuario o contraseña incorrecta, intente de nuevo');
@@ -332,6 +309,8 @@ class AdmUsersController extends AppController {
 		}
 	}
 
+	
+	
 	private function _createUserAccountSession($userId, $tipo, $userPassword = null) {
 		////////Fill of sessions distinct to auth component users table
 
@@ -362,7 +341,9 @@ class AdmUsersController extends AppController {
 			$userPasswordEncrypted = $this->BittionSecurity->encryptUserSessionPassword($userPassword);
 			$this->Session->write('User.password', $userPasswordEncrypted);
 		}
-
+		
+		$this->Session->write('currentRoleActive', 'yes');
+		
 		$this->Session->write('UserRestriction.id', $infoRole[0]['AdmUserRestriction']['id']);  //in case there is no trigger postgres user integration, it will help
 		$this->Session->write('User.username', $infoRole[0]['AdmUser']['login']);
 		$this->Session->write('User.id', $userId);
@@ -384,6 +365,9 @@ class AdmUsersController extends AppController {
 				'AdmUserRestriction.adm_user_id' => $userId,
 				'AdmUserRestriction.adm_role_id' => $infoRole[0]['AdmRole']['id'],
 				'AdmUserRestriction.period !=' => $infoRole[0]['AdmUserRestriction']['period'],
+				'AdmUserRestriction.selected' => 0,
+				'AdmUserRestriction.active' => 1,
+				'AdmUserRestriction.active_date > now()',
 			)
 		));
 
@@ -533,7 +517,7 @@ class AdmUsersController extends AppController {
 
 	private function _selectOtherRole($userRestrictionId, $userId) {
 		try {
-			$this->AdmUser->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected' => 0), array('AdmUserRestriction.adm_user_id' => $userId));
+			$this->AdmUser->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected' => 0, 'AdmUserRestriction.lc_transaction'=>"'MODIFY'"), array('AdmUserRestriction.adm_user_id' => $userId));
 			try {
 				$this->AdmUser->AdmUserRestriction->save(array('id' => $userRestrictionId, 'selected' => 1));
 				try {
@@ -971,7 +955,7 @@ class AdmUsersController extends AppController {
 			if ($selected == 0) {
 				$AdmUserRestriction['selected'] = 0;
 			} else {
-				$this->AdmUser->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected' => 0), array('AdmUserRestriction.adm_user_id' => $this->request->data['userId']));
+				$this->AdmUser->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected' => 0, 'AdmUserRestriction.lc_transaction'=>"'MODIFY'"), array('AdmUserRestriction.adm_user_id' => $this->request->data['userId']));
 				$AdmUserRestriction['selected'] = 1;
 			}
 			
@@ -1012,7 +996,7 @@ class AdmUsersController extends AppController {
 			if ($selected == 0) {
 				$AdmUserRestriction['selected'] = 0;
 			} else {
-				$this->AdmUser->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected' => 0), array('AdmUserRestriction.adm_user_id' => $this->request->data['userId']));
+				$this->AdmUser->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected' => 0, 'AdmUserRestriction.lc_transaction'=>"'MODIFY'"), array('AdmUserRestriction.adm_user_id' => $this->request->data['userId']));
 				$AdmUserRestriction['selected'] = 1;
 			}
 

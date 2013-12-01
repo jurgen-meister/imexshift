@@ -2616,7 +2616,7 @@ class SalSalesController extends AppController {
 			$purchaseId = $this->request->data['purchaseId'];
 			$type = $this->request->data['type'];	
 			$genCode = $this->request->data['genCode'];
-				if($this->SalSale->updateAll(array('SalSale.lc_state'=>"'$type'"), array('SalSale.id'=>$purchaseId)) 
+				if($this->SalSale->updateAll(array('SalSale.lc_state'=>"'$type'", 'SalSale.lc_transaction'=>"'MODIFY'"), array('SalSale.id'=>$purchaseId)) 
 						){
 					echo 'success';
 				}
@@ -3177,9 +3177,9 @@ class SalSalesController extends AppController {
 			$genCode = $this->request->data['genCode'];
 			$purchaseId2 = $this->_get_doc_id($purchaseId, $genCode, null, null);
 
-				if($this->SalSale->updateAll(array('SalSale.lc_state'=>"'$type'"), array('SalSale.id'=>$purchaseId)) 
+				if($this->SalSale->updateAll(array('SalSale.lc_state'=>"'$type'", 'SalSale.lc_transaction'=>"'MODIFY'"), array('SalSale.id'=>$purchaseId)) 
 						){
-					if($this->SalSale->updateAll(array('SalSale.lc_state'=>"'SINVOICE_CANCELLED'"), array('SalSale.id'=>$purchaseId2)) 
+					if($this->SalSale->updateAll(array('SalSale.lc_state'=>"'SINVOICE_CANCELLED'", 'SalSale.lc_transaction'=>"'MODIFY'"), array('SalSale.id'=>$purchaseId2)) 
 						){
 					echo 'success';
 				}

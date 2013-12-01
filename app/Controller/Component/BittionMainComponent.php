@@ -32,18 +32,12 @@ class BittionMainComponent extends Component {
 			ConnectionManager::create('default', $config);
 			return true;
 		}catch(Exception $e){//fail
+//			debug($e);
 			return false;
 		}
 		
 	}
-	
-	public function fnCreateMessage($message, $key = 'error'){
-		$this->Session->setFlash('<strong>'.$message.'</strong>',
-								 'alert',
-								 array('plugin' => 'TwitterBootstrap','class' => 'alert-'.$key)
-		);
-	}
-	
+
 	
 }
 

@@ -125,7 +125,9 @@
 	<!-- MENU -->
 	<div id="sidebar">
 		<!--<a href="#" class="visible-phone"><i class="icon icon-home"></i> Dashboard</a>-->
-		<?php echo $this->Session->read('Menu');?>
+		<?php
+		if($this->Session->read('currentRoleActive')=='yes')echo $this->Session->read('Menu');
+		?>
 		
 	</div>
 	<div id="content">
@@ -144,11 +146,12 @@
 					</div>
 				<?php }
 				echo $this->Session->flash();  //to show setFlash messages
+				echo $this->Session->flash('flash_check_active');
 				///////////////////////// END - Message not authorized, when there is no permission////////////
 				?>	
 				
 				<!-- ////////////////////////// START - VIEWS CONTENT(CORE) //////////////////-->
-				<?php echo $this->fetch('content'); ?>			
+				<?php if($this->Session->read('currentRoleActive')=='yes')echo $this->fetch('content'); ?>			
 				<!-- ////////////////////////// END - VIEWS CONTENT(CORE) //////////////////-->
 				
 				

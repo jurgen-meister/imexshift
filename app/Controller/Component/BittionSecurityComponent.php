@@ -58,8 +58,41 @@ class BittionSecurityComponent extends Component{
 		}
 		return false;
 	}
-	
-	
+//"(SUM(CASE WHEN \"InvMovementType\".\"status\" = 'entrada' AND \"InvMovement\".\"lc_state\" = 'APPROVED' THEN \"InvMovementDetail\".\"quantity\" ELSE 0 END))-
+	public function liveCheckUserRoleActive($idUserRestriction){
+//		$this->loadModel('AdmUser');
+		$this->AdmUser = ClassRegistry::init('AdmUser');
+		$checkActive = $this->AdmUser->AdmUserRestriction->find('all', array(
+			'conditions' => array(
+				'AdmUserRestriction.id' => $idUserRestriction,
+//				'AdmUser.active' => 1,
+//				'AdmUser.active_date > now()',
+//				'AdmUserRestriction.active' => 1,
+//				'AdmUserRestriction.active_date > now()',
+//				'AdmUserRestriction.selected' => 1
+			),
+			'fields' => array(
+//				'AdmUserRestriction.id'
+				 'AdmUser.active'
+				, '(CASE WHEN "AdmUser"."active_date" > now() THEN 1 ELSE 0 END) as user_active_date'
+				, 'AdmUserRestriction.active'
+				, '(CASE WHEN "AdmUserRestriction"."active_date" > now() THEN 1 ELSE 0 END) as "restriction_active_date"'
+				, 'AdmUserRestriction.selected'
+			),
+//			'order' => array('AdmUserRestriction.adm_role_id', 'AdmUserRestriction.period')
+		));
+
+//		debug($checkActive);
+		
+		if(count($checkActive) == 0) return 'empty';
+		if($checkActive[0]['AdmUser']['active'] <> 1)return 'user inactive'; 
+		if($checkActive[0]['AdmUserRestriction']['active'] <> 1)return 'role inactive';
+		if($checkActive[0][0]['user_active_date'] <> 1)return 'user expired';
+		if($checkActive[0][0]['restriction_active_date'] <> 1)return 'role expired';
+		if($checkActive[0]['AdmUserRestriction']['selected'] <> 1)return 'unselected';
+		
+		return '';
+	}
 //END CLASS	
 }
 ?>

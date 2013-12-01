@@ -1788,7 +1788,7 @@ class InvMovementsController extends AppController {
 				$conditions = array('InvMovement.code'=>$code);
 			}
 			
-			if($this->InvMovement->updateAll(array('InvMovement.lc_state'=>"'LOGIC_DELETED'"), $conditions)){
+			if($this->InvMovement->updateAll(array('InvMovement.lc_state'=>"'LOGIC_DELETED'", 'InvMovement.lc_transaction'=>"'MODIFY'"), $conditions)){
 				echo 'success';
 			}
 		}

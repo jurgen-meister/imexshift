@@ -65,54 +65,64 @@ class AppController extends Controller {
 	);
 
 	public function beforeFilter() {
-//			$this->set('logged_in', $this->Auth->loggedIn());
-		//Some servers have issues with cakephp session component and give error session.auto_start, so this is a backup
-		if (!isset($_SESSION))session_start(); //If session didn't start, then start it
-//		debug($this->name . $this->action);
-//			debug('hola');
-//		App::uses('ConnectionManager', 'Model');
-//		$dataSource = ConnectionManager::getDataSource('default');
-//		$login = $dataSource->config['login'];
-//		$password = $dataSource->config['password'];
-		
 
-		
+		if (!isset($_SESSION))session_start(); //If session didn't start, then start it
+
 		if($this->name == 'AdmUsers' && $this->action == 'login'){
 			//nothing
 		}else{
-//					$config = array(
-//			'datasource' => 'Database/Postgres',
-//			'persistent' => false,
-//			'host' => 'localhost',
-////			'login' => 'icassia',
-////			'password' => 'cualquier',
-//			'login' => $login,
-//			'password' => $password,
-//			'database' => 'imexport',
-//			'prefix' => '',
-//			'schema' => 'public'
-//				//'encoding' => 'utf8',
-//		);
-//			ConnectionManager::create('default', $config);
+			//[1]///////////////////////////Connects dynamically to the DB/////////////////////////////////
 			$login = $this->Session->read('User.username');
 			$password =  $this->Session->read('User.password');
 			$passwordDecrypted = $this->BittionSecurity->decryptUserSessionPassword($password);
 			if(!$this->BittionMain->connectDatabaseDynamically($login, $passwordDecrypted)){
-//				$this->BittionMain->fnCreateMessage('Error!, fallo la conexión a la base de datos.');
-//				App::uses('ConnectionManager', 'Model');
-//				ConnectionManager::create('default');
-//				debug('se tiro');
 				$message = "Error!";
 				$key='error';
 				$this->Session->setFlash('<strong>'.$message.'</strong> fallo la conexión a la base de datos.',
 								 'alert',
 								 array('plugin' => 'TwitterBootstrap','class' => 'alert-'.$key)
-		);
+				);
 				$this->redirect(array('controller'=>'AdmUsers','action'=>'login'));
 			}
+			
+			//[2]////////////////////////////////Checks live if user/role is active
+			$userRestrictionId = $this->Session->read('UserRestriction.id');
+			$checkUserRoleActive = $this->BittionSecurity->liveCheckUserRoleActive($userRestrictionId);
+			if($checkUserRoleActive <> ''){
+//				debug($checkUserRoleActive);
+//				debug($this->Session->read('currentRoleActive'));
+//				$redirect = $this->Auth->logout();
+				$flashMessageName = 'flash_check_active';
+				if($checkUserRoleActive == 'role inactive'){
+					$message = 'El rol esta inactivo';
+					$this->Session->write('currentRoleActive', $checkUserRoleActive);
+					$this->Session->setFlash('<strong>' . $message . '</strong>', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-error'), $flashMessageName);
+				}elseif($checkUserRoleActive == 'role expired'){
+					$message = '<strong>El rol expiró!</strong>';
+					$this->Session->write('currentRoleActive', $checkUserRoleActive);
+					$this->Session->setFlash('' . $message . '', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-error'), $flashMessageName);
+				}elseif($checkUserRoleActive == 'unselected'){
+					$message = 'Se cambio de rol principal';
+					$this->Session->write('currentRoleActive', $checkUserRoleActive);
+					$this->Session->setFlash('<strong>' . $message . '</strong>', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-error'), $flashMessageName);
+				}elseif($checkUserRoleActive == 'user inactive'){
+					$message = 'El usuario fue desactivado';
+					$this->Session->setFlash('<strong>' . $message . '</strong>', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-error'));
+					$this->redirect($this->Auth->logout());
+				}elseif($checkUserRoleActive == 'user expired'){
+					$message = 'El usuario expiró';
+					$this->Session->setFlash('<strong>' . $message . '</strong>', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-error'));
+					$this->redirect($this->Auth->logout());
+				}
+				
+//				$this->redirect($redirect);
+			}else{
+//				CakeSession::delete('Message.flash_check_active'); //also works to clear flash message
+				$this->Session->delete('Message.flash_check_active');
+			}
+			
 		}
-		
-//		debug( $dataSource->config['password']);
+
 	}
 
 	public function isAuthorized($user) {
