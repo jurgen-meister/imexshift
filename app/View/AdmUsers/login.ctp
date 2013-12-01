@@ -33,7 +33,7 @@
 			?>	
 		</span>
 		<span class="pull-right">
-			<?php echo $this->Form->submit('Entrar',array (
+			<?php echo $this->Form->submit('Iniciar Sesión',array (
 															//'div' => false,
 															'class' => 'btn btn-inverse'
 															));?>

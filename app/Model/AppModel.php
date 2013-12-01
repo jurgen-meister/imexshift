@@ -33,8 +33,10 @@ App::uses('Model', 'Model');
 class AppModel extends Model {
 	
 	public function beforeSave(){
-		if($this->id OR isset($this->data[$this->name]['id'])){
-			$this->data[$this->name]['lc_transaction']='MODIFY';//in model there is no request->data ONLY data ;)
+		if($this->id OR isset($this->data[$this->name]['id'])){//for triggers update
+			if (!isset($this->data[$this->name]['lc_transaction'])) {
+				$this->data[$this->name]['lc_transaction']='MODIFY';//in model there is no request->data ONLY data ;)
+			}
 		}
         return true;
 	}

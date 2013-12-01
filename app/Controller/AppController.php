@@ -89,40 +89,38 @@ class AppController extends Controller {
 			$userRestrictionId = $this->Session->read('UserRestriction.id');
 			$checkUserRoleActive = $this->BittionSecurity->liveCheckUserRoleActive($userRestrictionId);
 			if($checkUserRoleActive <> ''){
-//				debug($checkUserRoleActive);
-//				debug($this->Session->read('currentRoleActive'));
-//				$redirect = $this->Auth->logout();
 				$flashMessageName = 'flash_check_active';
 				if($checkUserRoleActive == 'role inactive'){
-					$message = 'El rol esta inactivo';
+					$message = 'El rol fue desactivado!';
 					$this->Session->write('currentRoleActive', $checkUserRoleActive);
 					$this->Session->setFlash('<strong>' . $message . '</strong>', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-error'), $flashMessageName);
 				}elseif($checkUserRoleActive == 'role expired'){
-					$message = '<strong>El rol expiró!</strong>';
-					$this->Session->write('currentRoleActive', $checkUserRoleActive);
-					$this->Session->setFlash('' . $message . '', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-error'), $flashMessageName);
-				}elseif($checkUserRoleActive == 'unselected'){
-					$message = 'Se cambio de rol principal';
+					$message = 'El tiempo de duración del rol terminó!';
 					$this->Session->write('currentRoleActive', $checkUserRoleActive);
 					$this->Session->setFlash('<strong>' . $message . '</strong>', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-error'), $flashMessageName);
+				}elseif($checkUserRoleActive == 'unselected'){
+					$message = 'Se cambio de rol principal! Vuelva a iniciar sessión.';
+					$this->Session->setFlash('<strong>' . $message . '</strong>', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-error'));
+					$this->redirect($this->Auth->logout());
 				}elseif($checkUserRoleActive == 'user inactive'){
-					$message = 'El usuario fue desactivado';
+					$message = 'El usuario fue desactivado!';
 					$this->Session->setFlash('<strong>' . $message . '</strong>', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-error'));
 					$this->redirect($this->Auth->logout());
 				}elseif($checkUserRoleActive == 'user expired'){
-					$message = 'El usuario expiró';
+					$message = 'El tiempo de duración del usuario terminó!';
 					$this->Session->setFlash('<strong>' . $message . '</strong>', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-error'));
 					$this->redirect($this->Auth->logout());
 				}
-				
-//				$this->redirect($redirect);
 			}else{
 //				CakeSession::delete('Message.flash_check_active'); //also works to clear flash message
+				if($this->Session->read('currentRoleActive') <> 'yes'){
+					$this->Session->write('currentRoleActive', 'yes');
+				}
 				$this->Session->delete('Message.flash_check_active');
 			}
 			
 		}
-
+	//End Before Filter
 	}
 
 	public function isAuthorized($user) {

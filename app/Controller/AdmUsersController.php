@@ -214,7 +214,7 @@ class AdmUsersController extends AppController {
 			),
 			'recursive' => 0,
 			//'fields'=>array('InvMovement.id', 'InvMovement.code', 'InvMovement.document_code', 'InvMovement.date','InvMovement.inv_movement_type_id','InvMovementType.name', 'InvMovement.inv_warehouse_id', 'InvWarehouse.name', 'InvMovement.lc_state'),
-			'order' => array('AdmUserRestriction.period' => 'desc'),
+			'order' => array('AdmUserRestriction.period' => 'desc', 'AdmUserRestriction.active'=>'desc' ,'AdmRole.name'=>'asc'),
 			'limit' => 15,
 		);
 		//debug($this->paginate('AdmUserRestriction'));
@@ -230,6 +230,7 @@ class AdmUsersController extends AppController {
 		$this->set('admUsers', $array);
 	}
 
+	
 	private function _paintUserRestrictionActiveDateField($array) {
 		for ($i = 0; $i < count($array); $i++) {
 			$res = $this->AdmUser->AdmUserRestriction->find('count', array(
@@ -254,10 +255,10 @@ class AdmUsersController extends AppController {
 				/////////////////////////////////////////////BEGIN OF VALIDATION///////////////////////////////////////////////////
 				$userInfo = $this->Auth->user();
 				$active = $userInfo['active'];
-				$activeDate = $this->AdmUser->find('count', array('conditions' => array('AdmUser.active_date > now()', 'AdmUser.id' => $userInfo['id']))); //The DB does the comparition between dates, it's simpler than creating a php function for this
-				$role = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'])));
-				$roleActive = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.active' => 1, 'AdmUserRestriction.selected' => 1)));
-				$roleActiveDate = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.active_date > now()', 'AdmUserRestriction.selected' => 1)));
+				
+				
+				
+				
 				$userPassword = $this->request->data['AdmUser']['password'];
 
 				//User active
@@ -268,22 +269,31 @@ class AdmUsersController extends AppController {
 				}
 
 				//User date active
+				$activeDate = $this->AdmUser->find('count', array('conditions' => array('AdmUser.active_date > now()', 'AdmUser.id' => $userInfo['id']))); //The DB does the comparition between dates, it's simpler than creating a php function for this
 				if ($activeDate == 0) {
-					$this->_createMessage('El usuario expiró');
+					$this->_createMessage('El tiempo de duración del usuario acabó!.');
 //					$error++;
 					$this->redirect($this->Auth->logout());
 				}
 
 				//Roles Validation
+				$role = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'])));
 				if ($role == 0) {//No roles found
 					$this->_createMessage('El usuario no tiene ningun rol asignado');
 //					$error++;
 					$this->redirect($this->Auth->logout());
 				} else {
+					$roleSelected = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.selected' => 1)));
+					if($roleSelected == 0){
+						$this->_createMessage('El usuario no tiene ningun rol principal seleccionado');
+						$this->redirect($this->Auth->logout());
+					}
+					
 					////////////////////////////////////////////////////////////////////////////////////////////////
+						$roleActive = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.active' => 1, 'AdmUserRestriction.selected' => 1)));
+						$roleActiveDate = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.active_date > now()', 'AdmUserRestriction.selected' => 1)));
 					if ($roleActive == 0 OR $roleActiveDate == 0) {
-////							$this->_createMessage('aqui esta fallando la vaina');
-////							$this->redirect($this->Auth->logout());
+						
 						$otherRoles = $this->AdmUser->AdmUserRestriction->find('all', array(
 							'conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'],
 								'AdmUserRestriction.active_date > now()',
@@ -949,34 +959,11 @@ class AdmUsersController extends AppController {
 			$AdmUserRestriction['period'] = $this->request->data['period'];
 			$AdmUserRestriction['active'] = $this->request->data['active'];
 			$AdmUserRestriction['active_date'] = $this->request->data['activeDate'];
-			//$AdmUserRestriction['creator'] = $this->Session->read('UserRestriction.id');
-			$selected = $this->request->data['selected'];
-			;
-			if ($selected == 0) {
-				$AdmUserRestriction['selected'] = 0;
-			} else {
-				$this->AdmUser->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected' => 0, 'AdmUserRestriction.lc_transaction'=>"'MODIFY'"), array('AdmUserRestriction.adm_user_id' => $this->request->data['userId']));
-				$AdmUserRestriction['selected'] = 1;
-			}
+			$AdmUserRestriction['selected'] = 0;
 			
-			$idUserRestriction = $this->AdmUser->AdmUserRestriction->find('list', array(
-				'fields'=>array('AdmUserRestriction.id','AdmUserRestriction.id'),
-				'conditions'=>array(
-					'AdmUserRestriction.adm_role_id'=>$AdmUserRestriction['adm_role_id'],
-					'AdmUserRestriction.adm_user_id'=>$AdmUserRestriction['adm_user_id'],
-					'AdmUserRestriction.adm_area_id'=>$AdmUserRestriction['adm_area_id']
-				),
-				'limit'=>1
-			));
+			if(isset($this->request->data['selected']))$AdmUserRestriction['selected'] = $this->request->data['selected'];
 			
-			if(count($idUserRestriction) == 1){
-				$AdmUserRestriction['id'] = reset($idUserRestriction);
-				$AdmUserRestriction['lc_state'] = 'ELABORTED';
-			}
-			
-//			debug($AdmUserRestriction);
-			
-			if ($this->AdmUser->AdmUserRestriction->save($AdmUserRestriction)) {
+			if ($this->AdmUser->fnSaveUserRestriction($AdmUserRestriction)) {
 				echo 'success|' . $this->request->data['roleId'];
 			}
 		}
@@ -984,23 +971,26 @@ class AdmUsersController extends AppController {
 
 	public function ajax_edit_user_restrictions() {
 		if ($this->RequestHandler->isAjax()) {
+			$ownUserRestriction = 'no';
+			
 			$AdmUserRestriction['id'] = $this->request->data['userRestrictionId'];
 			$AdmUserRestriction['adm_area_id'] = $this->request->data['areaId'];
-			$AdmUserRestriction['active'] = $this->request->data['active'];
-			$AdmUserRestriction['active_date'] = $this->request->data['activeDate'];
-			$AdmUserRestriction['modifier'] = $this->Session->read('UserRestriction.id');
-			$AdmUserRestriction['lc_transaction'] = 'MODIFY';
-
-			$selected = $this->request->data['selected'];
-			;
-			if ($selected == 0) {
-				$AdmUserRestriction['selected'] = 0;
-			} else {
-				$this->AdmUser->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected' => 0, 'AdmUserRestriction.lc_transaction'=>"'MODIFY'"), array('AdmUserRestriction.adm_user_id' => $this->request->data['userId']));
-				$AdmUserRestriction['selected'] = 1;
+			$AdmUserRestriction['adm_user_id'] = $this->request->data['userId'];
+			
+			if(isset($this->request->data['active'])){
+				$AdmUserRestriction['active'] = $this->request->data['active'];
 			}
-
-			if ($this->AdmUser->AdmUserRestriction->save($AdmUserRestriction)) {
+			
+			if(isset($this->request->data['activeDate'])){
+				$AdmUserRestriction['active_date'] = $this->request->data['activeDate'];
+			}
+			
+			if(isset($this->request->data['selected'])){
+				$AdmUserRestriction['selected'] = $this->request->data['selected'];
+				$ownUserRestriction = 'yes';
+			}
+			
+			if ($this->AdmUser->fnSaveUserRestriction($AdmUserRestriction, $ownUserRestriction)) {
 				echo 'success';
 			}
 		}

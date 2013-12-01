@@ -34,7 +34,7 @@
 				echo '</div>';
 				?>
 		<div class="form-actions" style="text-align: center">
-				<?php echo $this->BootstrapForm->submit(__('Crear nueva area'), array('div'=>false, 'class'=>'btn-primary'));?>
+				<?php echo $this->BootstrapForm->submit(__('Crear nueva area'), array('div'=>false, 'class'=>'btn btn-primary'));?>
 				<?php echo ' '.$this->Html->link('Cancelar', array_merge(array('action'=>'index')), array('class'=>'btn') );?>
 		</div>
 		<?php	echo $this->BootstrapForm->end();?>

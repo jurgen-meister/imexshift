@@ -32,13 +32,6 @@ class AdmAreasController extends AppController {
  * @return void
  */
 	public function index() {
-		if($this->AdmArea->updateAll(
-				array('AdmArea.name'=>"'cualquiercosa'" /*, 'AdmArea.lc_transaction'=>"'MODIFY'"*/)
-			, array('AdmArea.parent_area'=>1 )
-				)){
-			debug('yeah baby');
-		}
-		
 		$filters = '';
 		$this->paginate = array(
 			'conditions'=>array(
