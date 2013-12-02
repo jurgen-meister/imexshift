@@ -110,6 +110,10 @@ class AppController extends Controller {
 					$message = 'El tiempo de duración del usuario terminó!';
 					$this->Session->setFlash('<strong>' . $message . '</strong>', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-error'));
 					$this->redirect($this->Auth->logout());
+				}elseif($checkUserRoleActive == 'empty'){
+					$message = 'El rol fue eliminado!';
+					$this->Session->setFlash('<strong>' . $message . '</strong>', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-error'));
+					$this->redirect($this->Auth->logout());
 				}
 			}else{
 //				CakeSession::delete('Message.flash_check_active'); //also works to clear flash message

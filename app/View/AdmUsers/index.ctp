@@ -56,7 +56,7 @@ echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' =>
 					$parameters['id']=$admUser['AdmUser']['id'];
 					echo $this->Html->link('<i class="icon-pencil icon-white"></i>'.__(''),  array_merge($url,$parameters), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Editar')); 
 					echo ' '.$this->Html->link('<i class="icon-briefcase icon-white"></i>'.__(''),  array_merge(array('action'=>'index_user_restriction', $admUser['AdmUser']['id'])), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Asignar Roles')); 
-					echo ' '.$this->Form->postLink('<i class="icon-trash icon-white"></i>', array('action' => 'delete', $admUser['AdmUser']['id']), array('class'=>'btn btn-danger', 'escape'=>false, 'title'=>'Eliminar'), __('¿Esta seguro de eliminar este usuario?', $admUser['AdmUser']['id']));
+//					echo ' '.$this->Form->postLink('<i class="icon-trash icon-white"></i>', array('action' => 'delete', $admUser['AdmUser']['id']), array('class'=>'btn btn-danger', 'escape'=>false, 'title'=>'Eliminar'), __('¿Esta seguro de eliminar este usuario?', $admUser['AdmUser']['id']));
 					?>
 				</td>
 			</tr>

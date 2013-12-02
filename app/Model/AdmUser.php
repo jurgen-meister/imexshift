@@ -11,7 +11,6 @@ App::uses('AppModel', 'Model');
  */
 class AdmUser extends AppModel {
 
-
 	/**
 	 * Validation rules
 	 *
@@ -122,19 +121,52 @@ class AdmUser extends AppModel {
 				'AdmUserRestriction.id' => $idUserRestrictionSelected
 			)
 		));
+		
 		if ($exist == 0) {
 			$dataSource->rollback();
 			return false;
 		}
 
-		if (!$this->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected' => 0, 'AdmUserRestriction.lc_transaction' => "'MODIFY'"), array('AdmUserRestriction.adm_user_id' => $idUser))) {
+
+		$UserRestrictionIds = $this->AdmUserRestriction->find('list', array(
+			'conditions' => array(
+				'AdmUserRestriction.adm_user_id' => $idUser,
+				'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED',
+//				'AdmUserRestriction.id !='=>$idUserRestrictionSelected
+			),
+			'fields' => array('AdmUserRestriction.id', 'AdmUserRestriction.id')
+		));
+				
+//debug($exist);
+		if (count($UserRestrictionIds) > 0) {
+			foreach ($UserRestrictionIds as $value) {
+				if (!$this->AdmUserRestriction->save(array('id' => $value, 'selected' => 0))) {
+					$dataSource->rollback();
+					return false;
+				}
+			}
+		}
+//
+//
+//		if (!$this->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected' => 0, 'AdmUserRestriction.lc_transaction' => "'MODIFY'"), array('AdmUserRestriction.adm_user_id' => $idUser))) {
+//			$dataSource->rollback();
+//			return false;
+//		}
+		
+		
+		if (!$this->AdmUserRestriction->save(array('id' => $idUserRestrictionSelected, 'selected' => 1))){
 			$dataSource->rollback();
 			return false;
 		}
-		if (!$this->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected' => 1, 'AdmUserRestriction.lc_transaction' => "'MODIFY'"), array('AdmUserRestriction.id' => $idUserRestrictionSelected))) {
-			$dataSource->rollback();
-			return false;
-		}
+		
+
+		
+//		if (!$this->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected' => 1, 'AdmUserRestriction.lc_transaction' => "'MODIFY'"), array('AdmUserRestriction.id' => $idUserRestrictionSelected))) {
+//			$dataSource->rollback();
+//			return false;
+//		}
+
+
 		$dataSource->commit();
 		return true;
 		///////////////////////////////////////////////
@@ -204,31 +236,63 @@ class AdmUser extends AppModel {
 		$dataSource = $this->getDataSource();
 		$dataSource->begin();
 		////////////////////////////////////////////
-		$existUserForUpdate = $this->find('count', array('conditions'=>array('AdmUser.id'=>$data['adm_user_id'])));
-		
-		if($existUserForUpdate == 0){
+		$existUserForUpdate = $this->find('count', array('conditions' => array('AdmUser.id' => $data['adm_user_id'])));
+
+		if ($existUserForUpdate == 0) {
 			$dataSource->rollback();
 			return false;
 		}
 		$selected = 0;
-		if(isset($data['selected']))$selected = $data['selected'];
-		
-		if($ownUserRestriction == 'no'){//to avoid own userUserRestriction lyfe cycle bug
+		if (isset($data['selected']))
+			$selected = $data['selected'];
+
+		if ($ownUserRestriction == 'no') {//to avoid own userUserRestriction lyfe cycle bug
 			if ($selected == 1) {
-				if (!$this->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected' => 0, 'AdmUserRestriction.lc_transaction' => "'MODIFY'"), array('AdmUserRestriction.adm_user_id' => $data['adm_user_id']))) {
-					$dataSource->rollback();
-					return false;
+				//IMPORTANT with updateAll() return false when there was nothing to update, no because there was a mistake like with save()
+				//In this case is there nothing to update, it rollback the transaction and I couldn't add new UserRestriction when everything
+				//was empty!!
+//				if (!$this->AdmUserRestriction->updateAll(
+//						array('AdmUserRestriction.selected' => 0, 'AdmUserRestriction.lc_transaction' => "'MODIFY'")
+//						, array('AdmUserRestriction.adm_user_id' => $data['adm_user_id'], 'AdmUserRestriction.lc_transaction !='=> 'LOGIC_DELETED')
+//				)) {
+//					$dataSource->rollback();
+//					return false;
+//				}
+//				$this->AdmUserRestriction->updateAll(
+//						array('AdmUserRestriction.selected' => 0, 'AdmUserRestriction.lc_transaction' => "'MODIFY'")
+//						, array('AdmUserRestriction.adm_user_id' => $data['adm_user_id'], 'AdmUserRestriction.lc_transaction !='=> 'LOGIC_DELETED')
+//				);
+				$UserRestrictionIds = $this->AdmUserRestriction->find('list', array(
+					'conditions' => array(
+						'AdmUserRestriction.adm_user_id' => $data['adm_user_id'],
+						'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED'
+					),
+					'fields' => array('AdmUserRestriction.id', 'AdmUserRestriction.id')
+				));
+//				debug($UserRestrictionIds);
+				if (count($UserRestrictionIds) > 0) {
+
+					foreach ($UserRestrictionIds as $value) {
+						if (!$this->AdmUserRestriction->save(array('id' => $value, 'selected' => 0))) {
+							$dataSource->rollback();
+							return false;
+						}
+					}
 				}
 			}
 		}
-		
 
-		
-		if (!$this->AdmUserRestriction->save($data)){
+		if (!isset($data['id'])) {
+			$this->AdmUserRestriction->create(); //without it doesn't insert NEVER FORGET!!
+		}
+
+
+		if (!$this->AdmUserRestriction->save($data)) {
+
 			$dataSource->rollback();
 			return false;
 		}
-		
+
 		///////////////////////////////////////////
 		$dataSource->commit();
 		return true;

@@ -60,18 +60,19 @@ class AdmTransitionsController extends AppController {
  */
 	
 	public function life_cycles(){
-		$admModules = $this->AdmTransition->AdmAction->AdmController->AdmModule->find('list', array('order'=>'AdmModule.id'));
-		$initialModule =  key($admModules);
-		$admControllers = $this->AdmTransition->AdmAction->AdmController->find('list', array('conditions'=>array('AdmController.adm_module_id'=>$initialModule)));
+//		$admModules = $this->AdmTransition->AdmAction->AdmController->AdmModule->find('list', array('order'=>'AdmModule.id'));
+//		$initialModule =  key($admModules);
+//		$admControllers = $this->AdmTransition->AdmAction->AdmController->find('list', array('conditions'=>array('AdmController.adm_module_id'=>$initialModule)));
+//		
+//		//$initialController = Inflector::camelize(reset($admControllers));
+//		//$idController = key($admControllers);
+//		//$admActions = $this->_getActions($initialController, $idController);
+//		if(count($admControllers) == 0){
+//				$admControllers[""]="--- Vacio ---";
+//				//$admActions = array();
+//		}
+//		$this->set(compact('admModules', 'admControllers'));
 		
-		//$initialController = Inflector::camelize(reset($admControllers));
-		//$idController = key($admControllers);
-		//$admActions = $this->_getActions($initialController, $idController);
-		if(count($admControllers) == 0){
-				$admControllers[""]="--- Vacio ---";
-				//$admActions = array();
-		}
-		$this->set(compact('admModules', 'admControllers'));
 	}
 	
 	public function ajax_list_controllers(){
