@@ -4,74 +4,85 @@ $(document).ready(function(){
 	var arr = path.split('/');
 	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');
 	
-    //Initialize dropdown lists to position 0 for firefox refresh bug
-    $('#roles option:nth-child(1)').attr("selected", "selected");
-    $('#modules option:nth-child(1)').attr("selected", "selected");
-    $('#controllers option:nth-child(1)').attr("selected", "selected");
-	
+	///Initialize checkboxTree behavior
+	$('#cbxRoles option:nth-child(1)').attr("selected", "selected");
+	$('#cbxModules option:nth-child(1)').attr("selected", "selected");
+//	$('#tree1').checkboxTree();
+	$('select').select2();
 
+	if($('select').val() !== ''){
+		ajax_list_transactions();
+	}
+	
+	
     //Initialize AJAX
-    $('#modules').change(function(){
-        ajax_list_controllers();
-		$("#message").hide();
-    });
-
-    $('#controllers').change(function(){
-        ajax_list_transactions();
-		$("#message").hide();
-    });
-
-    $('#roles').change(function(){
-        ajax_list_transactions();
-		$("#message").hide();
-    });
-	
-	$('#saveButton').click(function(){
+	$('#saveButton').click(function(event){
 		$("#message").hide();
 		ajax_save();
-		//setTimeout(save_ajax(),5000);
-		return false; //evita haga submit form
-		//$(this).delay(5000);
+		event.preventDefault();
     });
 	
-    function ajax_list_controllers(){
-        $.ajax({
-            type:"POST",
-            url:moduleController + "ajax_list_controllers",
-            data:{module: $('#modules').val(), role: $('#roles').val() },
-            beforeSend: showProcessing,
-            //success:showControllers
-			success:function(data){
-				showControllers(data);
-				$('#controllers').bind("change",function(){
-					 ajax_list_transactions();
-					 $("#message").hide();
-				});
-			}
-        });
-    }
+
 
     function ajax_list_transactions(){
         $.ajax({
             type:"POST",
             url:moduleController + "ajax_list_transactions",			
-            data:{role: $("#roles").val(), controller: $("#controllers").val() },
+            data:{role: $("#cbxRoles").val(), module: $("#cbxModules").val()},
             beforeSend: showProcessing,
-            success:showTransactions
+            success:function(data){
+				$("#boxChkTree").html(data);
+//				$('input[type=checkbox]').uniform(); //doesn't work with select all checkboxes function
+				bindOnAjaxTable();
+				$("#processing").text("");
+			},
+			error:function(data){
+				$.gritter.add({
+					title:	'ERROR!',
+					text:	'Al listar las transacciones',
+					sticky: false,
+					image:'/imexport/img/error.png'
+				});	
+				$("#processing").text("");
+			}
         });
     }
 	
 	function ajax_save(){
+		var role = $("#cbxRoles").val();
+		var module = $("#cbxModules").val();
+		var checkboxes = [];
+		checkboxes = captureCheckbox();
 		$.ajax({
             type:"POST",
+			async:false,//will freeze the browser until it's done, avoid repeated inserts after happy button clicker, con: processsing message won't work
             url:moduleController + "ajax_save",
-            data:{role: $("#roles").val(), controller: $("#controllers").val(), transaction: captureCheckbox() },
-            beforeSend:showProcessing,
-            success:showSave,
+            data:{role: role, module: module, transaction: checkboxes},
+            beforeSend:function(){
+				$("#processing").text("Procesando...");
+			},
+            success:function(data){
+				if(data === 'success' || data ==='successEmpty'){
+					$.gritter.add({
+					   title:	'EXITO!',
+					   text: 'Cambios guardados',
+					   sticky: false,
+					   image:'/imexport/img/check.png'
+				   });	
+				}else{
+					$.gritter.add({
+						title:	'NO SE GUARDO!',
+						text:	'Ocurrio un error..',
+						sticky: false,
+						image:'/imexport/img/error.png'
+					});		
+				};
+				$("#processing").text("");
+			},
 			error:function(data){
 				$.gritter.add({
-					title:	'OCURRIO UN PROBLEMA!',
-					text:	'Vuelva a intentarlo',
+					title:	'ERROR!',
+					text:	'Ocurrio un problema.',
 					sticky: false,
 					image:'/imexport/img/error.png'
 				});		
@@ -79,48 +90,62 @@ $(document).ready(function(){
         });
 	}
 	
+	
     function showProcessing(){
         $("#processing").text("Procesando...");
     }
-    function showControllers(data){
-        $("#processing").text("");
-        $("#boxControllers").html(data);
-    }
 
-    function showTransactions(data){
-        $("#processing").text("");
-        $("#boxTransactions").html(data);
-    }
-	function showSave(data){
-		$("#processing").text("");
-		var send = "";
-		if(data == 'missing'){
-			send = '<div style="color:#ff0000;">*Debe marcar una accion</div>';
-			$("#message").fadeIn();
-			$("#message").html(send);
-		}
-		if(data == 'success'){
-			/*
-			send = '<div style="background-color: #90ee90;">Guardado con exito</div>';
-			$("#message").fadeIn();
-			$("#message").html(send);
-			$("#message").delay(1500).fadeOut(1000);
-			*/
-		   $.gritter.add({
-			title:	'EXITO!',
-			text: 'Cambios guardados',
-			sticky: false,
-			image:'/imexport/img/check.png'
-			});	
-		}
-	}
 	
 	function captureCheckbox(){
 	 var allVals =[];
-     $('form .checkbox :checked').each(function(){
-       allVals.push($(this).val());});	   
+     $('form #boxChkTree :checked').each(function(){
+		 if($(this).val() !== "empty"){
+			allVals.push($(this).val());
+		 }
+       });	   
 	   return allVals;
 	}
+	
+	/////
+	$('#cbxRoles, #cbxModules').change(function(){
+        ajax_list_transactions();
+		$("#message").hide();
+    });
+	
+	function bindOnAjaxTable(){
+		$("#chkMain").on('click',function() {
+//			var checked_num = $('#tblTransactions input[name="chkTree[]"]:checked').length;
+//			alert(checked_num);
+			if(this.checked){
+				$('#tblTransactions input[name="chkTree[]"]').prop('checked', true);
+			}else{
+				$('#tblTransactions input[name="chkTree[]"]').prop('checked', false);
+			}
+		});
+		
+		$('#tblTransactions tbody .chkController').on('click',function() {
+			if(this.checked){
+				$(this).closest('tr').find('.chkTransaction').prop('checked', true);
+			}else{
+				$(this).closest('tr').find('.chkTransaction').prop('checked', false);
+			}
+		});
+		
+		$('#tblTransactions tbody .chkTransaction').on('click',function() {
+			var currentTr = $(this).closest('tr');
+//			alert(currentTr.find('.chkTransaction:checked').length);
+			if(currentTr.find('.chkTransaction:checked').length === 0){
+				currentTr.find('.chkController').prop('checked', false);
+			}
+			if(currentTr.find('.chkTransaction:checked').length === 1){
+				currentTr.find('.chkController').prop('checked', true);
+			}
 
+		});
+	}
+			
+		
+
+	
 });
 

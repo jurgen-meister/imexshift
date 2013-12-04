@@ -59,5 +59,44 @@ class AdmRolesAction extends AppModel {
 			'order' => ''
 		)
 	);
+
+	public function saveActions($role, $insert, $delete) {
+		$dataSource = $this->getDataSource();
+		$dataSource->begin();
+		////////////////////////////////////////////////
+		if (count($delete) > 0) {
+			try{
+				$this->deleteAll(array('adm_role_id' => $role, 'adm_action_id' => $delete));
+			}catch(Exception $e){
+//				debug($e);
+				$dataSource->rollback();
+				return false;
+			}
+		}
+		//Aqui se guarda los nuevos valores
+		if (count($insert) > 0) {
+			//Para Insertar, se debe formatear el vector para que reconozca ORM de cake
+			$miData = array();
+			$cont = 0;
+			foreach ($insert as $var) {
+				$miData[$cont]['adm_role_id'] = $role;
+				$miData[$cont]['adm_action_id'] = $var;
+				$cont++;
+			}
+			//debug($miData);
+			try{
+				$this->saveMany($miData);
+			}catch(Exception $e){
+//				debug($e);
+				$dataSource->rollback();
+				return false;
+			}
+		}
+		///////////////////////////////////////////
+		$dataSource->commit();
+		return true;
+	}
+	
+//END CLASS	
 }
 

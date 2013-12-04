@@ -22,15 +22,15 @@
 				echo '<div id="boxActions">';
 				echo $this->BootstrapForm->input('adm_action_id', array('id'=>'actions', 'name'=>'AdmAction[name]', 'label'=>'Acciones:'
 					,'required' => 'required'
-					,'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
+//					,'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 					));
 				echo '</div>';
 				echo '</div>';
 
 				echo $this->BootstrapForm->input('description', array(
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
-				);
+//					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
+				));
 				?>
 				<div class="form-actions" style="text-align: center">
 				<?php echo $this->BootstrapForm->submit(__('Guardar Cambios'), array('div'=>false, 'class'=>'btn btn-primary'));?>

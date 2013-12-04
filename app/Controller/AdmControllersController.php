@@ -89,7 +89,13 @@ class AdmControllersController extends AppController {
 
 		///////
 		$admControllers = $this->_getControllers($initialModule);
-		if(count($admControllers) == 0){$admControllers[""]="--- Vacio ---";}
+		if(count($admControllers) == 0){
+			$admControllers[""]="--- Vacio ---";
+		}else{
+			foreach ($admControllers as $key => $value) {
+				$admControllers[$key] = Inflector::camelize($admControllers[$value]);
+			}
+		}
 		
 
 		$this->set(compact('admModules', 'admControllers'/*, 'checkedControllers'*/));
@@ -189,6 +195,7 @@ class AdmControllersController extends AppController {
 			}
 		} else {
 			$this->request->data = $this->AdmController->read(null, $id);
+			$this->request->data['AdmController']['name'] = Inflector::camelize($this->request->data['AdmController']['name']);
 		}
 		$admModules = $this->AdmController->AdmModule->find('list');
 		$this->set(compact('admModules'));

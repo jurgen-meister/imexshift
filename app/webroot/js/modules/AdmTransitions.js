@@ -170,7 +170,8 @@ $(document).ready(function() {
 		modal += '<div id="' + crudModalId + '" class="modal hide ">'; //took off "fade" from the class to be faster
 		modal += '<div class="modal-header">';
 		modal += '<button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>';
-		modal += '<h3> Controlador: ' +$('#cbxController option:selected').text()+' | Formulario: '+ crudModalTitle + '</h3>';
+//		modal += '<h3> Controlador: ' +$('#cbxController option:selected').text()+' | Formulario: '+ crudModalTitle + '</h3>';
+		modal += '<h3>'+$('#cbxController option:selected').text()+' | '+ crudModalTitle + '</h3>';
 		modal += '</div>';
 		modal += '<div class="modal-body">';
 		modal += '</div>';
@@ -212,7 +213,9 @@ $(document).ready(function() {
 		validateSaveForm(crudModalId, crudFormId, crudDataTableId, crudModalAction, crudFormSaveAction, crudFormDeleteAction, crudModalTitle, crudFieldModalFocus, rules);
 		$('#' + crudFieldModalFocus).focus();
 			//toUpper every input
-		$('input:not(.select2-input)').on('keyup',function(event){
+//		$('input:not(.select2-input)').on('keyup',function(event){
+		$('#AdmTransactionName, #AdmStateName').on('keyup',function(event){
+
 			$(this).val(($(this).val()).toUpperCase());
 		});
 	
@@ -239,14 +242,14 @@ $(document).ready(function() {
 					$.gritter.add({title: 'EXITO!', text: 'Cambios guardados.', sticky: false, image: '/imexport/img/check.png'});
 				} else {
 					$('#' + crudModalId).modal('hide');
-					$.gritter.add({title: 'OCURRIO UN PROBLEMA!', text: data, sticky: false, image: '/imexport/img/error.png'});
+					$.gritter.add({title: 'NO SE GUARDO!', text: data, sticky: false, image: '/imexport/img/error.png'});
 				}
 				$('#' + crudFieldMainFocus).focus();
 			},
 			error: function(xhr, textStatus, error) {
 				$('#' + crudModalId).modal('hide');
 				$('#' + crudFieldMainFocus).focus();
-				$.gritter.add({title: 'ERROR!', text: 'Vuelva a intentarlo.', sticky: false, image: '/imexport/img/error.png'});
+				$.gritter.add({title: 'ERROR!', text: 'Ocurrio un problema.', sticky: false, image: '/imexport/img/error.png'});
 			}
 		});
 	}
@@ -265,14 +268,14 @@ $(document).ready(function() {
 					$.gritter.add({title: 'EXITO!', text: 'Eliminado.', sticky: false, image: '/imexport/img/check.png'});
 				} else {
 					$('#' + crudModalId).modal('hide');
-					$.gritter.add({title: 'OCURRIO UN PROBLEMA!', text: data, sticky: false, image: '/imexport/img/error.png'});
+					$.gritter.add({title: 'NO SE ELIMINO!', text: data, sticky: false, image: '/imexport/img/error.png'});
 				}
 				$('#' + crudFieldMainFocus).focus();
 			},
 			error: function(xhr, textStatus, error) {
 				$('#' + crudModalId).modal('hide');
 				$('#' + crudFieldMainFocus).focus();
-				$.gritter.add({title: 'ERROR!', text: 'Vuelva a intentarlo.', sticky: false, image: '/imexport/img/error.png'});
+				$.gritter.add({title: 'ERROR!', text: 'Ocurrio un problema.', sticky: false, image: '/imexport/img/error.png'});
 			}
 		});
 	}

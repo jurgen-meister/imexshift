@@ -2,7 +2,7 @@
 //echo $chkTree; 
 //debug($data);
 ?>
-<table class="table table-bordered table-hover" id="tblTransactions">
+<table class="table table-bordered table-hover" id="tblActions">
 	<thead>
 		<tr>
 			<th style="width: 3%;">
@@ -11,19 +11,17 @@
 				</label>
 			</th>
 			<th style="width: 15%;">Controladores</th>
-			<th>Transacciones</th>
+			<th>Acciones</th>
 		</tr>
 	</thead>
 	<tbody>
 		<?php
-		$counter = 1;
 		foreach ($data as $controller) {
-			$existstransactions = count($controller['transactions']);
+			$existstransactions = count($controller['actions']);
 			?>
 			<tr>
 				<td style="text-align: center;">
 					<?php
-//					echo $counter++
 					?>
 					<input type="checkbox" class="chkController" name="chkTree[]" <?php echo $controller["controllerChecked"]; ?>  value="empty" >
 				</td>
@@ -31,10 +29,10 @@
 				<td>
 					<?php
 					if ($existstransactions > 0) {
-						foreach ($controller['transactions'] as $transaction) {
+						foreach ($controller['actions'] as $transaction) {
 							?>
 							<label class="checkbox inline">
-								<input type="checkbox" class="chkTransaction" name="chkTree[]" <?php echo $transaction["transactionChecked"]; ?>  value="<?php echo $transaction["transactionId"]; ?>" ><?php echo $transaction["transactionName"]; ?>
+								<input type="checkbox" class="chkAction" name="chkTree[]" <?php echo $transaction["actionChecked"]; ?>  value="<?php echo $transaction["actionId"]; ?>" ><?php echo $transaction["actionName"]; ?>
 							</label>
 				<?php }
 			} ?>

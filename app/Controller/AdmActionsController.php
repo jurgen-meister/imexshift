@@ -14,86 +14,15 @@ class AdmActionsController extends AppController {
  */
 	public $layout = 'default';
 
-/**
- * Helpers
- *
- * @var array
- */
-//	public $helpers = array('Js','TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
-/**
- * Components
- *
- * @var array
- */
-//	public $components = array('RequestHandler','Session');
 	
-	
-	//public  function isAuthorized($user){
-		/*
-		if(!$this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name))){
-			$this->redirect($this->Auth->logout());
-		}
-		return true;
-		 */
-	//	return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
-
+//	public function beforeFilter(){
+//////		$this->getData();
+//		parent::beforeFilter();
+////		if(!isset($_SESSION)) session_start(); //If session didn't start, then start it
+////		$this->changeDB();
+//		$this->getData();
 //	}
 	
-	public function beforeFilter(){
-////		$this->getData();
-		parent::beforeFilter();
-//		if(!isset($_SESSION)) session_start(); //If session didn't start, then start it
-//		$this->changeDB();
-		$this->getData();
-	}
-	
-	public function changeDB(){
-//				// Getting the datasource cache in the ConnectionManager object
-//		$connectionManagerInstance = ConnectionManager::getInstance();
-//		$databaseConfig = &$connectionManagerInstance->_dataSources;
-//
-//// Saving the initial setting for reverting it later
-//		$_defaultConfig = $databaseConfig['default'];
-//
-//// Changing the password so the credentials will fail
-//		$databaseConfig['default']->config['password'].= 'pass';
-//
-//// Getting the updated datasource
-//		$connect = ConnectionManager::getDataSource('default');
-//		@App::import('Model', 'ConnectionManager'); //igual sirve
-		
-		$config = array(
-		'datasource' => 'Database/Postgres',
-		'persistent' => false,
-		'host' => 'localhost',
-		'login' => 'tester',
-		'password' => 'mierda',
-		'database' => 'imexport',
-		'prefix' => '',
-		'schema'=>'public'
-		//'encoding' => 'utf8',
-		);
-		
-		App::uses('ConnectionManager', 'Model');
-		
-		ConnectionManager::create('default', $config);
-//		debug($change->config['login']);
-		
-//		$dataSource = ConnectionManager::getDataSource('default');
-		
-//		 $dataSource->config['login'] = 'tester';
-//		$dataSource->config['password'] = 'xxjdsjd';
-		
-//		ConnectionManager::
-//		debug( $dataSource);
-//		debug( $dataSource->config['login']);
-	}
-	
-	public function getData(){
-		App::uses('ConnectionManager', 'Model');
-		$dataSource = ConnectionManager::getDataSource('default');
-		debug( $dataSource->config['login']);
-	}
 
 	/**
  * index method
@@ -101,27 +30,7 @@ class AdmActionsController extends AppController {
  * @return void
  */
 	public function index() {
-////		$this->getData();
-////		$this->changeDB();
-//		$this->getData();
-//		$auth = $this->Auth->user(); 
-//		debug($auth);
-////		$encrypt = AuthComponent::password($auth['login']);
-////		$encrypt = Security::rijndael($auth['login'], '495d654f495d654f495d654f495d654f', 'encrypt');
-//		$encrypt = $this->BittionSecurity->encryptUserSessionPassword($auth['login']);
-//		
-//		$this->Session->write('prueba.encrypt', $encrypt);
-//		$session = $this->Session->read('prueba.encrypt');
-//		debug($session);
-////		debug($encrypt);
-////		$decrypt =  Security::rijndael($session, '495d654f495d654f495d654f495d654f', 'decrypt');
-//		$decrypt = $this->BittionSecurity->decryptUserSessionPassword($session);
-////		Security::rijndael
-//		debug($decrypt);
-//		
-		/*$myQuery =*/// $this->AdmAction->myQuery();
-////		debug($myQuery);
-		
+	
 		$this->AdmAction->recursive = 0;
 		 $this->paginate = array(
 			'order'=>array('AdmController.name'=>'asc'),
@@ -129,25 +38,6 @@ class AdmActionsController extends AppController {
 		);
 		 
 		 $array =$this->paginate();
-		 //debug($array);
-		 
-		 //I loop in the called query, and modify each field which has a parent. There must be a better solution with subquery I think
-		 /*
-		 foreach ($array as $key => $value) {
-			 //$value['AdmAction']['parent2'] = "vacio";
-			 $parentId = $value['AdmAction']['parent'];
-			 if($parentId != null){
-				 $parentName = $this->AdmAction->find('all', array(
-					 'conditions'=> array('AdmAction.id'=>$parentId),
-					 'fields'=>array('AdmAction.name', 'AdmController.name')
-				));
-				 //here I change the parent value for a string, the rest still null
-				 $array[$key]['AdmAction']['parent'] = $parentName[0]['AdmController']['name'].'->'.$parentName[0]['AdmAction']['name'];
-			 }
-		 }
-		 */
-		 //$array[0]['AdmAction']['orco'] = '333333';
-		// debug($array);
 		$this->set('admActions', $array);
 	}
 
@@ -195,14 +85,16 @@ class AdmActionsController extends AppController {
 			'order'=>array('AdmController.name'=>'ASC')
 		));
 		
-		//$initialController = Inflector::camelize(reset($admControllers));
-		//$idController = key($admControllers);
-		//$admActions = $this->_getActions($initialController, $idController);
+		foreach ($admControllers as $key => $value) {
+			$admControllers[$key]=Inflector::camelize($value);
+		}
+		
 		if(count($admControllers) == 0){
 				$admControllers[""]="--- Vacio ---";
 				$admActions = array();
 		}else{
-				$initialController = Inflector::camelize(reset($admControllers));
+//				$initialController = Inflector::camelize(reset($admControllers));
+				$initialController = reset($admControllers);
 				$idController = key($admControllers);
 				$admActions = $this->_getActions($initialController, $idController);
 		}
@@ -210,10 +102,7 @@ class AdmActionsController extends AppController {
 		if(count($admActions) == 0){$admActions[""]="--- Vacio ---";}
 
 		$this->set(compact('admControllers','admModules', 'admActions'));
-		
 		///////////
-			
-		
 	}
 
 	

@@ -107,7 +107,7 @@ class AppController extends Controller {
 					$this->Session->setFlash('<strong>' . $message . '</strong>', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-error'));
 					$this->redirect($this->Auth->logout());
 				}elseif($checkUserRoleActive == 'user expired'){
-					$message = 'El tiempo de duración del usuario terminó!';
+					$message = 'La cuenta de usuario expiró!';
 					$this->Session->setFlash('<strong>' . $message . '</strong>', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-error'));
 					$this->redirect($this->Auth->logout());
 				}elseif($checkUserRoleActive == 'empty'){

@@ -10,24 +10,11 @@ class AdmRolesActionsController extends AppController {
 
 	public $layout = 'default';
 
-	public function vsave() {
-		
+	public function save() {
 		$admRoles = $this->AdmRolesAction->AdmRole->find('list', array('order'=>array('AdmRole.id'=>'ASC')));
 		$this->loadModel("AdmModule");
 		$admModules = $this->AdmModule->find('list');
-		///////////////////////***************************************//////////////////
-		if(count($admRoles) > 0 AND count($admModules) > 0){
-				$role = key($admRoles);
-				$module =key($admModules);
-				$chkTree = $this->_createCheckboxTree($role, $module); //Crestes checkbox tree 5 level, must improve
-				
-		}else{
-				$chkTree = "Debe existir un rol y un modulo";
-		}
-		
-		///////////////////////***************************************//////////////////
-
-		$this->set(compact('admRoles', 'admModules','chkTree'));
+		$this->set(compact('admRoles', 'admModules'));
 	}
 	
 	
@@ -37,7 +24,7 @@ class AdmRolesActionsController extends AppController {
 	}
 
 	
-	private function _createCheckboxTree($role, $module){
+	private function _fnCreateCheckboxTree($role, $module){
 		//Til 5 levels, MUST be improved	
 		//PART 1
 		$this->AdmRolesAction->AdmAction->unbindModel(array('hasMany'=>array('AdmMenu')));
@@ -46,11 +33,11 @@ class AdmRolesActionsController extends AppController {
 			 'order'=>array('AdmController.name', 'AdmAction.name') 
 			,'conditions'=>array('AdmController.adm_module_id'=>$module)
 		));
-		//debug($actions);
+
 		
 		$this->loadModel("AdmController");
 		$controllers = $this->AdmController->find("list", array("conditions"=>array('AdmController.adm_module_id'=>$module)));
-		//debug($controllers);
+//		debug($controllers);
 		$data = array();
 		$actionClean = array();
 		//debug($actions);
@@ -61,61 +48,37 @@ class AdmRolesActionsController extends AppController {
 			"fields"=>array("id", "adm_action_id"),
 			"conditions"=>array("adm_action_id"=>$actionClean, "adm_role_id"=>$role)
 		));
-		
+//		debug($actions);
 		foreach ($actions as $keyAction => $action) {
 			foreach ($controllers as $keyController => $controller) {
 				if($action["AdmController"]["id"] == $keyController){
 					$actionId = $action["AdmAction"]["id"];
-					$data[$keyController]["controllerName"] = $controller;
+					$data[$keyController]["controllerName"] = Inflector::camelize($controller);
 					$data[$keyController]["controllerId"] = $keyController;
 					$data[$keyController]["actions"][$actionId]["actionId"] = $actionId;
 					$data[$keyController]["actions"][$actionId]["actionName"] = $action["AdmAction"]["name"];
-					$data[$keyController]["actions"][$actionId]["actionChecked"] = $this->_createCheckAction($checked, $actionId);
+					$data[$keyController]["actions"][$actionId]["actionChecked"] = $this->_fnCreateCheckAction($checked, $actionId);
 				}
 			}
 			
 		}
 		
-//		debug($data);
-//		$checked = $this->AdmRolesAction->find("all");
-
+		$allChecked = '';
+		foreach ($data as $key => $value){
+			$checked = $this->_fnCreateCheckController($value['actions']);
+			$data[$key]["controllerChecked"] = $checked;
+			if($checked <> ''){
+				$allChecked = 'checked = "checked"';
+			}
+		}
+		return array('data'=>$data, 'allChecked'=>$allChecked);
 		
-//		debug($checked);
-
-		$str= '<ul id="tree1">';
-		//////////N1
-				foreach ($data as $key => $value) {
-					$checkController = $this->_createCheckController($value["actions"]);
-					$str.= '<li><label class="checkbox"><input type="checkbox" name="chkTree[]" '.$checkController.'  value="empty" >'.$value["controllerName"].'</label>';
-					/*
-					//$str.= $key;
-					$str.= $this->_createCheck($key, $role);
-					 */ 
-					////////////N2
-						if(count($value["actions"]) > 0){
-							$str.= '<ul>';
-							foreach ($value["actions"] as $key2 => $value2) {
-//								$check = $this->_createCheck($checked, $value2["actionId"]);
-								$str.= '<li><label class="checkbox"><input type="checkbox" name="chkTree[]"  value="'.$value2["actionId"].'"  '.$value2["actionChecked"].' >'.$value2["actionName"].'</label>';
-								//$str.= $key2;
-								//$str.= $this->_createCheck($key2, $role);
-								///////////////////more children
-								$str.= '</li>';
-							}
-							$str.= '</ul>';
-						}
-					////////////N2
-					$str.= '</li>';
-				}
-		//////////N1
-		$str.= '</ul>';
-		
-		return $str;
 		
 	}
 	
 	
-	private function _createCheckAction($checked, $actionId){
+	
+	private function _fnCreateCheckAction($checked, $actionId){
 		$str = '';
 		if(count($checked) > 0){
 			foreach ($checked as $key => $value) {
@@ -128,7 +91,7 @@ class AdmRolesActionsController extends AppController {
 		return $str;
 	}
 	
-	private function _createCheckController($actions){
+	private function _fnCreateCheckController($actions){
 		if(count($actions) > 0){
 			foreach ($actions as $key => $value) {
 				if($value['actionChecked'] <> ''){
@@ -139,19 +102,15 @@ class AdmRolesActionsController extends AppController {
 		return '';
 	}
 	
-	public function ajax_list_menus(){
+	public function ajax_list_actions(){
 		if($this->RequestHandler->isAjax()){
-			$role = $this->request->data['role'];		
-			$module = $this->request->data['module'];		
-//echo $module;
-//echo $role;
-				if($role == "" OR $module == ""){
-					$chkTree = "Debe existir un rol y un módulo";
-				}else{
-					$chkTree = $this->_createCheckboxTree($role, $module); //Crestes checkbox tree 5 level, must improve
-				}
+			$role = $this->request->data['role'];
+			$module = $this->request->data['module'];
+			
+			$chkTree = $this->_fnCreateCheckboxTree($role, $module);
 			///////////////////////***************************************//////////////////
-			$this->set(compact('chkTree'));
+			$this->set('data', $chkTree['data']);
+			$this->set('allChecked', $chkTree['allChecked']);
 		}else{
 			$this->redirect($this->Auth->logout());
 		}
@@ -210,33 +169,18 @@ class AdmRolesActionsController extends AppController {
 			//debug($new);	
 			/////////////
 			if(count($new) == 0 AND count($old) == 0){
-				echo 'missing'; // envia al data del js de jquery
+				echo 'successEmpty'; // when there is no new or old values to save
              }else{
 				$insert=array_diff($new,$old);
 				//echo "insert";
 				//debug($insert);
 				$delete=array_diff($old,$new);
 				//debug($delete);
-				//DELETE	
-				 if(count($delete)>0){
-                    $this->AdmRolesAction->deleteAll(array('adm_role_id'=>$role, 'adm_action_id' => $delete));
-                    }
-                //SAVE    
-				if(count($insert)>0){
-					
-					$miData = array();
-					$cont = 0;
-					foreach($insert as $var){
-						$miData[$cont]['adm_role_id'] = $role;
-						$miData[$cont]['adm_action_id'] = $var;
-						//$miData[$cont]['creator'] = $this->Session->read('UserRestriction.id');
-						$cont++;
-					}
-					//debug($miData);
-					
-					$this->AdmRolesAction->saveMany($miData);
+				if($this->AdmRolesAction->saveActions($role, $insert, $delete)){
+					echo 'success'; // envia al data del js de jquery
+				}else{
+					echo 'error';
 				}
-				echo 'success'; // envia al data del js de jquery
 			} 
  
 		}else{//ajax

@@ -17,12 +17,12 @@
 				));
 				echo $this->BootstrapForm->input('initials', array(
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
-				);
+//					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
+				));
 				echo $this->BootstrapForm->input('description', array(
 					'required' => 'required',
-					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
-				);				
+//					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
+				));				
 				echo $this->BootstrapForm->hidden('id');
 				?>
 				<div class="form-actions" style="text-align: center">

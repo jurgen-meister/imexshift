@@ -8,7 +8,7 @@
 		<span class="icon">
 			<i class="icon-edit"></i>								
 		</span>
-		<h5>Crear menu/permiso externo</h5>
+		<h5>Crear menu</h5>
 	</div>
 	<div class="widget-content nopadding">
 		<?php echo $this->BootstrapForm->create('AdmMenu', array('class' => 'form-horizontal'));?>
@@ -53,7 +53,7 @@
 				?>
 				<div class="form-actions" style="text-align: center">
 					<?php echo $this->BootstrapForm->submit(__('Crear menu'), array('div'=>false, 'class'=>'btn btn-primary'));?>
-					<?php echo ' '.$this->Html->link('Volver', array('action'=>'index_out'), array('class'=>'btn') );?>
+					<?php echo ' '.$this->Html->link('Volver', array('action'=>'index'), array('class'=>'btn') );?>
 				</div>
 			</fieldset>
 		<?php echo $this->BootstrapForm->end();?>

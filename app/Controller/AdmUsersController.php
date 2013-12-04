@@ -275,7 +275,7 @@ class AdmUsersController extends AppController {
 				//User date active
 				$activeDate = $this->AdmUser->find('count', array('conditions' => array('AdmUser.active_date > now()', 'AdmUser.id' => $userInfo['id']))); //The DB does the comparition between dates, it's simpler than creating a php function for this
 				if ($activeDate == 0) {
-					$this->_createMessage('El tiempo de duración del usuario acabó!.');
+					$this->_createMessage('La cuenta de usuario expiró!.');
 //					$error++;
 					$this->redirect($this->Auth->logout());
 				}

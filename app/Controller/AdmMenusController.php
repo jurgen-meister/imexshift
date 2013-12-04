@@ -33,7 +33,7 @@ class AdmMenusController extends AppController {
 	 * 
 	 */
 	
-	public function index_out(){
+	public function index(){
 		////////////////////////////////////////////////////////
 		$parentsMenus = $this->AdmMenu->find("list", array(
 			"conditions"=>array(
@@ -122,7 +122,7 @@ class AdmMenusController extends AppController {
  *
  * @return void
  */
-	public function add_out() {
+	public function add() {
 		if ($this->request->is('post')) {
 			/////////////
 			$this->AdmMenu->create();
@@ -141,7 +141,7 @@ class AdmMenusController extends AppController {
 						'class' => 'alert-success'
 					)
 				);
-				$this->redirect(array('action' => 'add_out'));
+				$this->redirect(array('action' => 'add'));
 			} else {
 				$this->Session->setFlash(
 					__('Ocurrio un problema intentelo de nuevo'),
@@ -151,7 +151,7 @@ class AdmMenusController extends AppController {
 						'class' => 'alert-error'
 					)
 				);
-				$this->redirect(array('action' => 'add_out'));
+				$this->redirect(array('action' => 'add'));
 			}
 			///////////////	
 		}
@@ -307,7 +307,7 @@ class AdmMenusController extends AppController {
 		$admActions = array();
 		//if(count($admAct) > 0){
 			foreach($admAct as $var){
-				$admActions[$var["AdmAction"]["id"]] = $var["AdmController"]["name"] . "->" . $var["AdmAction"]["name"];
+				$admActions[$var["AdmAction"]["id"]] = Inflector::camelize($var["AdmController"]["name"]) . "->" . $var["AdmAction"]["name"];
 			}
 			$admActions[0] = "Ninguno";
 		//}
@@ -409,7 +409,7 @@ class AdmMenusController extends AppController {
  * @param string $id
  * @return void
  */
-	public function edit_out($id = null) {
+	public function edit($id = null) {
 		$this->AdmMenu->id = $id;
 		if (!$this->AdmMenu->exists()) {
 			throw new NotFoundException(__('Invalid %s', __('adm menu')));
@@ -451,7 +451,7 @@ class AdmMenusController extends AppController {
 						'class' => 'alert-success'
 					)
 				);
-				$this->redirect(array('action' => 'index_out'));
+				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
 					__('Ocurrio un problema intentelo de nuevo'),
@@ -522,7 +522,7 @@ class AdmMenusController extends AppController {
  * @param string $id
  * @return void
  */
-	public function delete_out($id = null) {
+	public function delete($id = null) {
 		
 		if (!$this->request->is('post')) {
 			throw new MethodNotAllowedException();
@@ -542,7 +542,7 @@ class AdmMenusController extends AppController {
 					'class' => 'alert-error'
 				)
 			);
-			$this->redirect(array('action' => 'index_out'));
+			$this->redirect(array('action' => 'index'));
 		}
 		/////////////////////////////////////////////////////////
 		try{
@@ -555,7 +555,7 @@ class AdmMenusController extends AppController {
 					'class' => 'alert-success'
 				)
 			);
-			$this->redirect(array('action' => 'index_out'));
+			$this->redirect(array('action' => 'index'));
 		}catch(Exception $e){
 			if($e->getCode() == 23503){
 				$msge = 'No se puede eliminar este Menu porque tiene Roles asignados';
@@ -567,7 +567,7 @@ class AdmMenusController extends AppController {
 			'alert',
 			array('plugin' => 'TwitterBootstrap','class' => 'alert-error')
 			);
-			$this->redirect(array('action' => 'index_out'));
+			$this->redirect(array('action' => 'index'));
 		}
 	}
 	

@@ -4,9 +4,9 @@ $(document).ready(function(){
 	var arr = path.split('/');
 	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');
 	///Initialize checkboxTree behavior
-		 $('#cbxRoles option:nth-child(1)').attr("selected", "selected");
-		 $('#cbxModules option:nth-child(1)').attr("selected", "selected");
-		 $('#tree1').checkboxTree();
+	$('#cbxRoles option:nth-child(1)').attr("selected", "selected");
+	$('#cbxModules option:nth-child(1)').attr("selected", "selected");
+	$('#tree1').checkboxTree();
 	
 	$("select").select2();
 	
@@ -14,22 +14,32 @@ $(document).ready(function(){
     $('#cbxModules option:nth-child(1)').attr("selected", "selected");
     $('#cbxRoles option:nth-child(1)').attr("selected", "selected");
 	/////////Ajax
-	$('#cbxRoles').change(function(){
-        ajax_list_menus();		
+	$('#cbxRoles, #cbxModules').change(function(){
+        ajax_list_actions();		
     });
-	$('#cbxModules').change(function(){
-        ajax_list_menus();		
-    });
+	ajax_list_actions();
 	
 	
-	
-	function ajax_list_menus(){
+	function ajax_list_actions(){
         $.ajax({
             type:"POST",
-            url: moduleController + "ajax_list_menus",			
+            url: moduleController + "ajax_list_actions",			
             data:{module: $("#cbxModules").val(), role: $("#cbxRoles").val()},
             beforeSend: showProcessing,
-            success: showMenus
+            success:function(data){
+				$("#boxChkTree").html(data);
+				bindOnAjaxTable();
+				$("#processing").text("");
+			},
+			error:function(data){
+				$.gritter.add({
+					title:	'ERROR!',
+					text:	'Al listar las transacciones',
+					sticky: false,
+					image:'/imexport/img/error.png'
+				});	
+				$("#processing").text("");
+			}
         });
     }
 	
@@ -52,7 +62,24 @@ $(document).ready(function(){
             url:moduleController +"ajax_save",
             data:{role: role, module: module, menu: menu },
             beforeSend:showProcessing,
-            success:showSave,
+            success:function(data){
+				if(data === 'success' || data ==='successEmpty'){
+					$.gritter.add({
+					   title:	'EXITO!',
+					   text: 'Cambios guardados',
+					   sticky: false,
+					   image:'/imexport/img/check.png'
+				   });	
+				}else{
+					$.gritter.add({
+						title:	'NO SE GUARDO!',
+						text:	'Vuelva a intentarlo',
+						sticky: false,
+						image:'/imexport/img/error.png'
+					});		
+				};
+				$("#processing").text("");
+			},
 			error:function(data){
 				$.gritter.add({
 					title:	'OCURRIO UN PROBLEMA!',
@@ -60,6 +87,7 @@ $(document).ready(function(){
 					sticky: false,
 					image:'/imexport/img/error.png'
 				});		
+				$("#processing").text("");
 			}
         });
 	}
@@ -88,11 +116,38 @@ $(document).ready(function(){
 	function showProcessing(){
         $("#processing").text("Procesando...");
     }
-    function showMenus(data){
-        $("#processing").text("");
-        $("#boxChkTree").html(data);
-		$('#tree1').checkboxTree();
-    }
+	
+	function bindOnAjaxTable(){
+		$("#chkMain").on('click',function() {
+//			var checked_num = $('#tblActions input[name="chkTree[]"]:checked').length;
+//			alert(checked_num);
+			if(this.checked){
+				$('#tblActions input[name="chkTree[]"]').prop('checked', true);
+			}else{
+				$('#tblActions input[name="chkTree[]"]').prop('checked', false);
+			}
+		});
+		
+		$('#tblActions tbody .chkController').on('click',function() {
+			if(this.checked){
+				$(this).closest('tr').find('.chkAction').prop('checked', true);
+			}else{
+				$(this).closest('tr').find('.chkAction').prop('checked', false);
+			}
+		});
+		
+		$('#tblActions tbody .chkAction').on('click',function() {
+			var currentTr = $(this).closest('tr');
+//			alert(currentTr.find('.chkTransaction:checked').length);
+			if(currentTr.find('.chkAction:checked').length === 0){
+				currentTr.find('.chkController').prop('checked', false);
+			}
+			if(currentTr.find('.chkAction:checked').length === 1){
+				currentTr.find('.chkController').prop('checked', true);
+			}
+
+		});
+	}
 	
 
 	

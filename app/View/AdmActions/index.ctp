@@ -33,7 +33,7 @@ echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' =>
 				<td><?php echo $cont++; ?>&nbsp;</td>
 				
 				<td>
-					<?php echo $admAction['AdmController']['name']; ?>
+					<?php echo Inflector::camelize($admAction['AdmController']['name']); ?>
 				</td>
 				<td><?php echo h($admAction['AdmAction']['name']); ?>&nbsp;</td>
 				<td><?php echo h($admAction['AdmAction']['description']); ?>&nbsp;</td>
