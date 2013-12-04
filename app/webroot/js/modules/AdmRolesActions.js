@@ -3,10 +3,9 @@ $(document).ready(function(){
 	var path = window.location.pathname;
 	var arr = path.split('/');
 	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');
-	///Initialize checkboxTree behavior
+	///reset selects for firefox bug
 	$('#cbxRoles option:nth-child(1)').attr("selected", "selected");
 	$('#cbxModules option:nth-child(1)').attr("selected", "selected");
-	$('#tree1').checkboxTree();
 	
 	$("select").select2();
 	
@@ -34,7 +33,7 @@ $(document).ready(function(){
 			error:function(data){
 				$.gritter.add({
 					title:	'ERROR!',
-					text:	'Al listar las transacciones',
+					text:	'Al listar las acciones',
 					sticky: false,
 					image:'/imexport/img/error.png'
 				});	
@@ -45,7 +44,6 @@ $(document).ready(function(){
 	
 		
 	$('#saveButton').click(function(){
-		//$("#message").hide();
 		ajax_save();
 		return false; //evita haga submit form
     });
@@ -59,21 +57,22 @@ $(document).ready(function(){
 		menu = captureCheckbox();
 		$.ajax({
             type:"POST",
+			async:false,//will freeze the browser until it's done, avoid repeated inserts after happy button clicker, con: processsing message won't work
             url:moduleController +"ajax_save",
             data:{role: role, module: module, menu: menu },
             beforeSend:showProcessing,
             success:function(data){
 				if(data === 'success' || data ==='successEmpty'){
 					$.gritter.add({
-					   title:	'EXITO!',
-					   text: 'Cambios guardados',
+					   title: 'EXITO!',
+					   text: 'Cambios guardados.',
 					   sticky: false,
 					   image:'/imexport/img/check.png'
 				   });	
 				}else{
 					$.gritter.add({
 						title:	'NO SE GUARDO!',
-						text:	'Vuelva a intentarlo',
+						text:	'Ocurrio un error.',
 						sticky: false,
 						image:'/imexport/img/error.png'
 					});		
@@ -82,8 +81,8 @@ $(document).ready(function(){
 			},
 			error:function(data){
 				$.gritter.add({
-					title:	'OCURRIO UN PROBLEMA!',
-					text:	'Vuelva a intentarlo',
+					title:	'ERROR!',
+					text:	'Ocurrio un problema.',
 					sticky: false,
 					image:'/imexport/img/error.png'
 				});		
@@ -91,17 +90,7 @@ $(document).ready(function(){
 			}
         });
 	}
-	
-	function showSave(data){
-	   $.gritter.add({
-			title:	'EXITO!',
-			text: 'Cambios guardados',
-			sticky: false,
-			image:'/imexport/img/check.png'
-		});	
-	   $("#processing").text("");
-	}
-	
+		
 	function captureCheckbox(){
 	 var allVals =[];
      $('form #boxChkTree :checked').each(function(){

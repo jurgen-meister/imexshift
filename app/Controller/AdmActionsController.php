@@ -50,7 +50,8 @@ class AdmActionsController extends AppController {
 		if ($this->request->is('post')) {
 			$this->AdmAction->create();
 			// lo convierto a mayuscula tenga mismo formato que DB
-			$this->request->data['AdmAction']['name'] = strtoupper($this->request->data['AdmAction']['name']);
+//			$this->request->data['AdmAction']['name'] = strtoupper($this->request->data['AdmAction']['name']);
+			$this->request->data['AdmAction']['name'] = strtolower($this->request->data['AdmAction']['name']);
 			//debug($this->request->data);
 			///
 			if ($this->AdmAction->save($this->request->data)) {
@@ -237,10 +238,10 @@ class AdmActionsController extends AppController {
 			throw new NotFoundException(__('Invalid %s', __('adm action')));
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
-			$this->request->data['AdmAction']['lc_transaction']='MODIFY';
+//			$this->request->data['AdmAction']['lc_transaction']='MODIFY';
 			if ($this->AdmAction->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('adm action')),
+					__('Se edito la acción', __('adm action')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',

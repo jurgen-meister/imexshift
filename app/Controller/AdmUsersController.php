@@ -17,52 +17,11 @@ class AdmUsersController extends AppController {
 	public $layout = 'default';
 
 	/**
-	 * Helpers
-	 *
-	 * @var array
-	 */
-	//public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
-	/**
-	 * Components
-	 *
-	 * @var array
-	 */
-	//public $components = array('Session');
-	//public  function isAuthorized($user){
-	/*
-	  $array=$this->Session->read('Permission.'.$this->name);
-	  $array['welcome'] = 'welcome';
-	  $array['login'] = 'login';
-	  $array['logout'] = 'logout';
-	  $array['choose_role'] = 'choose_role';
-	  debug($array);
-	  if(count($array)>0){
-	  if(in_array($this->action, $array)){
-	  return true;
-	  }
-	  }
-	  $this->redirect($this->Auth->logout());
-	 * 
-	 */
-
-
-	//return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
-	//	return true;
-	//}
-	/*
-	  public  function isAuthorized($user){
-	  return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
-	  }
-	 */
-
-	/**
 	 * index method
 	 *
 	 * @return void
 	 */
 	public function index() {
-		//$this->AdmUser->recursive = 0;
-		//$this->set('admUsers', $this->paginate());
 		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
 		$filters = '';
 		$this->paginate = array(
@@ -112,8 +71,8 @@ class AdmUsersController extends AppController {
 			'conditions' => array(
 				'AdmUserRestriction.adm_user_id' => $id
 				, 'AdmUserRestriction.period' => $periodInitial
-				,'AdmUserRestriction.lc_transaction !='=>'LOGIC_DELETED'
-				),
+				, 'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED'
+			),
 			'fields' => array('AdmUserRestriction.adm_role_id')
 		));
 		//debug($admUserRestriction);
@@ -178,14 +137,14 @@ class AdmUsersController extends AppController {
 			$areas = $this->AdmUser->AdmUserRestriction->AdmArea->find('list', array(
 				'conditions' => array(
 					'AdmArea.period' => $period
-					)
-				));
+				)
+			));
 
 			$admUserRestriction = $this->AdmUser->AdmUserRestriction->find('all', array(
 				'conditions' => array(
 					'AdmUserRestriction.adm_user_id' => $userId
 					, 'AdmUserRestriction.period' => $period
-					, 'AdmUserRestriction.lc_state !='=>'LOGIC_DELETED'
+					, 'AdmUserRestriction.lc_state !=' => 'LOGIC_DELETED'
 				),
 				'fields' => array('AdmUserRestriction.adm_role_id')
 			));
@@ -211,14 +170,14 @@ class AdmUsersController extends AppController {
 			$this->redirect(array('action' => 'index'));
 		}
 
-		$filters = array('AdmUserRestriction.adm_user_id' => $id, 'AdmUserRestriction.lc_transaction !='=>'LOGIC_DELETED');
+		$filters = array('AdmUserRestriction.adm_user_id' => $id, 'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED');
 		$this->paginate = array(
 			'conditions' => array(
 				$filters
 			),
 			'recursive' => 0,
 			//'fields'=>array('InvMovement.id', 'InvMovement.code', 'InvMovement.document_code', 'InvMovement.date','InvMovement.inv_movement_type_id','InvMovementType.name', 'InvMovement.inv_warehouse_id', 'InvWarehouse.name', 'InvMovement.lc_state'),
-			'order' => array('AdmUserRestriction.period' => 'desc', 'AdmUserRestriction.active'=>'desc' ,'AdmRole.name'=>'asc'),
+			'order' => array('AdmUserRestriction.period' => 'desc', 'AdmUserRestriction.active' => 'desc', 'AdmRole.name' => 'asc'),
 			'limit' => 15,
 		);
 		//debug($this->paginate('AdmUserRestriction'));
@@ -234,7 +193,6 @@ class AdmUsersController extends AppController {
 		$this->set('admUsers', $array);
 	}
 
-	
 	private function _paintUserRestrictionActiveDateField($array) {
 		for ($i = 0; $i < count($array); $i++) {
 			$res = $this->AdmUser->AdmUserRestriction->find('count', array(
@@ -255,14 +213,16 @@ class AdmUsersController extends AppController {
 
 		$this->layout = 'login';
 		if ($this->request->is('post')) {
+			//#KEY drop initial database config default, and create the dynamic connection. Other wise it will login with the limited connection
+			if (!$this->BittionMain->connectDatabaseDynamically($this->request->data['AdmUser']['login'], $this->request->data['AdmUser']['password'])) {
+				$this->Session->setFlash('<strong>Error!</strong> fallo la conexión a la base de datos.', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-error'));
+				$this->redirect(array('controller' => 'AdmUsers', 'action' => 'login'));
+			}
+
 			if ($this->Auth->login()) { //If authentication is valid username and password
 				/////////////////////////////////////////////BEGIN OF VALIDATION///////////////////////////////////////////////////
 				$userInfo = $this->Auth->user();
 				$active = $userInfo['active'];
-				
-				
-				
-				
 				$userPassword = $this->request->data['AdmUser']['password'];
 
 				//User active
@@ -281,29 +241,29 @@ class AdmUsersController extends AppController {
 				}
 
 				//Roles Validation
-				$role = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.lc_transaction !='=>'LOGIC_DELETED')));
+				$role = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED')));
 				if ($role == 0) {//No roles found
 					$this->_createMessage('El usuario no tiene ningun rol asignado');
 //					$error++;
 					$this->redirect($this->Auth->logout());
 				} else {
-					$roleSelected = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.selected' => 1, 'AdmUserRestriction.lc_transaction !='=>'LOGIC_DELETED')));
-					if($roleSelected == 0){
+					$roleSelected = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.selected' => 1, 'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED')));
+					if ($roleSelected == 0) {
 						$this->_createMessage('El usuario no tiene ningun rol principal seleccionado');
 						$this->redirect($this->Auth->logout());
 					}
-					
+
 					////////////////////////////////////////////////////////////////////////////////////////////////
-						$roleActive = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.active' => 1, 'AdmUserRestriction.selected' => 1, 'AdmUserRestriction.lc_transaction !='=>'LOGIC_DELETED')));
-						$roleActiveDate = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.active_date > now()', 'AdmUserRestriction.selected' => 1, 'AdmUserRestriction.lc_transaction !='=>'LOGIC_DELETED')));
+					$roleActive = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.active' => 1, 'AdmUserRestriction.selected' => 1, 'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED')));
+					$roleActiveDate = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.active_date > now()', 'AdmUserRestriction.selected' => 1, 'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED')));
 					if ($roleActive == 0 OR $roleActiveDate == 0) {
-						
+
 						$otherRoles = $this->AdmUser->AdmUserRestriction->find('all', array(
 							'conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'],
 								'AdmUserRestriction.active_date > now()',
 								'AdmUserRestriction.active' => 1,
-								'AdmUserRestriction.lc_transaction !='=>'LOGIC_DELETED'
-								),
+								'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED'
+							),
 							'fields' => array('AdmUser.id', 'AdmUser.login', 'AdmRole.name', 'AdmUserRestriction.period', 'AdmUserRestriction.id'),
 							'order' => array('AdmUserRestriction.adm_role_id', 'AdmUserRestriction.period')
 						));
@@ -311,7 +271,6 @@ class AdmUsersController extends AppController {
 							$this->_createMessage('El usuario no tiene ningun rol activo');
 							$this->redirect($this->Auth->logout());
 						}
-
 					}
 					////////////////////////////////////////////////////////////////////////////////////////////////
 				}
@@ -325,8 +284,6 @@ class AdmUsersController extends AppController {
 		}
 	}
 
-	
-	
 	private function _createUserAccountSession($userId, $tipo, $userPassword = null) {
 		////////Fill of sessions distinct to auth component users table
 
@@ -351,10 +308,10 @@ class AdmUsersController extends AppController {
 				, 'AdmProfile.last_name2'
 			),
 			'conditions' => array(
-				'AdmUserRestriction.adm_user_id' => $userId, 
+				'AdmUserRestriction.adm_user_id' => $userId,
 				'AdmUserRestriction.active' => 1,
 				'AdmUserRestriction.selected' => 1,
-				'AdmUserRestriction.lc_transaction !='=>'LOGIC_DELETED'
+				'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED'
 			)
 		));
 
@@ -362,9 +319,9 @@ class AdmUsersController extends AppController {
 			$userPasswordEncrypted = $this->BittionSecurity->encryptUserSessionPassword($userPassword);
 			$this->Session->write('User.password', $userPasswordEncrypted);
 		}
-		
+
 		$this->Session->write('currentRoleActive', 'yes');
-		
+
 		$this->Session->write('UserRestriction.id', $infoRole[0]['AdmUserRestriction']['id']);  //in case there is no trigger postgres user integration, it will help
 		$this->Session->write('User.username', $infoRole[0]['AdmUser']['login']);
 		$this->Session->write('User.id', $userId);
@@ -389,7 +346,7 @@ class AdmUsersController extends AppController {
 				'AdmUserRestriction.selected' => 0,
 				'AdmUserRestriction.active' => 1,
 				'AdmUserRestriction.active_date > now()',
-				'AdmUserRestriction.lc_transaction !='=>'LOGIC_DELETED'
+				'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED'
 			)
 		));
 
@@ -539,7 +496,7 @@ class AdmUsersController extends AppController {
 
 	private function _selectOtherRole($userRestrictionId, $userId) {
 		try {
-			$this->AdmUser->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected' => 0, 'AdmUserRestriction.lc_transaction'=>"'MODIFY'"), array('AdmUserRestriction.adm_user_id' => $userId));
+			$this->AdmUser->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected' => 0, 'AdmUserRestriction.lc_transaction' => "'MODIFY'"), array('AdmUserRestriction.adm_user_id' => $userId));
 			try {
 				$this->AdmUser->AdmUserRestriction->save(array('id' => $userRestrictionId, 'selected' => 1));
 				try {
@@ -750,7 +707,8 @@ class AdmUsersController extends AppController {
 			foreach ($vec as $key => $value) {
 				if ($value['AdmAction']['name'] != '') {
 					$formated[$key]['controller'] = Inflector::camelize($value['AdmController']['name']);
-					$formated[$key]['action'] = strtolower($value['AdmAction']['name']);
+//					$formated[$key]['action'] = strtolower($value['AdmAction']['name']);
+					$formated[$key]['action'] = $value['AdmAction']['name'];
 				}
 			}
 		}
@@ -763,7 +721,7 @@ class AdmUsersController extends AppController {
 		//debug($merge);
 		//Initial Session Permision Data
 		$this->Session->write('Permission.AdmUsers.welcome', 'welcome');
-		//$this->Session->write('Permission.AdmUsers.login', 'login');
+//		$this->Session->write('Permission.AdmUsers.login', 'login');
 		$this->Session->write('Permission.AdmUsers.logout', 'logout');
 		$this->Session->write('Permission.AdmUsers.choose_role', 'choose_role');
 		$this->Session->write('Permission.AdmUsers.change_password', 'change_password');
@@ -849,7 +807,7 @@ class AdmUsersController extends AppController {
 				'AdmUserRestriction.active' => 1,
 				'AdmUserRestriction.active_date > now()',
 				'AdmUserRestriction.adm_role_id !=' => $roleId,
-				'AdmUserRestriction.lc_transaction !='=>'LOGIC_DELETED'
+				'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED'
 			),
 			'group' => array(
 				'AdmRole.id',
@@ -971,28 +929,29 @@ class AdmUsersController extends AppController {
 			$AdmUserRestriction['active'] = $this->request->data['active'];
 			$AdmUserRestriction['active_date'] = $this->request->data['activeDate'];
 			$AdmUserRestriction['selected'] = 0;
-			
-			if(isset($this->request->data['selected']))$AdmUserRestriction['selected'] = $this->request->data['selected'];
-			
+
+			if (isset($this->request->data['selected']))
+				$AdmUserRestriction['selected'] = $this->request->data['selected'];
+
 			//Check if already exists (LOGIC_DELETED), to active instead of create a new one
-			$alreadyExists = $this->AdmUser->AdmUserRestriction->find('list',array(
-				'conditions'=>array(
-					'AdmUserRestriction.adm_user_id'=>$AdmUserRestriction['adm_user_id'],
-					'AdmUserRestriction.adm_role_id'=>$AdmUserRestriction['adm_role_id'],
-					'AdmUserRestriction.period'=>$AdmUserRestriction['period'],
-					'AdmUserRestriction.lc_transaction'=>'LOGIC_DELETED'
+			$alreadyExists = $this->AdmUser->AdmUserRestriction->find('list', array(
+				'conditions' => array(
+					'AdmUserRestriction.adm_user_id' => $AdmUserRestriction['adm_user_id'],
+					'AdmUserRestriction.adm_role_id' => $AdmUserRestriction['adm_role_id'],
+					'AdmUserRestriction.period' => $AdmUserRestriction['period'],
+					'AdmUserRestriction.lc_transaction' => 'LOGIC_DELETED'
 				),
-				'fields'=>array('AdmUserRestriction.id', 'AdmUserRestriction.id'),
-				'limit'=>1
+				'fields' => array('AdmUserRestriction.id', 'AdmUserRestriction.id'),
+				'limit' => 1
 			));
 //			debug($alreadyExists);
-			if(count($alreadyExists) == 1){
+			if (count($alreadyExists) == 1) {
 				$AdmUserRestriction['id'] = reset($alreadyExists);
 			}
-			
+
 			if ($this->AdmUser->fnSaveUserRestriction($AdmUserRestriction)) {
 				echo 'success|' . $this->request->data['roleId'];
-			}else{
+			} else {
 				echo 'error';
 			}
 		}
@@ -1001,29 +960,29 @@ class AdmUsersController extends AppController {
 	public function ajax_edit_user_restrictions() {
 		if ($this->RequestHandler->isAjax()) {
 			$ownUserRestriction = 'no';
-			
+
 			$AdmUserRestriction['id'] = $this->request->data['userRestrictionId'];
 			$AdmUserRestriction['adm_area_id'] = $this->request->data['areaId'];
 			$AdmUserRestriction['adm_user_id'] = $this->request->data['userId'];
-			
-			if(isset($this->request->data['active'])){
+
+			if (isset($this->request->data['active'])) {
 				$AdmUserRestriction['active'] = $this->request->data['active'];
 			}
-			
-			if(isset($this->request->data['activeDate'])){
+
+			if (isset($this->request->data['activeDate'])) {
 				$AdmUserRestriction['active_date'] = $this->request->data['activeDate'];
 			}
-			
-			if(isset($this->request->data['selected'])){
+
+			if (isset($this->request->data['selected'])) {
 				$AdmUserRestriction['selected'] = $this->request->data['selected'];
 //				$ownUserRestriction = 'yes';
-			}else{//if the is not selected, it means the owner is editing its own role, because that control is erased when that happens 
+			} else {//if the is not selected, it means the owner is editing its own role, because that control is erased when that happens 
 				$ownUserRestriction = 'yes';
 			}
 //			debug($AdmUserRestriction);
 			if ($this->AdmUser->fnSaveUserRestriction($AdmUserRestriction, $ownUserRestriction)) {
 				echo 'success';
-			}else{
+			} else {
 				echo 'error';
 			}
 		}
@@ -1104,9 +1063,9 @@ class AdmUsersController extends AppController {
 			}
 			$AdmProfile['modifier'] = $this->Session->read('UserRestriction.id');
 			$AdmProfile['lc_transaction'] = 'MODIFY';
-			
-			if($this->AdmUser->AdmProfile->save($AdmProfile)){
-				if($this->AdmUser->save($AdmUser)){
+
+			if ($this->AdmUser->AdmProfile->save($AdmProfile)) {
+				if ($this->AdmUser->save($AdmUser)) {
 					echo 'success';
 				}
 			}
@@ -1114,7 +1073,6 @@ class AdmUsersController extends AppController {
 //			if ($this->AdmUser->saveAssociated(array('AdmUser'=>$AdmUser,'AdmProfile'=>$AdmProfile))) {
 //				echo 'success';
 //			}
-			
 		}
 	}
 
@@ -1170,15 +1128,15 @@ class AdmUsersController extends AppController {
 			throw new MethodNotAllowedException();
 		}
 		$exisUserRestrictions = $this->AdmUser->AdmUserRestriction->find('count', array(
-		'recursive'=>-1,
-		'conditions'=>array(
-			'AdmUserRestriction.lc_transaction !='=>'LOGIC_DELETED',
-			'AdmUserRestriction.adm_user_id'=>10),
+			'recursive' => -1,
+			'conditions' => array(
+				'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED',
+				'AdmUserRestriction.adm_user_id' => 10),
 		));
-				
+
 		if ($exisUserRestrictions > 0) {
 			$this->Session->setFlash(
-					'No se puede eliminar este Usuario porque tiene '.$exisUserRestrictions.' Roles asignados!', 'alert', array(
+					'No se puede eliminar este Usuario porque tiene ' . $exisUserRestrictions . ' Roles asignados!', 'alert', array(
 				'plugin' => 'TwitterBootstrap',
 				'class' => 'alert-error'
 					)
@@ -1241,10 +1199,10 @@ class AdmUsersController extends AppController {
 		}
 		$data = array();
 		if ($this->request->is('post') || $this->request->is('put')) {
-			$data['AdmUserRestriction']['lc_transaction']='LOGIC_DELETED';
+			$data['AdmUserRestriction']['lc_transaction'] = 'LOGIC_DELETED';
 //			$data['AdmUserRestriction']['id']=$idUserRestriction;
 //			debug($data);
-			if($this->AdmUser->AdmUserRestriction->save($data)){
+			if ($this->AdmUser->AdmUserRestriction->save($data)) {
 				$this->Session->setFlash(
 						'Eliminado con exito!', 'alert', array(
 					'plugin' => 'TwitterBootstrap',
@@ -1252,17 +1210,16 @@ class AdmUsersController extends AppController {
 						)
 				);
 				$this->redirect(array('action' => 'index_user_restriction', $idUser));
-			}else{
+			} else {
 				$this->Session->setFlash(
-					'Ocurrio un problema, vuelva a intentarlo', 'alert', array(
-				'plugin' => 'TwitterBootstrap',
-				'class' => 'alert-error'
-					)
+						'Ocurrio un problema, vuelva a intentarlo', 'alert', array(
+					'plugin' => 'TwitterBootstrap',
+					'class' => 'alert-error'
+						)
 				);
 				$this->redirect(array('action' => 'index_user_restriction', $idUser));
 			}
 		}
-		
 	}
 
 //END Class	

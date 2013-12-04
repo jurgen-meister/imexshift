@@ -18,10 +18,10 @@ class AdmRolesActionsController extends AppController {
 	}
 	
 	
-	private function _findMenus($var){
-		$vec = $this->AdmRolesMenu->AdmMenu->find('list', array('fields'=>array('AdmMenu.id', 'AdmMenu.id') , 'order'=>array('AdmMenu.order_menu'),'conditions'=>array("AdmMenu.parent_node"=>$var)));;
-		return $vec;
-	}
+//	private function _findMenus($var){
+//		$vec = $this->AdmRolesMenu->AdmMenu->find('list', array('fields'=>array('AdmMenu.id', 'AdmMenu.id') , 'order'=>array('AdmMenu.order_menu'),'conditions'=>array("AdmMenu.parent_node"=>$var)));;
+//		return $vec;
+//	}
 
 	
 	private function _fnCreateCheckboxTree($role, $module){

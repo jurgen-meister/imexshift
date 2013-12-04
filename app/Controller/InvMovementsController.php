@@ -29,6 +29,13 @@ class InvMovementsController extends AppController {
 	//*******************************************************************************************************//
 	///////////////////////////////////////// START - FUNCTIONS ///////////////////////////////////////////////
 	//*******************************************************************************************************//
+//	public function beforeFilter(){
+//		 parent::beforeFilter();
+//		  App::uses('ConnectionManager', 'Model');
+//                $dataSource = ConnectionManager::getDataSource('default');
+//                debug( $dataSource->config['login']);
+//	}
+	
 	
 	//////////////////////////////////////////// START - PDF ///////////////////////////////////////////////
 	public function view_document_movement_pdf($id = null) {

@@ -59,4 +59,41 @@ class AdmRolesMenu extends AppModel {
 			'order' => ''
 		)
 	);
+	
+	
+	public function saveMenus($role, $insert, $delete) {
+		$dataSource = $this->getDataSource();
+		$dataSource->begin();
+		////////////////////////////////////////////////
+		if (count($delete) > 0) {
+			try{
+				$this->deleteAll(array('adm_role_id'=>$role, 'adm_menu_id' => $delete));
+			}catch(Exception $e){
+				$dataSource->rollback();
+				return false;
+			}
+		}
+		
+		if (count($insert) > 0) {
+			$data = array();
+			$cont = 0;
+			foreach ($insert as $var) {
+				$data[$cont]['adm_role_id'] = $role;
+				$data[$cont]['adm_menu_id'] = $var;
+				$cont++;
+			}
+			try{
+				$this->saveMany($data);
+			}catch(Exception $e){
+				$dataSource->rollback();
+				return false;
+			}
+		}
+		///////////////////////////////////////////
+		$dataSource->commit();
+		return true;
+	}
+	
+	
+//END CLASS	
 }

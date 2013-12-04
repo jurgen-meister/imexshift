@@ -4,7 +4,7 @@ $(document).ready(function(){
 	var arr = path.split('/');
 	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');
 	
-	///Initialize checkboxTree behavior
+	///reset selects for firefox bug
 	$('#cbxRoles option:nth-child(1)').attr("selected", "selected");
 	$('#cbxModules option:nth-child(1)').attr("selected", "selected");
 //	$('#tree1').checkboxTree();
@@ -65,14 +65,14 @@ $(document).ready(function(){
 				if(data === 'success' || data ==='successEmpty'){
 					$.gritter.add({
 					   title:	'EXITO!',
-					   text: 'Cambios guardados',
+					   text: 'Cambios guardados.',
 					   sticky: false,
 					   image:'/imexport/img/check.png'
 				   });	
 				}else{
 					$.gritter.add({
 						title:	'NO SE GUARDO!',
-						text:	'Ocurrio un error..',
+						text:	'Ocurrio un error.',
 						sticky: false,
 						image:'/imexport/img/error.png'
 					});		

@@ -40,7 +40,8 @@ class AppModel extends Model {
 		}
         return true;
 	}
-	
+
+	//When there wasn't triggers
 //	public function beforeSave($options = array()) {
 //		App::import('Model', 'CakeSession');
 //		$session = new CakeSession();
@@ -52,7 +53,5 @@ class AppModel extends Model {
 //		}
 //        return true;
 //    }
-	
-	
 	
 }
