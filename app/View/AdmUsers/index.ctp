@@ -61,6 +61,7 @@ echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' =>
 				</td>
 			</tr>
 		<?php endforeach; ?>
+				
 		</table>
 
 		<!-- *********************************************** #UNICORN TABLE WRAP ********************************************-->

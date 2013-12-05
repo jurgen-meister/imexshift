@@ -38,8 +38,13 @@ class AdmRolesController extends AppController {
  */
 	public function index() {
 		$this->AdmRole->recursive = 0;
+		$filter = array('AdmRole.id !='=>1);
+		if($this->Session->read('Role.id') == 1){
+			$filter = null;
+		}
 		$this->paginate = array(
 			'order'=>array('AdmRole.id'=>'ASC'),
+			'conditions'=>$filter
 		);
 		$this->set('admRoles', $this->paginate());
 	}
@@ -88,6 +93,9 @@ class AdmRolesController extends AppController {
 		if (!$this->AdmRole->exists()) {
 			throw new NotFoundException(__('Invalid %s', __('adm role')));
 		}
+		if($this->Session->read('Role.id') <> 1 AND $id = 1){
+			$this->redirect(array('action' => 'index'));
+		}
 		if ($this->request->is('post') || $this->request->is('put')) {
 			$this->request->data['AdmRole']['name'] = strtoupper($this->request->data['AdmRole']['name']);
 			if ($this->AdmRole->save($this->request->data)) {
@@ -124,6 +132,9 @@ class AdmRolesController extends AppController {
 	public function delete($id = null) {
 		if (!$this->request->is('post')) {
 			throw new MethodNotAllowedException();
+		}
+		if($this->Session->read('Role.id') <> 1 AND $id = 1){
+			$this->redirect(array('action' => 'index'));
 		}
 		$this->AdmRole->id = $id;
 		if (!$this->AdmRole->exists()) {

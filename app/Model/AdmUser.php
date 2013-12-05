@@ -188,7 +188,7 @@ class AdmUser extends AppModel {
 		$dataSource = $this->getDataSource();
 		$dataSource->begin();
 		////////////////////////////////////////////
-		if (!$this->save(array('id' => $idUser, 'password' => $password))) {
+		if (!$this->save(array('id' => $idUser, 'password' => AuthComponent::password($password)))) {
 			$dataSource->rollback();
 			return false;
 		}

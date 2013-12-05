@@ -23,7 +23,12 @@ class AdmUsersController extends AppController {
 	 */
 	public function index() {
 		////////////////////////////START - SETTING PAGINATING VARIABLES//////////////////////////////////////
-		$filters = '';
+		$filters = null;
+//		debug($this->Session->read('User.id'));
+		if($this->Session->read('Role.id') <> 1){ //to avoid other users to edit SUPER USER imexport
+			$filters = array('AdmUser.id !='=>1);
+		}
+		
 		$this->paginate = array(
 			'conditions' => array(
 				$filters
@@ -56,6 +61,9 @@ class AdmUsersController extends AppController {
 		if ($id == null) {
 			$this->redirect(array('action' => 'index'));
 		}
+		if($this->Session->read('Role.id') <> 1 AND $id == 1){
+			$this->redirect(array('action' => 'index')); //Only SUPER USER CAN EDIT its own account
+		}
 		$userInfo = $this->AdmUser->find('all', array(
 			'conditions' => array('AdmUser.id' => $id),
 			'fields' => array('AdmUser.login'),
@@ -67,11 +75,16 @@ class AdmUsersController extends AppController {
 		$periodInitial = key($periods);
 		$areas = $this->AdmUser->AdmUserRestriction->AdmArea->find('list', array('conditions' => array('AdmArea.period' => $periodInitial)));
 		$rolesTaken = array();
+		
+
+		
+		
 		$admUserRestriction = $this->AdmUser->AdmUserRestriction->find('all', array(
 			'conditions' => array(
 				'AdmUserRestriction.adm_user_id' => $id
 				, 'AdmUserRestriction.period' => $periodInitial
 				, 'AdmUserRestriction.lc_state !=' => 'LOGIC_DELETED'
+
 			),
 			'fields' => array('AdmUserRestriction.adm_role_id')
 		));
@@ -79,7 +92,11 @@ class AdmUsersController extends AppController {
 		for ($i = 0; $i < count($admUserRestriction); $i++) {
 			$rolesTaken[$admUserRestriction[$i]['AdmUserRestriction']['adm_role_id']] = $admUserRestriction[$i]['AdmUserRestriction']['adm_role_id'];
 		}
-
+		
+		if($this->Session->read('Role.id') <> 1){
+			$rolesTaken[1] = 1;
+		}
+		
 		$roles = $this->AdmUser->AdmUserRestriction->AdmRole->find('list', array(
 			'conditions' => array('NOT' => array('AdmRole.id' => $rolesTaken))
 		));
@@ -99,7 +116,11 @@ class AdmUsersController extends AppController {
 
 		//$id = $this->passedArgs['id'];
 		$idUserRestriction = $this->passedArgs['idUserRestriction'];
-
+		
+		if($this->Session->read('Role.id') <> 1 AND $idUserRestriction == 1){
+			$this->redirect(array('action' => 'index')); //Only SUPER USER CAN EDIT its own account
+		}
+		
 		$AdmUserRestriction = $this->AdmUser->AdmUserRestriction->find('all', array(
 			'conditions' => array('AdmUserRestriction.id' => $idUserRestriction),
 			'fields' => array('AdmUserRestriction.selected', 'AdmUser.id', 'AdmUser.login', 'AdmUserRestriction.active_date', 'AdmUserRestriction.active', 'AdmUserRestriction.adm_role_id', 'AdmUserRestriction.adm_area_id', 'AdmUserRestriction.period'),
@@ -153,6 +174,9 @@ class AdmUsersController extends AppController {
 			for ($i = 0; $i < count($admUserRestriction); $i++) {
 				$rolesTaken[$admUserRestriction[$i]['AdmUserRestriction']['adm_role_id']] = $admUserRestriction[$i]['AdmUserRestriction']['adm_role_id'];
 			}
+			if($this->Session->read('Role.id') <> 1){
+				$rolesTaken[1] = 1;
+			}
 //			debug($rolesTaken);
 			$roles = $this->AdmUser->AdmUserRestriction->AdmRole->find('list', array(
 				'conditions' => array('NOT' => array('AdmRole.id' => $rolesTaken))
@@ -160,6 +184,8 @@ class AdmUsersController extends AppController {
 
 			$this->set('roles', $roles);
 			$this->set('areas', $areas);
+		}else{
+			$this->redirect($this->Auth->logout());//only accesable through ajax request
 		}
 		////////////////////////////////////////////END AJAX///////////////////////////////////////////////
 	}
@@ -169,7 +195,11 @@ class AdmUsersController extends AppController {
 		if ($id == null) {
 			$this->redirect(array('action' => 'index'));
 		}
-
+		
+		if($this->Session->read('Role.id') <> 1 AND $id == 1){
+			$this->redirect(array('action' => 'index')); //Only SUPER USER CAN EDIT its own account
+		}
+		
 		$filters = array('AdmUserRestriction.adm_user_id' => $id, 'AdmUserRestriction.lc_state !=' => 'LOGIC_DELETED');
 		$this->paginate = array(
 			'conditions' => array(
@@ -215,7 +245,9 @@ class AdmUsersController extends AppController {
 		if ($this->request->is('post')) {
 			//#KEY drop initial database config default, and create the dynamic connection. Other wise it will login with the limited connection
 			if (!$this->BittionMain->connectDatabaseDynamically($this->request->data['AdmUser']['login'], $this->request->data['AdmUser']['password'])) {
-				$this->Session->setFlash('<strong>Error!</strong> fallo la conexión a la base de datos.', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-error'));
+//				$this->Session->setFlash('<strong>Error!</strong> fallo la conexión a la base de datos.', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-error'));
+				//More User friendly message when there is no DB user connection
+				$this->Session->setFlash('<strong>Usuario o contraseña incorrecto!!!</strong>', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-error'));
 				$this->redirect(array('controller' => 'AdmUsers', 'action' => 'login'));
 			}
 
@@ -379,7 +411,7 @@ class AdmUsersController extends AppController {
 
 	public function ajax_change_password() {
 		if ($this->RequestHandler->isAjax()) {
-			$password = AuthComponent::password($this->request->data['password']);
+			$password = $this->request->data['password'];
 			$idUser = $this->Session->read('User.id');
 			$usernameArray = $this->AdmUser->find('list', array(
 				'conditions' => array('AdmUser.id' => $idUser),
@@ -748,7 +780,7 @@ class AdmUsersController extends AppController {
 		$period = $this->Session->read('Period.name');
 //		$this->_countDocuments($period, 'InvMovement', 'APPROVED', 'SAL');//must improve with subquery, for now 82ms with 6000 rows, it's not that bad
 		$total = array();
-		if (strtolower($this->Session->read('Role.name')) <> 'vendedor') {
+		if ($this->Session->read('Role.id') == 1 OR $this->Session->read('Role.id') == 2) {
 			//Movements
 			$total['inApproved'] = $this->_countDocuments($period, 'InvMovement', 'APPROVED', 'ENT');
 			$total['inPendant'] = $this->_countDocuments($period, 'InvMovement', 'PENDANT', 'ENT');
@@ -904,8 +936,8 @@ class AdmUsersController extends AppController {
 				'fields' => array('AdmUser.id', 'AdmUser.login')
 			));
 			$username = reset($usernameArray);
-			$encryptedPassword = AuthComponent::password($password);
-			if ($this->AdmUser->fnChangePassword($idUser, $encryptedPassword, $username)) {
+			
+			if ($this->AdmUser->fnChangePassword($idUser, $password, $username)) {
 				if ($password <> '') {
 					if ($username == $this->Session->read('User.username')) {
 						$this->Session->write('User.username', $username);
@@ -1101,6 +1133,9 @@ class AdmUsersController extends AppController {
 		} else {
 			$this->redirect(array('action' => 'index'));
 		}
+		if($this->Session->read('Role.id') <> 1 AND $id == 1){
+			$this->redirect(array('action' => 'index')); //Only SUPER USER CAN EDIT its own account
+		}
 		$this->AdmUser->id = $id;
 		if (!$this->AdmUser->exists()) {
 			throw new NotFoundException(__('No existe'));
@@ -1124,55 +1159,55 @@ class AdmUsersController extends AppController {
 	 * @return void
 	 */
 	public function delete($id = null) {
-		if (!$this->request->is('post')) {
-			throw new MethodNotAllowedException();
-		}
-		$exisUserRestrictions = $this->AdmUser->AdmUserRestriction->find('count', array(
-			'recursive' => -1,
-			'conditions' => array(
-				'AdmUserRestriction.lc_state !=' => 'LOGIC_DELETED',
-				'AdmUserRestriction.adm_user_id' => 10),
-		));
-
-		if ($exisUserRestrictions > 0) {
-			$this->Session->setFlash(
-					'No se puede eliminar este Usuario porque tiene ' . $exisUserRestrictions . ' Roles asignados!', 'alert', array(
-				'plugin' => 'TwitterBootstrap',
-				'class' => 'alert-error'
-					)
-			);
-			$this->redirect(array('action' => 'index'));
-		}
-
-		try {
-			$this->AdmUser->AdmProfile->deleteAll(array('AdmProfile.adm_user_id' => $id));
-			try {
-				$this->AdmUser->deleteAll(array('AdmUser.id' => $id));
-				$this->Session->setFlash(
-						'Eliminado con exito!', 'alert', array(
-					'plugin' => 'TwitterBootstrap',
-					'class' => 'alert-success'
-						)
-				);
-				$this->redirect(array('action' => 'index'));
-			} catch (Exception $e) {
-				$this->Session->setFlash(
-						'Ocurrio un problema, vuelva a intentarlo', 'alert', array(
-					'plugin' => 'TwitterBootstrap',
-					'class' => 'alert-error'
-						)
-				);
-				$this->redirect(array('action' => 'index'));
-			}
-		} catch (Exception $e) {
-			$this->Session->setFlash(
-					'Ocurrio un problema, vuelva a intentarlo', 'alert', array(
-				'plugin' => 'TwitterBootstrap',
-				'class' => 'alert-error'
-					)
-			);
-			$this->redirect(array('action' => 'index'));
-		}
+//		if (!$this->request->is('post')) {
+//			throw new MethodNotAllowedException();
+//		}
+//		$exisUserRestrictions = $this->AdmUser->AdmUserRestriction->find('count', array(
+//			'recursive' => -1,
+//			'conditions' => array(
+//				'AdmUserRestriction.lc_state !=' => 'LOGIC_DELETED',
+//				'AdmUserRestriction.adm_user_id' => 10),
+//		));
+//
+//		if ($exisUserRestrictions > 0) {
+//			$this->Session->setFlash(
+//					'No se puede eliminar este Usuario porque tiene ' . $exisUserRestrictions . ' Roles asignados!', 'alert', array(
+//				'plugin' => 'TwitterBootstrap',
+//				'class' => 'alert-error'
+//					)
+//			);
+//			$this->redirect(array('action' => 'index'));
+//		}
+//
+//		try {
+//			$this->AdmUser->AdmProfile->deleteAll(array('AdmProfile.adm_user_id' => $id));
+//			try {
+//				$this->AdmUser->deleteAll(array('AdmUser.id' => $id));
+//				$this->Session->setFlash(
+//						'Eliminado con exito!', 'alert', array(
+//					'plugin' => 'TwitterBootstrap',
+//					'class' => 'alert-success'
+//						)
+//				);
+//				$this->redirect(array('action' => 'index'));
+//			} catch (Exception $e) {
+//				$this->Session->setFlash(
+//						'Ocurrio un problema, vuelva a intentarlo', 'alert', array(
+//					'plugin' => 'TwitterBootstrap',
+//					'class' => 'alert-error'
+//						)
+//				);
+//				$this->redirect(array('action' => 'index'));
+//			}
+//		} catch (Exception $e) {
+//			$this->Session->setFlash(
+//					'Ocurrio un problema, vuelva a intentarlo', 'alert', array(
+//				'plugin' => 'TwitterBootstrap',
+//				'class' => 'alert-error'
+//					)
+//			);
+//			$this->redirect(array('action' => 'index'));
+//		}
 
 
 		/*
