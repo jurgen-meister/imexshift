@@ -647,7 +647,7 @@ class AdmUsersController extends AppController {
 		$controlerName = $vec[0]['AdmController']['name'];
 		$actionName = strtolower($vec[0]['AdmAction']['name']);
 		$link = '/' . $projectName . '/' . $controlerName . '/' . $actionName;
-		$idForLi = $controlerName . '-' . $actionName;
+		$idForLi = $controlerName.'-'. $actionName; 
 
 		$actionEmpty = 'no';
 		if ($vec[0]['AdmAction']['name'] == null) {

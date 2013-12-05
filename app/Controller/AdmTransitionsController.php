@@ -48,7 +48,7 @@ class AdmTransitionsController extends AppController {
 			'AdmTransaction.adm_controller_id' => $sSearch
 		);
 		$this->paginate = array(
-			'order' => array($controller . '.name' => 'asc'),
+			'order' => array($controller . '.adm_transaction_id' => 'asc', 'AdmFinalState.name'=>'ASC'),
 			'limit' => 50,
 			'fields' => array(
 				'AdmTransition.id'
