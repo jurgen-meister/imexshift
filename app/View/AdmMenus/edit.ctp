@@ -5,7 +5,7 @@ if($this->request->data['AdmMenu']['parent_node'] == null){
 	$disable = true;
 	$disableIcon = false;
 }
-
+//debug($this->passedArgs);
 ?>
 <?php echo $this->Html->script('modules/AdmMenus', FALSE); ?>
 <!-- ************************************************************************************************************************ -->
@@ -75,7 +75,7 @@ if($this->request->data['AdmMenu']['parent_node'] == null){
 				?>
 				<div class="form-actions" style="text-align: center">
 					<?php echo $this->BootstrapForm->submit(__('Guardar cambios'), array('div'=>false, 'class'=>'btn btn-primary'));?>
-					<?php echo ' '.$this->Html->link('Volver', array('action'=>'index'), array('class'=>'btn') );?>
+					<?php echo ' '.$this->Html->link('Volver', array('action'=>'index', $this->passedArgs[1]), array('class'=>'btn') );?>
 				</div>
 			</fieldset>
 		<?php echo $this->BootstrapForm->end();?>

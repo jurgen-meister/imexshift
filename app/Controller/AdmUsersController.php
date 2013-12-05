@@ -30,7 +30,7 @@ class AdmUsersController extends AppController {
 			),
 			'recursive' => 0,
 			//'fields'=>array('InvMovement.id', 'InvMovement.code', 'InvMovement.document_code', 'InvMovement.date','InvMovement.inv_movement_type_id','InvMovementType.name', 'InvMovement.inv_warehouse_id', 'InvWarehouse.name', 'InvMovement.lc_state'),
-			'order' => array('AdmUser.id' => 'desc'),
+			'order' => array('AdmUser.login' => 'ASC', 'AdmUser.active'=>'ASC'),
 			'limit' => 20,
 		);
 		////////////////////////////END - SETTING PAGINATING VARIABLES//////////////////////////////////////
@@ -379,7 +379,7 @@ class AdmUsersController extends AppController {
 
 	public function ajax_change_password() {
 		if ($this->RequestHandler->isAjax()) {
-			$password = $this->request->data['password'];
+			$password = AuthComponent::password($this->request->data['password']);
 			$idUser = $this->Session->read('User.id');
 			$usernameArray = $this->AdmUser->find('list', array(
 				'conditions' => array('AdmUser.id' => $idUser),
@@ -460,6 +460,22 @@ class AdmUsersController extends AppController {
 
 //		debug($idUser);
 //		debug($idUserRestrictionSelected);
+		$chechLogicDeleted = $this->AdmUser->AdmUserRestriction->find('count', array(
+			'conditions'=>array(
+				'AdmUserRestriction.id'=>key($idUserRestrictionSelected)
+				, 'AdmUserRestriction.lc_transaction'=>'LOGIC_DELETED')
+		));
+		
+		if($chechLogicDeleted > 0){
+			$this->Session->setFlash(
+						'<strong>El rol fue eliminado!</strong>', 'alert', array(
+					'plugin' => 'TwitterBootstrap',
+					'class' => 'alert-error'
+						)
+				);
+			$this->redirect($this->Auth->logout());
+		}
+		
 		try {
 			if (!$this->AdmUser->change_user_restriction($idUser, key($idUserRestrictionSelected))) {
 				$this->Session->setFlash(
@@ -473,13 +489,13 @@ class AdmUsersController extends AppController {
 			$this->_createUserAccountSession($idUser, 'cambio rol');
 		} catch (Exception $e) {
 			$this->Session->setFlash(
+//					$e.
 					'Ocurrio un problema al cambiar de <strong>Rol / Gestión</strong>', 'alert', array(
 				'plugin' => 'TwitterBootstrap',
 				'class' => 'alert-error'
 					), 'flash_change_user_restriction'
 			);
 			$this->redirect(array('action' => 'welcome'));
-//			debug($e);
 		}
 	}
 
@@ -677,24 +693,6 @@ class AdmUsersController extends AppController {
 				)
 			)
 		));
-
-//		$this->AdmRolesMenu->bindModel(array(
-//			'hasOne'=>array(
-//				'AdmMenu'=>array(
-//					'foreignKey'=>false,
-//					'conditions' => array('AdmRolesMenu.adm_menu_id = AdmMenu.id')
-//				),
-//				'AdmAction'=>array(
-//					'foreignKey'=>false,
-//					'conditions' => array('AdmMenu.adm_action_id = AdmAction.id')
-//				),
-//				'AdmController'=>array(
-//					'foreignKey'=>false,
-//					'conditions' => array('AdmAction.adm_controller_id = AdmController.id')
-//				),
-//				
-//			)
-//		));
 
 		$vec = $this->AdmRolesAction->find('all', array(
 			'conditions' => array('AdmRolesAction.adm_role_id' => $roleId)
@@ -906,7 +904,8 @@ class AdmUsersController extends AppController {
 				'fields' => array('AdmUser.id', 'AdmUser.login')
 			));
 			$username = reset($usernameArray);
-			if ($this->AdmUser->fnChangePassword($idUser, $password, $username)) {
+			$encryptedPassword = AuthComponent::password($password);
+			if ($this->AdmUser->fnChangePassword($idUser, $encryptedPassword, $username)) {
 				if ($password <> '') {
 					if ($username == $this->Session->read('User.username')) {
 						$this->Session->write('User.username', $username);
@@ -997,7 +996,7 @@ class AdmUsersController extends AppController {
 			$username = $this->_generate_user_name(trim($this->request->data['txtFirstName']), str_replace(' ', '', $this->request->data['txtLastName1']) . ' ' . str_replace(' ', '', $this->request->data['txtLastName2']));
 			$password = $this->_generate_password(8);
 			$AdmUser['login'] = $username;
-			$AdmUser['password'] = $password;
+			$AdmUser['password'] = AuthComponent::password($password);
 			$AdmUser['active'] = $this->request->data['cbxActive'];
 			$AdmUser['active_date'] = $this->request->data['txtActiveDate'];
 			//$AdmUser['creator'] = $this->Session->read('UserRestriction.id');

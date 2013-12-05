@@ -4,11 +4,11 @@ $(document).ready(function() {
 	var arr = path.split('/');
 	var moduleController = ('/' + arr[1] + '/' + arr[2] + '/');
 	///Initialize checkboxTree behavior
-	if (arr[3] === 'add') {
+//	if (arr[3] === 'save') {
 		$('#roles option:nth-child(1)').attr("selected", "selected");
 		$('#modules option:nth-child(1)').attr("selected", "selected");
 		$('#tree1').checkboxTree();
-	}
+//	}
 
 	$("select").select2();
 

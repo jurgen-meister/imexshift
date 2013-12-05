@@ -151,7 +151,8 @@
 								'id'=>'txtAddress',
 								'name'=>'txtAddress',
 								'label' => 'Dirección:',
-								'value'=>$data['AdmProfile']['address']
+								'value'=>$data['AdmProfile']['address'],
+								'placeholder'=>'Dirección, ciudad, (pais)'
 								//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 							));
 

@@ -28,7 +28,7 @@ class BittionSecurityComponent extends Component{
 //				if (substr($value, 0, 1) <> '_') {
 //					$ajaxActions[$value] = $value;
 //				}
-				if (substr($value, 0, 1) == '_' OR substr($value, 0, 1) == 'fn') {
+				if (substr($value, 0, 1) == '_' OR substr($value, 0, 2) == 'fn') {
 					//don't do nothing because this are interanl functions and don't need permissions, I'm not sure about fn because are public we'll see
 				}else{
 					$ajaxActions[$value] = $value;

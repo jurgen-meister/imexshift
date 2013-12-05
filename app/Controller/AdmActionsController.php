@@ -126,7 +126,9 @@ class AdmActionsController extends AppController {
 			$appActions = array();
 			foreach ($classMethods as $value) {
 				if (strtolower(substr($value, 0, 4)) <> 'ajax') {
-					if (substr($value, 0, 1) <> '_') {
+					if (substr($value, 0, 1) == '_' OR substr($value, 0, 2) == 'fn') {
+						//nothing
+					}else{
 						$appActions[$value] = $value;
 					}
 				}

@@ -52,6 +52,7 @@ class AdmModulesController extends AppController {
 	public function add() {
 		if ($this->request->is('post')) {
 			$this->AdmModule->create();
+			$this->request->data['AdmModule']['initials'] = strtolower($this->request->data['AdmModule']['initials']);
 			if ($this->AdmModule->save($this->request->data)) {
 				$this->Session->setFlash(
 					__('Módulo creado con exito!', __('adm module')),
@@ -87,7 +88,7 @@ class AdmModulesController extends AppController {
 			throw new NotFoundException(__('Invalid %s', __('adm module')));
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
-			$this->request->data['AdmModule']['lc_transaction']='MODIFY';
+			$this->request->data['AdmModule']['initials'] = strtolower($this->request->data['AdmModule']['initials']);
 			if ($this->AdmModule->save($this->request->data)) {
 				$this->Session->setFlash(
 					__('Módulo editado con exito!', __('adm module')),

@@ -26,8 +26,6 @@
 //	echo $this->element('exception_stack_trace');
 //endif;
 ?>
-
-
 <div class="alert alert-error">
 	<a class="close" data-dismiss="alert" href="#">×</a>
-	<STRONG>Ocurrio un error!</STRONG> Vuelva a cargar la página.</div>
+	<STRONG>Esta página no existe!</STRONG></div>

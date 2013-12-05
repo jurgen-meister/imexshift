@@ -157,13 +157,13 @@ class AdmController extends AppModel {
 		
 		$vector = $this->AdmState->find('all', array("recursive"=>-1, "conditions"=>array("adm_controller_id"=>$idController), "fields"=>"id"));
 		foreach ($vector as $key => $val){
-			echo $val['AdmState']['id'];
+//			echo $val['AdmState']['id'];
 			$vState[$key] = $val['AdmState']['id'];
 		}
 
 		$vector2 = $this->AdmTransaction->find('all', array("recursive"=>-1, "conditions"=>array("adm_controller_id"=>$idController), "fields"=>"id"));
 		foreach ($vector2 as $key => $val){
-			echo $val['AdmTransaction']['id'];
+//			echo $val['AdmTransaction']['id'];
 			$vTransaction[$key] = $val['AdmTransaction']['id'];
 		}
 

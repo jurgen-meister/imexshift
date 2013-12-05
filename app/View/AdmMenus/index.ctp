@@ -5,7 +5,7 @@
 <!-- ************************************************************************************************************************ -->
 <h3>
 <?php
-echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' => 'add'), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo')); 
+echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' => 'add', $idParentMenu), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Nuevo')); 
 ?>
 <?php echo __(' Menus');?></h3>
 
@@ -25,7 +25,8 @@ echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' =>
 						echo $this->BootstrapForm->input('parentsMenus', array(				
 										//'label' => 'Módulo:',
 										'id'=>'cbxSearchModules',
-										//'value'=>$code,
+										'value'=>$idParentMenu,
+							
 										'options'=>$parentsMenus,
 										'type'=>'select',
 										'placeholder'=>'Codigo Entrada',
@@ -37,9 +38,9 @@ echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' =>
 			<?php 
 			echo ' ';
 			$url['action'] = 'edit';
-			echo $this->Html->link('<i class="icon-pencil icon-white"></i>'.__(''),  array_merge($url,array($idParentMenu)), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Editar')); 
+			echo $this->Html->link('<i class="icon-pencil icon-white"></i>'.__(''),  array_merge($url,array($idParentMenu, $idParentMenu)), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Editar')); 
 			//I took out this delete postLink from the main form because is generates its own form and it doesn't work if it is inside the other form
-			echo ' '.$this->Form->postLink('<i class="icon-trash icon-white"></i>', array_merge(array('action' => 'delete'), array($idParentMenu)), array('class'=>'btn btn-danger', 'escape'=>false, 'title'=>'Eliminar'), __('¿Esta seguro de eliminar este menu?', $idParentMenu)); 
+			echo ' '.$this->Form->postLink('<i class="icon-trash icon-white"></i>', array_merge(array('action' => 'delete'), array($idParentMenu, $idParentMenu)), array('class'=>'btn btn-danger', 'escape'=>false, 'title'=>'Eliminar'), __('¿Esta seguro de eliminar este menu?', $idParentMenu)); 
 			?>
 			<!-- ////////////////////////////////////////FIN - FORMULARIO BUSQUEDA////////////////////////////////////////////////-->		
 			</div>
@@ -80,8 +81,8 @@ echo $this->Html->link('<i class="icon-plus icon-white"></i>', array('action' =>
 				<td>
 					<?php 
 					$url['action'] = 'edit';
-					echo $this->Html->link('<i class="icon-pencil icon-white"></i>'.__(''),  array_merge($url,array($admMenu['AdmMenu']['id'])), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Editar')); 
-					echo ' '.$this->Form->postLink('<i class="icon-trash icon-white"></i>', array('action' => 'delete', $admMenu['AdmMenu']['id']), array('class'=>'btn btn-danger', 'escape'=>false, 'title'=>'Eliminar'), __('¿Esta seguro de borrar este menu?', $admMenu['AdmMenu']['id']));
+					echo $this->Html->link('<i class="icon-pencil icon-white"></i>'.__(''),  array_merge($url,array($admMenu['AdmMenu']['id'], $idParentMenu)), array('class'=>'btn btn-primary', 'escape'=>false, 'title'=>'Editar')); 
+					echo ' '.$this->Form->postLink('<i class="icon-trash icon-white"></i>', array('action' => 'delete', $admMenu['AdmMenu']['id'], $idParentMenu), array('class'=>'btn btn-danger', 'escape'=>false, 'title'=>'Eliminar'), __('¿Esta seguro de borrar este menu?', $admMenu['AdmMenu']['id']));
 					?>
 				</td>
 			</tr>

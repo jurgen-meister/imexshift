@@ -61,20 +61,20 @@ class AdmUser extends AppModel {
 
 	//The Associations below have been created with all possible keys, those that are not needed can be removed
 
-	public function beforeSave($options = array()) {
-		App::import('Model', 'CakeSession');
-//		$session = new CakeSession();
-//		if (isset($this->data[$this->name]['id'])) {
-//			$this->data[$this->name]['modifier'] = $session->read('UserRestriction.id');
-//			$this->data[$this->name]['lc_transaction'] = 'MODIFY';
-//		} else {
-//			$this->data[$this->name]['creator'] = $session->read('UserRestriction.id');
+//	public function beforeSave($options = array()) {
+//		App::import('Model', 'CakeSession');
+////		$session = new CakeSession();
+////		if (isset($this->data[$this->name]['id'])) {
+////			$this->data[$this->name]['modifier'] = $session->read('UserRestriction.id');
+////			$this->data[$this->name]['lc_transaction'] = 'MODIFY';
+////		} else {
+////			$this->data[$this->name]['creator'] = $session->read('UserRestriction.id');
+////		}
+//		if (isset($this->data['AdmUser']['password'])) {
+//			$this->data['AdmUser']['password'] = AuthComponent::password($this->data['AdmUser']['password']);
 //		}
-		if (isset($this->data['AdmUser']['password'])) {
-			$this->data['AdmUser']['password'] = AuthComponent::password($this->data['AdmUser']['password']);
-		}
-		return true;
-	}
+//		return true;
+//	}
 
 	/**
 	 * hasMany associations
@@ -153,6 +153,18 @@ class AdmUser extends AppModel {
 //			return false;
 //		}
 		
+		
+//		$chechLogicDeleted = $this->AdmUserRestriction->find('count', array(
+//			'conditions'=>array(
+//				'AdmUserRestriction.id'=>$idUserRestrictionSelected
+//				, 'AdmUserRestriction.lc_transaction'=>'LOGIC_DELETED')
+//		));
+		
+//		if($chechLogicDeleted > 0){
+//			$lc_transaction = 'LOGIC_DELETED';
+//		}else{
+//			$lc_transaction = 'MODIFY';
+//		}
 		
 		if (!$this->AdmUserRestriction->save(array('id' => $idUserRestrictionSelected, 'selected' => 1))){
 			$dataSource->rollback();
