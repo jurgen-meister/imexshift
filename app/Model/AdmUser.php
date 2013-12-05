@@ -277,7 +277,7 @@ class AdmUser extends AppModel {
 				$UserRestrictionIds = $this->AdmUserRestriction->find('list', array(
 					'conditions' => array(
 						'AdmUserRestriction.adm_user_id' => $data['adm_user_id'],
-						'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED'
+						'AdmUserRestriction.lc_state !=' => 'LOGIC_DELETED'
 					),
 					'fields' => array('AdmUserRestriction.id', 'AdmUserRestriction.id')
 				));
@@ -289,6 +289,7 @@ class AdmUser extends AppModel {
 							$dataSource->rollback();
 							return false;
 						}
+//						debug('exito');
 					}
 				}
 			}
@@ -300,7 +301,6 @@ class AdmUser extends AppModel {
 
 
 		if (!$this->AdmUserRestriction->save($data)) {
-
 			$dataSource->rollback();
 			return false;
 		}

@@ -70,7 +70,7 @@ class BittionSecurityComponent extends Component{
 		$checkActive = $this->AdmUser->AdmUserRestriction->find('all', array(
 			'conditions' => array(
 				'AdmUserRestriction.id' => $idUserRestriction,
-				'AdmUserRestriction.lc_transaction !='=>'LOGIC_DELETED'
+				'AdmUserRestriction.lc_state !='=>'LOGIC_DELETED'
 //				'AdmUser.active' => 1,
 //				'AdmUser.active_date > now()',
 //				'AdmUserRestriction.active' => 1,

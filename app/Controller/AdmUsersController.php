@@ -71,7 +71,7 @@ class AdmUsersController extends AppController {
 			'conditions' => array(
 				'AdmUserRestriction.adm_user_id' => $id
 				, 'AdmUserRestriction.period' => $periodInitial
-				, 'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED'
+				, 'AdmUserRestriction.lc_state !=' => 'LOGIC_DELETED'
 			),
 			'fields' => array('AdmUserRestriction.adm_role_id')
 		));
@@ -170,7 +170,7 @@ class AdmUsersController extends AppController {
 			$this->redirect(array('action' => 'index'));
 		}
 
-		$filters = array('AdmUserRestriction.adm_user_id' => $id, 'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED');
+		$filters = array('AdmUserRestriction.adm_user_id' => $id, 'AdmUserRestriction.lc_state !=' => 'LOGIC_DELETED');
 		$this->paginate = array(
 			'conditions' => array(
 				$filters
@@ -241,28 +241,28 @@ class AdmUsersController extends AppController {
 				}
 
 				//Roles Validation
-				$role = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED')));
+				$role = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.lc_state !=' => 'LOGIC_DELETED')));
 				if ($role == 0) {//No roles found
 					$this->_createMessage('El usuario no tiene ningun rol asignado');
 //					$error++;
 					$this->redirect($this->Auth->logout());
 				} else {
-					$roleSelected = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.selected' => 1, 'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED')));
+					$roleSelected = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.selected' => 1, 'AdmUserRestriction.lc_state !=' => 'LOGIC_DELETED')));
 					if ($roleSelected == 0) {
 						$this->_createMessage('El usuario no tiene ningun rol principal seleccionado');
 						$this->redirect($this->Auth->logout());
 					}
 
 					////////////////////////////////////////////////////////////////////////////////////////////////
-					$roleActive = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.active' => 1, 'AdmUserRestriction.selected' => 1, 'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED')));
-					$roleActiveDate = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.active_date > now()', 'AdmUserRestriction.selected' => 1, 'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED')));
+					$roleActive = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.active' => 1, 'AdmUserRestriction.selected' => 1, 'AdmUserRestriction.lc_state !=' => 'LOGIC_DELETED')));
+					$roleActiveDate = $this->AdmUser->AdmUserRestriction->find('count', array('conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'], 'AdmUserRestriction.active_date > now()', 'AdmUserRestriction.selected' => 1, 'AdmUserRestriction.lc_state !=' => 'LOGIC_DELETED')));
 					if ($roleActive == 0 OR $roleActiveDate == 0) {
 
 						$otherRoles = $this->AdmUser->AdmUserRestriction->find('all', array(
 							'conditions' => array('AdmUserRestriction.adm_user_id' => $userInfo['id'],
 								'AdmUserRestriction.active_date > now()',
 								'AdmUserRestriction.active' => 1,
-								'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED'
+								'AdmUserRestriction.lc_state !=' => 'LOGIC_DELETED'
 							),
 							'fields' => array('AdmUser.id', 'AdmUser.login', 'AdmRole.name', 'AdmUserRestriction.period', 'AdmUserRestriction.id'),
 							'order' => array('AdmUserRestriction.adm_role_id', 'AdmUserRestriction.period')
@@ -311,7 +311,7 @@ class AdmUsersController extends AppController {
 				'AdmUserRestriction.adm_user_id' => $userId,
 				'AdmUserRestriction.active' => 1,
 				'AdmUserRestriction.selected' => 1,
-				'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED'
+				'AdmUserRestriction.lc_state !=' => 'LOGIC_DELETED'
 			)
 		));
 
@@ -346,7 +346,7 @@ class AdmUsersController extends AppController {
 				'AdmUserRestriction.selected' => 0,
 				'AdmUserRestriction.active' => 1,
 				'AdmUserRestriction.active_date > now()',
-				'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED'
+				'AdmUserRestriction.lc_state !=' => 'LOGIC_DELETED'
 			)
 		));
 
@@ -463,7 +463,7 @@ class AdmUsersController extends AppController {
 		$chechLogicDeleted = $this->AdmUser->AdmUserRestriction->find('count', array(
 			'conditions'=>array(
 				'AdmUserRestriction.id'=>key($idUserRestrictionSelected)
-				, 'AdmUserRestriction.lc_transaction'=>'LOGIC_DELETED')
+				, 'AdmUserRestriction.lc_state'=>'LOGIC_DELETED')
 		));
 		
 		if($chechLogicDeleted > 0){
@@ -805,7 +805,7 @@ class AdmUsersController extends AppController {
 				'AdmUserRestriction.active' => 1,
 				'AdmUserRestriction.active_date > now()',
 				'AdmUserRestriction.adm_role_id !=' => $roleId,
-				'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED'
+				'AdmUserRestriction.lc_state !=' => 'LOGIC_DELETED'
 			),
 			'group' => array(
 				'AdmRole.id',
@@ -938,7 +938,7 @@ class AdmUsersController extends AppController {
 					'AdmUserRestriction.adm_user_id' => $AdmUserRestriction['adm_user_id'],
 					'AdmUserRestriction.adm_role_id' => $AdmUserRestriction['adm_role_id'],
 					'AdmUserRestriction.period' => $AdmUserRestriction['period'],
-					'AdmUserRestriction.lc_transaction' => 'LOGIC_DELETED'
+					'AdmUserRestriction.lc_state' => 'LOGIC_DELETED'
 				),
 				'fields' => array('AdmUserRestriction.id', 'AdmUserRestriction.id'),
 				'limit' => 1
@@ -946,6 +946,7 @@ class AdmUsersController extends AppController {
 //			debug($alreadyExists);
 			if (count($alreadyExists) == 1) {
 				$AdmUserRestriction['id'] = reset($alreadyExists);
+				$AdmUserRestriction['lc_state'] = 'ELABORATED';
 			}
 
 			if ($this->AdmUser->fnSaveUserRestriction($AdmUserRestriction)) {
@@ -1129,7 +1130,7 @@ class AdmUsersController extends AppController {
 		$exisUserRestrictions = $this->AdmUser->AdmUserRestriction->find('count', array(
 			'recursive' => -1,
 			'conditions' => array(
-				'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED',
+				'AdmUserRestriction.lc_state !=' => 'LOGIC_DELETED',
 				'AdmUserRestriction.adm_user_id' => 10),
 		));
 
@@ -1198,9 +1199,39 @@ class AdmUsersController extends AppController {
 		}
 		$data = array();
 		if ($this->request->is('post') || $this->request->is('put')) {
-			$data['AdmUserRestriction']['lc_transaction'] = 'LOGIC_DELETED';
+			$data['AdmUserRestriction']['lc_state'] = 'LOGIC_DELETED';
+//			debug($data);
 //			$data['AdmUserRestriction']['id']=$idUserRestriction;
 //			debug($data);
+			
+			try{
+				$this->AdmUser->AdmUserRestriction->save($data);
+				$this->Session->setFlash(
+						'Eliminado con exito!', 'alert', array(
+					'plugin' => 'TwitterBootstrap',
+					'class' => 'alert-success'
+						)
+				);
+				$this->redirect(array('action' => 'index_user_restriction', $idUser));
+			}catch(Exception $e){
+				if($e->getCode() == 'P0001'){
+					$this->Session->setFlash(
+							$e->getMessage().
+							'Ocurrio un problema, vuelva a intentarlo', 'alert', array(
+						'plugin' => 'TwitterBootstrap',
+						'class' => 'alert-error'
+							)
+					);
+					$this->redirect(array('action' => 'index_user_restriction', $idUser));
+				}
+//				debug($e->getCode());
+//				debug($e->getMessage());
+//				$string = $e->getMessage();
+//				debug(explode((string)$string, ' '));
+//				debug($string);
+				$this->redirect(array('action' => 'index_user_restriction', $idUser));
+			}
+			
 			if ($this->AdmUser->AdmUserRestriction->save($data)) {
 				$this->Session->setFlash(
 						'Eliminado con exito!', 'alert', array(
