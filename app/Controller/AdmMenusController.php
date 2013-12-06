@@ -33,7 +33,7 @@ class AdmMenusController extends AppController {
 	 * 
 	 */
 	
-	public function index_out(){
+	public function index(){
 		////////////////////////////////////////////////////////
 		$parentsMenus = $this->AdmMenu->find("list", array(
 			"conditions"=>array(
@@ -49,7 +49,13 @@ class AdmMenusController extends AppController {
 		if ($this->request->is('post')) {
 			$idParentMenu = $this->request->data['formAdmMenuIndexOut']['parentsMenus'];
 		}else{
-			$idParentMenu = key($parentsMenus);
+			if(isset($this->passedArgs[0])){
+				$idParentMenu = $this->passedArgs[0];
+//				debug($this->passedArgs[0]);
+			}else{
+				$idParentMenu = key($parentsMenus);	
+			}
+			
 		}
 		
 		$this->AdmMenu->unbindModel(array(
@@ -73,48 +79,15 @@ class AdmMenusController extends AppController {
 			'order'=>array('AdmMenu.parent_node'=>'desc', 'AdmMenu.order_menu'=>'asc'),
 			'limit' => 50,
 		);
-		$this->set('admMenus', $this->paginate('AdmMenu'));
+		$admMenus = $this->paginate('AdmMenu');
+//				debug($admMenus);
+		$this->set('admMenus', $admMenus);
 		$this->set(compact('parentsMenus', 'idParentMenu'));
 		
 		//debug($this->paginate('AdmMenu')); //IMPORTANT.- this debug is not capturing de bind and unbind, but is working. Is better if I put it inside an array then do debug
 		/////////////////////////////////
 		
 	}
-
-	
-//	public function index_inside(){
-//		$modules = $this->AdmMenu->AdmModule->find('list');
-//		if ($this->request->is('post')) {
-//			$idModule = $this->request->data['formAdmMenuIndexOut']['modules'];
-//		}else{
-//			$idModule = key($modules);
-//		}
-//		
-//		$this->AdmMenu->unbindModel(array(
-//			'hasMany' => array('AdmRolesMenu')
-//		));
-//		 
-//		$this->AdmMenu->bindModel(array(
-//			'hasOne'=>array(
-//				'AdmController'=> array(
-//					'foreignKey' => false,
-//					'conditions' => array('AdmAction.adm_controller_id = AdmController.id')
-//				)
-//			)
-//		));
-//		$filters = '';
-//		$this->paginate = array(
-//			'conditions'=>array(
-//				$filters
-//			 ),
-//			'conditions'=>array('AdmMenu.inside'=>1, 'AdmMenu.adm_module_id'=>$idModule),
-//			'order'=>array('AdmController.name'=>'ASC'),
-//			'limit' => 50,
-//		);
-//		$this->set('admMenus', $this->paginate('AdmMenu'));
-//		$this->set(compact('modules'));
-//		//debug($this->paginate('AdmMenu')); //IMPORTANT.- this debug is not capturing de bind and unbind, but is working. Is better if I put it inside an array then do debug
-//	}
 	
 	
 /**
@@ -122,7 +95,7 @@ class AdmMenusController extends AppController {
  *
  * @return void
  */
-	public function add_out() {
+	public function add($id = null, $idParent = null) {
 		if ($this->request->is('post')) {
 			/////////////
 			$this->AdmMenu->create();
@@ -141,7 +114,7 @@ class AdmMenusController extends AppController {
 						'class' => 'alert-success'
 					)
 				);
-				$this->redirect(array('action' => 'add_out'));
+				$this->redirect(array('action' => 'index', $idParent));
 			} else {
 				$this->Session->setFlash(
 					__('Ocurrio un problema intentelo de nuevo'),
@@ -151,7 +124,7 @@ class AdmMenusController extends AppController {
 						'class' => 'alert-error'
 					)
 				);
-				$this->redirect(array('action' => 'add_out'));
+				$this->redirect(array('action' => 'index', $idParent));
 			}
 			///////////////	
 		}
@@ -176,103 +149,6 @@ class AdmMenusController extends AppController {
 		$parentsMenus[0] = "Ninguno";
 		$this->set(compact('admModules', 'admActions', 'parentsMenus'));
 	}
-	
-//	public function add_inside(){
-//		if ($this->request->is('post')) {
-//			/////////////
-//			$this->AdmMenu->create();
-//			$this->request->data['AdmMenu']['inside'] = 1;
-//			$this->request->data['AdmMenu']['order_menu'] = 0;
-//			//$this->request->data['AdmMenu']['name'] = 'interno';
-//			//debug($this->request->data);
-//			
-//			if ($this->AdmMenu->save($this->request->data)) {
-//				$this->Session->setFlash(
-//					__('Menu/Permiso Interno creado con exito'),
-//					'alert',
-//					array(
-//						'plugin' => 'TwitterBootstrap',
-//						'class' => 'alert-success'
-//					)
-//				);
-//				$this->redirect(array('action' => 'add_inside'));
-//			} else {
-//				$this->Session->setFlash(
-//					__('Ocurrio un problema, vuelva a intentarlo'),
-//					'alert',
-//					array(
-//						'plugin' => 'TwitterBootstrap',
-//						'class' => 'alert-error'
-//					)
-//				);
-//				$this->redirect(array('action' => 'add_inside'));
-//			}
-//			 
-//			///////////////	
-//		}
-//		
-//		$admModules = $this->AdmMenu->AdmModule->find('list');
-//		$module = key($admModules);
-//		//debug($admModules);
-//		$admControllers = $this->AdmMenu->AdmAction->AdmController->find('list', array(
-//			'conditions'=>array('AdmController.adm_module_id'=>$module),
-//			'order'=>array('AdmController.name'=>'ASC')
-//		));
-//		//debug($admControllers);
-//		$controller = key($admControllers);
-//		//$admActions = $this->AdmMenu->AdmAction->find('list', array('conditions'=>array('AdmAction.adm_controller_id'=>$controller)));
-//		$admActions = $this->_list_action_inside($controller);		
-//		//debug($admActions);
-//		$this->set(compact('admModules', 'admActions', 'admControllers'));
-//	}
-	
-//	public function edit_inside($id = null){
-//		$this->AdmMenu->id = $id;
-//		if (!$this->AdmMenu->exists()) {
-//			throw new NotFoundException('Invalido');
-//		}
-//		
-//		if ($this->request->is('post') || $this->request->is('put')) {
-//
-//			//$this->request->data['AdmMenu']['lc_transaction'] = 'MODIFY';
-//			$this->request->data['AdmMenu']['inside'] = 1;
-//			$this->request->data['AdmMenu']['order_menu'] = 0;
-//			
-//			
-//			//debug($this->request->data);
-//			if ($this->AdmMenu->save($this->request->data)) {
-//				$this->Session->setFlash(
-//					__('Cambios guardados'),
-//					'alert',
-//					array(
-//						'plugin' => 'TwitterBootstrap',
-//						'class' => 'alert-success'
-//					)
-//				);
-//				$this->redirect(array('action' => 'index_inside'));
-//			} else {
-//				$this->Session->setFlash(
-//					__('Ocurrio un problema, intentelo de nuevo'),
-//					'alert',
-//					array(
-//						'plugin' => 'TwitterBootstrap',
-//						'class' => 'alert-error'
-//					)
-//				);
-//				$this->redirect(array('action' => 'index_inside'));
-//			}
-//			
-//		} else {
-//			$this->request->data = $this->AdmMenu->read(null, $id);
-//			$admModules = $this->AdmMenu->AdmModule->find('list');
-//			$module = $this->request->data['AdmMenu']['adm_module_id'];
-//			$admActions = $this->_list_actions($module);
-//			$action = $this->request->data['AdmMenu']['adm_action_id'];
-//			$this->set(compact('admModules','admActions', 'module', 'action'));
-//		}
-//		
-//	}
-
 	
 
 	private function _list_actions($module, $actionAsigned){
@@ -307,77 +183,13 @@ class AdmMenusController extends AppController {
 		$admActions = array();
 		//if(count($admAct) > 0){
 			foreach($admAct as $var){
-				$admActions[$var["AdmAction"]["id"]] = $var["AdmController"]["name"] . "->" . $var["AdmAction"]["name"];
+				$admActions[$var["AdmAction"]["id"]] = Inflector::camelize($var["AdmController"]["name"]) . "->" . $var["AdmAction"]["name"];
 			}
 			$admActions[0] = "Ninguno";
 		//}
 		return $admActions;
 	}
 	
-//	private function _list_action_inside($controller){
-//		$admActions = $this->AdmMenu->AdmAction->find('list', array(
-//			'conditions'=>array('AdmAction.adm_controller_id'=>$controller)
-//		));
-//		$formatedAdmAction = array();
-//		//echo "actions guardadas";
-//		//debug($admActions);
-//		if(count($admActions) > 0){
-//			foreach ($admActions as $key => $value) {
-//				$formatedAdmAction[$key] = $key;
-//			}
-//		}
-//		//echo "action guardas puestas en numeros";
-//		//debug($formatedAdmAction);
-//		
-//		//OPC 1 muestra todo //creo sirve para configurar menus internos como de amauta
-//		//echo "actions guardadas en menus que sean inside";//con esto se diferencia solo las actions inside
-//		$admSavedActions = $this->AdmMenu->find('all', array('fields'=>array('AdmMenu.adm_action_id','AdmAction.name'),'conditions'=>array('AdmMenu.adm_action_id'=>$formatedAdmAction, 'AdmMenu.inside'=>1))); 
-//		
-//		//OPC 2 muestra lo que no esta guardado //muestra info mas corta, pero si alguien mete uno que no sea interno ya no aparecera
-//		//echo "actions guardadas en menus sin diferenciar"; //con esto se diferencia todas las actions guardadas
-//		//$admSavedActions = $this->AdmMenu->find('all', array('fields'=>array('AdmMenu.adm_action_id','AdmAction.name'),'conditions'=>array('AdmMenu.adm_action_id'=>$formatedAdmAction))); 
-//		
-//		
-//		$saved=array();
-//		foreach ($admSavedActions as $key => $value) {
-//			$saved[$value['AdmMenu']['adm_action_id']]=$value['AdmAction']['name'];
-//		}
-//		
-//		//debug($saved);
-//		$diff = array_diff($admActions, $saved);
-//		//echo "La diferencia entre guardada action y guardada menu";
-//		//debug($diff);
-//		//$admControllers[""]="--- Vacio ---"; //must fix something like that
-//		return $diff;
-//	}
-	
-//	public function ajax_list_controllers_inside(){
-//		if($this->RequestHandler->isAjax()){
-//			$module = $this->request->data['module'];
-//			$admControllers = $this->AdmMenu->AdmAction->AdmController->find('list', array(
-//				'conditions'=>array('AdmController.adm_module_id'=>$module),
-//				'order'=>array('AdmController.name'=>'ASC')
-//			));
-//			$controller = key($admControllers);
-//			//$admActions = $this->AdmMenu->AdmAction->find('list', array('conditions'=>array('AdmAction.adm_controller_id'=>$controller)));
-//			$admActions = $this->_list_action_inside($controller);
-//			$this->set(compact('admControllers','admActions'));			
-//		}else{
-//			$this->redirect($this->Auth->logout());
-//		}
-//	}
-
-//	public function ajax_list_actions_inside(){
-//		if($this->RequestHandler->isAjax()){
-//			$controller = $this->request->data['controller'];
-//			//$admActions = $this->AdmMenu->AdmAction->find('list', array('conditions'=>array('AdmAction.adm_controller_id'=>$controller)));
-//			$admActions = $this->_list_action_inside($controller);
-//			$this->set(compact('admActions'));			
-//		}else{
-//			$this->redirect($this->Auth->logout());
-//		}
-//	}
-
 	
 	public function ajax_list_actions_out(){
 		if($this->RequestHandler->isAjax()){
@@ -409,7 +221,7 @@ class AdmMenusController extends AppController {
  * @param string $id
  * @return void
  */
-	public function edit_out($id = null) {
+	public function edit($id = null, $idParent = null) {
 		$this->AdmMenu->id = $id;
 		if (!$this->AdmMenu->exists()) {
 			throw new NotFoundException(__('Invalid %s', __('adm menu')));
@@ -434,11 +246,7 @@ class AdmMenusController extends AppController {
 					$this->request->data['AdmMenu']['parent_node'] = null;
 				}
 			}
-			/*
-			If($this->request->data['AdmMenu']['inside'] == 0){
-				$this->request->data['AdmMenu']['inside'] = null;
-			}
-			 */
+
 			$this->request->data['AdmMenu']['lc_transaction'] = 'MODIFY';
 			//debug($this->request->data);
 			
@@ -451,7 +259,7 @@ class AdmMenusController extends AppController {
 						'class' => 'alert-success'
 					)
 				);
-				$this->redirect(array('action' => 'index_out'));
+				$this->redirect(array('action' => 'index', $idParent));
 			} else {
 				$this->Session->setFlash(
 					__('Ocurrio un problema intentelo de nuevo'),
@@ -461,14 +269,13 @@ class AdmMenusController extends AppController {
 						'class' => 'alert-error'
 					)
 				);
+				$this->redirect(array('action' => 'index', $idParent));
 			}
 				
 		} else {
 			$this->request->data = $this->AdmMenu->read(null, $id);
 		}
     	
-		
-		
 		//////////////////// Fill edit.ctp
 		///Fix Null values in dropdownlist
 		if($this->request->data['AdmMenu']['adm_action_id'] == null){
@@ -499,9 +306,6 @@ class AdmMenusController extends AppController {
 			$children = intval($id);
 		}
 		
-		//debug($children);
-		//$admMenus = $this->AdmMenu->find('list', array("conditions"=>array("AdmMenu.adm_module_id"=>$module, "NOT"=>array("AdmMenu.id"=>$children))));
-		//$admMenus[0] = "Ninguno";
 		$parentsMenus = $this->AdmMenu->find("list", array(
 				"conditions"=>array(
 					"AdmMenu.parent_node"=>null,// don't have parent
@@ -522,7 +326,7 @@ class AdmMenusController extends AppController {
  * @param string $id
  * @return void
  */
-	public function delete_out($id = null) {
+	public function delete($id = null, $idParent = null) {
 		
 		if (!$this->request->is('post')) {
 			throw new MethodNotAllowedException();
@@ -542,7 +346,7 @@ class AdmMenusController extends AppController {
 					'class' => 'alert-error'
 				)
 			);
-			$this->redirect(array('action' => 'index_out'));
+			$this->redirect(array('action' => 'index', $idParent));
 		}
 		/////////////////////////////////////////////////////////
 		try{
@@ -555,7 +359,7 @@ class AdmMenusController extends AppController {
 					'class' => 'alert-success'
 				)
 			);
-			$this->redirect(array('action' => 'index_out'));
+			$this->redirect(array('action' => 'index'));
 		}catch(Exception $e){
 			if($e->getCode() == 23503){
 				$msge = 'No se puede eliminar este Menu porque tiene Roles asignados';
@@ -567,57 +371,11 @@ class AdmMenusController extends AppController {
 			'alert',
 			array('plugin' => 'TwitterBootstrap','class' => 'alert-error')
 			);
-			$this->redirect(array('action' => 'index_out'));
+			$this->redirect(array('action' => 'index', $idParent));
 		}
 	}
 	
-//	public function delete_inside($id = null) {
-//		if (!$this->request->is('post')) {
-//			throw new MethodNotAllowedException();
-//		}
-//		$this->AdmMenu->id = $id;
-//		if (!$this->AdmMenu->exists()) {
-//			throw new NotFoundException('Menu invalido');
-//		}
-//		//verify if exist child
-//		$child = $this->AdmMenu->find('count', array('conditions'=>array("AdmMenu.parent_node"=>$id)));
-//		if($child > 0){
-//			$this->Session->setFlash(
-//				__('Tiene hijos no se puede eliminar'),
-//				'alert',
-//				array(
-//					'plugin' => 'TwitterBootstrap',
-//					'class' => 'alert-error'
-//				)
-//			);
-//			$this->redirect(array('action' => 'index_inside'));
-//		}
-//		/////////////////////////////////////////////////////////
-//		try{
-//			$this->AdmMenu->delete();
-//			$this->Session->setFlash(
-//				__('Se elimino correctamente'),
-//				'alert',
-//				array(
-//					'plugin' => 'TwitterBootstrap',
-//					'class' => 'alert-success'
-//				)
-//			);
-//			$this->redirect(array('action' => 'index_inside'));
-//		}catch(Exception $e){
-//			if($e->getCode() == 23503){
-//				$msge = 'No se puede eliminar este Menu porque tiene Roles asignados';
-//			}else{
-//				$msge = 'Ocurrio un problema vuelva a intentarlo';
-//			}
-//			$this->Session->setFlash(
-//			$msge,
-//			'alert',
-//			array('plugin' => 'TwitterBootstrap','class' => 'alert-error')
-//			);
-//			$this->redirect(array('action' => 'index_inside'));
-//		}
-//	}
+
 	
 ////////////////////////////////////////
 }

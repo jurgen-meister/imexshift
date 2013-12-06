@@ -59,7 +59,7 @@ class AdmAreasController extends AppController {
 			//debug($this->request->data);
 		
 			$this->AdmArea->create();
-			$this->request->data['AdmArea']['creator']=$this->Session->read('UserRestriction.id');
+//			$this->request->data['AdmArea']['creator']=$this->Session->read('UserRestriction.id');
 			if ($this->AdmArea->save($this->request->data)) {
 				$this->Session->setFlash(
 					__('Se creo el area de la empresa.'),
@@ -118,9 +118,9 @@ class AdmAreasController extends AppController {
 		}
 
 		if ($this->request->is('post') || $this->request->is('put')) {
-			//debug($this->request->data);
+//			debug($this->request->data);
 		
-			$this->request->data['AdmArea']['lc_transaction']='MODIFY';
+//		$this->request->data['AdmArea']['lc_transaction']='MODIFY';
 			if ($this->AdmArea->save($this->request->data)) {
 				$this->Session->setFlash(
 					__('Los cambios fueron guardados'),
@@ -202,7 +202,7 @@ class AdmAreasController extends AppController {
 		$child = $this->AdmArea->find('count', array('conditions'=>array("AdmArea.parent_area"=>$id)));
 		if($child > 0){
 			$this->Session->setFlash(
-				__('Tiene hijos no se puede eliminar', __('adm menu')),
+				__('Tiene dependientes no se puede eliminar', __('adm menu')),
 				'alert',
 				array(
 					'plugin' => 'TwitterBootstrap',

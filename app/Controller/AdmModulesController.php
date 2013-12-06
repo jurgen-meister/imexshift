@@ -52,9 +52,10 @@ class AdmModulesController extends AppController {
 	public function add() {
 		if ($this->request->is('post')) {
 			$this->AdmModule->create();
+			$this->request->data['AdmModule']['initials'] = strtolower($this->request->data['AdmModule']['initials']);
 			if ($this->AdmModule->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('adm module')),
+					__('Módulo creado con exito!', __('adm module')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -64,7 +65,7 @@ class AdmModulesController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('adm module')),
+					__('No se pudo crear!', __('adm module')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -87,10 +88,10 @@ class AdmModulesController extends AppController {
 			throw new NotFoundException(__('Invalid %s', __('adm module')));
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
-			$this->request->data['AdmModule']['lc_transaction']='MODIFY';
+			$this->request->data['AdmModule']['initials'] = strtolower($this->request->data['AdmModule']['initials']);
 			if ($this->AdmModule->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('adm module')),
+					__('Módulo editado con exito!', __('adm module')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -100,7 +101,7 @@ class AdmModulesController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('adm module')),
+					__('No se pudo editar!', __('adm module')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -144,7 +145,7 @@ class AdmModulesController extends AppController {
 		
 		if ($this->AdmModule->delete()) {
 			$this->Session->setFlash(
-				__('The %s deleted', __('adm module')),
+				__('Módulo eliminado con exito!', __('adm module')),
 				'alert',
 				array(
 					'plugin' => 'TwitterBootstrap',
@@ -154,7 +155,7 @@ class AdmModulesController extends AppController {
 			$this->redirect(array('action' => 'index'));
 		}
 		$this->Session->setFlash(
-			__('The %s was not deleted', __('adm module')),
+			__('No se pudo eliminar!', __('adm module')),
 			'alert',
 			array(
 				'plugin' => 'TwitterBootstrap',

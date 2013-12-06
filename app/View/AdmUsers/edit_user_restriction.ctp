@@ -30,18 +30,7 @@
 					'value'=>$idUserRestriction,
 					'type'=>'hidden'
 				));
-				/*
-				echo $this->BootstrapForm->input('periodHidden', array(
-					'id'=>'txtPeriodHidden',
-					'value'=>$periodId,
-					'type'=>'hidden'
-				));
-				echo $this->BootstrapForm->input('roleHidden', array(
-					'id'=>'txtRoleHidden',
-					'value'=>$roleId,
-					'type'=>'hidden'
-				));
-				*/
+				
 				echo $this->BootstrapForm->input('periods', array(
 					'required' => 'required',
 					'label'=>'* Periodo:',
@@ -80,40 +69,40 @@
 					//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 				));
 				echo '</div>';
-				echo $this->BootstrapForm->input('active', array(
-					'required' => 'required',
-					'label'=>'* Activo:',
-					'type'=>'select',
-					'options'=>array('1'=>'SI','0'=>'NO'),
-					'id'=>'cbxActive',
-					'name'=>'cbxActive',
-					'value'=>$active
-					//'placeholder'=>'Fecha en que el usuario dejará de estar activo',
-					//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
-				));
-				
-				echo $this->BootstrapForm->input('active_date', array(
-					'required' => 'required',
-					'label'=>'* Fecha actividad:',
-					'type'=>'text',
-					'id'=>'txtActiveDate',
-					'name'=>'txtActiveDate',
-					'value'=>$activeDate
-					//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
-				));
-				
-				echo $this->BootstrapForm->input('selected', array(
-					'required' => 'required',
-					'label'=>'* Iniciar sesion cón este rol:',
-					'type'=>'select',
-					'options'=>array('1'=>'SI','0'=>'NO'),
-					'id'=>'cbxSelected',
-					'name'=>'cbxSelected',
-					'value'=>$selected
-					//'placeholder'=>'Fecha en que el usuario dejará de estar activo',
-					//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
-				));
-				
+				//own UserRestriction edit validation
+				if($idUserRestriction <> $this->Session->read('UserRestriction.id')){
+
+					echo $this->BootstrapForm->input('active', array(
+						'required' => 'required',
+						'label'=>'* Activo:',
+						'type'=>'select',
+						'options'=>array('1'=>'SI','0'=>'NO'),
+						'id'=>'cbxActive',
+						'name'=>'cbxActive',
+						'value'=>$active
+					));
+
+					echo $this->BootstrapForm->input('active_date', array(
+						'required' => 'required',
+						'label'=>'* Fecha actividad:',
+						'type'=>'text',
+						'id'=>'txtActiveDate',
+						'name'=>'txtActiveDate',
+						'value'=>$activeDate
+					));
+					if($userId <> $this->Session->read('User.id')){
+						echo $this->BootstrapForm->input('selected', array(
+							'required' => 'required',
+							'label'=>'* Iniciar sesion cón este rol:',
+							'type'=>'select',
+							'options'=>array('1'=>'SI','0'=>'NO'),
+							'id'=>'cbxSelected',
+							'name'=>'cbxSelected',
+							'value'=>$selected
+						));
+					}
+					
+				}	
 				?>
 		<div class="form-actions" style="text-align: center">
 		<?php echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));

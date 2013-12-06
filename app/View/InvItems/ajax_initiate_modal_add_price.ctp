@@ -8,5 +8,5 @@
 			//'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
 			)
 		);	
-		//echo '<br>';
+		echo '<br>';
 ?>

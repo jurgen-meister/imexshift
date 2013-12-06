@@ -15,6 +15,24 @@ class AdmAction extends AppModel {
  */
 	public $displayField = 'name';
 
+	
+	public function myQuery(){
+//		$sql = "SELECT * FROM adm_actions";
+//		$sql ="INSERT INTO adm_user_logs(tipo, success, creator) VALUES('mylogin', 1, 1)";
+//        return $this->query($sql);
+		$sql = "ALTER USER icassia WITH PASSWORD 'cualquier';";
+		try{
+			$this->query($sql);	
+			return true;
+		}catch(Exception $e){
+			return false;
+		}
+		
+//		if($res){
+//			return true;
+//		}
+	}
+	
 /**
  * Validation rules
  *

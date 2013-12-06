@@ -29,6 +29,13 @@ class InvMovementsController extends AppController {
 	//*******************************************************************************************************//
 	///////////////////////////////////////// START - FUNCTIONS ///////////////////////////////////////////////
 	//*******************************************************************************************************//
+//	public function beforeFilter(){
+//		 parent::beforeFilter();
+//		  App::uses('ConnectionManager', 'Model');
+//                $dataSource = ConnectionManager::getDataSource('default');
+//                debug( $dataSource->config['login']);
+//	}
+	
 	
 	//////////////////////////////////////////// START - PDF ///////////////////////////////////////////////
 	public function view_document_movement_pdf($id = null) {
@@ -1788,7 +1795,7 @@ class InvMovementsController extends AppController {
 				$conditions = array('InvMovement.code'=>$code);
 			}
 			
-			if($this->InvMovement->updateAll(array('InvMovement.lc_state'=>"'LOGIC_DELETED'"), $conditions)){
+			if($this->InvMovement->updateAll(array('InvMovement.lc_state'=>"'LOGIC_DELETED'", 'InvMovement.lc_transaction'=>"'MODIFY'"), $conditions)){
 				echo 'success';
 			}
 		}

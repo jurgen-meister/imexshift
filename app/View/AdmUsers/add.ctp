@@ -56,6 +56,7 @@
 					'label' => '* Apellido paterno:',
 					'id'=>'txtLastName1',
 					'name'=>'txtLastName1',
+					'placeholder'=>'Tiene que escribir un apellido completo para que el sistema genere un usuario'
 						//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 				));
 				echo $this->BootstrapForm->input('last_name2', array(
@@ -63,6 +64,7 @@
 					'label' => '* Apellido materno:',
 					'id'=>'txtLastName2',
 					'name'=>'txtLastName2',
+					'placeholder'=>'Tiene que escribir un apellido completo para que el sistema genere un usuario'
 						//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 				));
 
@@ -83,6 +85,7 @@
 					'type'=>'text',
 					'id'=>'txtActiveDate',
 					'name'=>'txtActiveDate',
+					'placeholder'=>'Tiempo de duración del usuario hasta que expire'
 					//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 				));
 				
@@ -127,6 +130,7 @@
 					'id'=>'txtAddress',
 					'name'=>'txtAddress',
 					'label' => 'Dirección:',
+					'placeholder'=>'Dirección, ciudad, (pais)'
 					//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 				));
 				

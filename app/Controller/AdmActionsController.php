@@ -14,39 +14,23 @@ class AdmActionsController extends AppController {
  */
 	public $layout = 'default';
 
-/**
- * Helpers
- *
- * @var array
- */
-//	public $helpers = array('Js','TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
-/**
- * Components
- *
- * @var array
- */
-//	public $components = array('RequestHandler','Session');
 	
-	
-	//public  function isAuthorized($user){
-		/*
-		if(!$this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name))){
-			$this->redirect($this->Auth->logout());
-		}
-		return true;
-		 */
-	//	return $this->Permission->isAllowed($this->name, $this->action, $this->Session->read('Permission.'.$this->name));
-
+//	public function beforeFilter(){
+//////		$this->getData();
+//		parent::beforeFilter();
+////		if(!isset($_SESSION)) session_start(); //If session didn't start, then start it
+////		$this->changeDB();
+//		$this->getData();
 //	}
 	
-	
-	
-/**
+
+	/**
  * index method
  *
  * @return void
  */
 	public function index() {
+	
 		$this->AdmAction->recursive = 0;
 		 $this->paginate = array(
 			'order'=>array('AdmController.name'=>'asc'),
@@ -54,25 +38,6 @@ class AdmActionsController extends AppController {
 		);
 		 
 		 $array =$this->paginate();
-		 //debug($array);
-		 
-		 //I loop in the called query, and modify each field which has a parent. There must be a better solution with subquery I think
-		 /*
-		 foreach ($array as $key => $value) {
-			 //$value['AdmAction']['parent2'] = "vacio";
-			 $parentId = $value['AdmAction']['parent'];
-			 if($parentId != null){
-				 $parentName = $this->AdmAction->find('all', array(
-					 'conditions'=> array('AdmAction.id'=>$parentId),
-					 'fields'=>array('AdmAction.name', 'AdmController.name')
-				));
-				 //here I change the parent value for a string, the rest still null
-				 $array[$key]['AdmAction']['parent'] = $parentName[0]['AdmController']['name'].'->'.$parentName[0]['AdmAction']['name'];
-			 }
-		 }
-		 */
-		 //$array[0]['AdmAction']['orco'] = '333333';
-		// debug($array);
 		$this->set('admActions', $array);
 	}
 
@@ -85,7 +50,8 @@ class AdmActionsController extends AppController {
 		if ($this->request->is('post')) {
 			$this->AdmAction->create();
 			// lo convierto a mayuscula tenga mismo formato que DB
-			$this->request->data['AdmAction']['name'] = strtoupper($this->request->data['AdmAction']['name']);
+//			$this->request->data['AdmAction']['name'] = strtoupper($this->request->data['AdmAction']['name']);
+			$this->request->data['AdmAction']['name'] = strtolower($this->request->data['AdmAction']['name']);
 			//debug($this->request->data);
 			///
 			if ($this->AdmAction->save($this->request->data)) {
@@ -120,14 +86,16 @@ class AdmActionsController extends AppController {
 			'order'=>array('AdmController.name'=>'ASC')
 		));
 		
-		//$initialController = Inflector::camelize(reset($admControllers));
-		//$idController = key($admControllers);
-		//$admActions = $this->_getActions($initialController, $idController);
+		foreach ($admControllers as $key => $value) {
+			$admControllers[$key]=Inflector::camelize($value);
+		}
+		
 		if(count($admControllers) == 0){
 				$admControllers[""]="--- Vacio ---";
 				$admActions = array();
 		}else{
-				$initialController = Inflector::camelize(reset($admControllers));
+//				$initialController = Inflector::camelize(reset($admControllers));
+				$initialController = reset($admControllers);
 				$idController = key($admControllers);
 				$admActions = $this->_getActions($initialController, $idController);
 		}
@@ -135,10 +103,7 @@ class AdmActionsController extends AppController {
 		if(count($admActions) == 0){$admActions[""]="--- Vacio ---";}
 
 		$this->set(compact('admControllers','admModules', 'admActions'));
-		
 		///////////
-			
-		
 	}
 
 	
@@ -161,7 +126,9 @@ class AdmActionsController extends AppController {
 			$appActions = array();
 			foreach ($classMethods as $value) {
 				if (strtolower(substr($value, 0, 4)) <> 'ajax') {
-					if (substr($value, 0, 1) <> '_') {
+					if (substr($value, 0, 1) == '_' OR substr($value, 0, 2) == 'fn') {
+						//nothing
+					}else{
 						$appActions[$value] = $value;
 					}
 				}
@@ -266,15 +233,17 @@ class AdmActionsController extends AppController {
  * @return void
  */
 	public function edit($id = null) {
+//		$this->changeDB();
+//		$this->getData();
 		$this->AdmAction->id = $id;
 		if (!$this->AdmAction->exists()) {
 			throw new NotFoundException(__('Invalid %s', __('adm action')));
 		}
 		if ($this->request->is('post') || $this->request->is('put')) {
-			$this->request->data['AdmAction']['lc_transaction']='MODIFY';
+//			$this->request->data['AdmAction']['lc_transaction']='MODIFY';
 			if ($this->AdmAction->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('adm action')),
+					__('Se edito la acción', __('adm action')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',

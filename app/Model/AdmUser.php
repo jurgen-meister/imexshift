@@ -1,5 +1,7 @@
 <?php
+
 App::uses('AppModel', 'Model');
+
 /**
  * AdmUser Model
  *
@@ -9,76 +11,76 @@ App::uses('AppModel', 'Model');
  */
 class AdmUser extends AppModel {
 
-/**
- * Validation rules
- *
- * @var array
- */
+	/**
+	 * Validation rules
+	 *
+	 * @var array
+	 */
 	public $validate = array(
 		'login' => array(
 			'notempty' => array(
 				'rule' => array('notempty'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
+			//'message' => 'Your custom message here',
+			//'allowEmpty' => false,
+			//'required' => false,
+			//'last' => false, // Stop validation after this rule
+			//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
 		'password' => array(
 			'notempty' => array(
 				'rule' => array('notempty'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
+			//'message' => 'Your custom message here',
+			//'allowEmpty' => false,
+			//'required' => false,
+			//'last' => false, // Stop validation after this rule
+			//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
 		'active' => array(
 			'notempty' => array(
 				'rule' => array('notempty'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
+			//'message' => 'Your custom message here',
+			//'allowEmpty' => false,
+			//'required' => false,
+			//'last' => false, // Stop validation after this rule
+			//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
 		'active_date' => array(
 			'notempty' => array(
 				'rule' => array('notempty'),
-				//'message' => 'Your custom message here',
-				//'allowEmpty' => false,
-				//'required' => false,
-				//'last' => false, // Stop validation after this rule
-				//'on' => 'create', // Limit validation to 'create' or 'update' operations
+			//'message' => 'Your custom message here',
+			//'allowEmpty' => false,
+			//'required' => false,
+			//'last' => false, // Stop validation after this rule
+			//'on' => 'create', // Limit validation to 'create' or 'update' operations
 			),
 		),
 	);
 
 	//The Associations below have been created with all possible keys, those that are not needed can be removed
 
-	public function beforeSave($options = array()) {
-		App::import('Model', 'CakeSession');
-		$session = new CakeSession();
-		if(isset($this->data[$this->name]['id'])){
-			$this->data[$this->name]['modifier']=$session->read('UserRestriction.id');
-			$this->data[$this->name]['lc_transaction']='MODIFY';
-		}else{
-			$this->data[$this->name]['creator']=$session->read('UserRestriction.id');
-		}
-        if (isset($this->data['AdmUser']['password'])) {
-            $this->data['AdmUser']['password'] = AuthComponent::password($this->data['AdmUser']['password']);
-        }
-        return true;
-    }
-	
-/**
- * hasMany associations
- *
- * @var array
- */
+//	public function beforeSave($options = array()) {
+//		App::import('Model', 'CakeSession');
+////		$session = new CakeSession();
+////		if (isset($this->data[$this->name]['id'])) {
+////			$this->data[$this->name]['modifier'] = $session->read('UserRestriction.id');
+////			$this->data[$this->name]['lc_transaction'] = 'MODIFY';
+////		} else {
+////			$this->data[$this->name]['creator'] = $session->read('UserRestriction.id');
+////		}
+//		if (isset($this->data['AdmUser']['password'])) {
+//			$this->data['AdmUser']['password'] = AuthComponent::password($this->data['AdmUser']['password']);
+//		}
+//		return true;
+//	}
+
+	/**
+	 * hasMany associations
+	 *
+	 * @var array
+	 */
 	public $hasOne = array(
 		'AdmProfile' => array(
 			'className' => 'AdmProfile',
@@ -94,7 +96,6 @@ class AdmUser extends AppModel {
 			'counterQuery' => ''
 		)
 	);
-	
 	public $hasMany = array(
 		'AdmUserRestriction' => array(
 			'className' => 'AdmUserRestriction',
@@ -111,35 +112,203 @@ class AdmUser extends AppModel {
 		)
 	);
 
-	
-	public function change_user_restriction($idUser, $idUserRestrictionSelected){
+	public function change_user_restriction($idUser, $idUserRestrictionSelected) {
 		$dataSource = $this->getDataSource();
 		$dataSource->begin();
 		////////////////////////////////////////////////
 		$exist = $this->AdmUserRestriction->find('count', array(
-			'conditions'=>array(
-				'AdmUserRestriction.id'=>$idUserRestrictionSelected
+			'conditions' => array(
+				'AdmUserRestriction.id' => $idUserRestrictionSelected
 			)
 		));
-		if($exist == 0){
+		
+		if ($exist == 0) {
 			$dataSource->rollback();
 			return false;
 		}
-			
-		if(!$this->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected'=>0), array('AdmUserRestriction.adm_user_id'=>$idUser))){
+
+
+		$UserRestrictionIds = $this->AdmUserRestriction->find('list', array(
+			'conditions' => array(
+				'AdmUserRestriction.adm_user_id' => $idUser,
+				'AdmUserRestriction.lc_transaction !=' => 'LOGIC_DELETED',
+//				'AdmUserRestriction.id !='=>$idUserRestrictionSelected
+			),
+			'fields' => array('AdmUserRestriction.id', 'AdmUserRestriction.id')
+		));
+				
+//debug($exist);
+		if (count($UserRestrictionIds) > 0) {
+			foreach ($UserRestrictionIds as $value) {
+				if (!$this->AdmUserRestriction->save(array('id' => $value, 'selected' => 0))) {
+					$dataSource->rollback();
+					return false;
+				}
+			}
+		}
+//
+//
+//		if (!$this->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected' => 0, 'AdmUserRestriction.lc_transaction' => "'MODIFY'"), array('AdmUserRestriction.adm_user_id' => $idUser))) {
+//			$dataSource->rollback();
+//			return false;
+//		}
+		
+		
+//		$chechLogicDeleted = $this->AdmUserRestriction->find('count', array(
+//			'conditions'=>array(
+//				'AdmUserRestriction.id'=>$idUserRestrictionSelected
+//				, 'AdmUserRestriction.lc_transaction'=>'LOGIC_DELETED')
+//		));
+		
+//		if($chechLogicDeleted > 0){
+//			$lc_transaction = 'LOGIC_DELETED';
+//		}else{
+//			$lc_transaction = 'MODIFY';
+//		}
+		
+		if (!$this->AdmUserRestriction->save(array('id' => $idUserRestrictionSelected, 'selected' => 1))){
 			$dataSource->rollback();
 			return false;
 		}
-		if(!$this->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected'=>1), array('AdmUserRestriction.id'=>$idUserRestrictionSelected))){
-			$dataSource->rollback();
-			return false;
-		}
+		
+
+		
+//		if (!$this->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected' => 1, 'AdmUserRestriction.lc_transaction' => "'MODIFY'"), array('AdmUserRestriction.id' => $idUserRestrictionSelected))) {
+//			$dataSource->rollback();
+//			return false;
+//		}
+
+
 		$dataSource->commit();
 		return true;
 		///////////////////////////////////////////////
 	}
-	
 
+	public function fnChangePassword($idUser, $password, $username) {
+		$dataSource = $this->getDataSource();
+		$dataSource->begin();
+		////////////////////////////////////////////
+		if (!$this->save(array('id' => $idUser, 'password' => AuthComponent::password($password)))) {
+			$dataSource->rollback();
+			return false;
+		}
+
+		$sql = "ALTER USER " . $username . " WITH PASSWORD '" . $password . "';";
+		try {
+			$this->query($sql);
+		} catch (Exception $e) {
+//			debug($e);
+			$dataSource->rollback();
+			return false;
+		}
+		///////////////////////////////////////////
+		$dataSource->commit();
+		return true;
+	}
+
+	public function fnAddUserProfile($data, $username, $password) {
+		$dataSource = $this->getDataSource();
+		$dataSource->begin();
+		////////////////////////////////////////////
+		if (!$this->saveAssociated($data)) {
+			$dataSource->rollback();
+			return false;
+		}
+		$sql = "CREATE USER " . $username . " WITH PASSWORD '" . $password . "';";
+		try {
+			$this->query($sql);
+		} catch (Exception $e) {
+//			debug($e);
+			$dataSource->rollback();
+			return false;
+		}
+		//every user can create a role, this is not good, but to fix this without depending on a DBA need to build a grant permission interface per user
+		$sql = "ALTER ROLE " . $username . " WITH CREATEROLE;";
+		try {
+			$this->query($sql);
+		} catch (Exception $e) {
+//			debug($e);
+			$dataSource->rollback();
+			return false;
+		}
+		$sql = "GRANT group_average_users to " . $username . ";";
+		try {
+			$this->query($sql);
+		} catch (Exception $e) {
+			debug($e);
+			$dataSource->rollback();
+			return false;
+		}
+		///////////////////////////////////////////
+		$dataSource->commit();
+		return true;
+	}
+
+	public function fnSaveUserRestriction($data, $ownUserRestriction = 'no') {
+		$dataSource = $this->getDataSource();
+		$dataSource->begin();
+		////////////////////////////////////////////
+		$existUserForUpdate = $this->find('count', array('conditions' => array('AdmUser.id' => $data['adm_user_id'])));
+
+		if ($existUserForUpdate == 0) {
+			$dataSource->rollback();
+			return false;
+		}
+		$selected = 0;
+		if (isset($data['selected']))
+			$selected = $data['selected'];
+
+		if ($ownUserRestriction == 'no') {//to avoid own userUserRestriction lyfe cycle bug
+			if ($selected == 1) {
+				//IMPORTANT with updateAll() return false when there was nothing to update, no because there was a mistake like with save()
+				//In this case is there nothing to update, it rollback the transaction and I couldn't add new UserRestriction when everything
+				//was empty!!
+//				if (!$this->AdmUserRestriction->updateAll(
+//						array('AdmUserRestriction.selected' => 0, 'AdmUserRestriction.lc_transaction' => "'MODIFY'")
+//						, array('AdmUserRestriction.adm_user_id' => $data['adm_user_id'], 'AdmUserRestriction.lc_transaction !='=> 'LOGIC_DELETED')
+//				)) {
+//					$dataSource->rollback();
+//					return false;
+//				}
+//				$this->AdmUserRestriction->updateAll(
+//						array('AdmUserRestriction.selected' => 0, 'AdmUserRestriction.lc_transaction' => "'MODIFY'")
+//						, array('AdmUserRestriction.adm_user_id' => $data['adm_user_id'], 'AdmUserRestriction.lc_transaction !='=> 'LOGIC_DELETED')
+//				);
+				$UserRestrictionIds = $this->AdmUserRestriction->find('list', array(
+					'conditions' => array(
+						'AdmUserRestriction.adm_user_id' => $data['adm_user_id'],
+						'AdmUserRestriction.lc_state !=' => 'LOGIC_DELETED'
+					),
+					'fields' => array('AdmUserRestriction.id', 'AdmUserRestriction.id')
+				));
+//				debug($UserRestrictionIds);
+				if (count($UserRestrictionIds) > 0) {
+
+					foreach ($UserRestrictionIds as $value) {
+						if (!$this->AdmUserRestriction->save(array('id' => $value, 'selected' => 0))) {
+							$dataSource->rollback();
+							return false;
+						}
+//						debug('exito');
+					}
+				}
+			}
+		}
+
+		if (!isset($data['id'])) {
+			$this->AdmUserRestriction->create(); //without it doesn't insert NEVER FORGET!!
+		}
+
+
+		if (!$this->AdmUserRestriction->save($data)) {
+			$dataSource->rollback();
+			return false;
+		}
+
+		///////////////////////////////////////////
+		$dataSource->commit();
+		return true;
+	}
 
 ///////////
 }

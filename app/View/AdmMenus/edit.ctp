@@ -1,9 +1,11 @@
 <?php //debug($this->request->data);
 $disable = false;
+$disableIcon = true;
 if($this->request->data['AdmMenu']['parent_node'] == null){
 	$disable = true;
+	$disableIcon = false;
 }
-
+//debug($this->passedArgs);
 ?>
 <?php echo $this->Html->script('modules/AdmMenus', FALSE); ?>
 <!-- ************************************************************************************************************************ -->
@@ -15,7 +17,7 @@ if($this->request->data['AdmMenu']['parent_node'] == null){
 		<span class="icon">
 			<i class="icon-edit"></i>								
 		</span>
-		<h5>Editar menu/permiso externo</h5>
+		<h5>Editar menu</h5>
 	</div>
 	<div class="widget-content nopadding">
 		<?php echo $this->BootstrapForm->create('AdmMenu', array('class' => 'form-horizontal'));?>
@@ -35,6 +37,7 @@ if($this->request->data['AdmMenu']['parent_node'] == null){
 				));
 				echo $this->BootstrapForm->input('icon', array(
 					'label'=>'* Icono',
+					'disabled'=>$disableIcon
 					//'required' => 'required'
 				));
 				echo $this->BootstrapForm->input('order_menu', array(
@@ -72,7 +75,7 @@ if($this->request->data['AdmMenu']['parent_node'] == null){
 				?>
 				<div class="form-actions" style="text-align: center">
 					<?php echo $this->BootstrapForm->submit(__('Guardar cambios'), array('div'=>false, 'class'=>'btn btn-primary'));?>
-					<?php echo ' '.$this->Html->link('Volver', array('action'=>'index_out'), array('class'=>'btn') );?>
+					<?php echo ' '.$this->Html->link('Volver', array('action'=>'index', $this->passedArgs[1]), array('class'=>'btn') );?>
 				</div>
 			</fieldset>
 		<?php echo $this->BootstrapForm->end();?>

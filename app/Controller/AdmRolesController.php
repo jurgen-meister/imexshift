@@ -38,6 +38,14 @@ class AdmRolesController extends AppController {
  */
 	public function index() {
 		$this->AdmRole->recursive = 0;
+		$filter = array('AdmRole.id !='=>1);
+		if($this->Session->read('Role.id') == 1){
+			$filter = null;
+		}
+		$this->paginate = array(
+			'order'=>array('AdmRole.id'=>'ASC'),
+			'conditions'=>$filter
+		);
 		$this->set('admRoles', $this->paginate());
 	}
 
@@ -50,9 +58,10 @@ class AdmRolesController extends AppController {
 	public function add() {
 		if ($this->request->is('post')) {
 			$this->AdmRole->create();
+			$this->request->data['AdmRole']['name'] = strtoupper($this->request->data['AdmRole']['name']);
 			if ($this->AdmRole->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('adm role')),
+					__('Rol guardado con exito!', __('')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -62,7 +71,7 @@ class AdmRolesController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('adm role')),
+					__('No se pudo guardar.', __('adm role')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -84,11 +93,14 @@ class AdmRolesController extends AppController {
 		if (!$this->AdmRole->exists()) {
 			throw new NotFoundException(__('Invalid %s', __('adm role')));
 		}
+		if($this->Session->read('Role.id') <> 1 AND $id = 1){
+			$this->redirect(array('action' => 'index'));
+		}
 		if ($this->request->is('post') || $this->request->is('put')) {
-			$this->request->data['AdmRole']['lc_transaction']='MODIFY';
+			$this->request->data['AdmRole']['name'] = strtoupper($this->request->data['AdmRole']['name']);
 			if ($this->AdmRole->save($this->request->data)) {
 				$this->Session->setFlash(
-					__('The %s has been saved', __('adm role')),
+					__('Cambios guardados', __('adm role')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -98,7 +110,7 @@ class AdmRolesController extends AppController {
 				$this->redirect(array('action' => 'index'));
 			} else {
 				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('adm role')),
+					__('No se pudo guardar.', __('adm role')),
 					'alert',
 					array(
 						'plugin' => 'TwitterBootstrap',
@@ -121,13 +133,18 @@ class AdmRolesController extends AppController {
 		if (!$this->request->is('post')) {
 			throw new MethodNotAllowedException();
 		}
+		if($this->Session->read('Role.id') <> 1 AND $id = 1){
+			$this->redirect(array('action' => 'index'));
+		}
 		$this->AdmRole->id = $id;
 		if (!$this->AdmRole->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('adm role')));
+			throw new NotFoundException(__('%s invalido', __('Rol')));
 		}
-		if ($this->AdmRole->delete()) {
+		
+		try{
+			$this->AdmRole->delete();
 			$this->Session->setFlash(
-				__('The %s deleted', __('adm role')),
+				__('Eliminado con exito', __('adm role')),
 				'alert',
 				array(
 					'plugin' => 'TwitterBootstrap',
@@ -135,15 +152,20 @@ class AdmRolesController extends AppController {
 				)
 			);
 			$this->redirect(array('action' => 'index'));
-		}
-		$this->Session->setFlash(
-			__('The %s was not deleted', __('adm role')),
+		}catch(Exception $e){
+			if($e->getCode() == 23503){
+				$msge = 'No se puede eliminar este Rol porque tiene dependientes (acciones, menus o restricciones de usuario)';
+			}else{
+				$msge = 'Ocurrio un problema vuelva a intentarlo';
+			}
+			$this->Session->setFlash(
+			$msge,
 			'alert',
-			array(
-				'plugin' => 'TwitterBootstrap',
-				'class' => 'alert-error'
-			)
-		);
-		$this->redirect(array('action' => 'index'));
+			array('plugin' => 'TwitterBootstrap','class' => 'alert-error')
+			);
+			$this->redirect(array('action' => 'index'));
+		}
 	}
+		
+//END CLASS
 }

@@ -191,7 +191,7 @@ class InvMovement extends AppModel {
 						}
 						break;
 					case 'EDIT':
-							if($this->InvMovementDetail->updateAll(array('InvMovementDetail.quantity'=>$dataMovementDetail['InvMovementDetail']['quantity']), array('InvMovementDetail.inv_movement_id'=>$dataMovementDetail['InvMovementDetail']['inv_movement_id'],	'InvMovementDetail.inv_item_id'=>$dataMovementDetail['InvMovementDetail']['inv_item_id']))){
+							if($this->InvMovementDetail->updateAll(array('InvMovementDetail.lc_transaction'=>"'MODIFY'", 'InvMovementDetail.quantity'=>$dataMovementDetail['InvMovementDetail']['quantity']), array('InvMovementDetail.inv_movement_id'=>$dataMovementDetail['InvMovementDetail']['inv_movement_id'],	'InvMovementDetail.inv_item_id'=>$dataMovementDetail['InvMovementDetail']['inv_item_id']))){
 								$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
 							}
 							if($rowsAffected == 0){
@@ -289,7 +289,7 @@ class InvMovement extends AppModel {
 				}
 				if($OPERATION == 'EDIT'){
 					if($this->InvMovementDetail->updateAll(
-							array('InvMovementDetail.quantity'=>$dataMovement[2]['InvMovementDetail']['quantity']),
+							array('InvMovementDetail.lc_transaction'=>"'MODIFY'", 'InvMovementDetail.quantity'=>$dataMovement[2]['InvMovementDetail']['quantity']),
 							array('InvMovementDetail.inv_movement_id'=>array($dataMovement[0]['InvMovement']['id'], $dataMovement[1]['InvMovement']['id']),
 								'InvMovementDetail.inv_item_id'=>$dataMovement[2]['InvMovementDetail']['inv_item_id']))){
 						$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
@@ -339,7 +339,8 @@ class InvMovement extends AppModel {
 	public function reduceCredits($id, $amount) { 
                 if($this->updateAll( 
                                 array( 
-                                        'Manager.credit' => "Manager.credit-{$amount}" 
+                                        'Manager.credit' => "Manager.credit-{$amount}" ,
+										'lc_transaction'=>"'MODIFY'"  // doubt, Manager?
                                          ), 
                                 array( 
                                         'Manager.id' => $id, 

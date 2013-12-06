@@ -79,16 +79,17 @@
 					//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 				));
 				
-				echo $this->BootstrapForm->input('selected', array(
-					'required' => 'required',
-					'label'=>'* Iniciar sesion cón este rol:',
-					'type'=>'select',
-					'options'=>array('1'=>'SI','0'=>'NO'),
-					'id'=>'cbxSelected',
-					'name'=>'cbxSelected',
-					//'placeholder'=>'Fecha en que el usuario dejará de estar activo',
-					//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
-				));
+				if($userId <> $this->Session->read('User.id')){
+					echo $this->BootstrapForm->input('selected', array(
+						'required' => 'required',
+						'label'=>'* Iniciar sesion cón este rol:',
+						'type'=>'select',
+						'options'=>array('1'=>'SI','0'=>'NO'),
+						'id'=>'cbxSelected',
+						'name'=>'cbxSelected',
+					));
+				}
+
 				?>
 		<div class="form-actions" style="text-align: center">
 		<?php echo $this->BootstrapForm->submit('Guardar Cambios',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSaveAll'));

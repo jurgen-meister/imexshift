@@ -81,12 +81,13 @@ class AdmPeriodsController extends AppController {
 			$newPeriod = $this->request->data['period'];
 			$lastPeriod = $newPeriod - 1;
 			$creator = $this->Session->read('UserRestriction.id');
-			try{
-				$this->AdmPeriod->saveNewPeriod($lastPeriod, $newPeriod, $creator);//My own transac function, is in the model
+
+			if($this->AdmPeriod->saveNewPeriod($lastPeriod, $newPeriod, $creator)){//My own transac function, is in the model
 				echo 'success|'.($newPeriod+1);
-			}catch(Exception $e){
+			}else{
 				echo 'error';
 			}
+
 		}
 	}
 

@@ -37,7 +37,7 @@ class AdmPeriod extends AppModel {
 		$dataSource = $this->getDataSource();
 		$dataSource->begin();
 		////////////////////////////////////////////////
-		$error = 0;
+//		$error = 0;
 		if($this->save(array('name'=>$newPeriod, 'creator'=> $creator))){
 			ClassRegistry::init('AdmArea');
 			$AdmArea = new AdmArea();
@@ -61,20 +61,27 @@ class AdmPeriod extends AppModel {
 					unset($dataAreaUserRestriction[$i]['AdmUserRestriction'][$j]['date_modified']);
 					$dataAreaUserRestriction[$i]['AdmUserRestriction'][$j]['creator'] = $creator;
 					$dataAreaUserRestriction[$i]['AdmUserRestriction'][$j]['selected'] = 0;
-					$dataAreaUserRestriction[$i]['AdmUserRestriction'][$j]['active_date'] = $newPeriod.'-12-30 00:00:00';
+					$dataAreaUserRestriction[$i]['AdmUserRestriction'][$j]['active_date'] = ($newPeriod+1).'-01-01 00:00:00';
 					$dataAreaUserRestriction[$i]['AdmUserRestriction'][$j]['period'] = $newPeriod;
 				}
-				if(!$AdmArea->saveAssociated($dataAreaUserRestriction[$i], array('deep' => true, 'atomic'=>false))){//it works without specifying deep and atomic, but I put it anyway, just in case
-					$error++;
+//				if(!$AdmArea->saveAssociated($dataAreaUserRestriction[$i], array('deep' => true, 'atomic'=>false))){//it works without specifying deep and atomic, but I put it anyway, just in case
+//					$error++;
+//				}
+				try{
+					$AdmArea->saveAssociated($dataAreaUserRestriction[$i], array('deep' => true, 'atomic'=>false));
+				}catch(Exception $e){
+//					debug($e);
+					$dataSource->rollback();
+					return false;
+//					$error++;
 				}
 			}
 			
-			if($error == 0){
-				$dataSource->commit();
-			}
+			$dataSource->commit();
+			return true;
 		}
 		///////////////////////////////////////////////
-		$dataSource->rollback();
+		
 	}
 	
 	

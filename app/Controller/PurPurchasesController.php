@@ -1792,7 +1792,7 @@ class PurPurchasesController extends AppController {
 			$purchaseId = $this->request->data['purchaseId'];
 			$type = $this->request->data['type'];	
 			$genCode = $this->request->data['genCode'];
-				if($this->PurPurchase->updateAll(array('PurPurchase.lc_state'=>"'$type'"), array('PurPurchase.id'=>$purchaseId)) 
+				if($this->PurPurchase->updateAll(array('PurPurchase.lc_state'=>"'$type'", 'PurPurchase.lc_transaction'=>"'MODIFY'"), array('PurPurchase.id'=>$purchaseId)) 
 						){
 					echo 'success';
 				}
