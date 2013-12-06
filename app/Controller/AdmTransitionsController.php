@@ -10,6 +10,8 @@ App::uses('AppController', 'Controller');
 class AdmTransitionsController extends AppController {
 
 	public function life_cycles() {
+//		debug($this->Session->read('Permission.'.$this->name));
+		
 		//Ajax
 		if ($this->RequestHandler->isAjax()) {
 			//Data Catch

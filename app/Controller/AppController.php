@@ -123,8 +123,8 @@ class AppController extends Controller {
 	}
 
 	public function isAuthorized($user) {
-		return true; //when is true there aren't permissions
-//		return $this->BittionSecurity->allowPermission($this->name, $this->action, $this->Session->read('Permission.'.$this->name)); //it activates permission for all controllers
+//		return true; //when is true there aren't permissions
+		return $this->BittionSecurity->allowPermission($this->name, $this->action, $this->Session->read('Permission.'.$this->name)); //it activates permission for all controllers
 	}
 
 }
