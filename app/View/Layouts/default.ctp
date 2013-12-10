@@ -41,9 +41,10 @@
 	?>
 </head>
 <body>
-	
+	<?php ;?>
 	<div id="header">
 		<h1>IMEXPORT SRL</h1>
+		<span id="currentDeviceType" style="visibility:hidden;"><?php echo $this->Session->read('currentDeviceTyoe'); ?></span>
 	</div>
 
 	<div id="user-nav" class="navbar navbar-inverse"> 
@@ -176,7 +177,7 @@
 	echo $this->Html->script('bootstrap-datepicker'); //just for this project I gonna put the calendar here
 	echo $this->Html->script('jquery.gritter.min'); //growl-like notifications
 	echo $this->Html->script('select2.min'); //enhanced selects
-	
+	echo $this->Html->script('BittionMain');
 	?>
 	<?php echo $this->fetch('script'); //here goes scripts created on the views?>
 	

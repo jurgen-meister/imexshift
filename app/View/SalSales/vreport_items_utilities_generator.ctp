@@ -33,12 +33,14 @@
 			<?php
 			echo $this->BootstrapForm->input('start_date', array(
 				'label' => '* Fecha Inicio:',
-				'id'=>'txtReportStartDate'
+				'id'=>'txtReportStartDate',
+				'class'=>'input-date-type' 
 			));
 
 			echo $this->BootstrapForm->input('finish_date', array(
 				'label' => '* Fecha Fin:',
-				'id'=>'txtReportFinishDate'
+				'id'=>'txtReportFinishDate',
+				'class'=>'input-date-type' 
 			));
 				  
 				  

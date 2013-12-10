@@ -135,6 +135,7 @@
 					'value'=>$date,
 					'disabled'=>$disable,
 					'maxlength'=>'0',
+					'class'=>'input-date-type'
 				));
 				
 				

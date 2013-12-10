@@ -105,6 +105,7 @@
 						'label' => '* Precio valido desde fecha: ',
 						'required' => 'required',
 						'type'=>'text',
+						'class'=>'input-date-type'
 						//'class'=>'span4'
 						//'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
 						)

@@ -14,11 +14,12 @@
 		<?php echo $this->BootstrapForm->create('AdmController', array('class' => 'form-horizontal'));?>
 			<fieldset>
 				<?php
-				echo $this->BootstrapForm->input('adm_module_id', array('label'=>'Modulos:', 'id'=>'modules'));
+				echo $this->BootstrapForm->input('adm_module_id', array('label'=>'Modulos:', 'id'=>'modules', 'class'=>'span4'));
 				echo '<div id="boxControllers">';
 				//echo $this->BootstrapForm->input('adm_controllers_id', array('type'=>'select', 'multiple'=>'checkbox', 'selected'=>$checkedControllers,'id'=>'controllers', 'label'=>'Controladores:' ));
 				echo $this->BootstrapForm->input('adm_controllers_id', array('id'=>'controllers', 'label'=>'Controladores:', 'name'=>'AdmController[name]' 
 					,'required' => 'required'
+					,'class'=>'span4'
 //					,'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 					));
 				echo '</div>';

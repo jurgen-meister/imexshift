@@ -41,7 +41,8 @@
 						echo $this->BootstrapForm->input('searchDate', array(				
 							'id'=>'txtDate',
 							'value'=>$searchDate,
-							'placeholder'=>'Fecha'
+							'placeholder'=>'Fecha',
+							'class'=>'input-date-type'
 						));
 						?>
 					<?php

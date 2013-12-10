@@ -104,7 +104,8 @@
 								'type'=>'text',
 								'id'=>'txtActiveDate',
 								'name'=>'txtActiveDate',
-								'value'=>date("d/m/Y", strtotime($data['AdmUser']['active_date']))
+								'value'=>date("d/m/Y", strtotime($data['AdmUser']['active_date'])),
+								'class'=>'input-date-type' 
 								//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 							));
 
@@ -133,7 +134,8 @@
 								'id'=>'txtBirthdate',
 								'name'=>'txtBirthdate',
 								'label' => '* Fecha nacimiento:',
-								'value'=>date("d/m/Y", strtotime($data['AdmProfile']['birthdate']))
+								'value'=>date("d/m/Y", strtotime($data['AdmProfile']['birthdate'])),
+								'class'=>'input-date-type-years'
 									//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 							));
 

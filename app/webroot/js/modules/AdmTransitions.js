@@ -1,10 +1,5 @@
 $(document).ready(function() {
 //START SCRIPT
-	///VARIABLES
-	var url = window.location.pathname;
-	var urlPaths = url.split('/');
-	var urlModuleController = ('/' + urlPaths[1] + '/' + urlPaths[2] + '/');
-	var urlAction = urlPaths[3];
 
 	//***********************************************************************************************************************************//
 	///////////////////////////////////////////////////START - AJAX CRUD MAIN//////////////////////////////////////////////////////////////
@@ -56,7 +51,9 @@ $(document).ready(function() {
 	//MAIN
 	if (urlAction === crudDataTableAction) {
 		$('#' + crudFieldMainFocus).focus();
-		$('#cbxController').select2();
+		if($('#currentDeviceType').text() === 'computer'){
+			$('#cbxController').select2();
+		}	
 		myOwnDataTableStart($('#cbxController').val());
 	}
 
@@ -218,7 +215,7 @@ $(document).ready(function() {
 
 			$(this).val(($(this).val()).toUpperCase());
 		});
-	
+		
 		$('#' + crudModalId).on('hidden', function() {
 			$("html,body").css("overflow", "auto");//restablish scroll
 		});

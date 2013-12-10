@@ -14,22 +14,20 @@
 		<?php echo $this->BootstrapForm->create('AdmAction', array('class' => 'form-horizontal'));?>
 			<fieldset>
 				<?php
-				echo $this->BootstrapForm->input('adm_module_id', array('label'=>'Modulos', 'id'=>'modules'));
+				echo $this->BootstrapForm->input('adm_module_id', array('label'=>'Modulos', 'id'=>'modules', 'class'=>'span4'));
 				
 				echo '<div id="boxControllers">';
-				echo $this->BootstrapForm->input('adm_controller_id', array('label'=>'Controladores', 'id'=>'controllers'));
+				echo $this->BootstrapForm->input('adm_controller_id', array('class'=>'span4', 'label'=>'Controladores', 'id'=>'controllers'));
 
 				echo '<div id="boxActions">';
-				echo $this->BootstrapForm->input('adm_action_id', array('id'=>'actions', 'name'=>'AdmAction[name]', 'label'=>'Acciones:'
+				echo $this->BootstrapForm->input('adm_action_id', array('class'=>'span4', 'id'=>'actions', 'name'=>'AdmAction[name]', 'label'=>'Acciones:'
 					,'required' => 'required'
-//					,'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 					));
 				echo '</div>';
 				echo '</div>';
 
 				echo $this->BootstrapForm->input('description', array(
 					'required' => 'required',
-//					'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;')
 				));
 				?>
 				<div class="form-actions" style="text-align: center">

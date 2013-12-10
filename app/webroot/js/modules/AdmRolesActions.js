@@ -1,13 +1,9 @@
 $(document).ready(function(){
-	///Url Paths
-	var path = window.location.pathname;
-	var arr = path.split('/');
-	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');
+//START SCRIPT
+
 	///reset selects for firefox bug
 	$('#cbxRoles option:nth-child(1)').attr("selected", "selected");
 	$('#cbxModules option:nth-child(1)').attr("selected", "selected");
-	
-	$("select").select2();
 	
 	//Initialize dropdown lists to position 0 for firefox refresh bug
     $('#cbxModules option:nth-child(1)').attr("selected", "selected");
@@ -22,7 +18,7 @@ $(document).ready(function(){
 	function ajax_list_actions(){
         $.ajax({
             type:"POST",
-            url: moduleController + "ajax_list_actions",			
+            url: urlModuleController + "ajax_list_actions",			
             data:{module: $("#cbxModules").val(), role: $("#cbxRoles").val()},
             beforeSend: showProcessing,
             success:function(data){
@@ -58,7 +54,7 @@ $(document).ready(function(){
 		$.ajax({
             type:"POST",
 			async:false,//will freeze the browser until it's done, avoid repeated inserts after happy button clicker, con: processsing message won't work
-            url:moduleController +"ajax_save",
+            url:urlModuleController +"ajax_save",
             data:{role: role, module: module, menu: menu },
             beforeSend:showProcessing,
             success:function(data){

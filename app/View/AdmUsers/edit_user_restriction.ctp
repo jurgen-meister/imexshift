@@ -65,6 +65,7 @@
 					'value'=>$areaId,
 					'id'=>'cbxAreas',
 					'name'=>'cbxAreas',
+					'class'=>'span4'
 					//'placeholder'=>'Fecha en que el usuario dejará de estar activo',
 					//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 				));
@@ -88,7 +89,8 @@
 						'type'=>'text',
 						'id'=>'txtActiveDate',
 						'name'=>'txtActiveDate',
-						'value'=>$activeDate
+						'value'=>$activeDate,
+						'class'=>'input-date-type' 
 					));
 					if($userId <> $this->Session->read('User.id')){
 						echo $this->BootstrapForm->input('selected', array(

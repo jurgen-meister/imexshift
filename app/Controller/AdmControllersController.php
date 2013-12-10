@@ -90,7 +90,7 @@ class AdmControllersController extends AppController {
 		///////
 		$admControllers = $this->_getControllers($initialModule);
 		if(count($admControllers) == 0){
-			$admControllers[""]="--- Vacio ---";
+			$admControllers[0]="--- Vacio ---";
 		}else{
 			foreach ($admControllers as $key => $value) {
 				$admControllers[$key] = Inflector::camelize($admControllers[$value]);
@@ -112,7 +112,7 @@ class AdmControllersController extends AppController {
 				$checkedControllers[$key] = $value['AdmController']['name'];
 			}
 			 */
-			if(count($admControllers) == 0){$admControllers[""]="--- Vacio ---";}
+			if(count($admControllers) == 0){$admControllers[0]="--- Vacio ---";}
 			$this->set(compact('admControllers'/*, 'checkedControllers'*/));
 		}else{
 			$this->redirect($this->Auth->logout());

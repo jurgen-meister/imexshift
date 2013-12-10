@@ -85,7 +85,8 @@
 					'type'=>'text',
 					'id'=>'txtActiveDate',
 					'name'=>'txtActiveDate',
-					'placeholder'=>'Tiempo de duración del usuario hasta que expire'
+					'placeholder'=>'Tiempo de duración del usuario hasta que expire',
+					'class'=>'input-date-type' 
 					//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 				));
 				
@@ -113,6 +114,7 @@
 					'id'=>'txtBirthdate',
 					'name'=>'txtBirthdate',
 					'label' => '* Fecha nacimiento:',
+					'class'=>'input-date-type-years' 
 						//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 				));
 				

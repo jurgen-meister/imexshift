@@ -34,7 +34,8 @@
 										'value'=>$valueWarehouse,
 										'options'=>$warehouses,
 										'type'=>'select',
-										'label'=>'Stock: '
+										'label'=>'Stock: ',
+//										'class'=>'span3'
 										));
 						?>				
 

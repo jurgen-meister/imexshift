@@ -1,8 +1,5 @@
 $(document).ready(function(){
-///Url Paths
-	var path = window.location.pathname;
-	var arr = path.split('/');
-	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation	
+//START SCRIPT
 
 // Form Validation Change Password
     $("#AdmUserFormPassword").validate({
@@ -70,7 +67,7 @@ $(document).ready(function(){
 	function ajax_change_email(){
 	   $.ajax({
 			type:"POST",
-			url:moduleController + "ajax_change_email",
+			url:urlModuleController + "ajax_change_email",
 			data:{
 					email:$('#txtEmail1').val()
 			  },
@@ -105,7 +102,7 @@ $(document).ready(function(){
    function ajax_change_password(){
 	   $.ajax({
 			type:"POST",
-			url:moduleController + "ajax_change_password",
+			url:urlModuleController + "ajax_change_password",
 			data:{
 					password:$('#txtPassword1').val()
 			  },
