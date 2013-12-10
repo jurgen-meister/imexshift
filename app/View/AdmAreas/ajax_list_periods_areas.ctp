@@ -5,4 +5,5 @@ echo $this->BootstrapForm->input('parent_area_id', array(
 	'label'=>'* Padre:',
 	'default'=>0,
 	'required' => 'required',
+	'class'=>'span4'
 ));				

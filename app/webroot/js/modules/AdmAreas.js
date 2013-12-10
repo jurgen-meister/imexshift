@@ -1,18 +1,15 @@
 $(document).ready(function(){
-///Url Paths
-	var path = window.location.pathname;
-	var arr = path.split('/');
-	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation	
-//BEGIN SCRIPT
+//START SCRIPT
 
 	function ajax_list_periods_areas(){
 	    $.ajax({ 
             type:"POST",
-            url:moduleController + "ajax_list_periods_areas",			
+            url:urlModuleController + "ajax_list_periods_areas",			
             data:{period: $("#cbxPeriods").val()},
             //beforeSend: showProcessing,
             success: function(data){
 				 $("#boxParentAreas").html(data);
+				 fnBittionSetSelectsStyle();
 			},
 			error: function(data){
 				$.gritter.add({

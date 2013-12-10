@@ -1,28 +1,5 @@
 $(document).ready(function(){
-///Url Paths
-	var path = window.location.pathname;
-	var arr = path.split('/');
-	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation	
-
-//Firefox refresh bug
-//$('input').val('');
-//$('#txtBirthplace').val('Bolivia');
-
-//BEGIN SCRIPT
-
-   $("#txtActiveDate").datepicker({
-	  showButtonPanel: true
-   });
-   $('#txtActiveDate').keypress(function(){return false;});
-  
-   $("#txtBirthdate").datepicker({
-	  showButtonPanel: true,
-	  viewMode: "years"
-   });
-   $('#txtBirthdate').keypress(function(){return false;});
-
-
-
+//START SCRIPT
 
 $.validator.addMethod('diNumberUnique', function(value,element){
 	if($('#txtDiNumberHidden').length > 0){
@@ -33,7 +10,7 @@ $.validator.addMethod('diNumberUnique', function(value,element){
 	var response;
 	$.ajax({
 		type:"POST",
-		url:moduleController + "ajax_verify_unique_di_number",
+		url:urlModuleController + "ajax_verify_unique_di_number",
 		async:false,//the key for jquery.validation plugin, if it's true it finishes the function rigth there and it doesn't work
 		data:{
 			diNumber:value
@@ -261,7 +238,7 @@ $.validator.addMethod('diNumberUnique', function(value,element){
 		$.ajax({
 			type:"POST",
 			async:false, // the key to open new windows when success
-			url:moduleController + "ajax_add_user_profile",
+			url:urlModuleController + "ajax_add_user_profile",
 			data:{
 					txtDiNumber:$('#txtDiNumber').val()
 					,txtDiPlace:$('#txtDiPlace').val()
@@ -288,7 +265,7 @@ $.validator.addMethod('diNumberUnique', function(value,element){
 					});	
 						$('input').val('');
 						$('#txtBirthplace').val('Bolivia');
-						open_in_new_tab(moduleController+'view_user_created.pdf');
+						open_in_new_tab(urlModuleController+'view_user_created.pdf');
 				}else{
 					$.gritter.add({
 					title:	'OCURRIO UN PROBLEMA!',
@@ -314,7 +291,7 @@ $.validator.addMethod('diNumberUnique', function(value,element){
 		$.ajax({
 			type:"POST",
 			async:false, // the key to open new windows when success
-			url:moduleController + "ajax_edit_user_profile",
+			url:urlModuleController + "ajax_edit_user_profile",
 			data:{
 					idUser:$('#txtIdHidden').val()
 					,txtDiNumber:$('#txtDiNumber').val()
@@ -364,7 +341,7 @@ $.validator.addMethod('diNumberUnique', function(value,element){
 	   $.ajax({
 			type:"POST",
 			async:false, // the key to open new windows when success
-			url:moduleController + "ajax_reset_password",
+			url:urlModuleController + "ajax_reset_password",
 			data:{
 					idUser:$('#txtIdHidden').val()
 			  },
@@ -376,7 +353,7 @@ $.validator.addMethod('diNumberUnique', function(value,element){
 						sticky: false,
 						image:'/imexport/img/check.png'
 					});	
-					open_in_new_tab(moduleController+'view_user_created.pdf');
+					open_in_new_tab(urlModuleController+'view_user_created.pdf');
 				}else{
 					$.gritter.add({
 						title:	'OCURRIO UN PROBLEMA!',
@@ -401,7 +378,7 @@ $.validator.addMethod('diNumberUnique', function(value,element){
 	   $.ajax({
 			type:"POST",
 			//async:false, // the key to open new windows when success
-			url:moduleController + "ajax_add_user_restrictions",
+			url:urlModuleController + "ajax_add_user_restrictions",
 			data:{
 					 period:$('#cbxPeriods').val()
 					,areaId:$('#cbxAreas').val()
@@ -446,7 +423,7 @@ $.validator.addMethod('diNumberUnique', function(value,element){
 	   $.ajax({
 			type:"POST",
 			//async:false, // the key to open new windows when success
-			url:moduleController + "ajax_edit_user_restrictions",
+			url:urlModuleController + "ajax_edit_user_restrictions",
 			data:{
 					 areaId:$('#cbxAreas').val()
 					,userRestrictionId:$('#txtIdUserRestrictionHidden').val()
@@ -486,7 +463,7 @@ $.validator.addMethod('diNumberUnique', function(value,element){
    function ajax_list_roles_areas(){
 	    $.ajax({ 
             type:"POST",
-            url:moduleController + "ajax_list_roles_areas",			
+            url:urlModuleController + "ajax_list_roles_areas",			
             data:{period: $("#cbxPeriods").val(), userId:$("#txtUserIdHidden").val()},
             //beforeSend: showProcessing,
             success: function(data){

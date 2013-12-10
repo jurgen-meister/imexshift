@@ -1,15 +1,5 @@
 $(document).ready(function() {
 //START SCRIPT
-
-///Url Paths
-	var path = window.location.pathname;
-	var arr = path.split('/');
-	var moduleController = ('/' + arr[1] + '/' + arr[2] + '/');//Path validation
-
-
-
-
-
 	
 	$("#saveCustomer").click(function(event){
 //		alert("saveCustomer");
@@ -60,7 +50,7 @@ $(document).ready(function() {
 	function ajax_save_customer(id, name, address, phone, email){
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_save_customer",			
+            url:urlModuleController + "ajax_save_customer",			
             data:{id: id, name: name, address:address, phone:phone, email:email},
             beforeSend: function(){
 				$('#boxProcessing').text(" Procesando...");
@@ -86,7 +76,7 @@ $(document).ready(function() {
 	function ajax_save_employee(id, name, phone, email, idCustomer){
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_save_employee",			
+            url:urlModuleController + "ajax_save_employee",			
             data:{id: id, name: name, phone:phone, email:email, idCustomer:idCustomer},
             beforeSend: function(){
 				$('#boxProcessingEmployee').text(" Procesando...");
@@ -296,7 +286,7 @@ $(document).ready(function() {
 	function ajax_delete_employee(id, objectTableRowSelected){
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_delete_employee",			
+            url:urlModuleController + "ajax_delete_employee",			
             data:{id: id},
             beforeSend: function(){
 				$('#boxProcessingEmployee').text(" Procesando...");
@@ -331,7 +321,7 @@ $(document).ready(function() {
 	function ajax_save_tax_number(id, nit, name, idCustomer){
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_save_tax_number",			
+            url:urlModuleController + "ajax_save_tax_number",			
             data:{id: id, nit:nit, name: name, idCustomer:idCustomer},
             beforeSend: function(){
 				$('#boxProcessingTaxNumber').text(" Procesando...");
@@ -509,7 +499,7 @@ $(document).ready(function() {
 	function ajax_delete_tax_number(id, objectTableRowSelected){
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_delete_tax_number",			
+            url:urlModuleController + "ajax_delete_tax_number",			
             data:{id: id},
             beforeSend: function(){
 				$('#boxProcessingTaxNumber').text(" Procesando...");

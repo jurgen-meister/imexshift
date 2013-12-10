@@ -1,15 +1,11 @@
 $(document).ready(function(){
-	///Url Paths
-	var path = window.location.pathname;
-	var arr = path.split('/');
-	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
+//START SCRIPT
 	
-	var globalPeriod = $('#globalPeriod').text(); // this value is obtained from the main template.
+//	var globalPeriod = $('#globalPeriod').text(); // this value is obtained from the main template. AND from MainBittion.js
 	var arrayItemsAlreadySaved = []; 
 	var itemsCounter = 0;
 	startEventsWhenExistsItems();
-	
-	$('select').select2(); 
+
 	//startDataTable();
 	
 	//When exist items, it starts its events and fills arrayItemsAlreadySaved
@@ -190,7 +186,7 @@ $(document).ready(function(){
 			}
 			$('#cbxModalItems').empty();
 			$('#cbxModalItems').append('<option value="'+itemIdForEdit+'" selected="selected" >'+objectTableRowSelected.find('td').text()+'</option>');
-			$('#cbxModalItems').select2();
+			fnBittionSetSelectsStyle();
 			initiateModal();
 		}else{
 			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
@@ -267,7 +263,7 @@ $(document).ready(function(){
 		var itemCodeName = $('#cbxModalItems option:selected').text();//
 		var stock = $('#txtModalStock').val();
 		var stock2 = '';
-		if(arr[3] === 'save_warehouses_transfer'){
+		if(urlAction === 'save_warehouses_transfer'){
 			stock2 = $('#txtModalStock2').val();
 		}
 		
@@ -398,7 +394,7 @@ $(document).ready(function(){
 			var code = $('#txtCode').val();
 			var type ='normal';
 			var index;
-			switch(arr[3]){
+			switch(urlAction){
 				case 'save_in':
 					index = 'index_in';
 					break;	
@@ -437,11 +433,6 @@ $(document).ready(function(){
 			validateOnlyNumbers(event);			
 	});
 
-	//Calendar script
-   $("#txtDate").datepicker({
-	  showButtonPanel: true
-   });
-   
    //Logic delete state pendant
    $('#btnLogicDelete').click(function(){
 	  deleteStatePendant(); 
@@ -517,7 +508,7 @@ $(document).ready(function(){
 	function ajax_delete_item(){
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_delete_item",			
+            url:urlModuleController + "ajax_delete_item",			
             data:{ 
 				
 			},
@@ -731,12 +722,12 @@ $(document).ready(function(){
 	
 	//Save movement 
 	function ajax_save_movement(OPERATION, STATE, objectTableRowSelected, arrayForValidate){//SAVE_IN/ADD/PENDANT
-		var ACTION = arr[3];
+		var ACTION = urlAction;
 		var dataSent = setOnData(ACTION, OPERATION, STATE, objectTableRowSelected, arrayForValidate);
 		//Ajax Interaction	
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_save_movement",//saveMovement			
+            url:urlModuleController + "ajax_save_movement",//saveMovement			
             data:dataSent,
             beforeSend: showProcessing(),
             success: function(data){
@@ -787,13 +778,13 @@ $(document).ready(function(){
 	function ajax_initiate_modal_add_item_in(itemsAlreadySaved){
 		var transfer = '';
 		var warehouse2 = '';
-		if(arr[3] === 'save_warehouses_transfer'){
+		if(urlAction === 'save_warehouses_transfer'){
 			transfer = 'warehouses_transfer';
 			warehouse2 = $('#cbxWarehouses2').val();
 		}
 		 $.ajax({
             type:"POST",
-            url:moduleController + "ajax_initiate_modal_add_item_in",			
+            url:urlModuleController + "ajax_initiate_modal_add_item_in",			
             data:{itemsAlreadySaved: itemsAlreadySaved, warehouse: $('#cbxWarehouses').val(), transfer:transfer, warehouse2:warehouse2},
             beforeSend: showProcessing(),
             success: function(data){
@@ -811,7 +802,7 @@ $(document).ready(function(){
 					$('#txtModalStock2').keypress(function(){return false;});	
 				}
 				
-				$('#cbxModalItems').select2();
+				fnBittionSetSelectsStyle();
 
 			},
 			error:function(data){
@@ -825,13 +816,13 @@ $(document).ready(function(){
 	function ajax_update_stock_modal(){
 		var transfer = '';
 		var warehouse2 = '';
-		if(arr[3] === 'save_warehouses_transfer'){
+		if(urlAction === 'save_warehouses_transfer'){
 			transfer = 'warehouses_transfer';
 			warehouse2 = $('#cbxWarehouses2').val();
 		}
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_update_stock_modal",			
+            url:urlModuleController + "ajax_update_stock_modal",			
             data:{warehouse: $('#cbxWarehouses').val(), item: $('#cbxModalItems').val(), transfer:transfer, warehouse2:warehouse2},
             //beforeSend: showProcessing(), 
             success: function(data){
@@ -852,7 +843,7 @@ $(document).ready(function(){
 	function ajax_update_multiple_stocks(arrayItemsDetails, warehouse, controlName){
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_update_multiple_stocks",			
+            url:urlModuleController + "ajax_update_multiple_stocks",			
             data:{warehouse: warehouse, arrayItemsDetails: arrayItemsDetails},
             beforeSend: showBittionAlertModal({content:'Actualizando stocks...', btnYes:'', btnNo:''}),
             success: function(data){
@@ -871,13 +862,13 @@ $(document).ready(function(){
 	function ajax_logic_delete(code, type, index){
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_logic_delete",			
+            url:urlModuleController + "ajax_logic_delete",			
             data:{code: code, type: type},
             success: function(data){
 				if(data === 'success'){
 					showBittionAlertModal({content:'Se eliminó el documento en estado Pendiente', btnYes:'Aceptar', btnNo:''});
 					$('#bittionBtnYes').click(function(){
-						window.location = moduleController + index;
+						window.location = urlModuleController + index;
 					});
 					
 				}else{

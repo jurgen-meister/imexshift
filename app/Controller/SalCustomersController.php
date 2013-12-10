@@ -76,19 +76,6 @@ class SalCustomersController extends AppController {
 		////////////////////////END - SETTING PAGINATE AND OTHER VARIABLES TO THE VIEW//////////////////
 	}
 
-/**
- * view method
- *
- * @param string $id
- * @return void
- */
-	public function view($id = null) {
-		$this->SalCustomer->id = $id;
-		if (!$this->SalCustomer->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('sal customer')));
-		}
-		$this->set('salCustomer', $this->SalCustomer->read(null, $id));
-	}
 
 /**
  * add method
@@ -122,43 +109,6 @@ class SalCustomersController extends AppController {
 		}
 	}
 
-/**
- * edit method
- *
- * @param string $id
- * @return void
- */
-	public function edit($id = null) {
-		$this->SalCustomer->id = $id;
-		if (!$this->SalCustomer->exists()) {
-			throw new NotFoundException(__('Invalid %s', __('sal customer')));
-		}
-		if ($this->request->is('post') || $this->request->is('put')) {
-			$this->request->data['SalCustomer']['lc_transaction']='MODIFY';
-			if ($this->SalCustomer->save($this->request->data)) {
-				$this->Session->setFlash(
-					__('The %s has been saved', __('sal customer')),
-					'alert',
-					array(
-						'plugin' => 'TwitterBootstrap',
-						'class' => 'alert-success'
-					)
-				);
-				$this->redirect(array('action' => 'index'));
-			} else {
-				$this->Session->setFlash(
-					__('The %s could not be saved. Please, try again.', __('sal customer')),
-					'alert',
-					array(
-						'plugin' => 'TwitterBootstrap',
-						'class' => 'alert-error'
-					)
-				);
-			}
-		} else {
-			$this->request->data = $this->SalCustomer->read(null, $id);
-		}
-	}
 
 /**
  * delete method

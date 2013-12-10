@@ -236,11 +236,16 @@ class AdmUsersController extends AppController {
 	}
 
 	public function login() {
+//		debug($this->_fnCheckDeviceType()); 
+		
 		//before everything verify if the browser is IE from windows
 		if (eregi("MSIE", getenv("HTTP_USER_AGENT")) || eregi("Internet Explorer", getenv("HTTP_USER_AGENT"))) {
 			$this->redirect(array('controller' => 'Pages', 'action' => 'ie_denied'));
 		}
-
+		if($this->_fnCheckDeviceType() == 'phone'){
+			$this->redirect(array('controller' => 'Pages', 'action' => 'phone_not_ready'));
+		}
+		
 		$this->layout = 'login';
 		if ($this->request->is('post')) {
 			//#KEY drop initial database config default, and create the dynamic connection. Other wise it will login with the limited connection
@@ -352,8 +357,9 @@ class AdmUsersController extends AppController {
 			$this->Session->write('User.password', $userPasswordEncrypted);
 		}
 
+		$this->Session->write('currentDeviceTyoe', $this->_fnCheckDeviceType());
+		
 		$this->Session->write('currentRoleActive', 'yes');
-
 		$this->Session->write('UserRestriction.id', $infoRole[0]['AdmUserRestriction']['id']);  //in case there is no trigger postgres user integration, it will help
 		$this->Session->write('User.username', $infoRole[0]['AdmUser']['login']);
 		$this->Session->write('User.id', $userId);
@@ -408,7 +414,19 @@ class AdmUsersController extends AppController {
 	public function change_password() {
 		
 	}
-
+	
+	private function _fnCheckDeviceType(){
+		$dirVendors = App::path('Vendor'); //[0] is /app/Vendor and 1 is /vendors
+		require_once $dirVendors[0] . 'Mobile_Detect.php';
+		$detect = new Mobile_Detect;
+		$deviceType = ($detect->isMobile() ? ($detect->isTablet() ? 'tablet' : 'phone') : 'computer');
+		$scriptVersion = $detect->getScriptVersion();
+		return $deviceType;
+//		debug($deviceType);
+//		debug($scriptVersion);
+//		debug($_SERVER['HTTP_USER_AGENT']);
+	}
+	
 	public function ajax_change_password() {
 		if ($this->RequestHandler->isAjax()) {
 			$password = $this->request->data['password'];

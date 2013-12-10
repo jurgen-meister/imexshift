@@ -1,17 +1,7 @@
 $(document).ready(function(){
-	///Url Paths
-	var path = window.location.pathname;
-	var arr = path.split('/');
-	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
+//START SCRIPT
 	////////////////////////////////////// START - INITIAL ACTIONS /////////////////////////////////////////
-	
-	$('select').select2();
-	$("#txtReportStartDate, #txtReportFinishDate").datepicker({
-		showButtonPanel: true
-	});
 	startDataTable();
-	
-	$('#txtReportStartDate, #txtReportFinishDate').keydown(function(e){e.preventDefault();});
 	////////////////////////////////////// END - INITIAL ACTIONS /////////////////////////////////////////
 
 	////////////////////////////////////// START - EVENTS /////////////////////////////////////////
@@ -19,28 +9,13 @@ $(document).ready(function(){
 		getGroupItemsAndFilters();
 	});
 	
-	
-	
 	$('#cbxReportMovementTypes').change(function(){
-        /*
-		if($(this).val() === '1001'){
-			$('#boxWarehouse2').show();
-			$("#cbxReportWarehouse option[value='0']").remove();
-			$("#cbxReportWarehouse").select2();
-		}else{
-			$('#boxWarehouse2').hide();
-			if($("#cbxReportWarehouse option[value='0']").length === 0){
-				$("#cbxReportWarehouse").append('<option value="0">TODOS</option>');
-			}
-		}
-		*/
 		if($(this).val() === '1000'){ //ins and outs
 			$('#boxWarehouse2').hide();
 			if($("#cbxReportWarehouse option[value='0']").length === 0){
-				//$("#cbxReportWarehouse").append('<option value="0">TODOS</option>'); //at the end
 				$("#cbxReportWarehouse").prepend('<option value="0">TODOS</option>'); //at the begining
 				$("#cbxReportWarehouse option[value='0']").prop('selected', true);
-				$("#cbxReportWarehouse").select2();
+				fnBittionSetSelectsStyle();
 			}
 		}else{
 			if($(this).val() === '1001'){
@@ -49,7 +24,7 @@ $(document).ready(function(){
 				$('#boxWarehouse2').hide();
 			}
 			$("#cbxReportWarehouse option[value='0']").remove();
-			$("#cbxReportWarehouse").select2();
+			fnBittionSetSelectsStyle();
 		}
 	});
 	
@@ -217,7 +192,7 @@ $(document).ready(function(){
 		$.ajax({
             type:"POST",
 			async:false, // the key to open new windows when success
-            url:moduleController + "ajax_generate_report",			
+            url:urlModuleController + "ajax_generate_report",			
             data:dataSent,
 			beforeSend: function(){
 				$('#boxProcessing').text('Procesando...');
@@ -225,13 +200,13 @@ $(document).ready(function(){
             success: function(data){
 				switch(data){
 					case '1000'://INS AND OUTS
-						open_in_new_tab(moduleController+'vreport_ins_and_outs');
+						open_in_new_tab(urlModuleController+'vreport_ins_and_outs');
 						break;
 					case '1001'://TRANSFERS
-						open_in_new_tab(moduleController+'vreport_transfers');
+						open_in_new_tab(urlModuleController+'vreport_transfers');
 						break;
 					default://INS OR OUTS	
-						open_in_new_tab(moduleController+'vreport_ins_or_outs');
+						open_in_new_tab(urlModuleController+'vreport_ins_or_outs');
 						break;	
 				}
 				$('#boxProcessing').text('');
@@ -248,14 +223,14 @@ $(document).ready(function(){
 	function ajax_get_group_items_and_filters(){ //Report
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_get_group_items_and_filters",			
+            url:urlModuleController + "ajax_get_group_items_and_filters",			
             data:{type: $('#cbxReportGroupTypes').val()},
 			beforeSend: function(){
 				$('#boxProcessing').text('Procesando...');
 			},
             success: function(data){
 				$('#boxGroupItemsAndFilters').html(data);
-				$('select').select2();
+				fnBittionSetSelectsStyle();
 				startDataTable();
 				$('#boxGroupItemsAndFilters #cbxReportGroupFilters').bind("change",function(){ 
 					var selected = new Array();
@@ -276,7 +251,7 @@ $(document).ready(function(){
 	function ajax_get_group_items(selected){ //Report
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_get_group_items",			
+            url:urlModuleController + "ajax_get_group_items",			
             data:{type: $('#cbxReportGroupTypes').val(), selected: selected},
 			beforeSend: function(){
 				$('#boxProcessing').text('Procesando...');

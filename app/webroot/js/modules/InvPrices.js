@@ -1,13 +1,5 @@
 $(document).ready(function(){
-	///Url Paths
-	var path = window.location.pathname;
-	var arr = path.split('/');
-	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
-	
-	
-	
-	
-	
+//START SCRIPT
 	
 	//************************************************************************//
 	//////////////////////////////////BEGIN-CONTROLS EVENTS/////////////////////

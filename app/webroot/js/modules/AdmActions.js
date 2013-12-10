@@ -1,9 +1,6 @@
 $(document).ready(function(){
-	///Url Paths
-	var path = window.location.pathname;
-	var arr = path.split('/');
-	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');
-	
+//START SCRIPT
+
 	//Initialize dropdown lists to position 0 for firefox refresh bug
     $('#modules option:nth-child(1)').attr("selected", "selected");
     $('#controllers option:nth-child(1)').attr("selected", "selected");
@@ -24,7 +21,7 @@ $(document).ready(function(){
 	function ajax_list_controllers(){
         $.ajax({
             type:"POST",
-            url:moduleController + "ajax_list_controllers",
+            url:urlModuleController + "ajax_list_controllers",
             data:{module: $('#modules').val()},
             beforeSend: showProcessing,
             success:function(data){
@@ -39,11 +36,11 @@ $(document).ready(function(){
     function ajax_list_actions(){
         $.ajax({
             type:"POST",
-            url:moduleController + "ajax_list_actions",			
+            url:urlModuleController + "ajax_list_actions",			
             data:{controllerId: $("#controllers").val(), controllerName: $("#controllers option:selected").text()},
             beforeSend: showProcessing,
             success: function(data){
-				showActions(data)
+				showActions(data);
 			}
 				
         });
@@ -55,10 +52,12 @@ $(document).ready(function(){
     function showControllers(data){
         $("#processing").text("");
         $("#boxControllers").html(data);
+		fnBittionSetSelectsStyle();
     }
     function showActions(data){
         $("#processing").text("");
         $("#boxActions").html(data);
+		fnBittionSetSelectsStyle();
     }
 	
 });

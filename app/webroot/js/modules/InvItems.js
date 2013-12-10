@@ -1,13 +1,10 @@
 $(document).ready(function() {
-	///Url Paths
-	var path = window.location.pathname;
-	var arr = path.split('/');
-	var moduleController = ('/' + arr[1] + '/' + arr[2] + '/');//Path validation
+//START SCRIPT
 
 	var arrayPricesAlreadySaved = [];
 	var cont = 0;
 
-	$('#supplier, #brand, #category').select2();
+	fnBittionSetSelectsStyle();
 
 	startEventsWhenExistsPrices();
 
@@ -20,11 +17,6 @@ $(document).ready(function() {
 	//Validate only numbers
 	$('#txtModalPrice, #txtPrice').keydown(function(event) {
 		validateOnlyNumbers(event);
-	});
-	//Enable Datepicker
-	$("#txtModalDate, #txtPriceDate").datepicker({
-		showButtonPanel: true
-				//inline : true
 	});
 	//Call modal
 	$('#btnAddPrice').click(function(event) {
@@ -62,8 +54,8 @@ $(document).ready(function() {
 	function clearFieldsForFirefox() {
 		var urlController = ['save_item'];
 		for (var i = 0; i < urlController.length; i++) {
-			if (arr[3] == urlController[i]) {
-				if (arr[4] == null) {
+			if (urlAction === urlController[i]) {
+				if (urlActionValue1 === null) {
 					$('input').val('');//empty all inputs including hidden thks jquery 
 					$('textarea').val('');
 				}
@@ -75,7 +67,7 @@ $(document).ready(function() {
 	function startEventsWhenExistsPrices() {
 		var arrayAux = [];
 		arrayAux = getPrices();
-		if (arrayAux[0] != 0) {
+		if (arrayAux[0] !== 0) {
 			for (var i = 0; i < arrayAux.length; i++) {
 				arrayPricesAlreadySaved[i] = arrayAux[i]['inv_price_id'];
 				createEventClickEditPriceButton(arrayAux[i]['inv_price_id']);
@@ -109,7 +101,7 @@ $(document).ready(function() {
 			backdrop: 'static'
 		});
 		$('#modalAddPrice').on('shown', function () {
-			$('#cbxModalPriceTypes').select2();
+			fnBittionSetSelectsStyle();
 			$('.select2-input').focus();//because is wrapp with select2 stuff, must call this
 		});
 
@@ -336,7 +328,7 @@ $(document).ready(function() {
 	function ajax_initiate_modal_add_price(pricesAlreadySaved) {
 		$.ajax({
 			type: "POST",
-			url: moduleController + "ajax_initiate_modal_add_price",
+			url: urlModuleController + "ajax_initiate_modal_add_price",
 			data: {pricesAlreadySaved: pricesAlreadySaved}, //, warehouse: $('#cbxWarehouses').val(), transfer:transfer, warehouse2:warehouse2},
 			beforeSend: showProcessing(),
 			success: function(data) {
@@ -362,7 +354,7 @@ $(document).ready(function() {
 
 		$.ajax({
 			type: "POST",
-			url: moduleController + "ajax_save_price",
+			url: urlModuleController + "ajax_save_price",
 			data: {itemId: $('#txtItemIdHidden').val(),
 				priceTypeId: $('#cbxModalPriceTypes option:selected').val(),
 				priceTypeName: $('#cbxModalPriceTypes option:selected').text(),
@@ -396,7 +388,7 @@ $(document).ready(function() {
 
 		$.ajax({
 			type: "POST",
-			url: moduleController + "ajax_delete_price",
+			url: urlModuleController + "ajax_delete_price",
 			data: {priceId: priceIdForDelete, itemId: $("#txtItemIdHidden").val(), priceTypeId: priceTypeId},
 			beforeSend: showProcessing(),
 			success: function(data) {
@@ -425,7 +417,7 @@ $(document).ready(function() {
 
 		$.ajax({
 			type: "POST",
-			url: moduleController + "ajax_save_item",
+			url: urlModuleController + "ajax_save_item",
 			data: {itemId: $('#txtItemIdHidden').val(),
 				itemSupplier: $('#supplier option:selected').val(),
 				itemCode: $('#code').val(),
@@ -439,7 +431,7 @@ $(document).ready(function() {
 			beforeSend: showProcessing(),
 			success: function(data) {
 
-				window.location.replace(moduleController + 'index');
+				window.location.replace(urlModuleController + 'index');
 
 				$('#boxMessage').html('<div class="alert alert-success">\n\
 				<button type="button" class="close" data-dismiss="alert">&times;</button>Item guardado con exito<div>');

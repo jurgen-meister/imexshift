@@ -1,19 +1,15 @@
 $(document).ready(function(){
-///Url Paths
-	var path = window.location.pathname;
-	var arr = path.split('/');
-	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation	
-//BEGIN SCRIPT
+//START SCRIPT
 
 function ajax_add_period(){
 	 $.ajax({ 
             type:"POST",
-            url:moduleController + "ajax_add_period",			
+            url:urlModuleController + "ajax_add_period",			
             data:{period: $("#txtPeriod").val()},
             //beforeSend: showProcessing,
             success: function(data){			
 				var arrayCatch = data.split('|');
-				if(arrayCatch[0] == 'success'){
+				if(arrayCatch[0] === 'success'){
 					$.gritter.add({
 						title:	'EXITO!',
 						text: 'Nueva gestión creada',

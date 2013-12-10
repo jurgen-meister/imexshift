@@ -14,15 +14,14 @@
 			echo $this->BootstrapForm->input('inv_supplier_id', array(
 				'label' => 'Proveedor',
 				'required' => 'required',
-				'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
-			);
+				'class'=>'span4'
+			));
 			echo $this->BootstrapForm->input('name', array(
 				'style' => 'width:400px',
 				'rows' => 3,
 				'label' => 'Nombre',
 				'required' => 'required',
-				'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;')
-			);
+			));
 			echo $this->BootstrapForm->input('phone', array(
 				'label' => 'Teléfono',)			
 			);

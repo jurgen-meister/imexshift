@@ -30,6 +30,7 @@
 					'label'=>'* Padre:',
 					'default'=>0,
 					'required' => 'required',
+					'class'=>'span4'
 				));				
 				echo '</div>';
 				?>

@@ -154,7 +154,8 @@
 					'id'=>'txtDate',
 					'value'=>$date,
 					'disabled'=>$disable,
-					'maxlength'=>'0'
+					'maxlength'=>'0',
+					'class'=>'input-date-type'
 				));				
 				
 				echo $this->BootstrapForm->input('sal_customer_id', array(

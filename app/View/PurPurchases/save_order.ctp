@@ -151,7 +151,8 @@
 					'id'=>'txtDate',
 					'value'=>$date,
 					'disabled'=>$disable,
-					'maxlength'=>'0'
+					'maxlength'=>'0',
+					'class'=>'input-date-type'
 				));
 				
 //				echo $this->BootstrapForm->input('inv_supplier_id', array(

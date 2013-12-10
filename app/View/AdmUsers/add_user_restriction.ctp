@@ -45,6 +45,7 @@
 					'options'=>$roles,
 					'id'=>'cbxRoles',
 					'name'=>'cbxRoles',
+					'class'=>'span3'
 					//'placeholder'=>'Fecha en que el usuario dejará de estar activo',
 					//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 				));
@@ -55,6 +56,7 @@
 					'options'=>$areas,
 					'id'=>'cbxAreas',
 					'name'=>'cbxAreas',
+					'class'=>'span4'
 					//'placeholder'=>'Fecha en que el usuario dejará de estar activo',
 					//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 				));
@@ -76,6 +78,7 @@
 					'type'=>'text',
 					'id'=>'txtActiveDate',
 					'name'=>'txtActiveDate',
+					'class'=>'input-date-type' 
 					//'helpInline' => '<span class="label label-important">' . __('Obligatorio') . '</span>&nbsp;'
 				));
 				

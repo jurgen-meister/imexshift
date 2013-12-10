@@ -47,7 +47,8 @@ echo  $this->BootstrapPaginator->options(array('url' => $arrayPassedArgs)); //de
 						echo $this->BootstrapForm->input('searchDate', array(				
 							'id'=>'txtDate',
 							'value'=>$searchDate,
-							'placeholder'=>'Fecha'
+							'placeholder'=>'Fecha',
+							'class'=>'input-date-type'
 						));
 						?>
 					<?php

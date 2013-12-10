@@ -1,14 +1,9 @@
 $(document).ready(function(){
 //START SCRIPT
 
-///Url Paths
-var path = window.location.pathname;
-var arr = path.split('/');
-var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 //ON START
 	//EXECUTE onload
 	//ajax_get_graphics_data();
-	$('select').select2();
 	startDataTable();
 	
 /////////////
@@ -79,14 +74,14 @@ $('#cbxReportGroupTypes').change(function(){
 	function ajax_get_group_items_and_filters(){ //Report
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_get_group_items_and_filters",			
+            url:urlModuleController + "ajax_get_group_items_and_filters",			
             data:{type: $('#cbxReportGroupTypes').val()},
 			beforeSend: function(){
 				$('#boxProcessing').text('Procesando...');
 			},
             success: function(data){
 				$('#boxGroupItemsAndFilters').html(data);
-				$('select').select2();
+				fnBittionSetSelectsStyle();
 				startDataTable();
 				$('#boxGroupItemsAndFilters #cbxReportGroupFilters').bind("change",function(){ 
 					var selected = new Array();
@@ -107,7 +102,7 @@ $('#cbxReportGroupTypes').change(function(){
 	function ajax_get_group_items(selected){ //Report
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_get_group_items",			
+            url:urlModuleController + "ajax_get_group_items",			
             data:{type: $('#cbxReportGroupTypes').val(), selected: selected},
 			beforeSend: function(){
 				$('#boxProcessing').text('Procesando...');
@@ -164,7 +159,7 @@ $('#cbxReportGroupTypes').change(function(){
 	function ajax_get_graphics_data(items){ 
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_get_graphics_data",			
+            url:urlModuleController + "ajax_get_graphics_data",			
             data:{year: $('#cbxYear').val(), priceType:$('#cbxPriceType').val() ,currency:$('#cbxCurrency').val() ,item:items},
 			beforeSend: function(){
 				$('#boxProcessing').text("Procesando...");

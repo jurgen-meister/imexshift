@@ -1,10 +1,5 @@
 $(document).ready(function(){
-	///Url Paths
-	var path = window.location.pathname;
-	var arr = path.split('/');
-	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');
-	
-	$('select').select2();
+//START SCRIPT
 	
 	//Initialize AJAX
     $('#modules').change(function(){
@@ -26,7 +21,7 @@ $(document).ready(function(){
 	function ajax_list_actions_out(){
         $.ajax({
             type:"POST",
-            url:moduleController + "ajax_list_actions_out",			
+            url:urlModuleController + "ajax_list_actions_out",			
             data:{module: $("#modules").val(), action:$("#cbxAction").val()},
             beforeSend: showProcessing,
             success: showActions
@@ -36,7 +31,7 @@ $(document).ready(function(){
 	function ajax_list_controllers_inside(){
         $.ajax({
             type:"POST",
-            url:moduleController + "ajax_list_controllers_inside",			
+            url:urlModuleController + "ajax_list_controllers_inside",			
             data:{module: $("#modules_inside").val()},
             beforeSend: showProcessing,
             //success: showControllersInside
@@ -52,7 +47,7 @@ $(document).ready(function(){
 	function ajax_list_actions_inside(){
         $.ajax({
             type:"POST",
-            url:moduleController + "ajax_list_actions_inside",			
+            url:urlModuleController + "ajax_list_actions_inside",			
             data:{controller: $("#controllers").val()},
             beforeSend: showProcessing,
             success: showActionsInside

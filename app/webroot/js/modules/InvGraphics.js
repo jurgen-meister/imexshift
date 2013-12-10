@@ -1,20 +1,10 @@
 $(document).ready(function(){
 //START SCRIPT
 
-///Url Paths
-var path = window.location.pathname;
-var arr = path.split('/');
-var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
-
 //ON START
 	//EXECUTE onload
 	//ajax_get_graphics_data();
-	$('select').select2();
-	$("#txtReportStartDate, #txtReportFinishDate").datepicker({
-		showButtonPanel: true
-	});
-	
-	if(arr[3] === 'vgraphics' || arr[3] === 'vgraphics#'){
+	if(urlAction === 'vgraphics' || urlAction === 'vgraphics#'){
 		startDataTable();
 	}
 	$('#txtReportStartDate, #txtReportFinishDate').keydown(function(e){e.preventDefault();});
@@ -140,7 +130,7 @@ var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
 function ajax_get_group_items_and_filters(){ //Report
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_get_group_items_and_filters",			
+            url:urlModuleController + "ajax_get_group_items_and_filters",			
             data:{type: $('#cbxReportGroupTypes').val()},
 			beforeSend: function(){
 				$('#boxProcessing').text('Procesando...');
@@ -168,7 +158,7 @@ function ajax_get_group_items_and_filters(){ //Report
 	function ajax_get_group_items(selected){ //Report
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_get_group_items",			
+            url:urlModuleController + "ajax_get_group_items",			
             data:{type: $('#cbxReportGroupTypes').val(), selected: selected},
 			beforeSend: function(){
 				$('#boxProcessing').text('Procesando...');
@@ -319,7 +309,7 @@ function ajax_get_group_items_and_filters(){ //Report
 		//var items = getSelectedCheckboxes();
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_get_graphics_data",			
+            url:urlModuleController + "ajax_get_graphics_data",			
             data:{year: $('#cbxYear').val(), movementType: $('#cbxMovementType').val(), warehouse:$('#cbxWarehouse').val(), item:items},
 			beforeSend: function(){
 				$('#boxProcessing').text("Procesando...");
@@ -351,7 +341,7 @@ function ajax_get_group_items_and_filters(){ //Report
 		//var items = getSelectedCheckboxes();
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_get_graphics_data_historical_prices",			
+            url:urlModuleController + "ajax_get_graphics_data_historical_prices",			
             data:{startDate:startDate, finishDate:finishDate, item:items, currency:$("#cbxReportCurrency").val()},
 			beforeSend: function(){
 				$('#boxProcessing').text("Procesando...");

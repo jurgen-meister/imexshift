@@ -1,16 +1,9 @@
 $(document).ready(function() {
-	///Url Paths
-	var path = window.location.pathname;
-	var arr = path.split('/');
-	var moduleController = ('/' + arr[1] + '/' + arr[2] + '/');
-	///Initialize checkboxTree behavior
-//	if (arr[3] === 'save') {
+//START SCRIPT
+
 		$('#roles option:nth-child(1)').attr("selected", "selected");
 		$('#modules option:nth-child(1)').attr("selected", "selected");
 		$('#tree1').checkboxTree();
-//	}
-
-	$("select").select2();
 
 	//Initialize dropdown lists to position 0 for firefox refresh bug
 	$('#parentMenus option:nth-child(1)').attr("selected", "selected");
@@ -35,7 +28,7 @@ $(document).ready(function() {
 	function ajax_list_menus() {
 		$.ajax({
 			type: "POST",
-			url: moduleController + "ajax_list_menus",
+			url: urlModuleController + "ajax_list_menus",
 			data: {parentMenus: $("#parentMenus").val(), role: $("#roles").val()},
 			beforeSend: showProcessing,
 			success: showMenus
@@ -58,7 +51,7 @@ $(document).ready(function() {
 		var menuGeneric = [];
 		menuGeneric = captureCheckbox();
 		var type = 'outside';
-		if (arr[3] === 'add_inside') {
+		if (urlAction === 'add_inside') {
 			roleGeneric = $("#roles_inside").val();
 			moduleGeneric = $("#modules_inside").val();
 			menuGeneric = captureCheckboxInside();
@@ -67,7 +60,7 @@ $(document).ready(function() {
 		$.ajax({
 			type: "POST",
 			async:false,//will freeze the browser until it's done, avoid repeated inserts after happy button clicker, con: processsing message won't work
-			url: moduleController + "ajax_save",
+			url: urlModuleController + "ajax_save",
 			data: {role: roleGeneric, parentMenus: parentMenusGeneric, menu: menuGeneric, type: type},
 			beforeSend: showProcessing,
 			success:function(data){

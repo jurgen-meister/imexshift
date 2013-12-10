@@ -208,7 +208,8 @@
 		echo $this->BootstrapForm->input('date', array(			
 			'id' => 'txtModalDate',
 			'label' => '* Fecha:',
-			'required' => 'required',			
+			'required' => 'required',
+			'class'=>'input-date-type'
 			//'helpInline' => '<span class="label label-important">' . __('Requerido') . '</span>&nbsp;'
 			)
 		);		
