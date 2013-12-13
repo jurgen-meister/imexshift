@@ -8,16 +8,19 @@
 			'required' => 'required',
 		));
 		echo $this->BootstrapForm->input('name', array(
-			'label' => 'Nombre:',
-		));
-		echo $this->BootstrapForm->input('description', array(
-			'label' => 'Descripción:',
-		));
-		echo $this->BootstrapForm->input('sentence', array(
+			'label' => 'Tipo:',
 			'type' => 'select',
-			'options' => array_combine(array('ADD', 'EDIT', 'DELETE'), array('ADD', 'EDIT', 'DELETE')),
-			'label' => 'Sentencia:',
+			'options' => array_combine(array('CREATE', 'MODIFY', 'ELIMINATE'), array('CREATE', 'MODIFY', 'ELIMINATE')),
+			'required' => 'required'
 		));
+//		echo $this->BootstrapForm->input('description', array(
+//			'label' => 'Descripción:',
+//		));
+//		echo $this->BootstrapForm->input('sentence', array(
+//			'type' => 'select',
+//			'options' => array_combine(array('ADD', 'EDIT', 'DELETE'), array('ADD', 'EDIT', 'DELETE')),
+//			'label' => 'Sentencia:',
+//		));
 	?>
 	<div class="form-actions" style="text-align: center">
 		<?php

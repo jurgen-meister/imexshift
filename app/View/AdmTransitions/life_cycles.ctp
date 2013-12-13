@@ -67,8 +67,6 @@
 							<thead>
 							<th style="width: 4%">#</th>
 							<th>Nombre</th>
-							<th>Descripción</th>
-							<th>Sentencia</th>
 							<th></th>
 							</thead>
 							<tbody>

@@ -248,6 +248,8 @@ class AdmUsersController extends AppController {
 		
 		$this->layout = 'login';
 		if ($this->request->is('post')) {
+			// not using due only one db-user on heroku
+			/*
 			//#KEY drop initial database config default, and create the dynamic connection. Other wise it will login with the limited connection
 			if (!$this->BittionMain->connectDatabaseDynamically($this->request->data['AdmUser']['login'], $this->request->data['AdmUser']['password'])) {
 //				$this->Session->setFlash('<strong>Error!</strong> fallo la conexión a la base de datos.', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-error'));
@@ -255,7 +257,7 @@ class AdmUsersController extends AppController {
 				$this->Session->setFlash('<strong>Usuario o contraseña incorrecto!!!</strong>', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-error'));
 				$this->redirect(array('controller' => 'AdmUsers', 'action' => 'login'));
 			}
-
+			*/
 			if ($this->Auth->login()) { //If authentication is valid username and password
 				/////////////////////////////////////////////BEGIN OF VALIDATION///////////////////////////////////////////////////
 				$userInfo = $this->Auth->user();
@@ -405,8 +407,8 @@ class AdmUsersController extends AppController {
 			}
 			$this->redirect($this->Auth->redirect());
 		} catch (Exception $e) {
-			$this->_createMessage('Ocurrio un problema con el log, vuelva a intentarlo');
-//			$this->_createMessage($e);
+//			$this->_createMessage('Ocurrio un problema con el log, vuelva a intentarlo');
+			$this->_createMessage($e);
 			$this->redirect($this->Auth->logout());
 		}
 	}
