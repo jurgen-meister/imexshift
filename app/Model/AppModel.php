@@ -46,7 +46,7 @@ class AppModel extends Model {
 		return true;
 	}
 
-	public function beforeDelete() {
+	public function beforeDelete($cascade = false) {
 
 		App::import('Model', 'CakeSession');
 		$session = new CakeSession();
