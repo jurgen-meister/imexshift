@@ -72,6 +72,8 @@ class AppController extends Controller {
 			//nothing
 		} else {
 			if ($this->Session->check('User')) {//START check session, to avoid error on checking on database when there is no session and somebody want to enter when is not login
+				// not using due only one db-user on heroku
+				/*
 				//[1]///////////////////////////Connects dynamically to the DB/////////////////////////////////
 				$login = $this->Session->read('User.username');
 				$password = $this->Session->read('User.password');
@@ -80,6 +82,7 @@ class AppController extends Controller {
 					$this->Session->setFlash('<strong>Error!</strong> fallo la conexión a la base de datos.', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-error'));
 					$this->redirect(array('controller' => 'AdmUsers', 'action' => 'login'));
 				}
+				*/
 				//[2]////////////////////////////////Checks live if user/role is active
 				$userRestrictionId = $this->Session->read('UserRestriction.id');
 				$checkUserRoleActive = $this->BittionSecurity->liveCheckUserRoleActive($userRestrictionId);

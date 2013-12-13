@@ -397,8 +397,11 @@ $.validator.addMethod('diNumberUnique', function(value,element){
 						sticky: false,
 						image:'/imexport/img/check.png'
 					});	
+					
 					$('#cbxRoles option[value='+arrayCatch[1]+']').remove();
+					$('#cbxRoles').select2();
 					$('input[type=text]').val('');
+					
 				}else{
 					$.gritter.add({
 					title:	'OCURRIO UN PROBLEMA!',

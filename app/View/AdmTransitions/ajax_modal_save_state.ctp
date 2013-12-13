@@ -13,7 +13,8 @@
 		));
 		echo $this->BootstrapForm->input('description', array(
 			'label' => 'Descripción:',
-			'required' => 'required',
+			'placeholder'=>'(opcional)'
+//			'required' => 'required',
 		));
 	?>
 	<div class="form-actions" style="text-align: center">

@@ -129,8 +129,6 @@ class AdmTransitionsController extends AppController {
 			'fields' => array(
 				$controller . '.id'
 				, $controller . '.name'
-				, $controller . '.sentence'
-				, $controller . '.description'
 			),
 			'conditions' => $searchConditions
 		);
@@ -145,9 +143,7 @@ class AdmTransitionsController extends AppController {
 			$json["aaData"][$key][0] = 'tr' . $controller . '-' . $value[$controller]["id"];
 			$json["aaData"][$key][1] = $counter;
 			$json["aaData"][$key][2] = $value[$controller]["name"];
-			$json["aaData"][$key][3] = $value[$controller]["description"];
-			$json["aaData"][$key][4] = $value[$controller]["sentence"];
-			$json["aaData"][$key][5] = $editButton . $deleteButton; //must find a another way to create these buttons or not?
+			$json["aaData"][$key][3] = $editButton . $deleteButton; //must find a another way to create these buttons or not?
 			$counter++;
 		}
 
