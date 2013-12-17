@@ -308,6 +308,55 @@ $(document).ready(function(){
 	
 	//////////////////////////////////// END - AJAX ///////////////////////////////////////////////
 	
+	$('#btnGenerateReportCustomersDebts').click(function(){
+		var customer = $('#cbxCustomer').val();
+		var customerName = $('#cbxCustomer option:selected').text();
+		var showType = $('#cbxShowType').val();
+		var currency = $('#cbxCurrency').val();
+		var error = validate1(customer, showType, currency);
+		if(error === ''){
+			var DATA = {
+						customer:customer,
+						customerName:customerName,
+						showType:showType,
+						currency:currency
+					   };
+			ajax_generate_report_customers_debts(DATA);
+			$('#boxMessage').html('');
+		}else{
+			$('#boxMessage').html('<div class="alert-error"><ul>'+error+'</ul></div>');
+		}
+		return false;
+	});
+	
+	function ajax_generate_report_customers_debts(dataSent){ //Report
+		$.ajax({
+            type:"POST",
+			async:false, // the key to open new windows when success
+            url:moduleController + "ajax_generate_report_customers_debts",			
+            data:dataSent,
+			beforeSend: function(){
+				$('#boxProcessing').text('Procesando...');
+			},
+            success: function(data){
+				open_in_new_tab(moduleController+'vreport_customers_debts');
+				$('#boxProcessing').text('');
+			},
+			error:function(data){
+				showGrowlMessage('error', 'Vuelva a intentarlo.');
+				$('#boxProcessing').text('');
+			}
+        });
+	}
+
+	function validate1(customer, showType, currency){
+		var  error='';
+		if(showType === ''){error+='<li> El campo "Mostrar Ventas" esta vacio </li>';}
+		if(customer === ''){error+='<li> El campo "Cliente" esta vacio </li>';}
+		if(currency === ''){error+='<li> El campo "Tipo de Cambio" esta vacio </li>';}
+		return error;
+	}	
+	
 //END SCRIPT	
 });
 

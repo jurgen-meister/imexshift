@@ -140,15 +140,15 @@ class SalSale extends AppModel {
 				$dataPayDetail['SalPayment']['sal_sale_id']=$idMovement1;
 			}
 		}
-		if($ACTION=='save_order'){
-			if(!$this->saveAll($dataMovement[1])){
-				$dataSource->rollback();
-				return 'error';
-			}else{
-				$idMovement2 = $this->id;
-				$dataMovementDetail[1]['SalDetail']['sal_sale_id']=$idMovement2;
-			}
-		}	
+//		if($ACTION=='save_order'){
+//			if(!$this->saveAll($dataMovement[1])){
+//				$dataSource->rollback();
+//				return 'error';
+//			}else{
+//				$idMovement2 = $this->id;
+//				$dataMovementDetail[1]['SalDetail']['sal_sale_id']=$idMovement2;
+//			}
+//		}	
 			switch ($OPERATION) {
 				case 'ADD':
 					if(!$this->SalDetail->saveAll($dataMovementDetail)){
@@ -182,25 +182,25 @@ class SalSale extends AppModel {
 						$dataSource->rollback();
 						return 'error';
 					}
-					if($ACTION=='save_order'){
-						if($this->SalDetail->updateAll(array('SalDetail.lc_transaction'=>"'MODIFY'", 'SalDetail.sale_price'=>$dataMovementDetail[1]['SalDetail']['sale_price'], 
-															'SalDetail.quantity'=>$dataMovementDetail[1]['SalDetail']['quantity'], 
-															'SalDetail.ex_sale_price'=>$dataMovementDetail[1]['SalDetail']['ex_sale_price']				
-															/*'SalDetail.fob_price'=>$dataMovementDetail['SalDetail']['fob_price'],
-															'SalDetail.ex_fob_price'=>$dataMovementDetail['SalDetail']['ex_fob_price'],
-															'SalDetail.cif_price'=>$dataMovementDetail['SalDetail']['cif_price'],
-															'SalDetail.ex_cif_price'=>$dataMovementDetail['SalDetail']['ex_cif_price']*/), 
-								/*array conditions*/array('SalDetail.sal_sale_id'=>$dataMovementDetail[1]['SalDetail']['sal_sale_id'], 
-														'SalDetail.inv_warehouse_id'=>$dataMovementDetail[1]['SalDetail']['inv_warehouse_id'], 
-														'SalDetail.inv_item_id'=>$dataMovementDetail[1]['SalDetail']['inv_item_id']
-													))){
-							$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
-						}
-						if($rowsAffected == 0){
-							$dataSource->rollback();
-							return 'error';
-						}
-					}
+//					if($ACTION=='save_order'){
+//						if($this->SalDetail->updateAll(array('SalDetail.lc_transaction'=>"'MODIFY'",'SalDetail.sale_price'=>$dataMovementDetail[1]['SalDetail']['sale_price'], 
+//															'SalDetail.quantity'=>$dataMovementDetail[1]['SalDetail']['quantity'], 
+//															'SalDetail.ex_sale_price'=>$dataMovementDetail[1]['SalDetail']['ex_sale_price']				
+//															/*'SalDetail.fob_price'=>$dataMovementDetail['SalDetail']['fob_price'],
+//															'SalDetail.ex_fob_price'=>$dataMovementDetail['SalDetail']['ex_fob_price'],
+//															'SalDetail.cif_price'=>$dataMovementDetail['SalDetail']['cif_price'],
+//															'SalDetail.ex_cif_price'=>$dataMovementDetail['SalDetail']['ex_cif_price']*/), 
+//								/*array conditions*/array('SalDetail.sal_sale_id'=>$dataMovementDetail[1]['SalDetail']['sal_sale_id'], 
+//														'SalDetail.inv_warehouse_id'=>$dataMovementDetail[1]['SalDetail']['inv_warehouse_id'], 
+//														'SalDetail.inv_item_id'=>$dataMovementDetail[1]['SalDetail']['inv_item_id']
+//													))){
+//							$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
+//						}
+//						if($rowsAffected == 0){
+//							$dataSource->rollback();
+//							return 'error';
+//						}
+//					}
 					break;
 				case 'EDIT_PAY':
 					if($this->SalPayment->updateAll(array('SalPayment.lc_transaction'=>"'MODIFY'", 'SalPayment.amount'=>$dataPayDetail['SalPayment']['amount'], 
@@ -223,14 +223,14 @@ class SalSale extends AppModel {
 						$dataSource->rollback();
 						return 'error';
 					}
-					if($ACTION=='save_order'){
-						if(!$this->SalDetail->deleteAll(array('SalDetail.sal_sale_id'=>$dataMovementDetail[1]['SalDetail']['sal_sale_id'],	
-																'SalDetail.inv_warehouse_id'=>$dataMovementDetail[1]['SalDetail']['inv_warehouse_id'], 
-																'SalDetail.inv_item_id'=>$dataMovementDetail[1]['SalDetail']['inv_item_id']))){
-							$dataSource->rollback();
-							return 'error';
-						}
-					}	
+//					if($ACTION=='save_order'){
+//						if(!$this->SalDetail->deleteAll(array('SalDetail.sal_sale_id'=>$dataMovementDetail[1]['SalDetail']['sal_sale_id'],	
+//																'SalDetail.inv_warehouse_id'=>$dataMovementDetail[1]['SalDetail']['inv_warehouse_id'], 
+//																'SalDetail.inv_item_id'=>$dataMovementDetail[1]['SalDetail']['inv_item_id']))){
+//							$dataSource->rollback();
+//							return 'error';
+//						}
+//					}	
 					break;
 				case 'DELETE_PAY':
 					if(!$this->SalPayment->deleteAll(array('SalPayment.sal_sale_id'=>$dataPayDetail['SalPayment']['sal_sale_id'], 

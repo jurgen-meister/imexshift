@@ -67,23 +67,23 @@ class SalSalesController extends AppController {
 	//////////////////////////////////////////// START - REPORT ////////////////////////////////////////////////
 	public function vreport_generator(){
 		$this->loadModel('AdmUser');
-		$salesmanClean = $this->AdmUser->AdmProfile->find('list');
+		$salesmanClean = $this->AdmUser->AdmProfile->find('list', array(
+			'order'=>array('first_name'),
+			'fields'=>array('adm_user_id','full_name')
+			)); 
 		$salesman = $salesmanClean;
-//		debug($salesman);
 		$salesman[0] = "TODOS";
 		$salesmanWO0 = $salesmanClean;
 		
 		$customerClean = $this->SalSale->SalEmployee->SalCustomer->find('list');
 		$customer = $customerClean;
 		$customer[0] = "TODOS";
-//		debug($customer);
 		$customerWO0 = $customerClean;
 		
 		$this->loadModel("InvWarehouse");
 		$warehouseClean = $this->InvWarehouse->find('list');
 		$warehouse = $warehouseClean;
 		$warehouse[0] = "TODOS";
-//		debug($warehouse);
 		$item = $this->_find_items();
 		$this->set(compact("warehouse", "item", "salesman", "customer", "customerWO0", "salesmanWO0"));
 	}
@@ -212,14 +212,14 @@ class SalSalesController extends AppController {
 		//put session data sent data into variables
 		$initialData = $this->Session->read('ReportMovement');
 		
-//		debug($initialData);
+		debug($initialData);
 		
 		$settings = $this->_generate_report_settings($initialData);
 		
-		//debug($settings);
+		debug($settings);
 		
 		$movements=$this->_generate_report_movements($settings['values'], $settings['conditions'], $settings['fields']);
-//		debug($movements);
+		debug($movements);
 		
 		$currencyFieldPrefix = '';
 		$currencyAbbreviation = '(BS)';
@@ -248,6 +248,7 @@ class SalSalesController extends AppController {
 //			debug($clientsMovements);
 		}   elseif ($initialData['showByType'] == 998) {
 			$salesmenMovements = $this->_generate_report_salesmen_movements($salesmenComplete, $movements, $currencyFieldPrefix);
+//			debug($salesmenMovements);
 		}else {
 			$itemsMovements = $this->_generate_report_items_movements($itemsComplete, $movements, $currencyFieldPrefix);
 //		debug($itemsMovements);
@@ -401,7 +402,7 @@ class SalSalesController extends AppController {
 	
 	
 	private function _generate_report_salesmen_movements($salesmenComplete, $movements, $currencyFieldPrefix){
-//		debug($clientsComplete);
+//		debug($salesmenComplete);
 		//I'll not calculate totals 'cause will be easier in the view and specially cleaner due the variation of calculation in every report
 		$auxArray=array();
 		foreach($salesmenComplete as $salesman){
@@ -414,14 +415,14 @@ class SalSalesController extends AppController {
 //			debug($salesman);
 			//movements
 			foreach($movements as $movement){
-				if($salesman['AdmProfile']['id'] == $movement[$forPricesSubQuery]['salesmanid']){
+				if($salesman['AdmProfile']['adm_user_id'] == $movement[$forPricesSubQuery]['salesmanid']){
 					$fobQuantity = $movement['SalDetail']['quantity'] * $movement[$forPricesSubQuery][$currencyFieldPrefix.'fob_price'];
 					$cifQuantity = $movement['SalDetail']['quantity'] * $movement[$forPricesSubQuery][$currencyFieldPrefix.'cif_price'];
 					$saleQuantity = $movement['SalDetail']['quantity'] * $movement['SalDetail'][$currencyFieldPrefix.'sale_price']/*[$forPricesSubQuery][$currencyFieldPrefix.'sale_price']*/;
 					$fobQuantityTotal = $fobQuantityTotal + $fobQuantity;
 					$cifQuantityTotal = $cifQuantityTotal + $cifQuantity;
 					$saleQuantityTotal = $saleQuantityTotal + $saleQuantity;
-					$auxArray[$salesman['AdmProfile']['id']]['Movements'][$counter] = array(
+					$auxArray[$salesman['AdmProfile']['adm_user_id']]['Movements'][$counter] = array(
 						'code'=>$movement['SalSale']['code'],
 						'doc_code'=>$movement['SalSale']['doc_code'],
 						'note_code'=>$movement/*[$forPricesSubQuery]*/['SalSale']['note_code'],
@@ -447,10 +448,10 @@ class SalSalesController extends AppController {
 			}
 //			if($movements == array()){
 				//Items
-				$auxArray[ $salesman['AdmProfile']['id'] ]['AdmProfile']['full_name']=$salesman['AdmProfile']['full_name'];
+				$auxArray[ $salesman['AdmProfile']['adm_user_id'] ]['AdmProfile']['full_name']=$salesman['AdmProfile']['full_name'];
 	//			$auxArray[ $item['InvItem']['id'] ]['Item']['brand']=$item['InvBrand']['name'];
 	//			$auxArray[ $item['InvItem']['id'] ]['Item']['category']=$item['InvCategory']['name'];
-				$auxArray[ $salesman['AdmProfile']['id'] ]['AdmProfile']['id']=$salesman['AdmProfile']['id'];
+				$auxArray[ $salesman['AdmProfile']['adm_user_id'] ]['AdmProfile']['adm_user_id']=$salesman['AdmProfile']['adm_user_id'];
 //			} else{
 //				//Items
 //				$auxArray[ $client['SalCustomer']['id'] ]['SalCustomer']['name']=$movement[$forPricesSubQuery]['customer'];
@@ -459,12 +460,13 @@ class SalSalesController extends AppController {
 //				$auxArray[ $client['SalCustomer']['id'] ]['SalCustomer']['id']=$movement[$forPricesSubQuery]['customerid'];
 //			}	
 			//Totals
-			$auxArray[ $salesman['AdmProfile']['id'] ]['TotalMovements']['fobQuantityTotal'] = $fobQuantityTotal;
-			$auxArray[ $salesman['AdmProfile']['id'] ]['TotalMovements']['cifQuantityTotal'] = $cifQuantityTotal;
-			$auxArray[ $salesman['AdmProfile']['id'] ]['TotalMovements']['saleQuantityTotal'] = $saleQuantityTotal;
+			$auxArray[ $salesman['AdmProfile']['adm_user_id'] ]['TotalMovements']['fobQuantityTotal'] = $fobQuantityTotal;
+			$auxArray[ $salesman['AdmProfile']['adm_user_id'] ]['TotalMovements']['cifQuantityTotal'] = $cifQuantityTotal;
+			$auxArray[ $salesman['AdmProfile']['adm_user_id'] ]['TotalMovements']['saleQuantityTotal'] = $saleQuantityTotal;
 			////I don't calculate total quantity here 'cause could vary in every report, it will be done in the report views
 		}
 		return $auxArray;
+		debug($auxArray);
 	}
 	
 	private function _generate_report_settings($initialData){
@@ -474,23 +476,21 @@ class SalSalesController extends AppController {
 		$fields = array();
 		$initialStocks=array();
 				
-		
 		$values['startDate']=$initialData['startDate'];
 		$values['finishDate']=$initialData['finishDate'];
 		$warehouses = array(0=>$initialData['warehouse']);
 		if($initialData['showByType'] == 1000){
 			$customers = array(0=>$initialData['customerWO0']);
+			$salesmen = array(0=>$initialData['salesman']);
+		}elseif($initialData['showByType'] == 998){
+			$salesmen = array(0=>$initialData['salesmanWO0']);
+			$customers = array(0=>$initialData['customer']);
 		}else{
 			$customers = array(0=>$initialData['customer']);
+			$salesmen = array(0=>$initialData['salesman']);
 		}
-		$salesmenAdmProfiles = array(0=>$initialData['salesman']);
 		
-		$this->loadModel('AdmUser');
-		$salesmen = $this->AdmUser->AdmProfile->find('list', array(
-			'fields'=>array('AdmProfile.adm_user_id'),
-			'conditions'=>array('AdmProfile.id'=>$salesmenAdmProfiles)
-			));
-//		debug($salesmen);
+		
 		
 		$employees = $this->SalSale->SalEmployee->find("list", array(
 					"fields"=>array('SalEmployee.id'),
@@ -523,7 +523,7 @@ class SalSalesController extends AppController {
 		if($customers[0] > 0){
 			$conditions['SalSale.sal_employee_id']=$employees;//necessary to be here
 		}
-		if($salesmenAdmProfiles[0] > 0){
+		if($salesmen[0] > 0){
 			$conditions['SalSale.salesman_id']=$salesmen;//necessary to be here
 		}
 		$values['items']=$initialData['items'];//just for order
@@ -566,7 +566,7 @@ class SalSalesController extends AppController {
 		/*$fieldNoteCode*/ $staticFields[]= '(SELECT  sal_customers.id FROM sal_customers LEFT JOIN sal_employees ON sal_customers.id = sal_employees.sal_customer_id WHERE sal_employees.id = "SalSale"."sal_employee_id") AS "customerid"';
 		$staticFields[]= '(SELECT  sal_customers.name FROM sal_customers LEFT JOIN sal_employees ON sal_customers.id = sal_employees.sal_customer_id WHERE sal_employees.id = "SalSale"."sal_employee_id") AS "customer"';
 		//$fieldNoteCode = '(SELECT adm_profiles.first_name FROM adm_profiles  JOIN adm_users ON adm_users.id = adm_profiles.adm_user_id WHERE adm_profiles.id = "SalSale"."salesman_id") AS "salesman"';
-		/*$fieldNoteCode1*/ $staticFields[]= '(SELECT adm_profiles.id FROM adm_profiles WHERE adm_profiles.adm_user_id = "SalSale"."salesman_id") AS "salesmanid"';
+		/*$fieldNoteCode1*/ $staticFields[]= '(SELECT adm_profiles.adm_user_id FROM adm_profiles WHERE adm_profiles.adm_user_id = "SalSale"."salesman_id") AS "salesmanid"';
 		$staticFields[]= '(SELECT adm_profiles.first_name FROM adm_profiles WHERE adm_profiles.adm_user_id = "SalSale"."salesman_id") AS "salesman"';
 				
 		//$staticFields[] = $fieldNoteCode;
@@ -653,8 +653,8 @@ class SalSalesController extends AppController {
 //			));
 //		}else{
 			return $this->AdmProfile->find('all', array(
-				'fields'=>array('AdmProfile.id', 'AdmProfile.full_name'), //full_name
-				'conditions'=>array('AdmProfile.id'=>$salesmen),
+				'fields'=>array('AdmProfile.adm_user_id', 'AdmProfile.full_name'), //full_name
+				'conditions'=>array('AdmProfile.adm_user_id'=>$salesmen),
 				'order'=>array('AdmProfile.first_name')
 			));
 //		}
@@ -663,6 +663,142 @@ class SalSalesController extends AppController {
 		
 	}
 	
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	public function vreport_generator_customers_debts(){
+		$customers[0] = "TODOS";
+		$this->loadModel("SalCustomer");
+		$customersClean = $this->SalCustomer->find("list");
+		foreach ($customersClean as $key => $value) {
+			$customers[$key]=$value;
+		}
+		
+		$this->set(compact("customers"));
+	}
+	
+	public function  ajax_generate_report_customers_debts(){
+		if($this->RequestHandler->isAjax()){
+			//SETTING DATA
+			$this->Session->write('ReportCustomersDebts.customer', $this->request->data['customer']);
+			$this->Session->write('ReportCustomersDebts.customerName', $this->request->data['customerName']);
+			$this->Session->write('ReportCustomersDebts.showType', $this->request->data['showType']);
+			$this->Session->write('ReportCustomersDebts.currency', $this->request->data['currency']);
+		///END AJAX
+		}
+	}
+	
+	public function vreport_customers_debts(){
+		//special ctp template for printing due DOMPdf colapses generating too many pages
+		$this->layout = 'print';
+		
+		//Check if session variables are set otherwise redirect
+		if(!$this->Session->check('ReportCustomersDebts')){
+			$this->redirect(array('action' => 'vreport_generator_customers_debts'));
+		}
+		
+		//put session data sent data into variables
+//		$initialData = $this->Session->read('ReportCustomersDebts');
+//		
+//		debug($initialData);
+//		
+//		
+//		/////////////////////
+//		$conditionCustomer = null;
+//		if($initialData['customer'] > 0){
+//			$conditionCustomer = array("SalCustomer.id"=>$initialData['customer']);
+//		}
+//		/////////////////////
+//		$this->SalSale->SalDetail->bindModel(array(
+//			'hasOne'=>array(
+//				'SalEmployee'=>array(
+//					'foreignKey'=>false,
+//					'conditions'=> array('SalSale.sal_employee_id = SalEmployee.id')
+//				),
+//				'SalCustomer'=>array(
+//					'foreignKey'=>false,
+//					'conditions'=> array('SalEmployee.sal_customer_id = SalCustomer.id')
+//				)
+//			)
+//		));
+//		
+//		$currencyField = "";
+//		if(strtoupper($initialData["currency"]) == 'DOLARES'){ $currencyField = "ex_";}
+		
+//		$this->SalSale->SalDetail->unbindModel(array('belongsTo' => array('InvWarehouse')));
+		$data = $this->SalSale->find("all", array(
+			"fields"=>array(
+//				'SUM("SalDetail"."quantity" * "SalDetail"."'.$currencyField.'sale_price") AS money',
+//				'SUM("SalDetail"."quantity") AS quantity',
+//				'SalSale.date',
+				'SalSale.note_code'
+			),
+//			'group'=>array("SalCustomer.name", "SalCustomer.id"),
+			"conditions"=>array(
+//				"to_char(SalSale.date,'YYYY')"=>$initialData['year'],
+//				"SalDetail.inv_item_id"=>$initialData['items'],
+//				$conditionMonth
+				"SalSale.id <"=>50
+			),
+//			"order"=>array("SalCustomer.name")
+		));
+		debug($data);
+		die();
+//		$this->loadModel("SalCustomer");
+//		$customers = $this->SalCustomer->find("list", array("order"=>array("SalCustomer.name")));
+//		//debug($data);
+//		
+//		//debug($customers);
+//		$details = array();
+//		
+//		if($initialData["zero"] == "yes"){
+//			$counter = 0;
+//			foreach ($customers as $key => $customer) {
+//				$details[$counter]['SalCustomer']['name'] = $customer;
+//				$details[$counter][0]['money'] = 0;
+//				$details[$counter][0]['quantity'] = 0;
+//				foreach ($data as $key2 => $value) {
+//					
+//					if($key == $value['SalCustomer']['id']){
+//						//debug($value[0]['money']);
+//						$details[$counter][0]['money'] = $value[0]['money'];
+//						$details[$counter][0]['quantity'] = $value[0]['quantity'];
+//					}
+//				}
+//				$counter++;
+//			}
+//		}else{
+//			$details = $data;
+//		}
+//		
+//		//debug($details);
+//		
+//		//debug($details);
+//		
+//		//debug($details);
+//		
+//		//Now list items selected in order to get a reference
+//		$group = array();
+//			switch ($initialData['groupBy']) {
+//				case 'category':
+//					$this->loadModel("InvCategory");
+//					$group = $this->InvCategory->find("list", array("order"=>array("InvCategory.name")));
+//					$this->set('group', $group);
+//					break;
+//				case 'brand':
+//					$this->loadModel("InvBrand");
+//					$group = $this->InvBrand->find("list", array("order"=>array("InvBrand.name")));
+//					$this->set('group', $group);
+//					break;
+//			}
+//			$items = $this->_find_items($initialData['groupBy'], array_keys($group), $initialData['items']);
+//		
+//		
+//			
+//		$this->set(compact("details", "items"));
+//		//debug($items);
+//		$this->Session->delete('ReportPurchasesCustomers');
+	}
 	//////////////////////////////////////////// END - REPORT /////////////////////////////////////////////////
 	
 	
@@ -706,16 +842,6 @@ class SalSalesController extends AppController {
 			$customers[$key]=$value;
 		}
 		$this->set(compact("years", "months", "item", "customers"));
-	}
-	
-	public function vreport_generator_customers_debts(){
-		$clientsClean = $this->SalSale->SalEmployee->SalCustomer->find('list');
-		$clients[0] = "TODOS";
-		foreach ($clientsClean as $key => $value) {
-			$clients[$key] = $value;
-		}
-		
-		$this->set(compact("clients"));
 	}
 	
 	
@@ -788,7 +914,7 @@ class SalSalesController extends AppController {
 		));
 		$this->loadModel("SalCustomer");
 		$customers = $this->SalCustomer->find("list", array("order"=>array("SalCustomer.name")));
-		//debug($data);
+//		debug($data);
 		
 		//debug($customers);
 		//$details = array();
@@ -1571,7 +1697,6 @@ class SalSalesController extends AppController {
 				"SalSale.lc_state !="=>"NOTE_LOGIC_DELETED",
 				'SalSale.lc_state LIKE'=> '%NOTE%',
 				"to_char(SalSale.date,'YYYY')"=> $period,
-			//	"InvMovementType.status"=> "entrada",
 				$filters
 			 ),
 			"recursive"=>0,
@@ -1679,52 +1804,45 @@ class SalSalesController extends AppController {
 		}
 		$this->loadModel('AdmParameter');
 		$currency = $this->AdmParameter->AdmParameterDetail->find('first', array(
-			//	'fields'=>array('AdmParameterDetail.id'),
 				'conditions'=>array(
 					'AdmParameter.name'=>'Moneda',
 					'AdmParameterDetail.par_char1'=>'Dolares'
 				)
-			//	'recursive'=>-1
 			)); 
-//		debug($currency);
 		$currencyId = $currency['AdmParameterDetail']['id'];
-//		debug($currencyId);
-		
-		
 		$this->loadModel('AdmUser');
-		
-		$salAdmUsers = $this->AdmUser->AdmProfile->find('list');
-//		debug($salAdmUsers);
+		$salAdmUsers = $this->AdmUser->AdmProfile->find('list', array(
+			'order'=>array('first_name'),
+			'fields'=>array('adm_user_id','full_name')
+			)); 
 		//array_unshift($salAdmUsers,"Sin Vendedor"); //REVISAR ESTO ARRUINA EL CODIGO Q BOTA EL DROPDOWN
 		$salCustomers = $this->SalSale->SalEmployee->SalCustomer->find('list'/*, array('conditions'=>array('SalCustomer.location'=>'COCHABAMBA'))*/);
 		$customer = key($salCustomers);
 		$salEmployees = $this->SalSale->SalEmployee->find('list', array('conditions'=>array('SalEmployee.sal_customer_id'=>$customer)));
-	//	$taxNumber = key($salCustomers);
 		$salTaxNumbers = $this->SalSale->SalTaxNumber->find('list', array('conditions'=>array('SalTaxNumber.sal_customer_id'=>$customer)));
 			
 		$this->SalSale->recursive = -1;
 		$this->request->data = $this->SalSale->read(null, $id);
 	//	$date='';
 		$date=date('d/m/Y');
-		//////////////////////////////////////////////////////////
+		////////////////////////////to find the previous last currency value
 		$this->loadModel('AdmExchangeRate');
-		$xxxRate = $this->AdmExchangeRate->find('first', array(
+		$rateDirty = $this->AdmExchangeRate->find('first', array(
 				'fields'=>array('AdmExchangeRate.value'),
+				'order' => array('AdmExchangeRate.date' => 'desc'),
 				'conditions'=>array(
 					'AdmExchangeRate.currency'=>$currencyId,
-					'AdmExchangeRate.date'=>$date
+					'AdmExchangeRate.date <='=>$date
 				),
 				'recursive'=>-1
 			)); 		
-//		debug($xxxRate);
-		
-		
-		$exRate = $xxxRate['AdmExchangeRate']['value'];	//esto tiene q llamar al cambio del dia
-		////////////////////////////////////////////////////////////
-//		debug($exRate);
+		if($rateDirty == array() || $rateDirty['AdmExchangeRate']['value'] == null){
+			$exRate = '';
+		}else{		
+			$exRate = $rateDirty['AdmExchangeRate']['value'];	
+		}
+		////////////////////////////to find the previous last currency value
 		$genericCode ='';
-		//debug($this->request->data);
-	//	debug($salAdmUsers);
 		$salDetails = array();
 		$documentState = '';
 		$customerId = '';
@@ -1741,16 +1859,11 @@ class SalSalesController extends AppController {
 			$salEmployees = $this->SalSale->SalEmployee->find('list', array('conditions'=>array('SalEmployee.sal_customer_id'=>$customerId)));
 			$salTaxNumbers = $this->SalSale->SalTaxNumber->find('list', array('conditions'=>array('SalTaxNumber.sal_customer_id'=>$customerId)));		
 			
-			$admProfileId = $this->request->data['SalSale']['salesman_id'];
-			$admUserId = $this->AdmUser->AdmProfile->find('list', array('fields'=>array('AdmProfile.id'),'conditions'=>array('AdmProfile.adm_user_id'=>$admProfileId)));
-//		debug($admProfileId);
-//			debug($admUserId);
+			$admUserId = $this->request->data['SalSale']['salesman_id'];
 			$exRate = $this->request->data['SalSale']['ex_rate'];
 			$discount = $this->request->data['SalSale']['discount'];
 		}
 		$this->set(compact('salCustomers','customerId', 'salTaxNumbers', 'salEmployees','employeeId', 'salAdmUsers', 'admUserId','id', 'date', 'salDetails', 'documentState', 'genericCode', 'exRate', 'discount'));
-		//debug($admProfileId);
-	//	debug($salAdmUsers);
 	}
 	
 	public function save_invoice(){
@@ -1758,11 +1871,12 @@ class SalSalesController extends AppController {
 		if(isset($this->passedArgs['id'])){
 			$id = $this->passedArgs['id'];
 		}
-		$this->loadModel('AdmUser');
 		
-		$salAdmUsers = $this->AdmUser->AdmProfile->find('list');
-	//	debug($salAdmUsers);
-		//array_unshift($salAdmUsers,"Sin Vendedor");//REVISAR ESTO ARRUINA EL CODIGO Q BOTA EL DROPDOWN
+		$this->loadModel('AdmUser');
+		$salAdmUsers = $this->AdmUser->AdmProfile->find('list', array(
+			'order'=>array('first_name'),
+			'fields'=>array('adm_user_id','full_name')
+		)); 
 	
 		$salCustomers = $this->SalSale->SalEmployee->SalCustomer->find('list');
 		$customer = key($salCustomers);
@@ -1783,7 +1897,23 @@ class SalSalesController extends AppController {
 		$salPayments = array();
 //		$purPrices = array();
 		$documentState = '';
-		$exRate = '8.00';	//esto tiene q llamar al cambio del dia
+		////////////////////////////to find the previous last currency value
+		$this->loadModel('AdmExchangeRate');
+		$rateDirty = $this->AdmExchangeRate->find('first', array(
+				'fields'=>array('AdmExchangeRate.value'),
+				'order' => array('AdmExchangeRate.date' => 'desc'),
+				'conditions'=>array(
+					'AdmExchangeRate.currency'=>$currencyId,
+					'AdmExchangeRate.date <='=>$date
+				),
+				'recursive'=>-1
+			)); 		
+		if($rateDirty == array() || $rateDirty['AdmExchangeRate']['value'] == null){
+			$exRate = '';
+		}else{		
+			$exRate = $rateDirty['AdmExchangeRate']['value'];	
+		}
+		////////////////////////////to find the previous last currency value
 		$discount  = 0;
 		if($id <> null){
 			$date = date("d/m/Y", strtotime($this->request->data['SalSale']['date']));
@@ -1805,8 +1935,8 @@ class SalSalesController extends AppController {
 			$salEmployees = $this->SalSale->SalEmployee->find('list', array('conditions'=>array('SalEmployee.sal_customer_id'=>$customerId)));
 			$salTaxNumbers = $this->SalSale->SalTaxNumber->find('list', array('conditions'=>array('SalTaxNumber.sal_customer_id'=>$customerId)));		
 			
-			$admProfileId = $this->request->data['SalSale']['salesman_id'];
-			$admUserId = $this->AdmUser->AdmProfile->find('list', array('fields'=>array('AdmProfile.id'),'conditions'=>array('AdmProfile.adm_user_id'=>$admProfileId)));
+			$admUserId = $this->request->data['SalSale']['salesman_id'];
+//			$admUserId = $this->AdmUser->AdmProfile->find('list', array('fields'=>array('AdmProfile.id'),'conditions'=>array('AdmProfile.adm_user_id'=>$admProfileId)));
 			$exRate = $this->request->data['SalSale']['ex_rate'];
 			$discount = $this->request->data['SalSale']['discount'];
 		}
@@ -1993,17 +2123,17 @@ class SalSalesController extends AppController {
 			$date = $this->request->data['date'];
 			$employee = $this->request->data['employee'];
 			$taxNumber = $this->request->data['taxNumber'];
-			$admProfileId = $this->request->data['salesman'];
+			$salesman = $this->request->data['salesman'];
 			///////////////////////////////////////////////////////
-			$this->loadModel('AdmUser');
-			$admUserId = $this->AdmUser->AdmProfile->find('list', array(
-			'fields'=>array('AdmProfile.adm_user_id'),
-			'conditions'=>array('AdmProfile.id'=>$admProfileId)
-			));
-			
-			$salesman = key($this->AdmUser->find('list', array(
-			'conditions'=>array('AdmUser.id'=>$admUserId)
-			)));
+//			$this->loadModel('AdmUser');
+//			$admUserId = $this->AdmUser->AdmProfile->find('list', array(
+//			'fields'=>array('AdmProfile.adm_user_id'),
+//			'conditions'=>array('AdmProfile.id'=>$admProfileId)
+//			));
+//			
+//			$salesman = key($this->AdmUser->find('list', array(
+//			'conditions'=>array('AdmUser.id'=>$admUserId)
+//			)));
 			///////////////////////////////////////////////////////
 			$description = $this->request->data['description'];
 			$exRate = $this->request->data['exRate'];
@@ -2389,7 +2519,7 @@ class SalSalesController extends AppController {
 			if ($ACTION == 'save_order'){
 				$this->loadModel('InvMovement');
 				//for invoice
-				$dataMovement[1] = array('SalSale'=>$arrayMovement2);
+//				$dataMovement[1] = array('SalSale'=>$arrayMovement2);
 				//for movement
 				$dataMovement3 = array('InvMovement'=>$arrayMovement3);
 				$dataMovementDetail3 = array('InvMovementDetail'=> $arrayMovementDetails3);
@@ -2423,9 +2553,9 @@ class SalSalesController extends AppController {
 				$dataPayDetail = null;
 			}
 			$dataMovementDetail[0] = array('SalDetail'=> $arrayMovementDetails);
-			if ($ACTION == 'save_order'){
-				$dataMovementDetail[1] = array('SalDetail'=> $arrayMovementDetails);
-			}
+//			if ($ACTION == 'save_order'){
+//				$dataMovementDetail[1] = array('SalDetail'=> $arrayMovementDetails);
+//			}
 			////////////////////////////////////////////////END - SET DATA//////////////////////////////////////////////////////
 			
 			$validation['error'] = 0;
@@ -3029,6 +3159,7 @@ class SalSalesController extends AppController {
 					'conditions'=>array(
 						'InvMovementType.status'=>$movementType
 						,'InvMovement.code !='=>'NO'
+					//	,'InvMovement.lc_state !='=>'DRAFT'
 						)
 				)); 
 			}catch(Exception $e){
@@ -3331,20 +3462,20 @@ class SalSalesController extends AppController {
 			$date = $this->request->data['date'];
 			$employee = $this->request->data['employee'];
 			$taxNumber = $this->request->data['taxNumber'];
-			$admProfileId = $this->request->data['salesman'];
+			$salesman = $this->request->data['salesman'];
 			$description = $this->request->data['description'];
 			$exRate = $this->request->data['exRate'];
 			$discount = $this->request->data['discount'];
 			$note_code = $this->request->data['note_code'];
 	
-			$admUserId = $this->AdmUser->AdmProfile->find('list', array(
-			'fields'=>array('AdmProfile.adm_user_id'),
-			'conditions'=>array('AdmProfile.id'=>$admProfileId)
-			));
-			
-			$salesman = key($this->AdmUser->find('list', array(
-			'conditions'=>array('AdmUser.id'=>$admUserId)
-			)));
+//			$admUserId = $this->AdmUser->AdmProfile->find('list', array(
+//			'fields'=>array('AdmProfile.adm_user_id'),
+//			'conditions'=>array('AdmProfile.id'=>$admProfileId)
+//			));
+//			
+//			$salesman = key($this->AdmUser->find('list', array(
+//			'conditions'=>array('AdmUser.id'=>$admUserId)
+//			)));
 			
 			$generalCode = $this->request->data['genericCode'];
 			////////////////////////////////////////////FIN-CAPTURAR AJAX/////////////////////////////////////////////////////

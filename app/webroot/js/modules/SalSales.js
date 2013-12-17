@@ -766,7 +766,9 @@ $(document).ready(function(){
 //			validateOnlyFloatNumbers(event);			
 //	});
 	//Calendar script
-
+//	$("#txtDate").datepicker({
+//	  showButtonPanel: true
+//	});
 	
 	$('#txtDate').focusout(function() {
 			ajax_update_ex_rate();			
@@ -785,9 +787,13 @@ $(document).ready(function(){
 		});
     }
 	
-
+//	$("#txtModalDate").datepicker({
+//	  showButtonPanel: true
+//	});
 	
-
+//	$("#txtModalDueDate").datepicker({
+//	  showButtonPanel: true
+//	});
 	//Call modal
 	$('#btnAddItem').click(function(){
 		itemsListWhenExistsItems();			//NEEDS TO BE RUN BEFORE MODAL TO UPDATE ITEMS LIST BY WAREHOUSE
@@ -879,6 +885,9 @@ $(document).ready(function(){
 			success:function(data){
 				$("#processing").text("");
 		        $("#boxControllers").html(data);
+				
+//				$('#cbxEmployees').select2();
+//				$('#cbxTaxNumbers').select2();
 			}
         });
     }
@@ -921,8 +930,6 @@ $(document).ready(function(){
 		var itemId = 0;
 		var salePrice = 0.00;
 		var quantity = 0;
-//		var cifPrice = 0.00;	//temp var
-//		var exCifPrice = 0.00;	//temp var
 		var subtotal = 0.00;
 		
 		var dateId = '';
@@ -957,8 +964,6 @@ $(document).ready(function(){
 				warehouse = $('#cbxModalWarehouses option:selected').text();
 				itemCodeName = $('#cbxModalItems option:selected').text();
 				stock = $('#txtModalStock').val();
-//				cifPrice = 0.00;	//temp var
-//				exCifPrice = 0.00;	//temp var
 				subtotal = Number(quantity) * Number(salePrice);
 			}
 		}
@@ -1226,11 +1231,13 @@ $(document).ready(function(){
 					//este es para los items precio y stock
 					ajax_update_items_modal(itemsAlreadySaved, warehouseItemsAlreadySaved);
 				});
+//				$('#cbxModalWarehouses').select2();
 				$('#cbxModalItems').bind("change",function(){ //must be binded 'cause dropbox is loaded by a previous ajax'
 					ajax_update_stock_modal();
 					ajax_update_stock_modal_1();
 				});
 				fnBittionSetSelectsStyle();
+				
 				$('#txtModalStock').keypress(function(){return false;});//find out why this is necessary
 				
 				$('#txtModalPrice').keydown(function(event) {

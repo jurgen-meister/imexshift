@@ -155,8 +155,14 @@
 					'id'=>'txtDate',
 					'value'=>$date,
 					'disabled'=>$disable,
-					'maxlength'=>'0',
-					'class'=>'input-date-type'
+					'maxlength'=>'0'
+				));
+				
+				echo $this->BootstrapForm->input('inv_warehouse_id', array(
+					'label' => 'Almacén:',
+					'id'=>'cbxWarehouses',
+					'class'=>'span4',
+					'disabled'=>$disable
 				));
 				
 //				echo $this->BootstrapForm->input('inv_supplier_id', array(
@@ -170,6 +176,14 @@
 					'label' => 'Descripción:',
 					'disabled'=>$disable,
 					'id'=>'txtDescription'
+				));
+				
+				echo $this->BootstrapForm->input('discount', array(
+					'label' => 'Descuento:',
+					'disabled'=>$disable,
+					'id'=>'txtDiscount',
+					'value'=>$discount,
+					'type'=>'text'
 				));
 				
 				echo '<div id="boxExRate">';
@@ -220,9 +234,9 @@
 							<thead>
 								<tr>
 									<th>Item ( <span id="countItems"><?php echo $limit;?> </span> )</th>
-									<th>Precio Unitario</th>
-									<th>Cantidad</th>
 									<th>Proveedor</th>
+									<th>Cantidad</th>
+									<th>Precio Unitario</th>
 									<th>Subtotal</th>
 									<?php if($documentState == 'PINVOICE_PENDANT' OR $documentState == ''){ ?>
 									<th class="columnItemsButtons"></th>
@@ -233,13 +247,14 @@
 								<?php
 								$total = '0.00';
 								for($i=0; $i<$limit; $i++){
-									$subtotal = ($purDetails[$i]['cantidad'])*($purDetails[$i]['exFobPrice']);
+//									$subtotal = ($purDetails[$i]['cantidad'])*($purDetails[$i]['exFobPrice']);
 									echo '<tr id="itemRow'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">';
 										echo '<td><span id="spaItemName'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['item'].'</span><input type="hidden" value="'.$purDetails[$i]['itemId'].'" id="txtItemId" ></td>';
-										echo '<td><span id="spaExFobPrice'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">'.$purDetails[$i]['exFobPrice'].'</span></td>';
-										echo '<td><span id="spaQuantity'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">'.$purDetails[$i]['cantidad'].'</span></td>';
 										echo '<td><span id="spaSupplier'.$purDetails[$i]['itemId'].'">'.$purDetails[$i]['supplier'].'</span><input type="hidden" value="'.$purDetails[$i]['supplierId'].'" id="txtSupplierId'.$purDetails[$i]['itemId'].'" ></td>';
-										echo '<td><span id="spaSubtotal'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">'.number_format($subtotal, 2, '.', '').'</span></td>';
+										echo '<td><span id="spaQuantity'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">'.$purDetails[$i]['cantidad'].'</span></td>';
+										echo '<td><span id="spaExFobPrice'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">'.$purDetails[$i]['exFobPrice'].'</span></td>';
+//										echo '<td><span id="spaSubtotal'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">'.number_format($subtotal, 2, '.', '').'</span></td>';
+										echo '<td><span id="spaExSubtotal'.$purDetails[$i]['itemId'].'s'.$purDetails[$i]['supplierId'].'">'.$purDetails[$i]['exSubtotal'].'</span></td>';
 										
 										if($documentState == 'PINVOICE_PENDANT' OR $documentState == ''){
 											echo '<td class="columnItemsButtons">';
@@ -249,32 +264,22 @@
 											echo '</td>';
 										}
 									echo '</tr>';
-									$total += $subtotal;
+									$total += $purDetails[$i]['exSubtotal'];
 								}?>
 							</tbody>
+							<tfoot>
+								<tr>
+									<td></td>
+									<td></td>
+									<td></td>
+									<td><h4>Total:</h4></td>
+									<td><h4 id="total" ><?php echo number_format($total, 2, '.', '').' $us.'; ?></h4></td>
+									<?php if($documentState == 'PINVOICE_PENDANT' OR $documentState == ''){ ?>
+										<td></td>
+									<?php }?>
+								</tr>	
+							</tfoot>	
 						</table>
-					
-				<div class="row-fluid"> <!-- vers si borrar este row-fluid creo q si -->
-					
-					<?php if($documentState == 'PINVOICE_APPROVED'){ ?>
-						<div class="span10">	</div>
-						<div class="span1">
-							<h4>Total:</h4>	
-						</div>
-						<div class="span1">
-							<h4 id="total" ><?php echo number_format($total, 2, '.', '').' $us.'; ?></h4>
-						</div>
-					<?php }  else { ?>
-						<div class="span8">	</div>
-						<div class="span1">
-							<h4>Total:</h4>	
-						</div>
-						<div class="span3">
-							<h4 id="total" ><?php echo number_format($total, 2, '.', '').' $us.'; ?></h4>
-						</div>
-					<?php }?>
-					
-				</div>
 				<!-- ////////////////////////////////// END INVOICE ITEMS DETAILS /////////////////////////////////////// -->	
 			</div>
 			<div id="tab2" class="tab-pane">
@@ -312,29 +317,16 @@
 									$total3 += $purPrices[$i]['costExAmount'];
 								}?>
 							</tbody>
+							<tfoot>
+								<tr>
+									<td><h4>Total:</h4></td>
+									<td><h4 id="total" ><?php echo number_format($total3, 2, '.', '').' $us.'; ?></h4></td>
+									<?php if($documentState == 'PINVOICE_PENDANT' OR $documentState == ''){ ?>
+										<td></td>
+									<?php }?>
+								</tr>	
+							</tfoot>	
 						</table>
-					
-				<div class="row-fluid"> <!-- vers si borrar este row-fluid creo q si -->
-					
-					<?php if($documentState == 'PINVOICE_APPROVED'){ ?>
-						<div class="span10">	</div>
-						<div class="span1">
-							<h4>Total:</h4>	
-						</div>
-						<div class="span1">
-							<h4 id="total3" ><?php echo number_format($total3, 2, '.', '').' $us.'; ?></h4>
-						</div>
-					<?php }  else { ?>
-						<div class="span8">	</div>
-						<div class="span1">
-							<h4>Total:</h4>	
-						</div>
-						<div class="span3">
-							<h4 id="total3" ><?php echo number_format($total3, 2, '.', '').' $us.'; ?></h4>
-						</div>
-					<?php }?>
-					
-				</div>
 				<!-- ////////////////////////////////// END INVOICE COST DETAILS /////////////////////////////////////// -->
 			</div>
             <div id="tab3" class="tab-pane">
@@ -347,8 +339,8 @@
 							<thead>
 								<tr>
 									<th>Fecha Pago</th>
-									<th>Monto</th>
 									<th>Descripcion</th>
+									<th>Monto</th>
 									<?php if($documentState == 'PINVOICE_PENDANT' OR $documentState == ''){ ?>
 									<th class="columnPaysButtons"></th>
 									<?php }?>
@@ -360,8 +352,8 @@
 								for($i=0; $i<$limit2; $i++){
 									echo '<tr id="payRow'.$purPayments[$i]['dateId'].'" >';
 										echo '<td><span id="spaPayDate'.$purPayments[$i]['dateId'].'">'.$purPayments[$i]['payDate'].'</span><input type="hidden" value="'.$purPayments[$i]['dateId'].'" id="txtPayDate" ></td>';
-										echo '<td><span id="spaPayAmount'.$purPayments[$i]['dateId'].'">'.$purPayments[$i]['payAmount'].'</span></td>';
 										echo '<td><span id="spaPayDescription'.$purPayments[$i]['dateId'].'">'.$purPayments[$i]['payDescription'].'</span></td>';
+										echo '<td><span id="spaPayAmount'.$purPayments[$i]['dateId'].'">'.$purPayments[$i]['payAmount'].'</span></td>';
 										
 										if($documentState == 'PINVOICE_PENDANT' OR $documentState == ''){
 											echo '<td class="columnPaysButtons">';
@@ -373,30 +365,18 @@
 									echo '</tr>';	
 									$total2 += $purPayments[$i]['payAmount'];
 								}?>
-							</tbody>							
+							</tbody>	
+							<tfoot>
+								<tr>
+									<td></td>
+									<td><h4>Total:</h4></td>
+									<td><h4 id="total" ><?php echo number_format($total2, 2, '.', '').' Bs.'; ?></h4></td>
+									<?php if($documentState == 'PINVOICE_PENDANT' OR $documentState == ''){ ?>
+										<td></td>
+									<?php }?>
+								</tr>	
+							</tfoot>	
 						</table>
-					
-				<div class="row-fluid"> <!-- vers si borrar este row-fluid creo q si -->
-					
-					<?php if($documentState == 'PINVOICE_APPROVED'){ ?>
-						<div class="span10">	</div>
-						<div class="span1">
-							<h4>Total:</h4>	
-						</div>
-						<div class="span1">
-							<h4 id="total" ><?php echo number_format($total2, 2, '.', '').' Bs.'; ?></h4>
-						</div>
-					<?php }  else { ?>
-						<div class="span8">	</div>
-						<div class="span1">
-							<h4>Total:</h4>	
-						</div>
-						<div class="span3">
-							<h4 id="total" ><?php echo number_format($total2, 2, '.', '').' Bs.'; ?></h4>
-						</div>
-					<?php }?>
-					
-				</div>
 				<!-- ////////////////////////////////// END INVOICE PAY DETAILS /////////////////////////////////////// -->
 			</div>
 		</div>                            
@@ -423,42 +403,53 @@
 				  <div class="modal-body">
 					<!--<p>One fine body…</p>-->
 					<?php
-					echo '<div id="boxModalInitiateItemPrice">';
+					echo '<div id="boxModalInitiateSupplierItemPrice">';
 						//////////////////////////////////////
-						echo $this->BootstrapForm->input('inv_supplier_id', array(
+						echo $this->BootstrapForm->input('suppliers_id', array(
 						'label' => 'Proveedor:',
 						'id'=>'cbxModalSuppliers',
 						'class'=>'span6'
 						));
 						
-						echo '<div id="boxModalItemPriceStock">';
+						echo '<div id="boxModalItemPrice">';
 							//////////////////////////////////////
 							echo $this->BootstrapForm->input('items_id', array(				
 							'label' => 'Item:',
 							'id'=>'cbxModalItems',
 							'class'=>'span12'
 							));
-							echo '<div id="boxModalPrice">';
-								$price='';
-								echo $this->BootstrapForm->input('ex_fob_price', array(				
-								'label' => 'Precio Unitario:',
-								'id'=>'txtModalPrice',
-								'value'=>$price,
-								'class'=>'span3',
-								'maxlength'=>'15'
-								));
-							echo '</div>';		
+							
+							echo $this->BootstrapForm->input('quantity', array(				
+							'label' => 'Cantidad:',
+							'id'=>'txtModalQuantity',
+							'class'=>'span3',
+							'maxlength'=>'10'
+							));
+							
+							echo $this->BootstrapForm->input('ex_subtotal', array(				
+							'label' => 'Subtotal:',
+							'id'=>'txtModalExSubtotal',
+							'class'=>'span3',
+							'maxlength'=>'10'
+							));
+							
+//							echo '<div id="boxModalPrice">';
+//								$price='';
+//								echo $this->BootstrapForm->input('ex_fob_price', array(				
+//								'label' => 'Precio Unitario:',
+//								'id'=>'txtModalPrice',
+//								'value'=>$price,
+//								'class'=>'span3',
+//								'maxlength'=>'15',
+//								'disabled'=>'disabled'
+//								));
+//							echo '</div>';		
 							//////////////////////////////////////
 						echo '</div>';		
 						//////////////////////////////////////
 					echo '</div>';
 
-					echo $this->BootstrapForm->input('quantity', array(				
-					'label' => 'Cantidad:',
-					'id'=>'txtModalQuantity',
-					'class'=>'span3',
-					'maxlength'=>'10'
-					));
+					
 					?>
 					  <div id="boxModalValidateItem" class="alert-error"></div> 
 				  </div>

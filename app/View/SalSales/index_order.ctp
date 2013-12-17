@@ -24,8 +24,7 @@
 										'value'=>$doc_code,
 										'placeholder'=>'Codigo'
 										));
-						?>
-						<?php
+						
 						echo $this->BootstrapForm->input('note_code', array(				
 								'id'=>'txtNoteCode',
 								'value'=>$note_code,
@@ -35,6 +34,8 @@
 
 					<?php
 						echo $this->BootstrapForm->submit('<i class="icon-search icon-white"></i>',array('class'=>'btn btn-primary','div'=>false, 'id'=>'btnSearch', 'title'=>'Buscar'));
+						echo "&nbsp;";
+						echo $this->BootstrapForm->submit('<i class="icon-trash icon-white"></i>',array('class'=>'btn btn-danger','div'=>false, 'id'=>'btnClearSearch', 'title'=>'Limpiar Busqueda'));
 					?>
 
 			</fieldset>
