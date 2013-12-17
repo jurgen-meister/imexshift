@@ -1,10 +1,7 @@
 $(document).ready(function(){
-	///Url Paths
-	var path = window.location.pathname;
-	var arr = path.split('/');
-	var moduleController = ('/'+arr[1]+'/'+arr[2]+'/');//Path validation
+//START SCRIPT
 
-	var globalPeriod = $('#globalPeriod').text(); // this value is obtained from the main template.
+//	var globalPeriod = $('#globalPeriod').text(); // this value is obtained from the main template AND from MainBittion.js
 
 	var arrayItemsAlreadySaved = []; 
 	var itemsCounter = 0;
@@ -20,7 +17,7 @@ $(document).ready(function(){
 	var payDebt = 0;
 	startEventsWhenExistsDebts();
 	
-	$('select').select2(); 
+//	$('select').select2(); 
 	
 	function startEventsWhenExistsDebts(){		
 		payDebt =0;
@@ -223,7 +220,7 @@ $(document).ready(function(){
 		$.ajax({
 		    type:"POST",
 //		    async: false,	
-		    url:moduleController + "ajax_check_code_duplicity",			
+		    url:urlModuleController + "ajax_check_code_duplicity",			
 		    data:{noteCode: $('#txtNoteCode').val()
 				,genericCode: $('#txtGenericCode').val()},
 		    beforeSend: showProcessing(),
@@ -455,10 +452,10 @@ $(document).ready(function(){
 		if( error === ''){
 			showBittionAlertModal({content:'¿Está seguro de eliminar este item?'});
 			$('#bittionBtnYes').click(function(){
-				if(arr[3] === 'save_order'){
+				if(urlAction === 'save_order'){
 					ajax_save_movement('DELETE', 'ORDER_PENDANT', objectTableRowSelected/*, []*/);
 				}
-				if(arr[3] === 'save_invoice'){
+				if(urlAction === 'save_invoice'){
 					ajax_save_movement('DELETE', 'PINVOICE_PENDANT', objectTableRowSelected/*, []*/);
 				}
 				return false; //avoid page refresh
@@ -614,10 +611,10 @@ $(document).ready(function(){
 		
 		var error = validateItem(supplier, itemCodeName, quantity, exSubtotal);
 		if(error === ''){
-			if(arr[3] === 'save_order'){
+			if(urlAction === 'save_order'){
 				ajax_save_movement('ADD', 'ORDER_PENDANT', ''/*, []*/);
 			}
-			if(arr[3] === 'save_invoice'){
+			if(urlAction === 'save_invoice'){
 				ajax_save_movement('ADD', 'PINVOICE_PENDANT', ''/*, []*/);
 			}
 		}else{
@@ -635,10 +632,10 @@ $(document).ready(function(){
 		var error = validateItem(supplier, itemCodeName, quantity, exSubtotal/*parseFloat(exFobPrice).toFixed(2)*/); 
 		if(error === ''){
 			
-			if(arr[3] === 'save_order'){
+			if(urlAction === 'save_order'){
 				ajax_save_movement('EDIT', 'ORDER_PENDANT', ''/*, []*/);
 			}
-			if(arr[3] === 'save_invoice'){
+			if(urlAction === 'save_invoice'){
 				ajax_save_movement('EDIT', 'PINVOICE_PENDANT', ''/*, []*/);
 			}
 		}else{
@@ -651,7 +648,7 @@ $(document).ready(function(){
 		var payAmount = $('#txtModalPaidAmount').val();
 		var error = validateAddPay(payDate, payAmount);  
 		if(error === ''){
-			if(arr[3] === 'save_invoice'){
+			if(urlAction  === 'save_invoice'){
 				ajax_save_movement('ADD_PAY', 'PINVOICE_PENDANT', ''/*, []*/);
 			}
 		}else{
@@ -665,7 +662,7 @@ $(document).ready(function(){
 		var payHiddenAmount = $('#txtModalAmountHidden').val();
 		var error = validateEditPay(payDate, payAmount, payHiddenAmount);  
 		if(error === ''){
-			if(arr[3] === 'save_invoice'){
+			if(urlAction === 'save_invoice'){
 				ajax_save_movement('EDIT_PAY', 'PINVOICE_PENDANT', ''/*, []*/);
 			}
 		}else{
@@ -678,7 +675,7 @@ $(document).ready(function(){
 		var costExAmount = $('#txtModalCostExAmount').val();
 		var error = validateCost(costCodeName, costExAmount); 
 		if(error === ''){
-			if(arr[3] === 'save_invoice'){
+			if(urlAction === 'save_invoice'){
 				ajax_save_movement('ADD_COST', 'PINVOICE_PENDANT', ''/*, []*/);
 			}
 		}else{
@@ -692,7 +689,7 @@ $(document).ready(function(){
 		var costExAmount = $('#txtModalCostExAmount').val();
 		var error = validateCost(costCodeName, costExAmount); 
 		if(error === ''){
-			if(arr[3] === 'save_invoice'){
+			if(urlAction === 'save_invoice'){
 				ajax_save_movement('EDIT_COST', 'PINVOICE_PENDANT', ''/*, []*/);
 			}
 		}else{
@@ -859,10 +856,10 @@ $(document).ready(function(){
 //		arrayPaysDetails = getPaysDetails();
 		var error = validateBeforeSaveAll(arrayItemsDetails, result);
 		if( error == ''){
-			if(arr[3] == 'save_order'){
+			if(urlAction == 'save_order'){
 				ajax_save_movement('DEFAULT', 'ORDER_PENDANT', ''/*, []*/);
 			}
-			if(arr[3] == 'save_invoice'){
+			if(urlAction == 'save_invoice'){
 				ajax_save_movement('DEFAULT', 'PINVOICE_PENDANT', ''/*, []*/);
 			}
 		}else{
@@ -878,10 +875,10 @@ $(document).ready(function(){
 			arrayForValidate = getItemsDetails();
 			var error = validateBeforeSaveAll(arrayForValidate, result);
 			if( error === ''){
-				if(arr[3] == 'save_order'){
+				if(urlAction == 'save_order'){
 					ajax_save_movement('DEFAULT', 'ORDER_APPROVED', ''/*, arrayForValidate*/);
 				}
-				if(arr[3] == 'save_invoice'){
+				if(urlAction == 'save_invoice'){
 					ajax_save_movement('DEFAULT', 'PINVOICE_APPROVED', ''/*, arrayForValidate*/);
 				}
 			}else{
@@ -897,10 +894,10 @@ $(document).ready(function(){
 //			if(arr[3] == 'save_order'){
 //				ajax_check_document_state();
 //			}
-			if(arr[3] == 'save_order'){
+			if(urlAction == 'save_order'){
 				ajax_save_movement('DEFAULT', 'ORDER_CANCELLED', ''/*, arrayForValidate*/);
 			}
-			if(arr[3] == 'save_invoice'){
+			if(urlAction == 'save_invoice'){
 				ajax_save_movement('DEFAULT', 'PINVOICE_CANCELLED', ''/*, arrayForValidate*/);
 			}
 			hideBittionAlertModal();
@@ -916,7 +913,7 @@ $(document).ready(function(){
 			var genCode = $('#txtGenericCode').val();
 			var type;
 			var index;
-			switch(arr[3]){
+			switch(urlAction){
 				case 'save_order':
 					index = 'index_order';
 					type = 'ORDER_LOGIC_DELETED';
@@ -934,7 +931,7 @@ $(document).ready(function(){
 	function ajax_check_document_state(callback, param){
 		$.ajax({
 		    type:"POST",
-		    url:moduleController + "ajax_check_document_state",			
+		    url:urlModuleController + "ajax_check_document_state",			
 		    data:{noteCode: $('#txtNoteCode').val()
 				,genericCode: $('#txtGenericCode').val()},
 		    beforeSend: showProcessing(),
@@ -966,7 +963,7 @@ $(document).ready(function(){
 	function ajax_set_to_pendant(arrayItemsDetails){
 		$.ajax({
 			type:"POST",
-			url:moduleController + "ajax_set_to_pendant",			
+			url:urlModuleController + "ajax_set_to_pendant",			
 			data:{arrayItemsDetails: arrayItemsDetails 
 				  ,purchaseId:$('#txtPurchaseIdHidden').val()
 				  ,purchaseCode:$('#txtGenericCode').val()
@@ -1030,7 +1027,7 @@ $(document).ready(function(){
 	function ajax_update_ex_rate(){
 		$.ajax({
 		    type:"POST",
-		    url:moduleController + "ajax_update_ex_rate",			
+		    url:urlModuleController + "ajax_update_ex_rate",			
 		    data:{date: $("#txtDate").val()},
 		    beforeSend: showProcessing(),
 				success:function(data){
@@ -1428,12 +1425,12 @@ $(document).ready(function(){
 	}
 	
 	function ajax_save_movement(OPERATION, STATE, objectTableRowSelected/*, arrayForValidate*/){//SAVE_IN/ADD/PENDANT
-		var ACTION = arr[3];
+		var ACTION = urlAction;
 		var dataSent = setOnData(ACTION, OPERATION, STATE, objectTableRowSelected/*, arrayForValidate*/);
 		//Ajax Interaction	
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_save_movement",//saveSale			
+            url:urlModuleController + "ajax_save_movement",//saveSale			
             data:dataSent,
             beforeSend: showProcessing(),
             success: function(data){
@@ -1485,7 +1482,7 @@ $(document).ready(function(){
 	function ajax_logic_delete(purchaseId, type, index, genCode){
 		$.ajax({
 			type:"POST",
-			url:moduleController + "ajax_logic_delete",			
+			url:urlModuleController + "ajax_logic_delete",			
 			data:{purchaseId: purchaseId
 				,type: type
 				,genCode: genCode
@@ -1494,7 +1491,7 @@ $(document).ready(function(){
 				if(data === 'success'){
 					showBittionAlertModal({content:'Se eliminó el documento en estado Pendiente', btnYes:'Aceptar', btnNo:''});
 					$('#bittionBtnYes').click(function(){
-						window.location = moduleController + index;
+						window.location = urlModuleController + index;
 					});
 
 				}else if(data === 'exception'){
@@ -1516,7 +1513,7 @@ $(document).ready(function(){
 	function ajax_initiate_modal_add_item_in(itemsAlreadySaved, supplierItemsAlreadySaved){
 		 $.ajax({
             type:"POST",
-            url:moduleController + "ajax_initiate_modal_add_item_in",			
+            url:urlModuleController + "ajax_initiate_modal_add_item_in",			
 		  data:{	itemsAlreadySaved: itemsAlreadySaved, 
 				supplierItemsAlreadySaved: supplierItemsAlreadySaved,
 				date: $('#txtDate').val()
@@ -1533,13 +1530,13 @@ $(document).ready(function(){
 					//to update the list of items by selected supplier
 					ajax_update_items_modal(itemsAlreadySaved, supplierItemsAlreadySaved);
 				});
-				$('#cbxModalSuppliers').select2();
-				
+//				$('#cbxModalSuppliers').select2();
+				fnBittionSetSelectsStyle();
 //				$('#cbxModalItems').bind("change",function(){ //must be binded 'cause dropbox is loaded by a previous ajax'
 //					//to update the price by selected item
 //					ajax_update_price_modal();
 //				});
-				$('#cbxModalItems').select2();
+//				$('#cbxModalItems').select2();
 
 				$('#txtModalQuantity').keydown(function(event) {
 					validateOnlyIntegers(event);			
@@ -1570,7 +1567,7 @@ $(document).ready(function(){
 	function ajax_update_items_modal(itemsAlreadySaved, supplierItemsAlreadySaved){ 
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_update_items_modal",			
+            url:urlModuleController + "ajax_update_items_modal",			
             data:{itemsAlreadySaved: itemsAlreadySaved,
 				supplierItemsAlreadySaved: supplierItemsAlreadySaved,
 				supplier: $('#cbxModalSuppliers').val(),
@@ -1584,8 +1581,8 @@ $(document).ready(function(){
 //					//to update the price by selected item
 //					ajax_update_price_modal();
 //				});
-				$('#cbxModalItems').select2();	
-
+//				$('#cbxModalItems').select2();	
+				fnBittionSetSelectsStyle();
 				$('#txtModalQuantity').keydown(function(event) {
 					validateOnlyIntegers(event);			
 				});
@@ -1614,7 +1611,7 @@ $(document).ready(function(){
 	function ajax_update_price_modal(){
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_update_price_modal",			
+            url:urlModuleController + "ajax_update_price_modal",			
             data:{item: $('#cbxModalItems').val(),
 			date: $('#txtDate').val()},
             beforeSend: showProcessing(),
@@ -1635,7 +1632,7 @@ $(document).ready(function(){
 	function ajax_initiate_modal_add_cost(costsAlreadySaved){
 		 $.ajax({
             type:"POST",
-            url:moduleController + "ajax_initiate_modal_add_cost",			
+            url:urlModuleController + "ajax_initiate_modal_add_cost",			
 			  data:{costsAlreadySaved: costsAlreadySaved/*, supplier: $('#cbxSuppliers').val()*//*, transfer:transfer, warehouse2:warehouse2*/},
             beforeSend: showProcessing(),
             success: function(data){
@@ -1647,7 +1644,8 @@ $(document).ready(function(){
 					ajax_update_amount();
 				});
 *///				$('#txtModalPrice').keypress(function(){return false;});
-				$('#cbxModalCosts').select2();	
+//				$('#cbxModalCosts').select2();	
+				fnBittionSetSelectsStyle();
 			},
 			error:function(data){
 				$('#boxMessage').html('<div class="alert alert-error"><button type="button" class="close" data-dismiss="alert">&times;</button>Ocurrio un problema, vuelva a intentarlo<div>');
@@ -1659,7 +1657,7 @@ $(document).ready(function(){
 	function ajax_initiate_modal_add_pay(paysAlreadySaved,payDebt){
 		 $.ajax({
             type:"POST",
-            url:moduleController + "ajax_initiate_modal_add_pay",			
+            url:urlModuleController + "ajax_initiate_modal_add_pay",			
 		    data:{paysAlreadySaved: paysAlreadySaved,
 					payDebt: payDebt},
             beforeSend: showProcessing(),
@@ -1668,9 +1666,10 @@ $(document).ready(function(){
 				$('#boxModalInitiatePay').html(data); 
 				$('#txtModalDescription').val('');  
 				initiateModalPay();
-				$("#txtModalDate").datepicker({
-					showButtonPanel: true
-				});
+				fnBittionSetTypeDate();
+//				$("#txtModalDate").datepicker({
+//					showButtonPanel: true
+//				});
 //				$('#txtModalPaidAmount').keydown(function(event) {
 //					validateOnlyFloatNumbers(event);			
 //				});
@@ -1695,7 +1694,7 @@ $(document).ready(function(){
 	function ajax_check_document_state(){
 		$.ajax({
             type:"POST",
-            url:moduleController + "ajax_check_document_state",			
+            url:urlModuleController + "ajax_check_document_state",			
             data:{
 				purchaseId: $('#txtPurchaseIdHidden').val(),
 				genCode: $('#txtGenericCode').val()

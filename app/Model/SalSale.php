@@ -183,7 +183,7 @@ class SalSale extends AppModel {
 						return 'error';
 					}
 //					if($ACTION=='save_order'){
-//						if($this->SalDetail->updateAll(array('SalDetail.sale_price'=>$dataMovementDetail[1]['SalDetail']['sale_price'], 
+//						if($this->SalDetail->updateAll(array('SalDetail.lc_transaction'=>"'MODIFY'",'SalDetail.sale_price'=>$dataMovementDetail[1]['SalDetail']['sale_price'], 
 //															'SalDetail.quantity'=>$dataMovementDetail[1]['SalDetail']['quantity'], 
 //															'SalDetail.ex_sale_price'=>$dataMovementDetail[1]['SalDetail']['ex_sale_price']				
 //															/*'SalDetail.fob_price'=>$dataMovementDetail['SalDetail']['fob_price'],
