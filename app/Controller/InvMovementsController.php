@@ -6,37 +6,10 @@ App::uses('AppController', 'Controller');
  * @property InvMovement $InvMovement
  */
 class InvMovementsController extends AppController {
-
-/**
- *  Layout
- *
- * @var string
- */
-	public $layout = 'default';
-
-/**
- * Helpers
- *
- * @var array
- */
-//	public $helpers = array('TwitterBootstrap.BootstrapHtml', 'TwitterBootstrap.BootstrapForm', 'TwitterBootstrap.BootstrapPaginator');
-/**
- * Components
- *
- * @var array
- */
-//	public $components = array('Session');
 	//*******************************************************************************************************//
 	///////////////////////////////////////// START - FUNCTIONS ///////////////////////////////////////////////
 	//*******************************************************************************************************//
-//	public function beforeFilter(){
-//		 parent::beforeFilter();
-//		  App::uses('ConnectionManager', 'Model');
-//                $dataSource = ConnectionManager::getDataSource('default');
-//                debug( $dataSource->config['login']);
-//	}
-	
-	
+
 	//////////////////////////////////////////// START - PDF ///////////////////////////////////////////////
 	public function view_document_movement_pdf($id = null) {
 		
@@ -1795,8 +1768,17 @@ class InvMovementsController extends AppController {
 				$conditions = array('InvMovement.code'=>$code);
 			}
 			
-			if($this->InvMovement->updateAll(array('InvMovement.lc_state'=>"'LOGIC_DELETED'", 'InvMovement.lc_transaction'=>"'MODIFY'"), $conditions)){
-				echo 'success';
+			$invMovementIds = $this->InvMovement->find('list', array(
+				'conditions'=>$conditions,
+				'fields'=>array('InvMovement.id', 'InvMovement.id')
+			));
+			
+			if(count($invMovementIds) == 0){
+				echo 'error-movementNotFound';
+			}else{
+				if($this->InvMovement->fnLogicDelete($invMovementIds)){
+					echo 'success';
+				}
 			}
 		}
 	}

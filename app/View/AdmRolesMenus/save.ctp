@@ -1,9 +1,4 @@
-<?php //echo $this->Html->script('checkboxtree/jquery-1.4.4', FALSE);  ?>
-<?php //echo $this->Html->script('checkboxtree/jquery-ui-1.8.12.custom.min', FALSE);  ?>
-<?php echo $this->Html->script('checkboxtree/jquery.checkboxtree', FALSE); ?>
-<?php echo $this->Html->css('jquery.checkboxtree'); ?>
 <?php echo $this->Html->script('modules/AdmRolesMenus', FALSE); ?>
-
 <!-- ************************************************************************************************************************ -->
 <div class="span12"><!-- START CONTAINER FLUID/ROW FLUID/SPAN12 - FORMATO DE #UNICORN -->
 	<!-- ************************************************************************************************************************ -->
@@ -39,19 +34,8 @@
 				<?php //echo $this->BootstrapForm->submit('Guardar', array('id'=>'saveButton')); ?>		
 				<div id="message" style="text-align: center;"></div>
 				<div id="processing" style="text-align: center;"></div>
-
-				<div class="control-group">
-					<label for="AdmRolesMenuAdmRoleId" class="control-label">Menus:</label>
-					<div class="controls" id="boxChkTree">
-						<?php
-						//echo '<br>';
-						//echo '<div id="boxChkTree">';
-						echo $chkTree;
-						//echo '</div>';
-						?>
-					</div>
-				</div>
 			</fieldset>
+			<div id="boxChkTree"></div>
 <?php echo $this->BootstrapForm->end(); ?>
 			<!-- //******************************** START - #UNICORN  WRAP FORM BOX PART 2/2 *************************************** -->
 		</div> <!-- Belongs to: <div class="widget-content nopadding"> -->

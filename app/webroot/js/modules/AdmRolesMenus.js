@@ -1,9 +1,14 @@
 $(document).ready(function() {
 //START SCRIPT
-
-		$('#roles option:nth-child(1)').attr("selected", "selected");
-		$('#modules option:nth-child(1)').attr("selected", "selected");
-		$('#tree1').checkboxTree();
+	
+	/////////////MAIN/////////////
+	if($("#roles").val() !== '' && $("#parentMenus").val() !== ''){
+		ajax_list_menus();
+	}
+	/////////////////////////////
+	
+	$('#roles option:nth-child(1)').attr("selected", "selected");
+	$('#modules option:nth-child(1)').attr("selected", "selected");
 
 	//Initialize dropdown lists to position 0 for firefox refresh bug
 	$('#parentMenus option:nth-child(1)').attr("selected", "selected");
@@ -29,7 +34,11 @@ $(document).ready(function() {
 		$.ajax({
 			type: "POST",
 			url: urlModuleController + "ajax_list_menus",
-			data: {parentMenus: $("#parentMenus").val(), role: $("#roles").val()},
+			data: {
+				role: $("#roles").val(),
+				parentMenus: $("#parentMenus").val(),
+				parentMenuName: $("#parentMenus option:selected").text()
+			},
 			beforeSend: showProcessing,
 			success: showMenus
 		});
@@ -37,10 +46,9 @@ $(document).ready(function() {
 
 
 
-	$('#saveButton').click(function() {
-		//$("#message").hide();
+	$('#saveButton').click(function(event) {
 		ajax_save();
-		return false; //evita haga submit form
+		event.preventDefault();
 	});
 
 
@@ -59,35 +67,36 @@ $(document).ready(function() {
 		}
 		$.ajax({
 			type: "POST",
-			async:false,//will freeze the browser until it's done, avoid repeated inserts after happy button clicker, con: processsing message won't work
+			async: false, //will freeze the browser until it's done, avoid repeated inserts after happy button clicker, con: processsing message won't work
 			url: urlModuleController + "ajax_save",
 			data: {role: roleGeneric, parentMenus: parentMenusGeneric, menu: menuGeneric, type: type},
 			beforeSend: showProcessing,
-			success:function(data){
-				if(data === 'success' || data ==='successEmpty'){
+			success: function(data) {
+				if (data === 'success' || data === 'successEmpty') {
 					$.gritter.add({
-					   title: 'EXITO!',
-					   text: 'Cambios guardados.',
-					   sticky: false,
-					   image:'/imexport/img/check.png'
-				   });	
-				}else{
-					$.gritter.add({
-						title:	'NO SE GUARDO!',
-						text:	'Ocurrio un error.',
+						title: 'EXITO!',
+						text: 'Cambios guardados.',
 						sticky: false,
-						image:'/imexport/img/error.png'
-					});		
-				};
+						image: '/imexport/img/check.png'
+					});
+				} else {
+					$.gritter.add({
+						title: 'NO SE GUARDO!',
+						text: 'Ocurrio un error.',
+						sticky: false,
+						image: '/imexport/img/error.png'
+					});
+				}
+				;
 				$("#processing").text("");
 			},
-			error:function(data){
+			error: function(data) {
 				$.gritter.add({
-					title:	'ERROR!',
-					text:	'Ocurrio un problema.',
+					title: 'ERROR!',
+					text: 'Ocurrio un problema.',
 					sticky: false,
-					image:'/imexport/img/error.png'
-				});		
+					image: '/imexport/img/error.png'
+				});
 				$("#processing").text("");
 			}
 		});
@@ -102,13 +111,33 @@ $(document).ready(function() {
 	}
 
 	function showProcessing() {
-		$("#processing").text("Procesando...");
+		$("#processing").text("Cargando...");
 	}
 
 	function showMenus(data) {
-		$("#processing").text("");
 		$("#boxChkTree").html(data);
-		$('#tree1').checkboxTree();
+		bindOnAjaxTable();
+		$("#processing").text("");
+	}
+
+	function bindOnAjaxTable() {
+		$("#chkMain").on('click', function() {
+			if (this.checked) {
+				$('#tblMenus input[name="chkTree[]"] ').prop('checked', true);
+			} else {
+				$('#tblMenus input[name="chkTree[]"] ').prop('checked', false);
+			}
+		});
+		
+		$('#tblMenus tbody input[name="chkTree[]"] ').on('click',function() {
+			var menusChecked = $('#tblMenus tbody input[name="chkTree[]"]:checked ').length;
+			
+			if(menusChecked === 0){
+				$('#tblMenus #chkMain').prop('checked', false);
+			}else{
+				$('#tblMenus #chkMain').prop('checked', true);
+			}
+		});
 	}
 
 });
