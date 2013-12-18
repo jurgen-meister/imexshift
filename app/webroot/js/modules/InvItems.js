@@ -393,7 +393,7 @@ $(document).ready(function() {
 			beforeSend: showProcessing(),
 			success: function(data) {
 				if (data === "success") {
-					$('#boxMessage').html('<div class="alert alert">\n\
+					$('#boxMessage').html('<div class="alert alert-success">\n\
 					<button type="button" class="close" data-dismiss="alert">&times;</button>Precio eliminado<div>');
 					objectTableRowSelected.remove();
 
@@ -401,6 +401,11 @@ $(document).ready(function() {
 				if (data === "mustExistOne") {
 					//alert("No se puede eliminar el precio porque debe existir al menos uno de su tipo");
 					showBittionAlertModal({content: 'No se puede eliminar el PRECIO porque debe existir al menos 1 de su TIPO', btnYes: '', btnNo: 'ok'});
+				}
+				if(data === 'error'){
+					$('#boxMessage').html('<div class="alert alert">\n\
+					<button type="button" class="close" data-dismiss="alert">&times;</button>Error!!!, no se pudo eliminar<div>');
+					objectTableRowSelected.remove();
 				}
 				$('#processing').text('');
 

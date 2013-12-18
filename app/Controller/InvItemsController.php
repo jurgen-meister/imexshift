@@ -464,16 +464,19 @@ class InvItemsController extends AppController {
 			//debug()
 			
 			if($exists > 1){
-				$arrayPrice = array('inv_price_id'=>$priceId);
+//				$arrayPrice = array('inv_price_id'=>$priceId);
 				//$data = array('InvPrice'=>$arrayPrice);
-				$this->InvItem->InvPrice->deleteAll(array('InvPrice.id' => $arrayPrice));
-				echo "success";
+//				$this->InvItem->InvPrice->deleteAll(array('InvPrice.id' => $arrayPrice));
+				try {
+					$this->InvItem->InvPrice->id = $priceId;
+					$this->InvItem->InvPrice->delete();
+					echo "success";
+				} catch (Exception $e) {
+					echo "error";
+				}
 			}else{
 				echo "mustExistOne";
 			}
-			
-			
-
 		}
 	}
 	

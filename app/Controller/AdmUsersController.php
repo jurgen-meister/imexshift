@@ -1148,69 +1148,6 @@ class AdmUsersController extends AppController {
 	 * @return void
 	 */
 	public function delete($id = null) {
-//		if (!$this->request->is('post')) {
-//			throw new MethodNotAllowedException();
-//		}
-//		$exisUserRestrictions = $this->AdmUser->AdmUserRestriction->find('count', array(
-//			'recursive' => -1,
-//			'conditions' => array(
-//				'AdmUserRestriction.lc_state !=' => 'LOGIC_DELETED',
-//				'AdmUserRestriction.adm_user_id' => 10),
-//		));
-//
-//		if ($exisUserRestrictions > 0) {
-//			$this->Session->setFlash(
-//					'No se puede eliminar este Usuario porque tiene ' . $exisUserRestrictions . ' Roles asignados!', 'alert', array(
-//				'plugin' => 'TwitterBootstrap',
-//				'class' => 'alert-error'
-//					)
-//			);
-//			$this->redirect(array('action' => 'index'));
-//		}
-//
-//		try {
-//			$this->AdmUser->AdmProfile->deleteAll(array('AdmProfile.adm_user_id' => $id));
-//			try {
-//				$this->AdmUser->deleteAll(array('AdmUser.id' => $id));
-//				$this->Session->setFlash(
-//						'Eliminado con exito!', 'alert', array(
-//					'plugin' => 'TwitterBootstrap',
-//					'class' => 'alert-success'
-//						)
-//				);
-//				$this->redirect(array('action' => 'index'));
-//			} catch (Exception $e) {
-//				$this->Session->setFlash(
-//						'Ocurrio un problema, vuelva a intentarlo', 'alert', array(
-//					'plugin' => 'TwitterBootstrap',
-//					'class' => 'alert-error'
-//						)
-//				);
-//				$this->redirect(array('action' => 'index'));
-//			}
-//		} catch (Exception $e) {
-//			$this->Session->setFlash(
-//					'Ocurrio un problema, vuelva a intentarlo', 'alert', array(
-//				'plugin' => 'TwitterBootstrap',
-//				'class' => 'alert-error'
-//					)
-//			);
-//			$this->redirect(array('action' => 'index'));
-//		}
-
-
-		/*
-		  $this->Session->setFlash(
-		  __('The %s was not deleted', __('adm user')),
-		  'alert',
-		  array(
-		  'plugin' => 'TwitterBootstrap',
-		  'class' => 'alert-error'
-		  )
-		  );
-		  $this->redirect(array('action' => 'index'));
-		 * 
-		 */
 	}
 
 	public function delete_user_restriction($idUserRestriction = null, $idUser = null) {

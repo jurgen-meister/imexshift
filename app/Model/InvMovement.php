@@ -209,18 +209,45 @@ class InvMovement extends AppModel {
 						}
 						break;
 					case 'EDIT':
-							if($this->InvMovementDetail->updateAll(array('InvMovementDetail.lc_transaction'=>"'MODIFY'", 'InvMovementDetail.quantity'=>$dataMovementDetail['InvMovementDetail']['quantity']), array('InvMovementDetail.inv_movement_id'=>$dataMovementDetail['InvMovementDetail']['inv_movement_id'],	'InvMovementDetail.inv_item_id'=>$dataMovementDetail['InvMovementDetail']['inv_item_id']))){
-								$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
-							}
-							if($rowsAffected == 0){
+						$invMovementDetailsIds = $this->InvMovementDetail->find('list', array(
+							'conditions'=>array(
+								'InvMovementDetail.inv_movement_id'=>$dataMovementDetail['InvMovementDetail']['inv_movement_id'],
+								'InvMovementDetail.inv_item_id'=>$dataMovementDetail['InvMovementDetail']['inv_item_id']
+							),
+							'fields'=>array('InvMovementDetail.id', 'InvMovementDetail.id')
+						));
+						
+						foreach ($invMovementDetailsIds as $invMovementDetailsId) {
+							try {
+									$this->InvMovementDetail->save(array(
+										'id'=>$invMovementDetailsId, 
+										'quantity'=>$dataMovementDetail['InvMovementDetail']['quantity'])
+									);
+							} catch (Exception $e) {
+//								debug($e);
 								$dataSource->rollback();
 								return 'ERROR';
 							}
+						}
 						break;
 					case 'DELETE':
-						if(!$this->InvMovementDetail->deleteAll(array('InvMovementDetail.inv_movement_id'=>$dataMovementDetail['InvMovementDetail']['inv_movement_id'],	'InvMovementDetail.inv_item_id'=>$dataMovementDetail['InvMovementDetail']['inv_item_id']))){
-							$dataSource->rollback();
-							return 'ERROR';
+						$invMovementDetailsIds = $this->InvMovementDetail->find('list', array(
+							'conditions' => array(
+								'InvMovementDetail.inv_movement_id' => $dataMovementDetail['InvMovementDetail']['inv_movement_id'],
+								'InvMovementDetail.inv_item_id' => $dataMovementDetail['InvMovementDetail']['inv_item_id']
+							),
+							'fields' => array('InvMovementDetail.id', 'InvMovementDetail.id')
+						));
+						
+						foreach ($invMovementDetailsIds as $invMovementDetailsId) {
+							try {
+								$this->InvMovementDetail->id = $invMovementDetailsId;	
+								$this->InvMovementDetail->delete();
+							} catch (Exception $e) {
+//								debug($e);
+								$dataSource->rollback();
+								return 'ERROR';
+							}
 						}
 						break;
 				}
@@ -306,16 +333,29 @@ class InvMovement extends AppModel {
 					return 'ERROR';
 				}
 				if($OPERATION == 'EDIT'){
-					if($this->InvMovementDetail->updateAll(
-							array('InvMovementDetail.lc_transaction'=>"'MODIFY'", 'InvMovementDetail.quantity'=>$dataMovement[2]['InvMovementDetail']['quantity']),
-							array('InvMovementDetail.inv_movement_id'=>array($dataMovement[0]['InvMovement']['id'], $dataMovement[1]['InvMovement']['id']),
-								'InvMovementDetail.inv_item_id'=>$dataMovement[2]['InvMovementDetail']['inv_item_id']))){
-						$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
+					///////////////////////////////////////////////////
+					$invMovementDetailsIds = $this->InvMovementDetail->find('list', array(
+						'conditions' => array(
+							'InvMovementDetail.inv_movement_id' => array($dataMovement[0]['InvMovement']['id'], $dataMovement[1]['InvMovement']['id']),
+							'InvMovementDetail.inv_item_id' => $dataMovement[2]['InvMovementDetail']['inv_item_id']
+						),
+						'fields' => array('InvMovementDetail.id', 'InvMovementDetail.id')
+					));
+
+					foreach ($invMovementDetailsIds as $invMovementDetailsId) {
+						try {
+							$this->InvMovementDetail->save(array(
+								'id' => $invMovementDetailsId,
+								'quantity' => $dataMovement[2]['InvMovementDetail']['quantity'])
+							);
+						} catch (Exception $e) {
+//								debug($e);
+							$dataSource->rollback();
+							return 'ERROR';
+						}
 					}
-					if($rowsAffected == 0){
-						$dataSource->rollback();
-						return 'ERROR';
-					}
+					////////////////////////////////////////////////
+					
 				}
 				if($OPERATION == 'ADD'){
 					$this->InvMovementDetail->create();//without this doesn't clean and update (in the beginning just in case)
@@ -330,10 +370,26 @@ class InvMovement extends AppModel {
 					}
 				}	
 			}else{
-				if(!$this->InvMovementDetail->deleteAll(array('InvMovementDetail.inv_movement_id'=>array($dataMovement[0]['InvMovement']['id'], $dataMovement[1]['InvMovement']['id']),	'InvMovementDetail.inv_item_id'=>$dataMovement[2]['InvMovementDetail']['inv_item_id']))){
-					$dataSource->rollback();
-					return 'ERROR';
+				///////////////////////////////////////////////////////////
+				$invMovementDetailsIds = $this->InvMovementDetail->find('list', array(
+					'conditions' => array(
+						'InvMovementDetail.inv_movement_id' => array($dataMovement[0]['InvMovement']['id'], $dataMovement[1]['InvMovement']['id']),
+						'InvMovementDetail.inv_item_id' => $dataMovement[2]['InvMovementDetail']['inv_item_id']
+					),
+					'fields' => array('InvMovementDetail.id', 'InvMovementDetail.id')
+				));
+
+				foreach ($invMovementDetailsIds as $invMovementDetailsId) {
+					try {
+						$this->InvMovementDetail->id = $invMovementDetailsId;
+						$this->InvMovementDetail->delete();
+					} catch (Exception $e) {
+//								debug($e);
+						$dataSource->rollback();
+						return 'ERROR';
+					}
 				}
+				///////////////////////////////////////////////////////////
 			}
 		}
 		
@@ -354,22 +410,22 @@ class InvMovement extends AppModel {
 	
 	
 	
-	public function reduceCredits($id, $amount) { 
-                if($this->updateAll( 
-                                array( 
-                                        'Manager.credit' => "Manager.credit-{$amount}" ,
-										'lc_transaction'=>"'MODIFY'"  // doubt, Manager?
-                                         ), 
-                                array( 
-                                        'Manager.id' => $id, 
-                                        'Manager.credit >= ' => $amount 
-                                        ) 
-                                ) 
-                        )  { 
-                        return $this->getAffectedRows(); 
-                } 
-                return false; 
-	} 
+//	public function reduceCredits($id, $amount) { 
+//                if($this->updateAll( 
+//                                array( 
+//                                        'Manager.credit' => "Manager.credit-{$amount}" ,
+//										'lc_transaction'=>"'MODIFY'"  // doubt, Manager?
+//                                         ), 
+//                                array( 
+//                                        'Manager.id' => $id, 
+//                                        'Manager.credit >= ' => $amount 
+//                                        ) 
+//                                ) 
+//                        )  { 
+//                        return $this->getAffectedRows(); 
+//                } 
+//                return false; 
+//	} 
 	
 	///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	private function _validateItemsStocksOut($arrayItemsDetails, $warehouse){

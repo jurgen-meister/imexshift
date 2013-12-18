@@ -74,7 +74,6 @@ class AdmRolesMenu extends AppModel {
 
 			foreach ($admRolesMenuIds as $admRolesMenuId) {
 				try {
-//					$this->deleteAll(array('adm_role_id' => $role, 'adm_menu_id' => $delete)); //doesn't work with beforeDelete()
 					$this->id = $admRolesMenuId;
 					$this->delete();
 				} catch (Exception $e) {
