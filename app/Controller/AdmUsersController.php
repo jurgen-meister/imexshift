@@ -407,8 +407,8 @@ class AdmUsersController extends AppController {
 			}
 			$this->redirect($this->Auth->redirect());
 		} catch (Exception $e) {
-//			$this->_createMessage('Ocurrio un problema con el log, vuelva a intentarlo');
-			$this->_createMessage($e);
+			$this->_createMessage('Ocurrio un problema con el log, vuelva a intentarlo');
+//			$this->_createMessage($e);
 			$this->redirect($this->Auth->logout());
 		}
 	}
@@ -551,37 +551,6 @@ class AdmUsersController extends AppController {
 		}
 	}
 
-	public function choose_role() {
-		//echo "Aqui va para elegir roles con fecha activa en caso de que un rol este inactivo y tenga otros roles";
-		if ($this->request->is('post')) {
-			//debug($this->request->data);
-			$data = explode('-', $this->request->data['AdmUser']['userAccountSession']);
-			//debug($data[1]);
-			//debug($data[2]);
-			$this->_selectOtherRole($data[0], $data[1]);
-		}
-	}
-
-	private function _selectOtherRole($userRestrictionId, $userId) {
-		try {
-			$this->AdmUser->AdmUserRestriction->updateAll(array('AdmUserRestriction.selected' => 0, 'AdmUserRestriction.lc_transaction' => "'MODIFY'"), array('AdmUserRestriction.adm_user_id' => $userId));
-			try {
-				$this->AdmUser->AdmUserRestriction->save(array('id' => $userRestrictionId, 'selected' => 1));
-				try {
-					$this->_createUserAccountSession($userId, 'login escogiendo rol');
-				} catch (Exception $e) {
-					$this->_createMessage('Ocurrio un error, comuniquese con su administrador para habilitar su cuenta');
-					$this->redirect($this->Auth->logout());
-				}
-			} catch (Exception $e) {
-				$this->_createMessage('Ocurrio un error, comuniquese con su administrador para habilitar su cuenta');
-				$this->redirect($this->Auth->logout());
-			}
-		} catch (Exception $e) {
-			$this->_createMessage('Ocurrio un error, vuelva a intentarlo');
-			$this->redirect($this->Auth->logout());
-		}
-	}
 
 	private function _createMessage($message, $key = 'error') {
 		$this->Session->setFlash('<strong>' . $message . '</strong>', 'alert', array('plugin' => 'TwitterBootstrap', 'class' => 'alert-' . $key)

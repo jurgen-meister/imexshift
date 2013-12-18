@@ -98,7 +98,25 @@ class InvMovement extends AppModel {
 		)
 	);
 
-
+	
+	public function fnLogicDelete($invMovementIds) {
+		$dataSource = $this->getDataSource();
+		$dataSource->begin();
+		//////////////////////////////////////////////////////
+		foreach ($invMovementIds as $invMovementId) {
+			try {
+				$this->save(array('id' => $invMovementId, 'lc_state' => 'LOGIC_DELETED'));
+			} catch (Exception $e) {
+//				debug($e);
+				$dataSource->rollback();
+				return false;
+			}
+		}
+		//////////////////////////////////////////////////////
+		$dataSource->commit();
+		return true;
+	}
+	
 
 	public function saveMovement($dataMovement, $dataMovementDetail, $OPERATION, $ACTION, $arrayForValidate, $code){
 		$dataSource = $this->getDataSource();

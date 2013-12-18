@@ -65,16 +65,27 @@ class AdmRolesTransaction extends AppModel {
 	public function saveTransactions($role, $insert, $delete) {
 		$dataSource = $this->getDataSource();
 		$dataSource->begin();
-		////////////////////////////////////////////////
+		////////////////////////Deletes
 		if (count($delete) > 0) {
-			try{
-				$this->deleteAll(array('adm_role_id' => $role, 'adm_transaction_id' => $delete));
-			}catch(Exception $e){
-				$dataSource->rollback();
-				return false;
+
+			$admRolesTransactionIds = $this->find('list', array(
+				'conditions' => array('AdmRolesTransaction.adm_role_id' => $role, 'AdmRolesTransaction.adm_transaction_id' => $delete),
+				'fields' => array('AdmRolesTransaction.id', 'AdmRolesTransaction.id')
+			));
+
+			foreach ($admRolesTransactionIds as $admRolesTransactionId) {
+				try {
+					$this->id = $admRolesTransactionId;
+					$this->delete();
+				} catch (Exception $e) {
+//				debug($e);
+					$dataSource->rollback();
+					return false;
+				}
 			}
+
 		}
-		//Aqui se guarda los nuevos valores
+		////////////////////////inserts
 		if (count($insert) > 0) {
 			//Para Insertar, se debe formatear el vector para que reconozca ORM de cake
 			$miData = array();
