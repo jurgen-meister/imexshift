@@ -1667,9 +1667,9 @@ $(document).ready(function(){
 				$('#txtModalDescription').val('');  
 				initiateModalPay();
 				fnBittionSetTypeDate();
-//				$("#txtModalDate").datepicker({
-//					showButtonPanel: true
-//				});
+				$("#txtModalDate").datepicker({
+					showButtonPanel: true
+				});
 //				$('#txtModalPaidAmount').keydown(function(event) {
 //					validateOnlyFloatNumbers(event);			
 //				});

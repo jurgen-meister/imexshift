@@ -165,7 +165,7 @@ class SalSale extends AppModel {
 					}
 					break;
 				case 'EDIT':							//array fields
-					if($this->SalDetail->updateAll(array('SalDetail.lc_transaction'=>"'MODIFY'", 'SalDetail.sale_price'=>$dataMovementDetail[0]['SalDetail']['sale_price'], 
+					if($this->SalDetail->updateAll(array(/*'SalDetail.lc_transaction'=>"'MODIFY'",*/ 'SalDetail.sale_price'=>$dataMovementDetail[0]['SalDetail']['sale_price'], 
 															'SalDetail.quantity'=>$dataMovementDetail[0]['SalDetail']['quantity'], 
 															'SalDetail.ex_sale_price'=>$dataMovementDetail[0]['SalDetail']['ex_sale_price']
 															/*'SalDetail.fob_price'=>$dataMovementDetail['SalDetail']['fob_price'],
@@ -203,7 +203,7 @@ class SalSale extends AppModel {
 //					}
 					break;
 				case 'EDIT_PAY':
-					if($this->SalPayment->updateAll(array('SalPayment.lc_transaction'=>"'MODIFY'", 'SalPayment.amount'=>$dataPayDetail['SalPayment']['amount'], 
+					if($this->SalPayment->updateAll(array(/*'SalPayment.lc_transaction'=>"'MODIFY'",*/ 'SalPayment.amount'=>$dataPayDetail['SalPayment']['amount'], 
 															'SalPayment.description'=>"'".$dataPayDetail['SalPayment']['description']."'", 
 															'SalPayment.ex_amount'=>$dataPayDetail['SalPayment']['ex_amount']),
 								/*array conditions*/array('SalPayment.sal_sale_id'=>$dataPayDetail['SalPayment']['sal_sale_id'], 

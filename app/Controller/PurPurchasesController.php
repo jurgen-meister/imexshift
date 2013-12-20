@@ -1481,6 +1481,8 @@ class PurPurchasesController extends AppController {
 					$arrayLastFobPrices = array();
 					$arrayLastCifPrices = array();
 					if($prices != array()){
+						$lastFobPrices = array();
+						$lastCifPrices = array();
 						for($i=0;$i<count($arrayItemsDetailsIds);$i++){
 							for($j=0;$j<count($prices);$j++){
 								if($arrayItemsDetailsIds[$i] == $prices[$j]['InvPrice']['inv_item_id'] && $prices[$j]['InvPrice']['inv_price_type_id'] == 1){
@@ -1518,7 +1520,7 @@ class PurPurchasesController extends AppController {
 						}
 						
 						$cif = round(($arrayItemsDetails[$i]['ex_fob_price'] + ($arrayItemsDetails[$i]['ex_fob_price'] * $perc)),2);
-						debug($cif);
+//						debug($cif);
 						$contCif = 0;
 						if($arrayLastCifPrices != array()){
 							for($k=0;$k<count($arrayLastCifPrices);$k++){
@@ -1543,9 +1545,9 @@ class PurPurchasesController extends AppController {
 ////					
 //					print_r($arrayLastFobPrices);
 //					print_r($arrayLastCifPrices);
-					print_r($arrayFobPrices);
-					print_r($arrayCifPrices);
-					die();
+//					print_r($arrayFobPrices);
+//					print_r($arrayCifPrices);
+//					die();
 				}
 			////////////////////////////////////////////////END - HISTORY PRICES//////////////////////////////////////////////////////	
 //				print_r($arrayFobPrices);
