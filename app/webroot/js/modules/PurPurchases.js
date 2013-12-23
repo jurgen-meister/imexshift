@@ -17,7 +17,6 @@ $(document).ready(function(){
 	var payDebt = 0;
 	startEventsWhenExistsDebts();
 	
-//	$('select').select2(); 
 	
 	function startEventsWhenExistsDebts(){		
 		payDebt =0;
@@ -1015,10 +1014,6 @@ $(document).ready(function(){
 //	$('#txtModalPaidAmount').keydown(function(event) {
 //			validateOnlyFloatNumbers(event);			
 //	});
-	//Calendar script
-	$("#txtDate").datepicker({
-	  showButtonPanel: true
-	});
 	
 	$('#txtDate').focusout(function() {
 			ajax_update_ex_rate();			
@@ -1036,14 +1031,7 @@ $(document).ready(function(){
 				}
 		});
 	}
-	
-	$("#txtModalDate").datepicker({
-	  showButtonPanel: true
-	});
-	
-//	$("#txtModalDueDate").datepicker({
-//	  showButtonPanel: true
-//	});
+
 	//Call modal
 	$('#btnAddItem').click(function(){
 		itemsListWhenExistsItems();			//NEEDS TO BE RUN BEFORE MODAL TO UPDATE ITEMS LIST BY SUPPLIER
@@ -1530,7 +1518,6 @@ $(document).ready(function(){
 					//to update the list of items by selected supplier
 					ajax_update_items_modal(itemsAlreadySaved, supplierItemsAlreadySaved);
 				});
-//				$('#cbxModalSuppliers').select2();
 				fnBittionSetSelectsStyle();
 //				$('#cbxModalItems').bind("change",function(){ //must be binded 'cause dropbox is loaded by a previous ajax'
 //					//to update the price by selected item
@@ -1666,7 +1653,7 @@ $(document).ready(function(){
 				$('#boxModalInitiatePay').html(data); 
 				$('#txtModalDescription').val('');  
 				initiateModalPay();
-				fnBittionSetTypeDate();
+//				fnBittionSetTypeDate();		Replace datepicker with this function
 				$("#txtModalDate").datepicker({
 					showButtonPanel: true
 				});
