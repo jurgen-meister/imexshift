@@ -165,23 +165,50 @@ class SalSale extends AppModel {
 					}
 					break;
 				case 'EDIT':							//array fields
-					if($this->SalDetail->updateAll(array('SalDetail.lc_transaction'=>"'MODIFY'", 'SalDetail.sale_price'=>$dataMovementDetail[0]['SalDetail']['sale_price'], 
-															'SalDetail.quantity'=>$dataMovementDetail[0]['SalDetail']['quantity'], 
-															'SalDetail.ex_sale_price'=>$dataMovementDetail[0]['SalDetail']['ex_sale_price']
-															/*'SalDetail.fob_price'=>$dataMovementDetail['SalDetail']['fob_price'],
-															'SalDetail.ex_fob_price'=>$dataMovementDetail['SalDetail']['ex_fob_price'],
-															'SalDetail.cif_price'=>$dataMovementDetail['SalDetail']['cif_price'],
-															'SalDetail.ex_cif_price'=>$dataMovementDetail['SalDetail']['ex_cif_price']*/), 
-								/*array conditions*/array('SalDetail.sal_sale_id'=>$dataMovementDetail[0]['SalDetail']['sal_sale_id'], 
-														'SalDetail.inv_warehouse_id'=>$dataMovementDetail[0]['SalDetail']['inv_warehouse_id'], 
-														'SalDetail.inv_item_id'=>$dataMovementDetail[0]['SalDetail']['inv_item_id']
-													))){
-						$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
+//					if($this->SalDetail->updateAll(array(/*'SalDetail.lc_transaction'=>"'MODIFY'",*/ 'SalDetail.sale_price'=>$dataMovementDetail[0]['SalDetail']['sale_price'], 
+//															'SalDetail.quantity'=>$dataMovementDetail[0]['SalDetail']['quantity'], 
+//															'SalDetail.ex_sale_price'=>$dataMovementDetail[0]['SalDetail']['ex_sale_price']
+//															/*'SalDetail.fob_price'=>$dataMovementDetail['SalDetail']['fob_price'],
+//															'SalDetail.ex_fob_price'=>$dataMovementDetail['SalDetail']['ex_fob_price'],
+//															'SalDetail.cif_price'=>$dataMovementDetail['SalDetail']['cif_price'],
+//															'SalDetail.ex_cif_price'=>$dataMovementDetail['SalDetail']['ex_cif_price']*/), 
+//								/*array conditions*/array('SalDetail.sal_sale_id'=>$dataMovementDetail[0]['SalDetail']['sal_sale_id'], 
+//														'SalDetail.inv_warehouse_id'=>$dataMovementDetail[0]['SalDetail']['inv_warehouse_id'], 
+//														'SalDetail.inv_item_id'=>$dataMovementDetail[0]['SalDetail']['inv_item_id']
+//													))){
+//						$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
+//					}
+//					if($rowsAffected == 0){
+//						$dataSource->rollback();
+//						return 'error';
+//					}
+					//--------------------------------------------------------------------------------------------------------------
+					$salDetailsIds = $this->SalDetail->find('list', array(
+							'conditions'=>array(
+								'SalDetail.sal_sale_id'=>$dataMovementDetail[0]['SalDetail']['sal_sale_id'], 
+								'SalDetail.inv_warehouse_id'=>$dataMovementDetail[0]['SalDetail']['inv_warehouse_id'], 
+								'SalDetail.inv_item_id'=>$dataMovementDetail[0]['SalDetail']['inv_item_id']
+							),
+							'fields'=>array('SalDetail.id', 'SalDetail.id')
+						));
+					
+					foreach ($salDetailsIds as $salDetailsId) {
+						try {
+								$this->SalDetail->save(array(
+									'id'=>$salDetailsId, 
+									'sale_price'=>$dataMovementDetail[0]['SalDetail']['sale_price'], 
+									'quantity'=>$dataMovementDetail[0]['SalDetail']['quantity'], 
+									'ex_sale_price'=>$dataMovementDetail[0]['SalDetail']['ex_sale_price'])
+								);
+						} catch (Exception $e) {
+//								debug($e);
+							$dataSource->rollback();
+							return 'ERROR';
+						}
 					}
-					if($rowsAffected == 0){
-						$dataSource->rollback();
-						return 'error';
-					}
+					//--------------------------------------------------------------------------------------------------------------
+
+					
 //					if($ACTION=='save_order'){
 //						if($this->SalDetail->updateAll(array('SalDetail.lc_transaction'=>"'MODIFY'",'SalDetail.sale_price'=>$dataMovementDetail[1]['SalDetail']['sale_price'], 
 //															'SalDetail.quantity'=>$dataMovementDetail[1]['SalDetail']['quantity'], 
@@ -203,26 +230,72 @@ class SalSale extends AppModel {
 //					}
 					break;
 				case 'EDIT_PAY':
-					if($this->SalPayment->updateAll(array('SalPayment.lc_transaction'=>"'MODIFY'", 'SalPayment.amount'=>$dataPayDetail['SalPayment']['amount'], 
-															'SalPayment.description'=>"'".$dataPayDetail['SalPayment']['description']."'", 
-															'SalPayment.ex_amount'=>$dataPayDetail['SalPayment']['ex_amount']),
-								/*array conditions*/array('SalPayment.sal_sale_id'=>$dataPayDetail['SalPayment']['sal_sale_id'], 
-														'SalPayment.sal_payment_type_id'=>$dataPayDetail['SalPayment']['sal_payment_type_id'],
-														'SalPayment.date'=>$dataPayDetail['SalPayment']['date']))){
-						$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
+//					if($this->SalPayment->updateAll(array(/*'SalPayment.lc_transaction'=>"'MODIFY'",*/ 'SalPayment.amount'=>$dataPayDetail['SalPayment']['amount'], 
+//															'SalPayment.description'=>"'".$dataPayDetail['SalPayment']['description']."'", 
+//															'SalPayment.ex_amount'=>$dataPayDetail['SalPayment']['ex_amount']),
+//								/*array conditions*/array('SalPayment.sal_sale_id'=>$dataPayDetail['SalPayment']['sal_sale_id'], 
+//														'SalPayment.sal_payment_type_id'=>$dataPayDetail['SalPayment']['sal_payment_type_id'],
+//														'SalPayment.date'=>$dataPayDetail['SalPayment']['date']))){
+//						$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
+//					}
+//					if($rowsAffected == 0){
+//						$dataSource->rollback();
+//						return 'error';
+//					}
+					//--------------------------------------------------------------------------------------------------------------
+					$salPaymentsIds = $this->SalPayment->find('list', array(
+							'conditions'=>array(
+								'SalPayment.sal_sale_id'=>$dataPayDetail['SalPayment']['sal_sale_id'], 
+								'SalPayment.sal_payment_type_id'=>$dataPayDetail['SalPayment']['sal_payment_type_id'],
+								'SalPayment.date'=>$dataPayDetail['SalPayment']['date']
+							),
+							'fields'=>array('SalPayment.id', 'SalPayment.id')
+						));
+					
+					foreach ($salPaymentsIds as $salPaymentsId) {
+						try {
+								$this->SalPayment->save(array(
+									'id'=>$salPaymentsId, 
+									'amount'=>$dataPayDetail['SalPayment']['amount'], 
+									'description'=>"'".$dataPayDetail['SalPayment']['description']."'", 
+									'ex_amount'=>$dataPayDetail['SalPayment']['ex_amount'])
+								);
+						} catch (Exception $e) {
+//								debug($e);
+							$dataSource->rollback();
+							return 'ERROR';
+						}
 					}
-					if($rowsAffected == 0){
-						$dataSource->rollback();
-						return 'error';
-					}
+					//--------------------------------------------------------------------------------------------------------------
 					break;
 				case 'DELETE':
-					if(!$this->SalDetail->deleteAll(array('SalDetail.sal_sale_id'=>$dataMovementDetail[0]['SalDetail']['sal_sale_id'],	
-															'SalDetail.inv_warehouse_id'=>$dataMovementDetail[0]['SalDetail']['inv_warehouse_id'], 
-															'SalDetail.inv_item_id'=>$dataMovementDetail[0]['SalDetail']['inv_item_id']))){
-						$dataSource->rollback();
-						return 'error';
-					}
+//					if(!$this->SalDetail->deleteAll(array('SalDetail.sal_sale_id'=>$dataMovementDetail[0]['SalDetail']['sal_sale_id'],	
+//															'SalDetail.inv_warehouse_id'=>$dataMovementDetail[0]['SalDetail']['inv_warehouse_id'], 
+//															'SalDetail.inv_item_id'=>$dataMovementDetail[0]['SalDetail']['inv_item_id']))){
+//						$dataSource->rollback();
+//						return 'error';
+//					}
+					//--------------------------------------------------------------------------------------------------------------
+					$salDetailsIds = $this->SalDetail->find('list', array(
+							'conditions' => array(
+								'SalDetail.sal_sale_id'=>$dataMovementDetail[0]['SalDetail']['sal_sale_id'],	
+								'SalDetail.inv_warehouse_id'=>$dataMovementDetail[0]['SalDetail']['inv_warehouse_id'], 
+								'SalDetail.inv_item_id'=>$dataMovementDetail[0]['SalDetail']['inv_item_id']
+							),
+							'fields' => array('SalDetail.id', 'SalDetail.id')
+						));
+						
+						foreach ($salDetailsIds as $salDetailsId) {
+							try {
+								$this->SalDetail->id = $salDetailsId;	
+								$this->SalDetail->delete();
+							} catch (Exception $e) {
+//								debug($e);
+								$dataSource->rollback();
+								return 'ERROR';
+							}
+						}	
+					//--------------------------------------------------------------------------------------------------------------
 //					if($ACTION=='save_order'){
 //						if(!$this->SalDetail->deleteAll(array('SalDetail.sal_sale_id'=>$dataMovementDetail[1]['SalDetail']['sal_sale_id'],	
 //																'SalDetail.inv_warehouse_id'=>$dataMovementDetail[1]['SalDetail']['inv_warehouse_id'], 
@@ -233,11 +306,31 @@ class SalSale extends AppModel {
 //					}	
 					break;
 				case 'DELETE_PAY':
-					if(!$this->SalPayment->deleteAll(array('SalPayment.sal_sale_id'=>$dataPayDetail['SalPayment']['sal_sale_id'], 
-															'SalPayment.date'=>$dataPayDetail['SalPayment']['date']))){
-						$dataSource->rollback();
-						return 'error';
-					}
+//					if(!$this->SalPayment->deleteAll(array('SalPayment.sal_sale_id'=>$dataPayDetail['SalPayment']['sal_sale_id'], 
+//															'SalPayment.date'=>$dataPayDetail['SalPayment']['date']))){
+//						$dataSource->rollback();
+//						return 'error';
+//					}
+					//--------------------------------------------------------------------------------------------------------------
+					$salPaymentsIds = $this->SalPayment->find('list', array(
+							'conditions' => array(
+								'SalPayment.sal_sale_id'=>$dataPayDetail['SalPayment']['sal_sale_id'], 
+								'SalPayment.date'=>$dataPayDetail['SalPayment']['date']
+							),
+							'fields' => array('SalPayment.id', 'SalPayment.id')
+						));
+						
+						foreach ($salPaymentsIds as $salPaymentsId) {
+							try {
+								$this->SalPayment->id = $salPaymentsIds;	
+								$this->SalPayment->delete();
+							} catch (Exception $e) {
+//								debug($e);
+								$dataSource->rollback();
+								return 'ERROR';
+							}
+						}	
+					//--------------------------------------------------------------------------------------------------------------	
 					break;
 			}		
 			

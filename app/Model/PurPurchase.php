@@ -197,115 +197,329 @@ class PurPurchase extends AppModel {
 					}
 					break;	
 				case 'EDIT':							//array fields
-					if($this->PurDetail->updateAll(array('PurDetail.lc_transaction'=>"'MODIFY'",
-															'PurDetail.ex_fob_price'=>$dataPurchaseDetail[0]['PurDetail']['ex_fob_price'], 
-															'PurDetail.quantity'=>$dataPurchaseDetail[0]['PurDetail']['quantity'], 
-															'PurDetail.fob_price'=>$dataPurchaseDetail[0]['PurDetail']['fob_price'],
-															'PurDetail.ex_subtotal'=>$dataPurchaseDetail[0]['PurDetail']['ex_subtotal']/*,
-															'PurDetail.fob_price'=>$dataMovementDetail['PurDetail']['fob_price'],
-															'PurDetail.ex_fob_price'=>$dataMovementDetail['PurDetail']['ex_fob_price'],
-															'PurDetail.cif_price'=>$dataMovementDetail['PurDetail']['cif_price'],
-															'PurDetail.ex_cif_price'=>$dataMovementDetail['PurDetail']['ex_cif_price']*/), 
-								/*array conditions*/array('PurDetail.pur_purchase_id'=>$dataPurchaseDetail[0]['PurDetail']['pur_purchase_id'], 
-														'PurDetail.inv_supplier_id'=>$dataPurchaseDetail[0]['PurDetail']['inv_supplier_id'], 
-														'PurDetail.inv_item_id'=>$dataPurchaseDetail[0]['PurDetail']['inv_item_id']))){
-						$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
-					}
-					if($rowsAffected == 0){
-						$dataSource->rollback();
-						return 'ERROR';
-					}
-					if($ACTION=='save_order'){
-						if($this->PurDetail->updateAll(array('PurDetail.lc_transaction'=>"'MODIFY'",
-																'PurDetail.ex_fob_price'=>$dataPurchaseDetail[1]['PurDetail']['ex_fob_price'], 
-																'PurDetail.quantity'=>$dataPurchaseDetail[1]['PurDetail']['quantity'], 
-																'PurDetail.fob_price'=>$dataPurchaseDetail[1]['PurDetail']['fob_price'],
-																'PurDetail.ex_subtotal'=>$dataPurchaseDetail[1]['PurDetail']['ex_subtotal']/*,
-																'PurDetail.fob_price'=>$dataMovementDetail['PurDetail']['fob_price'],
-																'PurDetail.ex_fob_price'=>$dataMovementDetail['PurDetail']['ex_fob_price'],
-																'PurDetail.cif_price'=>$dataMovementDetail['PurDetail']['cif_price'],
-																'PurDetail.ex_cif_price'=>$dataMovementDetail['PurDetail']['ex_cif_price']*/), 
-									/*array conditions*/array('PurDetail.pur_purchase_id'=>$dataPurchaseDetail[1]['PurDetail']['pur_purchase_id'], 
-															'PurDetail.inv_supplier_id'=>$dataPurchaseDetail[1]['PurDetail']['inv_supplier_id'], 
-															'PurDetail.inv_item_id'=>$dataPurchaseDetail[1]['PurDetail']['inv_item_id']))){
-							$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
-						}
-						if($rowsAffected == 0){
+//					if($this->PurDetail->updateAll(array(/*'PurDetail.lc_transaction'=>"'MODIFY'",*/
+//															'PurDetail.ex_fob_price'=>$dataPurchaseDetail[0]['PurDetail']['ex_fob_price'], 
+//															'PurDetail.quantity'=>$dataPurchaseDetail[0]['PurDetail']['quantity'], 
+//															'PurDetail.fob_price'=>$dataPurchaseDetail[0]['PurDetail']['fob_price'],
+//															'PurDetail.ex_subtotal'=>$dataPurchaseDetail[0]['PurDetail']['ex_subtotal']/*,
+//															'PurDetail.fob_price'=>$dataMovementDetail['PurDetail']['fob_price'],
+//															'PurDetail.ex_fob_price'=>$dataMovementDetail['PurDetail']['ex_fob_price'],
+//															'PurDetail.cif_price'=>$dataMovementDetail['PurDetail']['cif_price'],
+//															'PurDetail.ex_cif_price'=>$dataMovementDetail['PurDetail']['ex_cif_price']*/), 
+//								/*array conditions*/array('PurDetail.pur_purchase_id'=>$dataPurchaseDetail[0]['PurDetail']['pur_purchase_id'], 
+//														'PurDetail.inv_supplier_id'=>$dataPurchaseDetail[0]['PurDetail']['inv_supplier_id'], 
+//														'PurDetail.inv_item_id'=>$dataPurchaseDetail[0]['PurDetail']['inv_item_id']))){
+//						$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
+//					}
+//					if($rowsAffected == 0){
+//						$dataSource->rollback();
+//						return 'ERROR';
+//					}
+					
+					$purDetailsIds = $this->purDetail->find('list', array(
+							'conditions'=>array(
+								'PurDetail.pur_purchase_id'=>$dataPurchaseDetail[0]['PurDetail']['pur_purchase_id'], 
+								'PurDetail.inv_supplier_id'=>$dataPurchaseDetail[0]['PurDetail']['inv_supplier_id'], 
+								'PurDetail.inv_item_id'=>$dataPurchaseDetail[0]['PurDetail']['inv_item_id']
+							),
+							'fields'=>array('PurDetail.id', 'PurDetail.id')
+						));
+					
+					foreach ($purDetailsIds as $purDetailsId) {
+						try {
+								$this->PurDetail->save(array(
+									'id'=>$purDetailsId, 
+									'ex_fob_price'=>$dataPurchaseDetail[0]['PurDetail']['ex_fob_price'], 
+									'quantity'=>$dataPurchaseDetail[0]['PurDetail']['quantity'], 
+									'fob_price'=>$dataPurchaseDetail[0]['PurDetail']['fob_price'],
+									'ex_subtotal'=>$dataPurchaseDetail[0]['PurDetail']['ex_subtotal'])
+								);
+						} catch (Exception $e) {
+//								debug($e);
 							$dataSource->rollback();
 							return 'ERROR';
-						}					
+						}
+					}
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+					if($ACTION=='save_order'){
+//						if($this->PurDetail->updateAll(array(/*'PurDetail.lc_transaction'=>"'MODIFY'",*/
+//																'PurDetail.ex_fob_price'=>$dataPurchaseDetail[1]['PurDetail']['ex_fob_price'], 
+//																'PurDetail.quantity'=>$dataPurchaseDetail[1]['PurDetail']['quantity'], 
+//																'PurDetail.fob_price'=>$dataPurchaseDetail[1]['PurDetail']['fob_price'],
+//																'PurDetail.ex_subtotal'=>$dataPurchaseDetail[1]['PurDetail']['ex_subtotal']/*,
+//																'PurDetail.fob_price'=>$dataMovementDetail['PurDetail']['fob_price'],
+//																'PurDetail.ex_fob_price'=>$dataMovementDetail['PurDetail']['ex_fob_price'],
+//																'PurDetail.cif_price'=>$dataMovementDetail['PurDetail']['cif_price'],
+//																'PurDetail.ex_cif_price'=>$dataMovementDetail['PurDetail']['ex_cif_price']*/), 
+//									/*array conditions*/array('PurDetail.pur_purchase_id'=>$dataPurchaseDetail[1]['PurDetail']['pur_purchase_id'], 
+//															'PurDetail.inv_supplier_id'=>$dataPurchaseDetail[1]['PurDetail']['inv_supplier_id'], 
+//															'PurDetail.inv_item_id'=>$dataPurchaseDetail[1]['PurDetail']['inv_item_id']))){
+//							$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
+//						}
+//						if($rowsAffected == 0){
+//							$dataSource->rollback();
+//							return 'ERROR';
+//						}					
+					
+						$purDetailsIds = $this->purDetail->find('list', array(
+							'conditions'=>array(
+								'PurDetail.pur_purchase_id'=>$dataPurchaseDetail[1]['PurDetail']['pur_purchase_id'], 
+								'PurDetail.inv_supplier_id'=>$dataPurchaseDetail[1]['PurDetail']['inv_supplier_id'], 
+								'PurDetail.inv_item_id'=>$dataPurchaseDetail[1]['PurDetail']['inv_item_id']
+							),
+							'fields'=>array('PurDetail.id', 'PurDetail.id')
+						));
+
+						foreach ($purDetailsIds as $purDetailsId) {
+							try {
+									$this->PurDetail->save(array(
+										'id'=>$purDetailsId, 
+										'ex_fob_price'=>$dataPurchaseDetail[1]['PurDetail']['ex_fob_price'], 
+										'quantity'=>$dataPurchaseDetail[1]['PurDetail']['quantity'], 
+										'fob_price'=>$dataPurchaseDetail[1]['PurDetail']['fob_price'],
+										'ex_subtotal'=>$dataPurchaseDetail[1]['PurDetail']['ex_subtotal'])
+									);
+							} catch (Exception $e) {
+	//								debug($e);
+								$dataSource->rollback();
+								return 'ERROR';
+							}
+						}
 					}	
-					if(ClassRegistry::init('InvMovement')->InvMovementDetail->updateAll(array('InvMovementDetail.lc_transaction'=>"'MODIFY'", 'InvMovementDetail.quantity'=>$dataMovementDetail['InvMovementDetail']['quantity']), 
-																						array('InvMovementDetail.inv_movement_id'=>$dataMovementDetail['InvMovementDetail']['inv_movement_id'],	
-																							'InvMovementDetail.inv_item_id'=>$dataMovementDetail['InvMovementDetail']['inv_item_id']))){
-							$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
+//------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------					
+					
+//					if(ClassRegistry::init('InvMovement')->InvMovementDetail->updateAll(array(/*'InvMovementDetail.lc_transaction'=>"'MODIFY'", */'InvMovementDetail.quantity'=>$dataMovementDetail['InvMovementDetail']['quantity']), 
+//																						array('InvMovementDetail.inv_movement_id'=>$dataMovementDetail['InvMovementDetail']['inv_movement_id'],	
+//																							'InvMovementDetail.inv_item_id'=>$dataMovementDetail['InvMovementDetail']['inv_item_id']))){
+//							$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
+//					}
+//					if($rowsAffected == 0){
+//						$dataSource->rollback();
+//						return 'ERROR';
+//					}
+					
+					$invMovementDetailsIds = ClassRegistry::init('InvMovement')->InvMovementDetail->find('list', array(
+						'conditions'=>array(
+							'InvMovementDetail.inv_movement_id'=>$dataMovementDetail['InvMovementDetail']['inv_movement_id'],
+							'InvMovementDetail.inv_item_id'=>$dataMovementDetail['InvMovementDetail']['inv_item_id']
+						),
+						'fields'=>array('InvMovementDetail.id', 'InvMovementDetail.id')
+					));
+
+					foreach ($invMovementDetailsIds as $invMovementDetailsId) {
+						try {
+								ClassRegistry::init('InvMovement')->InvMovementDetail->save(array(
+									'id'=>$invMovementDetailsId, 
+									'quantity'=>$dataMovementDetail['InvMovementDetail']['quantity'])
+								);
+						} catch (Exception $e) {
+//								debug($e);
+							$dataSource->rollback();
+							return 'ERROR';
+						}
 					}
-					if($rowsAffected == 0){
-						$dataSource->rollback();
-						return 'ERROR';
-					}
+						
 					break;
+					
 				case 'EDIT_PAY':
-					if($this->PurPayment->updateAll(array('PurPayment.lc_transaction'=>"'MODIFY'", 'PurPayment.amount'=>$dataPayDetail['PurPayment']['amount'], 
-															'PurPayment.description'=>"'".$dataPayDetail['PurPayment']['description']."'", 
-															'PurPayment.ex_amount'=>$dataPayDetail['PurPayment']['ex_amount']),
-								/*array conditions*/array('PurPayment.pur_purchase_id'=>$dataPayDetail['PurPayment']['pur_purchase_id'], 
-														'PurPayment.pur_payment_type_id'=>$dataPayDetail['PurPayment']['pur_payment_type_id'],	
-														'PurPayment.date'=>$dataPayDetail['PurPayment']['date']))){
-						$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
-					}
-					if($rowsAffected == 0){
-						$dataSource->rollback();
-						return 'ERROR';
+//					if($this->PurPayment->updateAll(array(/*'PurPayment.lc_transaction'=>"'MODIFY'", */'PurPayment.amount'=>$dataPayDetail['PurPayment']['amount'], 
+//															'PurPayment.description'=>"'".$dataPayDetail['PurPayment']['description']."'", 
+//															'PurPayment.ex_amount'=>$dataPayDetail['PurPayment']['ex_amount']),
+//								/*array conditions*/array('PurPayment.pur_purchase_id'=>$dataPayDetail['PurPayment']['pur_purchase_id'], 
+//														'PurPayment.pur_payment_type_id'=>$dataPayDetail['PurPayment']['pur_payment_type_id'],	
+//														'PurPayment.date'=>$dataPayDetail['PurPayment']['date']))){
+//						$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
+//					}
+//					if($rowsAffected == 0){
+//						$dataSource->rollback();
+//						return 'ERROR';
+//					}
+					
+					$purPaymentsIds = $this->PurPayment->find('list', array(
+						'conditions'=>array(
+							'PurPayment.pur_purchase_id'=>$dataPayDetail['PurPayment']['pur_purchase_id'], 
+							'PurPayment.pur_payment_type_id'=>$dataPayDetail['PurPayment']['pur_payment_type_id'],	
+							'PurPayment.date'=>$dataPayDetail['PurPayment']['date']
+						),
+						'fields'=>array('PurPayment.id', 'PurPayment.id')
+					));
+
+					foreach ($purPaymentsIds as $purPaymentsId) {
+						try {
+								$this->PurPayment->save(array(
+									'id'=>$purPaymentsId, 
+									'amount'=>$dataPayDetail['PurPayment']['amount'], 
+									'description'=>"'".$dataPayDetail['PurPayment']['description']."'", 
+									'ex_amount'=>$dataPayDetail['PurPayment']['ex_amount'])
+								);
+						} catch (Exception $e) {
+//								debug($e);
+							$dataSource->rollback();
+							return 'ERROR';
+						}
 					}
 					break;
 				case 'EDIT_COST':
-					if($this->PurPrice->updateAll(array('PurPrice.lc_transaction'=>"'MODIFY'", 'PurPrice.amount'=>$dataCostDetail['PurPrice']['amount'], 				
-															'PurPrice.ex_amount'=>$dataCostDetail['PurPrice']['ex_amount']),
-								/*array conditions*/array('PurPrice.pur_purchase_id'=>$dataCostDetail['PurPrice']['pur_purchase_id'], 
-														'PurPrice.inv_price_type_id'=>$dataCostDetail['PurPrice']['inv_price_type_id']))){
-						$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
-					}
-					if($rowsAffected == 0){
-						$dataSource->rollback();
-						return 'ERROR';
-					}
-					break;	
-				case 'DELETE':
-					if(!$this->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$dataPurchaseDetail[0]['PurDetail']['pur_purchase_id'],	
-															'PurDetail.inv_supplier_id'=>$dataPurchaseDetail[0]['PurDetail']['inv_supplier_id'], 
-															'PurDetail.inv_item_id'=>$dataPurchaseDetail[0]['PurDetail']['inv_item_id']))){
-						$dataSource->rollback();
-						return 'ERROR';
-					}
-					if($ACTION=='save_order'){
-						if(!$this->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$dataPurchaseDetail[1]['PurDetail']['pur_purchase_id'],	
-																'PurDetail.inv_supplier_id'=>$dataPurchaseDetail[1]['PurDetail']['inv_supplier_id'], 
-																'PurDetail.inv_item_id'=>$dataPurchaseDetail[1]['PurDetail']['inv_item_id']))){
+//					if($this->PurPrice->updateAll(array(/*'PurPrice.lc_transaction'=>"'MODIFY'",*/ 'PurPrice.amount'=>$dataCostDetail['PurPrice']['amount'], 				
+//															'PurPrice.ex_amount'=>$dataCostDetail['PurPrice']['ex_amount']),
+//								/*array conditions*/array('PurPrice.pur_purchase_id'=>$dataCostDetail['PurPrice']['pur_purchase_id'], 
+//														'PurPrice.inv_price_type_id'=>$dataCostDetail['PurPrice']['inv_price_type_id']))){
+//						$rowsAffected = $this->getAffectedRows();//must do this because updateAll always return true
+//					}
+//					if($rowsAffected == 0){
+//						$dataSource->rollback();
+//						return 'ERROR';
+//					}
+					$purPricesIds = $this->PurPrice->find('list', array(
+						'conditions'=>array(
+							'PurPrice.pur_purchase_id'=>$dataCostDetail['PurPrice']['pur_purchase_id'], 
+							'PurPrice.inv_price_type_id'=>$dataCostDetail['PurPrice']['inv_price_type_id']
+						),
+						'fields'=>array('PurPrice.id', 'PurPrice.id')
+					));
+
+					foreach ($purPricesIds as $purPricesId) {
+						try {
+								$this->PurPrice->save(array(
+									'id'=>$purPricesId, 
+									'amount'=>$dataCostDetail['PurPrice']['amount'], 				
+									'ex_amount'=>$dataCostDetail['PurPrice']['ex_amount'])
+								);
+						} catch (Exception $e) {
+//								debug($e);
 							$dataSource->rollback();
 							return 'ERROR';
 						}
 					}
-					if(!ClassRegistry::init('InvMovement')->InvMovementDetail->deleteAll(array('InvMovementDetail.inv_movement_id'=>$dataMovementDetail['InvMovementDetail']['inv_movement_id'],	
-																									'InvMovementDetail.inv_item_id'=>$dataMovementDetail['InvMovementDetail']['inv_item_id']))){
-						$dataSource->rollback();
-						return 'ERROR';
-					}
 					
+					break;	
+				case 'DELETE':
+//					if(!$this->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$dataPurchaseDetail[0]['PurDetail']['pur_purchase_id'],	
+//															'PurDetail.inv_supplier_id'=>$dataPurchaseDetail[0]['PurDetail']['inv_supplier_id'], 
+//															'PurDetail.inv_item_id'=>$dataPurchaseDetail[0]['PurDetail']['inv_item_id']))){
+					$purDetailsIds = $this->PurDetail->find('list', array(
+						'conditions' => array(
+							'PurDetail.pur_purchase_id'=>$dataPurchaseDetail[0]['PurDetail']['pur_purchase_id'],	
+							'PurDetail.inv_supplier_id'=>$dataPurchaseDetail[0]['PurDetail']['inv_supplier_id'], 
+							'PurDetail.inv_item_id'=>$dataPurchaseDetail[0]['PurDetail']['inv_item_id']
+						),
+						'fields' => array('PurDetail.id', 'PurDetail.id')
+					));
+
+					foreach ($purDetailsIds as $purDetailsId) {
+						try {
+							$this->PurDetail->id = $purDetailsId;	
+							$this->PurDetail->delete();
+						} catch (Exception $e) {
+//								debug($e);
+							$dataSource->rollback();
+							return 'ERROR';
+						}
+					}	
+					if($ACTION=='save_order'){
+//						if(!$this->PurDetail->deleteAll(array('PurDetail.pur_purchase_id'=>$dataPurchaseDetail[1]['PurDetail']['pur_purchase_id'],	
+//																'PurDetail.inv_supplier_id'=>$dataPurchaseDetail[1]['PurDetail']['inv_supplier_id'], 
+//																'PurDetail.inv_item_id'=>$dataPurchaseDetail[1]['PurDetail']['inv_item_id']))){
+//							$dataSource->rollback();
+//							return 'ERROR';
+//						}
+					
+						$purDetailsIds = $this->PurDetail->find('list', array(
+							'conditions' => array(
+								'PurDetail.pur_purchase_id'=>$dataPurchaseDetail[1]['PurDetail']['pur_purchase_id'],	
+								'PurDetail.inv_supplier_id'=>$dataPurchaseDetail[1]['PurDetail']['inv_supplier_id'], 
+								'PurDetail.inv_item_id'=>$dataPurchaseDetail[1]['PurDetail']['inv_item_id']
+							),
+							'fields' => array('PurDetail.id', 'PurDetail.id')
+						));
+						
+						foreach ($purDetailsIds as $purDetailsId) {
+							try {
+								$this->PurDetail->id = $purDetailsId;	
+								$this->PurDetail->delete();
+							} catch (Exception $e) {
+//								debug($e);
+								$dataSource->rollback();
+								return 'ERROR';
+							}
+						}	
+					}
+//					if(!ClassRegistry::init('InvMovement')->InvMovementDetail->deleteAll(array('InvMovementDetail.inv_movement_id'=>$dataMovementDetail['InvMovementDetail']['inv_movement_id'],	
+//																									'InvMovementDetail.inv_item_id'=>$dataMovementDetail['InvMovementDetail']['inv_item_id']))){
+//						$dataSource->rollback();
+//						return 'ERROR';
+//					}
+					
+					$invMovementDetailsIds = ClassRegistry::init('InvMovement')->InvMovementDetail->find('list', array(
+						'conditions' => array(
+							'InvMovementDetail.inv_movement_id' => $dataMovementDetail['InvMovementDetail']['inv_movement_id'],
+							'InvMovementDetail.inv_item_id' => $dataMovementDetail['InvMovementDetail']['inv_item_id']
+						),
+						'fields' => array('InvMovementDetail.id', 'InvMovementDetail.id')
+					));
+
+					foreach ($invMovementDetailsIds as $invMovementDetailsId) {
+						try {
+							$this->InvMovementDetail->id = $invMovementDetailsId;	
+							$this->InvMovementDetail->delete();
+						} catch (Exception $e) {
+//								debug($e);
+							$dataSource->rollback();
+							return 'ERROR';
+						}
+					}
 					break;
 				case 'DELETE_PAY':
-					if(!$this->PurPayment->deleteAll(array('PurPayment.pur_purchase_id'=>$dataPayDetail['PurPayment']['pur_purchase_id'], 
-															'PurPayment.date'=>$dataPayDetail['PurPayment']['date']))){
-						$dataSource->rollback();
-						return 'ERROR';
+//					if(!$this->PurPayment->deleteAll(array('PurPayment.pur_purchase_id'=>$dataPayDetail['PurPayment']['pur_purchase_id'], 
+//															'PurPayment.date'=>$dataPayDetail['PurPayment']['date']))){
+//						$dataSource->rollback();
+//						return 'ERROR';
+//					}
+					
+					$purPaymentsIds = $this->PurPayment->find('list', array(
+						'conditions'=>array(
+							'PurPayment.pur_purchase_id'=>$dataPayDetail['PurPayment']['pur_purchase_id'], 
+							'PurPayment.pur_payment_type_id'=>$dataPayDetail['PurPayment']['pur_payment_type_id'],	
+							'PurPayment.date'=>$dataPayDetail['PurPayment']['date']
+						),
+						'fields'=>array('PurPayment.id', 'PurPayment.id')
+					));
+
+					foreach ($purPaymentsIds as $purPaymentsId) {
+						try {
+							$this->PurPayment->id = $purPaymentsId;	
+							$this->PurPayment->delete();
+						} catch (Exception $e) {
+//								debug($e);
+							$dataSource->rollback();
+							return 'ERROR';
+						}
 					}
 					break;
 				case 'DELETE_COST':
-					if(!$this->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$dataCostDetail['PurPrice']['pur_purchase_id'], 
-															'PurPrice.inv_price_type_id'=>$dataCostDetail['PurPrice']['inv_price_type_id']))){
-						$dataSource->rollback();
-						return 'ERROR';
-					}
+//					if(!$this->PurPrice->deleteAll(array('PurPrice.pur_purchase_id'=>$dataCostDetail['PurPrice']['pur_purchase_id'], 
+//															'PurPrice.inv_price_type_id'=>$dataCostDetail['PurPrice']['inv_price_type_id']))){
+//						$dataSource->rollback();
+//						return 'ERROR';
+//					}
+					
+					$purPricesIds = $this->PurPrice->find('list', array(
+							'conditions'=>array(
+								'PurPrice.pur_purchase_id'=>$dataCostDetail['PurPrice']['pur_purchase_id'], 
+								'PurPrice.inv_price_type_id'=>$dataCostDetail['PurPrice']['inv_price_type_id']
+							),
+							'fields'=>array('PurPrice.id', 'PurPrice.id')
+						));
+						foreach ($purPricesIds as $purPricesId) {
+							try {
+								$this->PurPrice->id = $purPricesIds;	
+								$this->PurPrice->delete();
+							} catch (Exception $e) {
+//								debug($e);
+								$dataSource->rollback();
+								return 'ERROR';
+							}
+						}
 					break;	
 			}	
 			

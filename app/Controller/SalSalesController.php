@@ -212,14 +212,14 @@ class SalSalesController extends AppController {
 		//put session data sent data into variables
 		$initialData = $this->Session->read('ReportMovement');
 		
-		debug($initialData);
+//		debug($initialData);
 		
 		$settings = $this->_generate_report_settings($initialData);
 		
-		debug($settings);
+//		debug($settings);
 		
 		$movements=$this->_generate_report_movements($settings['values'], $settings['conditions'], $settings['fields']);
-		debug($movements);
+//		debug($movements);
 		
 		$currencyFieldPrefix = '';
 		$currencyAbbreviation = '(BS)';
@@ -1871,7 +1871,14 @@ class SalSalesController extends AppController {
 		if(isset($this->passedArgs['id'])){
 			$id = $this->passedArgs['id'];
 		}
-		
+		$this->loadModel('AdmParameter');
+		$currency = $this->AdmParameter->AdmParameterDetail->find('first', array(
+				'conditions'=>array(
+					'AdmParameter.name'=>'Moneda',
+					'AdmParameterDetail.par_char1'=>'Dolares'
+				)
+			)); 
+		$currencyId = $currency['AdmParameterDetail']['id'];
 		$this->loadModel('AdmUser');
 		$salAdmUsers = $this->AdmUser->AdmProfile->find('list', array(
 			'order'=>array('first_name'),

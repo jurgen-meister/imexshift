@@ -766,9 +766,9 @@ $(document).ready(function(){
 //			validateOnlyFloatNumbers(event);			
 //	});
 	//Calendar script
-//	$("#txtDate").datepicker({
-//	  showButtonPanel: true
-//	});
+	$("#txtDate").datepicker({
+	  showButtonPanel: true
+	});
 	
 	$('#txtDate').focusout(function() {
 			ajax_update_ex_rate();			

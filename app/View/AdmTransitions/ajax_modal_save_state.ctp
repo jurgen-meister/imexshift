@@ -5,11 +5,12 @@
 		echo $this->BootstrapForm->input('adm_controller_id', array(
 			'type'=>'hidden',
 			'value'=>$controllerId,
-			'required' => 'required',
+			'required' => 'required'
 		));
 		echo $this->BootstrapForm->input('name', array(
 			'label' => 'Nombre:',
 			'required' => 'required',
+			'maxlenght' => '30'
 		));
 		echo $this->BootstrapForm->input('description', array(
 			'label' => 'Descripción:',
